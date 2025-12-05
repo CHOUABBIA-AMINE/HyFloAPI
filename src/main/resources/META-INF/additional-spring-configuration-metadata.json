@@ -1,0 +1,147 @@
+{"properties": [
+  {
+    "name": "app.file.upload-dir",
+    "type": "java.lang.String",
+    "description": "A description for 'app.file.upload-dir'"
+  },
+  {
+    "name": "raas.audit.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.audit.enabled'"
+  },
+  {
+    "name": "raas.audit.async",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.audit.async'"
+  },
+  {
+    "name": "raas.audit.retention-days",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.audit.retention-days'"
+  },
+  {
+    "name": "raas.security.jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.jwt.secret'"
+  },
+  {
+    "name": "raas.security.jwt.expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.jwt.expiration'"
+  },
+  {
+    "name": "raas.security.jwt.refresh-expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.jwt.refresh-expiration'"
+  },
+  {
+    "name": "raas.security.jwt.issuer",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.jwt.issuer'"
+  },
+  {
+    "name": "raas.security.jwt.audience",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.jwt.audience'"
+  },
+  {
+    "name": "raas.security.cors.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.cors.allowed-origins'"
+  },
+  {
+    "name": "raas.security.cors.allow-credentials",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.cors.allow-credentials'"
+  },
+  {
+    "name": "raas.security.cors.max-age",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.cors.max-age'"
+  },
+  {
+    "name": "raas.security.authentication.max-failed-attempts",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authentication.max-failed-attempts'"
+  },
+  {
+    "name": "raas.security.authentication.lock-duration",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authentication.lock-duration'"
+  },
+  {
+    "name": "raas.security.authentication.enable-brute-force-protection",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authentication.enable-brute-force-protection'"
+  },
+  {
+    "name": "raas.security.authentication.password-expiration-days",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authentication.password-expiration-days'"
+  },
+  {
+    "name": "raas.security.authorization.enable-object-level-security",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authorization.enable-object-level-security'"
+  },
+  {
+    "name": "raas.security.authorization.enable-audit-logging",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authorization.enable-audit-logging'"
+  },
+  {
+    "name": "raas.security.authorization.default-role",
+    "type": "java.lang.String",
+    "description": "A description for 'raas.security.authorization.default-role'"
+  },
+  {
+    "name": "spring.security.require-ssl",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.security.require-ssl'"
+  },
+  {
+    "name": "spring.security.headers.frame-options",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.security.headers.frame-options'"
+  },
+  {
+    "name": "spring.security.headers.content-security-policy",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.security.headers.content-security-policy'"
+  },
+  {
+    "name": "cors.allowed.origins",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed.origins'"
+  },
+  {
+    "name": "cors.allowed.methods",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed.methods'"
+  },
+  {
+    "name": "cors.allowed.headers",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allowed.headers'"
+  },
+  {
+    "name": "cors.allow.credentials",
+    "type": "java.lang.String",
+    "description": "A description for 'cors.allow.credentials'"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.secret'"
+  },
+  {
+    "name": "jwt.access.expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.access.expiration'"
+  },
+  {
+    "name": "jwt.refresh.expiration",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.refresh.expiration'"
+  }
+]}
