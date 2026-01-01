@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import dz.sh.trc.hyflo.common.administration.model.Country;
 import dz.sh.trc.hyflo.common.administration.model.Employee;
 import dz.sh.trc.hyflo.common.administration.model.Job;
-import dz.sh.trc.hyflo.common.administration.model.MilitaryRank;
 import dz.sh.trc.hyflo.common.administration.model.Structure;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import jakarta.validation.constraints.NotBlank;
@@ -74,8 +73,6 @@ public class EmployeeDTO extends GenericDTO<Employee> {
 
     private Long structureId;
 
-    private Long militaryRankId;
-
     @Override
     public Employee toEntity() {
         Employee entity = new Employee();
@@ -104,12 +101,6 @@ public class EmployeeDTO extends GenericDTO<Employee> {
             Structure structure = new Structure();
             structure.setId(this.structureId);
             entity.setStructure(structure);
-        }
-        
-        if (this.militaryRankId != null) {
-        	MilitaryRank rank = new MilitaryRank();
-        	rank.setId(this.militaryRankId);
-            entity.setMilitaryRank(rank);
         }
         
         return entity;
@@ -142,12 +133,6 @@ public class EmployeeDTO extends GenericDTO<Employee> {
 		    structure.setId(this.structureId);
 		    entity.setStructure(structure);
 		}
-		
-		if (this.militaryRankId != null) {
-			MilitaryRank rank = new MilitaryRank();
-			rank.setId(this.militaryRankId);
-		    entity.setMilitaryRank(rank);
-		}
     }
 
     public static EmployeeDTO fromEntity(Employee entity) {
@@ -164,7 +149,6 @@ public class EmployeeDTO extends GenericDTO<Employee> {
                 .countryId(entity.getCountry() != null ? entity.getCountry().getId() : null)
                 .jobId(entity.getJob() != null ? entity.getJob().getId() : null)
                 .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
-                .militaryRankId(entity.getMilitaryRank() != null ? entity.getMilitaryRank().getId() : null)
                 .build();
     }
 }

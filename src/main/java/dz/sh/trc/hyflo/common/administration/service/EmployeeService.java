@@ -27,7 +27,6 @@ import dz.sh.trc.hyflo.common.administration.dto.EmployeeDTO;
 import dz.sh.trc.hyflo.common.administration.model.Country;
 import dz.sh.trc.hyflo.common.administration.model.Employee;
 import dz.sh.trc.hyflo.common.administration.model.Job;
-import dz.sh.trc.hyflo.common.administration.model.MilitaryRank;
 import dz.sh.trc.hyflo.common.administration.model.Structure;
 import dz.sh.trc.hyflo.common.administration.repository.EmployeeRepository;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
@@ -47,7 +46,6 @@ public class EmployeeService extends GenericService<Employee, EmployeeDTO, Long>
     private final CountryService countryService;
     private final JobService jobService;
     private final StructureService structureService;
-    private final MilitaryRankService militaryRankService;
 
     @Override
     protected JpaRepository<Employee, Long> getRepository() {
@@ -84,11 +82,6 @@ public class EmployeeService extends GenericService<Employee, EmployeeDTO, Long>
             entity.setStructure(structure);
         }
         
-        if (dto.getMilitaryRankId() != null) {
-            MilitaryRank militaryRank = militaryRankService.getEntityById(dto.getMilitaryRankId());
-            entity.setMilitaryRank(militaryRank);
-        }
-        
         return entity;
     }
 
@@ -110,11 +103,6 @@ public class EmployeeService extends GenericService<Employee, EmployeeDTO, Long>
         if (dto.getStructureId() != null) {
             Structure structure = structureService.getEntityById(dto.getStructureId());
             entity.setStructure(structure);
-        }
-        
-        if (dto.getMilitaryRankId() != null) {
-            MilitaryRank militaryRank = militaryRankService.getEntityById(dto.getMilitaryRankId());
-            entity.setMilitaryRank(militaryRank);
         }
     }
 

@@ -235,8 +235,5 @@ public class Employee extends Person {
 	 * 
 	 * @see MilitaryRank
 	 */
-	@ManyToOne
-	@JoinColumn(name="F_14", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_04_10_FK_03"), nullable=false)
-	private MilitaryRank militaryRank;
 	
 }
