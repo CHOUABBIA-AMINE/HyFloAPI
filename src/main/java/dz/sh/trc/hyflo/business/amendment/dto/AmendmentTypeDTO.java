@@ -12,11 +12,11 @@
  *
  **/
 
-package dz.mdn.iaas.business.amendment.dto;
+package dz.sh.trc.hyflo.business.amendment.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import dz.mdn.iaas.configuration.template.GenericDTO;
-import dz.mdn.iaas.business.amendment.model.AmendmentType;
+import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.business.amendment.model.AmendmentType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

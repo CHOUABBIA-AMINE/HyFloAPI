@@ -12,9 +12,9 @@
  *
  **/
 
-package dz.mdn.iaas.business.amendment.model;
+package dz.sh.trc.hyflo.business.amendment.model;
 
-import dz.mdn.iaas.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;

@@ -12,12 +12,12 @@
  *
  **/
 
-package dz.mdn.iaas.business.amendment.dto;
+package dz.sh.trc.hyflo.business.amendment.dto;
 
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import dz.mdn.iaas.configuration.template.GenericDTO;
-import dz.mdn.iaas.business.amendment.model.Amendment;
+import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.business.amendment.model.Amendment;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

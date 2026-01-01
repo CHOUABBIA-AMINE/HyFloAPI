@@ -12,11 +12,11 @@
  *
  **/
 
-package dz.mdn.iaas.common.administration.controller;
+package dz.sh.trc.hyflo.common.administration.controller;
 
-import dz.mdn.iaas.common.administration.dto.CountryDTO;
-import dz.mdn.iaas.common.administration.service.CountryService;
-import dz.mdn.iaas.configuration.template.GenericController;
+import dz.sh.trc.hyflo.common.administration.dto.CountryDTO;
+import dz.sh.trc.hyflo.common.administration.service.CountryService;
+import dz.sh.trc.hyflo.configuration.template.GenericController;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

@@ -12,11 +12,11 @@
  *
  **/
 
-package dz.mdn.iaas.business.amendment.controller;
+package dz.sh.trc.hyflo.business.amendment.controller;
 
-import dz.mdn.iaas.business.amendment.dto.AmendmentDTO;
-import dz.mdn.iaas.business.amendment.service.AmendmentService;
-import dz.mdn.iaas.configuration.template.GenericController;
+import dz.sh.trc.hyflo.business.amendment.dto.AmendmentDTO;
+import dz.sh.trc.hyflo.business.amendment.service.AmendmentService;
+import dz.sh.trc.hyflo.configuration.template.GenericController;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

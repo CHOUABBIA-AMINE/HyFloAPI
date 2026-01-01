@@ -2,7 +2,7 @@
  *	
  *	@author		: CHOUABBIA Amine
  *
- *	@Name		: IaasApi
+ *	@Name		: HyFloApi
  *	@CreatedOn	: 06-26-2023
  *
  *	@Type		: Class
@@ -11,16 +11,16 @@
  *
  **/
 
-package dz.mdn.iaas;
+package dz.sh.trc.hyflo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class RaasApi {
+public class HyFloApi {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RaasApi.class, args);
+		SpringApplication.run(HyFloApi.class, args);
 	}
 
 }

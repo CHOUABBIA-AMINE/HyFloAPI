@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.mdn.iaas.business.amendment.controller;
+package dz.sh.trc.hyflo.business.amendment.controller;
 
 import java.util.List;
 
@@ -26,9 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.mdn.iaas.business.amendment.dto.AmendmentStepDTO;
-import dz.mdn.iaas.business.amendment.service.AmendmentStepService;
-import dz.mdn.iaas.configuration.template.GenericController;
+import dz.sh.trc.hyflo.business.amendment.dto.AmendmentStepDTO;
+import dz.sh.trc.hyflo.business.amendment.service.AmendmentStepService;
+import dz.sh.trc.hyflo.configuration.template.GenericController;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
