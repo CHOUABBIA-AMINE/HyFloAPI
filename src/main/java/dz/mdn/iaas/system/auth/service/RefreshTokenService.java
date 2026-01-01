@@ -36,14 +36,13 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public RefreshToken createRefreshToken(User user) {
-        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+    	RefreshToken refreshToken = refreshTokenRepository.findByUser(user).orElse(new RefreshToken());
+    	    
+	    refreshToken.setUser(user);
+	    refreshToken.setToken(UUID.randomUUID().toString());
+	    refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenExpiration));
 
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(user);
-        refreshToken.setToken(UUID.randomUUID().toString());
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenExpiration));
-
-        return refreshTokenRepository.save(refreshToken);
+	    return refreshTokenRepository.save(refreshToken);
     }
 
     public Optional<RefreshToken> findByToken(String token) {

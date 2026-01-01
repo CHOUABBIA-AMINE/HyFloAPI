@@ -18,7 +18,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import dz.mdn.iaas.system.audit.model.AuditLog.AuditAction;
+import dz.mdn.iaas.system.audit.model.Audited.AuditAction;
 
 /**
  * Annotation to mark methods for automatic audit logging

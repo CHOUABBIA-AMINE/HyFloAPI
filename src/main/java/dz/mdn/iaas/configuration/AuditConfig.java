@@ -13,20 +13,20 @@
 
 package dz.mdn.iaas.configuration;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import java.util.Optional;
-
 /**
  * Configuration for audit functionality
  */
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
-@EnableAspectJAutoProxy
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class AuditConfig {
 
     /**

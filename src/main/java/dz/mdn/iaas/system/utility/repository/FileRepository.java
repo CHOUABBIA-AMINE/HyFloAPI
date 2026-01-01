@@ -3,9 +3,10 @@
  *	@author		: CHOUABBIA Amine
  *
  *	@Name		: FileRepository
- *	@CreatedOn	: 10-14-2025
+ *	@CreatedOn	: 06-26-2023
+ *	@Updated	: 12-11-2025
  *
- *	@Type		: Interface
+ *	@Type		: Repository
  *	@Layer		: Repository
  *	@Package	: System / Utility
  *
@@ -21,26 +22,60 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FileRepository extends JpaRepository<File, Long> {
 
-    @Query("SELECT f FROM File f WHERE f.path = :path")
-    Optional<File> findByPath(@Param("path") String path);
+    /**
+     * Check if file exists by path
+     */
+    boolean existsByPath(String path);
 
-    Page<File> findAll(Pageable pageable);
+    /**
+     * Find file by path
+     */
+    Optional<File> findByPath(String path);
 
-    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM File f WHERE f.path = :path")
-    boolean existsByPath(@Param("path") String path);
+    /**
+     * Find files by extension
+     */
+    List<File> findByExtension(String extension);
 
-    @Query("SELECT f FROM File f WHERE f.extension = :extension")
-    Page<File> findByExtension(@Param("extension") String extension, Pageable pageable);
+    /**
+     * Find files by file type
+     */
+    List<File> findByFileType(String fileType);
 
-    @Query("SELECT f FROM File f WHERE f.fileType = :fileType")
-    Page<File> findByFileType(@Param("fileType") String fileType, Pageable pageable);
+    /**
+     * Find files by extension and file type
+     */
+    List<File> findByExtensionAndFileType(String extension, String fileType);
 
-    @Query("SELECT COUNT(f) FROM File f")
-    Long countAllFiles();
-    
+    /**
+     * Find files larger than size
+     */
+    List<File> findBySizeGreaterThan(Long size);
+
+    /**
+     * Global search across all fields
+     */
+    @Query("SELECT f FROM File f WHERE " +
+           "LOWER(f.path) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(f.extension) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(f.fileType) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<File> searchFiles(@Param("query") String query, Pageable pageable);
+
+    /**
+     * Count files by extension
+     */
+    @Query("SELECT COUNT(f) FROM File f WHERE f.extension = :extension")
+    long countByExtension(@Param("extension") String extension);
+
+    /**
+     * Get total storage size
+     */
+    @Query("SELECT SUM(f.size) FROM File f")
+    Long getTotalStorageSize();
 }

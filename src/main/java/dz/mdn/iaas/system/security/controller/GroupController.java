@@ -4,6 +4,7 @@
  *
  *	@Name		: GroupController
  *	@CreatedOn	: 11-18-2025
+ *	@Updated	: 12-12-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller
@@ -13,57 +14,137 @@
 
 package dz.mdn.iaas.system.security.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import dz.mdn.iaas.configuration.template.GenericController;
 import dz.mdn.iaas.system.security.dto.GroupDTO;
 import dz.mdn.iaas.system.security.service.GroupService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/group")
-@RequiredArgsConstructor
+@RequestMapping("/system/security/group")
 @Slf4j
-@Validated
-public class GroupController {
+public class GroupController extends GenericController<GroupDTO, Long> {
 
     private final GroupService groupService;
 
-    @GetMapping
-    public ResponseEntity<List<GroupDTO>> getAll() {
-        return ResponseEntity.ok(groupService.findAll());
+    public GroupController(GroupService groupService) {
+        super(groupService, "Group");
+        this.groupService = groupService;
     }
 
-    @GetMapping("/{id}")
+    // ========== SECURED CRUD OPERATIONS ==========
+
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:READ')")
     public ResponseEntity<GroupDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(groupService.findById(id));
+        return super.getById(id);
     }
 
-    @PostMapping
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<Page<GroupDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return super.getAll(page, size, sortBy, sortDir);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<List<GroupDTO>> getAll() {
+        return super.getAll();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
     public ResponseEntity<GroupDTO> create(@Valid @RequestBody GroupDTO dto) {
-        return ResponseEntity.ok(groupService.create(dto));
+        return super.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
     public ResponseEntity<GroupDTO> update(@PathVariable Long id, @Valid @RequestBody GroupDTO dto) {
-        return ResponseEntity.ok(groupService.update(id, dto));
+        return super.update(id, dto);
     }
 
-    @DeleteMapping("/{id}")
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        groupService.delete(id);
-        return ResponseEntity.ok().build();
+        return super.delete(id);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<Page<GroupDTO>> search(
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return super.search(q, page, size, sortBy, sortDir);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<Boolean> exists(@PathVariable Long id) {
+        return super.exists(id);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<Long> count() {
+        return super.count();
+    }
+
+    // ========== ROLE MANAGEMENT ==========
+
+    @PostMapping("/{groupId}/roles/{roleId}")
+    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    public ResponseEntity<GroupDTO> assignRole(
+            @PathVariable Long groupId,
+            @PathVariable Long roleId) {
+        log.info("REST request to assign role {} to group {}", roleId, groupId);
+        return ResponseEntity.ok(groupService.assignRole(groupId, roleId));
+    }
+
+    @DeleteMapping("/{groupId}/roles/{roleId}")
+    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    public ResponseEntity<GroupDTO> removeRole(
+            @PathVariable Long groupId,
+            @PathVariable Long roleId) {
+        log.info("REST request to remove role {} from group {}", roleId, groupId);
+        return ResponseEntity.ok(groupService.removeRole(groupId, roleId));
+    }
+
+    // ========== CUSTOM QUERY OPERATIONS ==========
+
+    @GetMapping("/by-name/{name}")
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<GroupDTO> getByName(@PathVariable String name) {
+        log.info("REST request to get Group by name: {}", name);
+        return ResponseEntity.ok(groupService.findByName(name));
+    }
+
+    @GetMapping("/by-role/{roleId}")
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<List<GroupDTO>> getByRole(@PathVariable Long roleId) {
+        log.info("REST request to get Groups by role: {}", roleId);
+        return ResponseEntity.ok(groupService.findByRole(roleId));
+    }
+
+    @GetMapping("/exists/{name}")
+    @PreAuthorize("hasAuthority('GROUP:READ')")
+    public ResponseEntity<Map<String, Boolean>> checkExists(@PathVariable String name) {
+        log.info("REST request to check if Group exists: {}", name);
+        boolean exists = groupService.existsByName(name);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 }

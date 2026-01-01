@@ -4,8 +4,9 @@
  *
  *	@Name		: User
  *	@CreatedOn	: 11-18-2025
+ *	@Updated	: 12-11-2025
  *
- *	@Type		: Class
+ *	@Type		: Entity
  *	@Layer		: Model
  *	@Package	: System / Security
  *
@@ -13,58 +14,37 @@
 
 package dz.mdn.iaas.system.security.model;
 
+import dz.mdn.iaas.configuration.template.GenericModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
 @Setter
 @Getter
 @ToString
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="User")
 @Table(name = "T_00_02_02", uniqueConstraints = { @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = "F_01"),
-        									 	  @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = "F_02")})
-public class User implements UserDetails {
+												  @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = "F_02")})
+public class User extends GenericModel implements UserDetails {
 
-	private static final long serialVersionUID = 6957215815941701487L;
+    private static final long serialVersionUID = 6957215815941701487L;
 
-	@Id
-	@Column(name="F_00")
-  	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(name="F_01", length=20, nullable=false)
+    @Column(name="F_01", length=20, nullable=false)
     private String username;
 
-	@Column(name="F_02", length=100, nullable=false)
+    @Column(name="F_02", length=100, nullable=false)
     private String email;
 
     @NotBlank
@@ -92,19 +72,21 @@ public class User implements UserDetails {
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-			name = "R_T000202_T000203", 
-			joinColumns = @JoinColumn(name = "F_01", foreignKey=@ForeignKey(name="R_T000202_T000203_FK_01")), 
-			inverseJoinColumns = @JoinColumn(name = "F_02", foreignKey=@ForeignKey(name="R_T000202_T000203_FK_02")),
-			uniqueConstraints = @UniqueConstraint(name = "R_T000202_T000203_UK_01", columnNames = {"F_01", "F_02"}))
+        name = "R_T000202_T000203",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000202_T000203_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000202_T000203_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T000202_T000203_UK_01", columnNames = {"F_01", "F_02"})
+    )
     private Set<Role> roles = new HashSet<>();
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-			name = "R_T000202_T000201", 
-			joinColumns = @JoinColumn(name = "F_01", foreignKey=@ForeignKey(name="R_T000202_T000201_FK_01")), 
-			inverseJoinColumns = @JoinColumn(name = "F_02", foreignKey=@ForeignKey(name="R_T000202_T000201_FK_02")),
-			uniqueConstraints = @UniqueConstraint(name = "R_T000202_T000201_UK_01", columnNames = {"F_01", "F_02"}))
+        name = "R_T000202_T000201",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000202_T000201_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000202_T000201_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T000202_T000201_UK_01", columnNames = {"F_01", "F_02"})
+    )
     private Set<Group> groups = new HashSet<>();
 
     @Override

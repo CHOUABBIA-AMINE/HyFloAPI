@@ -25,9 +25,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import dz.mdn.iaas.configuration.annotation.Auditable;
-import dz.mdn.iaas.system.audit.model.AuditLog.AuditStatus;
-import dz.mdn.iaas.system.audit.service.AuditService;
-import dz.mdn.iaas.system.audit.service.AuditService.AuditEventBuilder;
+import dz.mdn.iaas.system.audit.model.Audited.AuditStatus;
+import dz.mdn.iaas.system.audit.service.AuditedService;
+import dz.mdn.iaas.system.audit.service.AuditedService.AuditEventBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuditAspectConfig {
 
-    private final AuditService auditService;
+    private final AuditedService auditedService;
 
     @Around("@annotation(auditable)")
     public Object auditMethod(ProceedingJoinPoint joinPoint, Auditable auditable) throws Throwable {
@@ -93,7 +93,7 @@ public class AuditAspectConfig {
                     .duration(duration)
                     .description(generateDescription(auditable, entityId, AuditStatus.SUCCESS));
             
-            auditService.logAuditEvent(eventBuilder);
+            auditedService.logAuditEvent(eventBuilder);
             
             return result;
             
@@ -108,7 +108,7 @@ public class AuditAspectConfig {
                     .duration(duration)
                     .description(generateDescription(auditable, null, AuditStatus.FAILED));
             
-            auditService.logAuditEvent(eventBuilder);
+            auditedService.logAuditEvent(eventBuilder);
             
             throw e;
         }

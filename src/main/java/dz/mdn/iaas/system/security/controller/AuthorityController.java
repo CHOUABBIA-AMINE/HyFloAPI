@@ -4,6 +4,7 @@
  *
  *	@Name		: AuthorityController
  *	@CreatedOn	: 11-18-2025
+ *	@Updated	: 12-12-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller
@@ -13,57 +14,117 @@
 
 package dz.mdn.iaas.system.security.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import dz.mdn.iaas.configuration.template.GenericController;
 import dz.mdn.iaas.system.security.dto.AuthorityDTO;
 import dz.mdn.iaas.system.security.service.AuthorityService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/authority")
-@RequiredArgsConstructor
+@RequestMapping("/system/security/authority")
 @Slf4j
-@Validated
-public class AuthorityController {
+public class AuthorityController extends GenericController<AuthorityDTO, Long> {
 
     private final AuthorityService authorityService;
 
-    @GetMapping
-    public ResponseEntity<List<AuthorityDTO>> getAll() {
-        return ResponseEntity.ok(authorityService.findAll());
+    public AuthorityController(AuthorityService authorityService) {
+        super(authorityService, "Authority");
+        this.authorityService = authorityService;
     }
 
-    @GetMapping("/{id}")
+    // ========== SECURED CRUD OPERATIONS ==========
+
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
     public ResponseEntity<AuthorityDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(authorityService.findById(id));
+        return super.getById(id);
     }
 
-    @PostMapping
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<Page<AuthorityDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return super.getAll(page, size, sortBy, sortDir);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<List<AuthorityDTO>> getAll() {
+        return super.getAll();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:ADMIN')")
     public ResponseEntity<AuthorityDTO> create(@Valid @RequestBody AuthorityDTO dto) {
-        return ResponseEntity.ok(authorityService.create(dto));
+        return super.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:ADMIN')")
     public ResponseEntity<AuthorityDTO> update(@PathVariable Long id, @Valid @RequestBody AuthorityDTO dto) {
-        return ResponseEntity.ok(authorityService.update(id, dto));
+        return super.update(id, dto);
     }
 
-    @DeleteMapping("/{id}")
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        authorityService.delete(id);
-        return ResponseEntity.ok().build();
+        return super.delete(id);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<Page<AuthorityDTO>> search(
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return super.search(q, page, size, sortBy, sortDir);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<Boolean> exists(@PathVariable Long id) {
+        return super.exists(id);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<Long> count() {
+        return super.count();
+    }
+
+    // ========== CUSTOM QUERY OPERATIONS ==========
+
+    @GetMapping("/by-name/{name}")
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<AuthorityDTO> getByName(@PathVariable String name) {
+        log.info("REST request to get Authority by name: {}", name);
+        return ResponseEntity.ok(authorityService.findByName(name));
+    }
+
+    @GetMapping("/by-type/{type}")
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<List<AuthorityDTO>> getByType(@PathVariable String type) {
+        log.info("REST request to get Authorities by type: {}", type);
+        return ResponseEntity.ok(authorityService.findByType(type));
+    }
+
+    @GetMapping("/exists/{name}")
+    @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    public ResponseEntity<Map<String, Boolean>> checkExists(@PathVariable String name) {
+        log.info("REST request to check if Authority exists: {}", name);
+        boolean exists = authorityService.existsByName(name);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 }

@@ -4,8 +4,9 @@
  *
  *	@Name		: AuthorityDTO
  *	@CreatedOn	: 11-18-2025
+ *	@Updated	: 12-11-2025
  *
- *	@Type		: Class
+ *	@Type		: DTO
  *	@Layer		: DTO
  *	@Package	: System / Security
  *
@@ -13,13 +14,52 @@
 
 package dz.mdn.iaas.system.security.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import dz.mdn.iaas.configuration.template.GenericDTO;
+import dz.mdn.iaas.system.security.model.Authority;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class AuthorityDTO {
-    private Long id;
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class AuthorityDTO extends GenericDTO<Authority> {
+    
     private String name;
     private String description;
+    private String type;
+
+    @Override
+    public Authority toEntity() {
+        Authority entity = Authority.builder()
+                .name(this.name)
+                .description(this.description)
+                .type(this.type)
+                .build();
+        if (getId() != null) {
+            entity.setId(getId());
+        }
+        return entity;
+    }
+
+    @Override
+    public void updateEntity(Authority entity) {
+        if (this.name != null) entity.setName(this.name);
+        if (this.description != null) entity.setDescription(this.description);
+        if (this.type != null) entity.setType(this.type);
+    }
+
+    public static AuthorityDTO fromEntity(Authority entity) {
+        if (entity == null) return null;
+        
+        return AuthorityDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .type(entity.getType())
+                .build();
+    }
 }

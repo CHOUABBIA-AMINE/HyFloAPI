@@ -16,7 +16,6 @@ package dz.mdn.iaas.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -56,7 +55,7 @@ public class WebConfig implements WebMvcConfigurer {
      * Configure CORS settings for API endpoints
      * Reads configuration from application.properties
      */
-    @Override
+    /*@Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOriginPatterns(allowedOrigins.split(","))
@@ -65,7 +64,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .exposedHeaders("Authorization", "Content-Disposition", "X-Total-Count")
                 .allowCredentials(allowCredentials)
                 .maxAge(maxAge);
-    }
+    }*/
 
     /**
      * Configure static resource handlers

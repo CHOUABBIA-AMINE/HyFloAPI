@@ -163,5 +163,20 @@
     "name": "iaas.security.jwt.secret",
     "type": "java.lang.String",
     "description": "A description for 'iaas.security.jwt.secret'"
+  },
+  {
+    "name": "file.upload-dir",
+    "type": "java.lang.String",
+    "description": "A description for 'file.upload-dir'"
+  },
+  {
+    "name": "file.max-size",
+    "type": "java.lang.String",
+    "description": "A description for 'file.max-size'"
+  },
+  {
+    "name": "file.allowed-extensions",
+    "type": "java.lang.String",
+    "description": "A description for 'file.allowed-extensions'"
   }
 ]}

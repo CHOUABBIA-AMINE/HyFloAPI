@@ -1,0 +1,62 @@
+/**
+ *	
+ *	@author		: CHOUABBIA Amine
+ *
+ *	@Name		: EquipmentType
+ *	@CreatedOn	: 06-26-2025
+ *	@Updated	: 12-11-2025
+ *
+ *	@Type		: Class
+ *	@Layer		: Model
+ *	@Package	: Network
+ *
+ **/
+
+package dz.mdn.iaas.network.type.model;
+
+import dz.mdn.iaas.configuration.template.GenericModel;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+/**
+ * EquipmentType Entity - Extends GenericModel
+ * 
+ * Database table: T_20_10
+ * Primary key: F_00 (id) - inherited from GenericModel
+ * 
+ * Fields:
+ * - F_00: id (inherited) - Primary key
+ * - F_01: code - Type code (required)
+ * - F_02: designation - Type designation (required)
+ */
+@Setter
+@Getter
+@ToString
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(name="EquipmentType")
+@Table(name="T_03_01_08", uniqueConstraints = { @UniqueConstraint(name="T_03_01_08_UK_01", columnNames={"F_01"}),
+												@UniqueConstraint(name="T_03_01_08_UK_02", columnNames={"F_04"})})
+public class EquipmentType extends GenericModel {
+
+    @Column(name="F_01", length=20, nullable=false)
+    private String code;
+
+    @Column(name="F_02", length=100, nullable=true)
+    private String designationAr;
+
+    @Column(name="F_03", length=100, nullable=true)
+    private String designationEn;
+
+    @Column(name="F_04", length=100, nullable=false)
+    private String designationFr;
+}

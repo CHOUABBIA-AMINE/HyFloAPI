@@ -7,7 +7,7 @@
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: System / Authentication
+ *	@Package	: System / Auth
  *
  **/
 
@@ -25,6 +25,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,7 +50,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="RefreshToken")
-@Table(name = "T_00_04_01")
+@Table(name = "T_00_04_01", uniqueConstraints = { @UniqueConstraint(name = "T_00_04_01_UK_01", columnNames = "F_03")})
 public class RefreshToken {
 
 	@Id

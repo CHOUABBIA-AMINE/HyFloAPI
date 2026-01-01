@@ -4,6 +4,7 @@
  *
  *	@Name		: PermissionController
  *	@CreatedOn	: 11-18-2025
+ *	@Updated	: 12-12-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller
@@ -13,57 +14,133 @@
 
 package dz.mdn.iaas.system.security.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import dz.mdn.iaas.configuration.template.GenericController;
 import dz.mdn.iaas.system.security.dto.PermissionDTO;
 import dz.mdn.iaas.system.security.service.PermissionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/permission")
-@RequiredArgsConstructor
+@RequestMapping("/system/security/permission")
 @Slf4j
-@Validated
-public class PermissionController {
+public class PermissionController extends GenericController<PermissionDTO, Long> {
 
     private final PermissionService permissionService;
 
-    @GetMapping
-    public ResponseEntity<List<PermissionDTO>> getAll() {
-        return ResponseEntity.ok(permissionService.findAll());
+    public PermissionController(PermissionService permissionService) {
+        super(permissionService, "Permission");
+        this.permissionService = permissionService;
     }
 
-    @GetMapping("/{id}")
+    // ========== SECURED CRUD OPERATIONS ==========
+
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
     public ResponseEntity<PermissionDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(permissionService.findById(id));
+        return super.getById(id);
     }
 
-    @PostMapping
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<Page<PermissionDTO>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return super.getAll(page, size, sortBy, sortDir);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<List<PermissionDTO>> getAll() {
+        return super.getAll();
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:ADMIN')")
     public ResponseEntity<PermissionDTO> create(@Valid @RequestBody PermissionDTO dto) {
-        return ResponseEntity.ok(permissionService.create(dto));
+        return super.create(dto);
     }
 
-    @PutMapping("/{id}")
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:ADMIN')")
     public ResponseEntity<PermissionDTO> update(@PathVariable Long id, @Valid @RequestBody PermissionDTO dto) {
-        return ResponseEntity.ok(permissionService.update(id, dto));
+        return super.update(id, dto);
     }
 
-    @DeleteMapping("/{id}")
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        permissionService.delete(id);
-        return ResponseEntity.ok().build();
+        return super.delete(id);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<Page<PermissionDTO>> search(
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return super.search(q, page, size, sortBy, sortDir);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<Boolean> exists(@PathVariable Long id) {
+        return super.exists(id);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<Long> count() {
+        return super.count();
+    }
+
+    // ========== CUSTOM QUERY OPERATIONS ==========
+
+    @GetMapping("/by-name/{name}")
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<PermissionDTO> getByName(@PathVariable String name) {
+        log.info("REST request to get Permission by name: {}", name);
+        return ResponseEntity.ok(permissionService.findByName(name));
+    }
+
+    @GetMapping("/by-resource/{resource}")
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<List<PermissionDTO>> getByResource(@PathVariable String resource) {
+        log.info("REST request to get Permissions by resource: {}", resource);
+        return ResponseEntity.ok(permissionService.findByResource(resource));
+    }
+
+    @GetMapping("/by-action/{action}")
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<List<PermissionDTO>> getByAction(@PathVariable String action) {
+        log.info("REST request to get Permissions by action: {}", action);
+        return ResponseEntity.ok(permissionService.findByAction(action));
+    }
+
+    @GetMapping("/by-resource-action")
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<List<PermissionDTO>> getByResourceAndAction(
+            @RequestParam String resource,
+            @RequestParam String action) {
+        log.info("REST request to get Permissions by resource: {} and action: {}", resource, action);
+        return ResponseEntity.ok(permissionService.findByResourceAndAction(resource, action));
+    }
+
+    @GetMapping("/exists/{name}")
+    @PreAuthorize("hasAuthority('PERMISSION:READ')")
+    public ResponseEntity<Map<String, Boolean>> checkExists(@PathVariable String name) {
+        log.info("REST request to check if Permission exists: {}", name);
+        boolean exists = permissionService.existsByName(name);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 }

@@ -1,0 +1,72 @@
+/**
+ *	
+ *	@author		: CHOUABBIA Amine
+ *
+ *	@Name		: VendorTypeService
+ *	@CreatedOn	: 12-19-2025
+ *	@Updated	: 12-19-2025
+ *
+ *	@Type		: Service
+ *	@Layer		: Network / Service
+ *	@Package	: Network / Type / Service
+ *
+ **/
+
+package dz.mdn.iaas.network.type.service;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dz.mdn.iaas.configuration.template.GenericService;
+import dz.mdn.iaas.network.type.dto.VendorTypeDTO;
+import dz.mdn.iaas.network.type.model.VendorType;
+import dz.mdn.iaas.network.type.repository.VendorTypeRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
+public class VendorTypeService extends GenericService<VendorType, VendorTypeDTO, Long> {
+
+    private final VendorTypeRepository vendorTypeRepository;
+
+    @Override
+    protected JpaRepository<VendorType, Long> getRepository() {
+        return vendorTypeRepository;
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "VendorType";
+    }
+
+    @Override
+    protected VendorTypeDTO toDTO(VendorType entity) {
+        return VendorTypeDTO.fromEntity(entity);
+    }
+
+    @Override
+    protected VendorType toEntity(VendorTypeDTO dto) {
+        return dto.toEntity();
+    }
+
+    @Override
+    protected void updateEntityFromDTO(VendorType entity, VendorTypeDTO dto) {
+        dto.updateEntity(entity);
+    }
+
+    public Page<VendorTypeDTO> globalSearch(String searchTerm, Pageable pageable) {
+        log.debug("Global search for vendor types with term: {}", searchTerm);
+        
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAll(pageable);
+        }
+        
+        return executeQuery(p -> vendorTypeRepository.searchByAnyField(searchTerm.trim(), p), pageable);
+    }
+}

@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 
 import dz.mdn.iaas.system.security.model.User;
@@ -20,6 +19,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     //@PreAuthorize("hasRole('ADMIN')")
     Page<User> findAll(Pageable page);
     
-    @PreAuthorize("#id == principal.id or hasRole('ADMIN')")
     Optional<User> findById(@Param("id") Long id);
 }
