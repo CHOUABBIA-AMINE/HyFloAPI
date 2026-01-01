@@ -5,14 +5,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.0</version>
+		<version>4.0.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>dz.mdn</groupId>
-	<artifactId>iaas</artifactId>
-	<version>0.0.1</version>
-	<name>raas</name>
-	<description>Infrastructure As A Service</description>
+	<groupId>dz.sh.trc</groupId>
+	<artifactId>hyflo</artifactId>
+	<version>0.1.0</version>
+	<name>HyFfloAPI</name>
+	<description>Hydrocarbon Flow API</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -103,7 +103,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>IAAS-API-${project.version}</finalName>
+		<finalName>${project.name}-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
