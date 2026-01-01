@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
-import dz.sh.trc.hyflo.network.common.dto.RegionDTO;
-import dz.sh.trc.hyflo.network.common.model.Region;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
+import dz.sh.trc.hyflo.system.organization.dto.RegionDTO;
+import dz.sh.trc.hyflo.system.organization.model.Region;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

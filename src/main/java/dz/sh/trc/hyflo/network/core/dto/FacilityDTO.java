@@ -18,14 +18,14 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.common.administration.dto.LocalityDTO;
-import dz.sh.trc.hyflo.common.administration.model.Locality;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.Facility;
+import dz.sh.trc.hyflo.system.localization.dto.LocalityDTO;
+import dz.sh.trc.hyflo.system.localization.model.Locality;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -27,13 +27,13 @@ import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
-import dz.sh.trc.hyflo.network.common.model.Region;
 import dz.sh.trc.hyflo.network.common.repository.OperationalStatusRepository;
 import dz.sh.trc.hyflo.network.common.repository.ProductRepository;
-import dz.sh.trc.hyflo.network.common.repository.RegionRepository;
 import dz.sh.trc.hyflo.network.core.dto.PipelineSystemDTO;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.repository.PipelineSystemRepository;
+import dz.sh.trc.hyflo.system.organization.model.Region;
+import dz.sh.trc.hyflo.system.organization.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

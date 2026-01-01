@@ -20,8 +20,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.common.administration.dto.LocalityDTO;
-import dz.sh.trc.hyflo.common.administration.model.Locality;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
@@ -31,6 +29,8 @@ import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.model.Station;
 import dz.sh.trc.hyflo.network.type.dto.StationTypeDTO;
 import dz.sh.trc.hyflo.network.type.model.StationType;
+import dz.sh.trc.hyflo.system.localization.dto.LocalityDTO;
+import dz.sh.trc.hyflo.system.localization.model.Locality;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
