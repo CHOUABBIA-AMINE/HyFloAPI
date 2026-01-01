@@ -42,9 +42,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByJobId(Long jobId);
     
     List<Employee> findByCountryId(Long countryId);
-    
-    List<Employee> findByMilitaryRankId(Long militaryRankId);
-    
+        
     @Query("SELECT e FROM Employee e WHERE "
             + "LOWER(e.registrationNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(e.lastNameAr) LIKE LOWER(CONCAT('%', :search, '%')) OR "
