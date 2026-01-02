@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.network.core.model;
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
-import dz.sh.trc.hyflo.system.organization.model.Region;
+import dz.sh.trc.hyflo.network.organization.model.Region;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;

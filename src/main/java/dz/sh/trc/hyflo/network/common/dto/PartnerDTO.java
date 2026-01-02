@@ -18,8 +18,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.common.model.Partner;
+import dz.sh.trc.hyflo.network.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.network.type.dto.PartnerTypeDTO;
-import dz.sh.trc.hyflo.system.localization.dto.CountryDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -80,8 +80,8 @@ public class PartnerDTO extends GenericDTO<Partner> {
         }
         
         if (this.countryId != null) {
-            dz.sh.trc.hyflo.system.localization.model.Country country = 
-                new dz.sh.trc.hyflo.system.localization.model.Country();
+            dz.sh.trc.hyflo.network.localization.model.Country country = 
+                new dz.sh.trc.hyflo.network.localization.model.Country();
             country.setId(this.countryId);
             entity.setCountry(country);
         }
@@ -102,8 +102,8 @@ public class PartnerDTO extends GenericDTO<Partner> {
         }
         
         if (this.countryId != null) {
-            dz.sh.trc.hyflo.system.localization.model.Country country = 
-                new dz.sh.trc.hyflo.system.localization.model.Country();
+            dz.sh.trc.hyflo.network.localization.model.Country country = 
+                new dz.sh.trc.hyflo.network.localization.model.Country();
             country.setId(this.countryId);
             entity.setCountry(country);
         }

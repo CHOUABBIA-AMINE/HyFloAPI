@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dz.sh.trc.hyflo.network.common.model.Vendor;
-import dz.sh.trc.hyflo.system.localization.model.Locality;
+import dz.sh.trc.hyflo.network.localization.model.Locality;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

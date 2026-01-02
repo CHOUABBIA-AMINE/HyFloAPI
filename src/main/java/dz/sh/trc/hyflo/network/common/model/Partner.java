@@ -16,8 +16,8 @@
 package dz.sh.trc.hyflo.network.common.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.network.localization.model.Country;
 import dz.sh.trc.hyflo.network.type.model.PartnerType;
-import dz.sh.trc.hyflo.system.localization.model.Country;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
