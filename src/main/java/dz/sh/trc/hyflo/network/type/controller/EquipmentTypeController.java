@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: EquipmentTypeController
- *	@CreatedOn	: 12-11-2025
- *	@Updated	: 12-12-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@Updated	: 12-19-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller
- *	@Package	: Network / Type 
+ *	@Package	: Network / Type
  *
  **/
 

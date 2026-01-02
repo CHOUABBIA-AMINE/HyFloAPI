@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: StructureTypeController
- *	@CreatedOn	: 10-14-2025
- *	@Updated	: 12-12-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@Updated	: 12-19-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller
- *	@Package	: Common / Administration
+ *	@Package	: Network / Type
  *
  **/
 

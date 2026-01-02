@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: StructureTypeRepository
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@Updated	: 12-19-2025
  *
- *	@Type		: Repository
- *	@Layer		: Common / Administration
- *	@Package	: Common / Administration / Repository
+ *	@Type		: Interface
+ *	@Layer		: Repository
+ *	@Package	: Network / Type
  *
  **/
 

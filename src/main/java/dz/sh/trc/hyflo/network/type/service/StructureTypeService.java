@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: StructureTypeService
- *	@CreatedOn	: 10-14-2025
- *	@Updated	: 12-11-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@Updated	: 12-19-2025
  *
- *	@Type		: Service
- *	@Layer		: Common / Administration
- *	@Package	: Common / Administration / Service
+ *	@Type		: Class
+ *	@Layer		: Service
+ *	@Package	: Network / Type
  *
  **/
 

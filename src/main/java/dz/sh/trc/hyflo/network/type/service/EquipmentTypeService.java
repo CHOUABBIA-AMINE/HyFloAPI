@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: EquipmentTypeService
- *	@CreatedOn	: 12-11-2025
- *	@Updated	: 12-11-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@Updated	: 12-19-2025
  *
  *	@Type		: Class
  *	@Layer		: Service

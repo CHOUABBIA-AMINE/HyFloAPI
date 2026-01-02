@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: TerminalType
  *	@CreatedOn	: 06-26-2025
@@ -8,7 +8,7 @@
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Type
  *
  **/
 
@@ -24,17 +24,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * FacilityType Entity - Extends GenericModel
- * 
- * Database table: T_03_02_01
- * Primary key: F_00 (id) - inherited from GenericModel
- * 
- * Fields:
- * - F_00: id (inherited) - Primary key
- * - F_01: code - Type code (required)
- * - F_02: designation - Type designation (required)
- */
 @Setter
 @Getter
 @ToString

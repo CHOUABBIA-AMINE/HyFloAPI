@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: VendorType
  *	@CreatedOn	: 06-26-2025
@@ -8,7 +8,7 @@
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Type
  *
  **/
 

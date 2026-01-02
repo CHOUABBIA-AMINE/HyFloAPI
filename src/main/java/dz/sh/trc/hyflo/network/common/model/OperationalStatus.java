@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: OperationalStatus
  *	@CreatedOn	: 06-26-2025

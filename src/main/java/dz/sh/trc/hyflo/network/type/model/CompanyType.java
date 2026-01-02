@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: CompanyType
  *	@CreatedOn	: 06-26-2025
@@ -8,7 +8,7 @@
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Type
  *
  **/
 
@@ -48,4 +48,5 @@ public class CompanyType extends GenericModel {
 
     @Column(name="F_03", length=100, nullable=false)
     private String designationFr;
+    
 }

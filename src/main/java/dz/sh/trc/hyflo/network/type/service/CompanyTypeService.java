@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: CompanyTypeService
- *	@CreatedOn	: 12-19-2025
+ *	@CreatedOn	: 06-26-2025
  *	@Updated	: 12-19-2025
  *
- *	@Type		: Service
- *	@Layer		: Network / Service
- *	@Package	: Network / Type / Service
+ *	@Type		: Class
+ *	@Layer		: Service
+ *	@Package	: Network / Type
  *
  **/
 

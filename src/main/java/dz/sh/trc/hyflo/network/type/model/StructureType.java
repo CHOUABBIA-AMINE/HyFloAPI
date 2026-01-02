@@ -1,12 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
+ *
  *	@Name		: StructureType
  *	@CreatedOn	: 06-26-2025
  *	@Updated	: 12-11-2025
- *	@Type		: Model
- *	@Layer		: Common / Administration
- *	@Package	: Common / Administration / Model
+ *
+ *	@Type		: Class
+ *	@Layer		: Model
+ *	@Package	: Network / Type
  *
  **/
 
@@ -24,10 +26,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * StructureType Entity - Extends GenericModel
- * Represents types of organizational structures with multilingual designations
- */
 @Setter
 @Getter
 @ToString

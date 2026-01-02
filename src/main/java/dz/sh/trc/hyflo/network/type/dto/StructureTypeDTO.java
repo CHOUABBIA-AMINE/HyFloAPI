@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: StructureTypeDTO
- *	@CreatedOn	: 10-14-2025
+ *	@CreatedOn	: 06-26-2025
  *	@Updated	: 12-11-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
- *	@Package	: Common / Administration
+ *	@Package	: Network / Type
  *
  **/
 
@@ -26,10 +26,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * StructureType Data Transfer Object
- * Extends GenericDTO for automatic entity conversion
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

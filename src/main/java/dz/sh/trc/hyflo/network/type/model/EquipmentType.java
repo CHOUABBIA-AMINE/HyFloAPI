@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB ABIR
  *
  *	@Name		: EquipmentType
  *	@CreatedOn	: 06-26-2025
@@ -8,7 +8,7 @@
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Type
  *
  **/
 
@@ -26,17 +26,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * EquipmentType Entity - Extends GenericModel
- * 
- * Database table: T_20_10
- * Primary key: F_00 (id) - inherited from GenericModel
- * 
- * Fields:
- * - F_00: id (inherited) - Primary key
- * - F_01: code - Type code (required)
- * - F_02: designation - Type designation (required)
- */
 @Setter
 @Getter
 @ToString
@@ -59,4 +48,5 @@ public class EquipmentType extends GenericModel {
 
     @Column(name="F_04", length=100, nullable=false)
     private String designationFr;
+    
 }
