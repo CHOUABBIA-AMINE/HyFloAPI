@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: PipelineDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-19-2025
+ *	@UpdatedOn	: 01-02-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
+import dz.sh.trc.hyflo.general.organization.model.Region;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
@@ -38,29 +40,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Pipeline Data Transfer Object - Extends GenericDTO
- * Inherits Infrastructure fields (code, name, installationDate, commissioningDate, decommissioningDate, operationalStatus)
- * 
- * Pipeline specific fields:
- * - nominalDiameter (F_07) - required, positive
- * - length (F_08) - required, positive
- * - nominalThikness (F_09) - required, positive
- * - nominalRoughness (F_10) - required, positive
- * - designMaxServicePressure (F_11) - required, positive
- * - realMaxServicePressure (F_12) - required, positive
- * - designMinServicePressure (F_13) - required, positive
- * - realMinServicePressure (F_14) - required, positive
- * - designCapacity (F_15) - required, positive
- * - realCapacity (F_16) - required, positive
- * - nominalConstructionMaterialId (F_17) - Alloy relationship, required
- * - nominalExteriorCoatingId (F_18) - Alloy relationship, required
- * - nominalInteriorCoatingId (F_19) - Alloy relationship, required
- * - vendorId (F_20) - Vendor relationship, required
- * - pipelineSystemId (F_21) - PipelineSystem relationship, required
- * - departureFacilityId (F_22) - Facility relationship, required
- * - arrivalFacilityId (F_23) - Facility relationship, required
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -126,6 +105,9 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
+    @NotNull(message = "Region is required")
+    private Long regionId;
+
     @NotNull(message = "Nominal construction material ID is required")
     private Long nominalConstructionMaterialId;
 
@@ -148,12 +130,21 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private Long arrivalFacilityId;
     
     private OperationalStatusDTO operationalStatus;
+    
+    private RegionDTO region;
+    
     private AlloyDTO nominalConstructionMaterial;
+    
     private AlloyDTO nominalExteriorCoating;
+    
     private AlloyDTO nominalInteriorCoating;
+    
     private VendorDTO vendor;
+    
     private PipelineSystemDTO pipelineSystem;
+    
     private FacilityDTO departureFacility;
+    
     private FacilityDTO arrivalFacility;
 
     @Override
@@ -180,6 +171,12 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
             entity.setOperationalStatus(status);
+        }
+        
+        if (this.regionId != null) {
+        	Region region = new Region();
+        	region.setId(this.regionId);
+        	entity.setRegion(region);
         }
         
         if (this.nominalConstructionMaterialId != null) {
@@ -252,6 +249,12 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setOperationalStatus(status);
         }
         
+        if (this.regionId != null) {
+        	Region region = new Region();
+        	region.setId(this.regionId);
+        	entity.setRegion(region);
+        }
+        
         if (this.nominalConstructionMaterialId != null) {
             Alloy material = new Alloy();
             material.setId(this.nominalConstructionMaterialId);
@@ -316,6 +319,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .designCapacity(entity.getDesignCapacity())
                 .operationalCapacity(entity.getOperationalCapacity())
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
+                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
                 .nominalConstructionMaterialId(entity.getNominalConstructionMaterial() != null ? entity.getNominalConstructionMaterial().getId() : null)
                 .nominalExteriorCoatingId(entity.getNominalExteriorCoating() != null ? entity.getNominalExteriorCoating().getId() : null)
                 .nominalInteriorCoatingId(entity.getNominalInteriorCoating() != null ? entity.getNominalInteriorCoating().getId() : null)
@@ -325,6 +329,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .arrivalFacilityId(entity.getArrivalFacility() != null ? entity.getArrivalFacility().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
+                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
                 .nominalConstructionMaterial(entity.getNominalConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getNominalConstructionMaterial()) : null)
                 .nominalExteriorCoating(entity.getNominalExteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalExteriorCoating()) : null)
                 .nominalInteriorCoating(entity.getNominalInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalInteriorCoating()) : null)

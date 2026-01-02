@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: InfrastructureDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-19-2025
+ *	@UpdatedOn	: 01-02-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -22,6 +22,7 @@ import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
 import dz.sh.trc.hyflo.general.organization.model.Region;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
+import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,20 +33,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Infrastructure Data Transfer Object - Extends GenericDTO
- * Base infrastructure class with operational status tracking
- * This is the base class for Facility hierarchy
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - code (F_01) - unique, required identifier
- * - name (F_02) - required
- * - installationDate (F_03) - optional
- * - commissioningDate (F_04) - optional
- * - decommissioningDate (F_05) - optional
- * - operationalStatusId (F_06) - required foreign key
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -75,6 +62,7 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
     private Long regionId;
     
     private OperationalStatusDTO operationalStatus;
+    
     private RegionDTO region;
 
     @Override
@@ -88,8 +76,7 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
         entity.setDecommissioningDate(this.decommissioningDate);
         
         if (this.operationalStatusId != null) {
-            dz.sh.trc.hyflo.network.common.model.OperationalStatus status = 
-                new dz.sh.trc.hyflo.network.common.model.OperationalStatus();
+            OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
             entity.setOperationalStatus(status);
         }
@@ -112,8 +99,7 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
         if (this.decommissioningDate != null) entity.setDecommissioningDate(this.decommissioningDate);
         
         if (this.operationalStatusId != null) {
-            dz.sh.trc.hyflo.network.common.model.OperationalStatus status = 
-                new dz.sh.trc.hyflo.network.common.model.OperationalStatus();
+            OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
             entity.setOperationalStatus(status);
         }

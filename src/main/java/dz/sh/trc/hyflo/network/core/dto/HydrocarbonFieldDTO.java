@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: HydrocarbonFieldDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-19-2025
+ *	@UpdatedOn	: 01-02-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
+import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
+import dz.sh.trc.hyflo.general.organization.model.Region;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
@@ -40,19 +42,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * HydrocarbonField Data Transfer Object - Extends GenericDTO
- * Maps HydrocarbonField entity which extends Facility which extends Infrastructure
- * 
- * Inherited from Infrastructure:
- * - code, name, installationDate, commissioningDate, decommissioningDate, operationalStatusId
- * 
- * Inherited from Facility:
- * - vendor, location (vendorId, locationId)
- * 
- * HydrocarbonField specific:
- * - stationType, pipelines
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -71,7 +60,9 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
     private String name;
 
     private LocalDate installationDate;
+    
     private LocalDate commissioningDate;
+    
     private LocalDate decommissioningDate;
     
     @NotBlank(message = "Place name is required")
@@ -90,6 +81,9 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
+    @NotNull(message = "Region is required")
+    private Long regionId;
+
     @NotNull(message = "provider is required")
     private Long vendorId;
 
@@ -100,8 +94,13 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
     private Long hydrocarbonFieldTypeId;
     
     private OperationalStatusDTO operationalStatus;
+    
+    private RegionDTO region;
+    
     private VendorDTO vendor;
+    
     private LocalityDTO locality;
+    
     private HydrocarbonFieldTypeDTO hydrocarbonFieldType;
 
     @Builder.Default
@@ -131,6 +130,12 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
             OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
             entity.setOperationalStatus(status);
+        }
+        
+        if (this.regionId != null) {
+        	Region region = new Region();
+        	region.setId(this.regionId);
+        	entity.setRegion(region);
         }
         
         if (this.vendorId != null) {
@@ -170,6 +175,12 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
             OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
             entity.setOperationalStatus(status);
+        }
+        
+        if (this.regionId != null) {
+        	Region region = new Region();
+        	region.setId(this.regionId);
+        	entity.setRegion(region);
         }
         
         if (this.vendorId != null) {
@@ -222,6 +233,7 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
                 .elevation(entity.getElevation())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
+                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
                 .hydrocarbonFieldTypeId(entity.getHydrocarbonFieldType() != null ? entity.getHydrocarbonFieldType().getId() : null)
@@ -230,6 +242,7 @@ public class HydrocarbonFieldDTO extends GenericDTO<HydrocarbonField> {
                 .productIds(productIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
+                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
                 .hydrocarbonFieldType(entity.getHydrocarbonFieldType() != null ? HydrocarbonFieldTypeDTO.fromEntity(entity.getHydrocarbonFieldType()) : null)

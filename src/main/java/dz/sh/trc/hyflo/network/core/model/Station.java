@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: Station
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Core
  *
  **/
 
@@ -34,20 +34,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Facility Entity - Extends GenericModel
- * 
- * Database table: T_03_03_03
- * Primary key: F_00 (id) - inherited from GenericModel
- * 
- * Fields:
- * - F_00: id (inherited) - Primary key
- * - F_01: name - Facility name (required)
- * - F_02: code - Facility code (unique, required)
- * - F_03: operationalStatus - Operational status relationship (required)
- * - F_04: location - Location relationship (required)
- * - F_05: facilityType - Facility type relationship (required)
- */
 @Setter
 @Getter
 @ToString
@@ -55,23 +41,23 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Station")
-@Table(name="T_03_03_03")
+@Table(name="T_02_03_03")
 public class Station extends Facility {
 
     @ManyToOne
-    @JoinColumn(name="F_13", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_03_FK_01"), nullable=false)
+    @JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_01"), nullable=false)
     private StationType stationType;
 
     @ManyToOne
-    @JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_03_FK_02"), nullable=true)
+    @JoinColumn(name="F_15", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_02"), nullable=true)
     private PipelineSystem pipelineSystem;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "R_T030303_T030307",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T030303_T030307_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T030303_T030307_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T030303_T030307_UK_01", columnNames = {"F_01", "F_02"})
+        name = "R_T020303_T020307",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020303_T020307_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020303_T020307_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020303_T020307_UK_01", columnNames = {"F_01", "F_02"})
     )
     private Set<Pipeline> pipelines = new HashSet<>();
     

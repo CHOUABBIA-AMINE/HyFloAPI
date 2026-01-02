@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSystem
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Core
  *
  **/
 
@@ -32,20 +32,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * PipelineSystem Entity - Extends GenericModel
- * 
- * Database table: T_03_02_05
- * Primary key: F_00 (id) - inherited from GenericModel
- * 
- * Fields:
- * - F_00: id (inherited) - Primary key
- * - F_01: code - System code (unique, required)
- * - F_02: designationAr - Arabic designation (required)
- * - F_03: designationEn - English designation (required)
- * - F_04: designationFr - French designation (required)
- * - F_05: product - Product relationship (required)
- */
 @Setter
 @Getter
 @ToString
@@ -53,7 +39,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="PipelineSystem")
-@Table(name="T_03_03_06", uniqueConstraints = { @UniqueConstraint(name="T_03_03_06_UK_01", columnNames={"F_01"}) })
+@Table(name="T_02_03_06", uniqueConstraints = { @UniqueConstraint(name="T_02_03_06_UK_01", columnNames={"F_01"}) })
 public class PipelineSystem extends GenericModel {
 
     @Column(name="F_01", length=50, nullable=false)
@@ -63,14 +49,14 @@ public class PipelineSystem extends GenericModel {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_01"), nullable=false)
+    @JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_01"), nullable=false)
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_02"), nullable=false)
+    @JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_02"), nullable=false)
     private OperationalStatus operationalStatus;
 
     @ManyToOne
-    @JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_03"), nullable=false)
+    @JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_03"), nullable=false)
     private Region region;
 }

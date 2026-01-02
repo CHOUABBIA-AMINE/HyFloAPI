@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSystemDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -33,17 +33,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * PipelineSystem Data Transfer Object - Extends GenericDTO
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - code (F_01) - unique, required
- * - designationAr (F_02) - required
- * - designationEn (F_03) - required
- * - designationFr (F_04) - required
- * - productId (F_05) - required
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: EquipmentDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -20,7 +20,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
+import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
+import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.Equipment;
 import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.type.dto.EquipmentTypeDTO;
@@ -34,23 +36,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Equipment Data Transfer Object - Extends GenericDTO
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - name (F_01) - required
- * - code (F_02) - required
- * - manufacturer (F_03) - required
- * - modelNumber (F_04) - required
- * - serialNumber (F_05) - required
- * - manufacturingDate (F_06) - required
- * - installationDate (F_07) - required
- * - lastMaintenanceDate (F_08) - required
- * - operationalStatusId (F_09) - required
- * - equipmentTypeId (F_10) - required
- * - facilityId (F_11) - required
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -66,10 +51,6 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
     @NotBlank(message = "Code is required")
     @Size(max = 50, message = "Code must not exceed 50 characters")
     private String code;
-
-    @NotBlank(message = "Manufacturer is required")
-    @Size(max = 100, message = "Manufacturer must not exceed 100 characters")
-    private String manufacturer;
 
     @NotBlank(message = "Model number is required")
     @Size(max = 50, message = "Model number must not exceed 50 characters")
@@ -97,10 +78,16 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
     @NotNull(message = "Facility is required")
     private Long facilityId;
 
-    // Nested DTOs
+    @NotNull(message = "Vendor is required")
+    private Long manufacturerId;
+
     private OperationalStatusDTO operationalStatus;
+    
     private EquipmentTypeDTO equipmentType;
+    
     private FacilityDTO facility;
+    
+    private VendorDTO manufacturer;
 
     @Override
     public Equipment toEntity() {
@@ -108,7 +95,6 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
         entity.setId(getId());
         entity.setName(this.name);
         entity.setCode(this.code);
-        entity.setManufacturer(this.manufacturer);
         entity.setModelNumber(this.modelNumber);
         entity.setSerialNumber(this.serialNumber);
         entity.setManufacturingDate(this.manufacturingDate);
@@ -133,6 +119,12 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
             entity.setFacility(facility);
         }
         
+        if (this.manufacturerId != null) {
+            Vendor manufacturer = new Vendor();
+            manufacturer.setId(this.manufacturerId);
+            entity.setManufacturer(manufacturer);
+        }
+        
         return entity;
     }
 
@@ -140,7 +132,6 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
     public void updateEntity(Equipment entity) {
         if (this.name != null) entity.setName(this.name);
         if (this.code != null) entity.setCode(this.code);
-        if (this.manufacturer != null) entity.setManufacturer(this.manufacturer);
         if (this.modelNumber != null) entity.setModelNumber(this.modelNumber);
         if (this.serialNumber != null) entity.setSerialNumber(this.serialNumber);
         if (this.manufacturingDate != null) entity.setManufacturingDate(this.manufacturingDate);
@@ -164,6 +155,12 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
             facility.setId(this.facilityId);
             entity.setFacility(facility);
         }
+        
+        if (this.manufacturerId != null) {
+            Vendor manufacturer = new Vendor();
+            manufacturer.setId(this.manufacturerId);
+            entity.setManufacturer(manufacturer);
+        }
     }
 
     public static EquipmentDTO fromEntity(Equipment entity) {
@@ -173,7 +170,6 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
                 .id(entity.getId())
                 .name(entity.getName())
                 .code(entity.getCode())
-                .manufacturer(entity.getManufacturer())
                 .modelNumber(entity.getModelNumber())
                 .serialNumber(entity.getSerialNumber())
                 .manufacturingDate(entity.getManufacturingDate())
@@ -186,6 +182,7 @@ public class EquipmentDTO extends GenericDTO<Equipment> {
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .equipmentType(entity.getEquipmentType() != null ? EquipmentTypeDTO.fromEntity(entity.getEquipmentType()) : null)
                 .facility(entity.getFacility() != null ? FacilityDTO.fromEntity(entity.getFacility()) : null)
+                .manufacturer(entity.getManufacturer() != null ? VendorDTO.fromEntity(entity.getManufacturer()) : null)
                 .build();
     }
 }

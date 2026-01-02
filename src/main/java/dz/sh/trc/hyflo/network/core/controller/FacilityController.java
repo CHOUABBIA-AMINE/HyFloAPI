@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: FacilityController
- *	@CreatedOn	: 12-11-2025
- *	@UpdatedOn	: 12-12-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Controller
- *	@Package	: Network / Common 
+ *	@Package	: Network / Core
  *
  **/
 

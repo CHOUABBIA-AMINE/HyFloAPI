@@ -1,13 +1,13 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: HydrocarbonFieldRepository
- *	@CreatedOn	: 12-19-2025
- *	@UpdatedOn	: 12-19-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Repository
- *	@Layer		: Network / Repository
+ *	@Type		: Interface
+ *	@Layer		: Repository
  *	@Package	: Network / Core
  *
  **/

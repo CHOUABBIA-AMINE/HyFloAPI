@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: FacilityDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
+import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
+import dz.sh.trc.hyflo.general.organization.model.Region;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
@@ -35,17 +37,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Facility Data Transfer Object - Extends GenericDTO
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - name (F_01) - required
- * - code (F_02) - unique, required
- * - operationalStatusId (F_03) - required
- * - locationId (F_04) - required
- * - facilityTypeId (F_05) - required
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -84,15 +75,21 @@ public class FacilityDTO extends GenericDTO<Facility> {
     @NotNull(message = "Operational status is required")
     private Long operationalStatusId;
 
+    @NotNull(message = "Region is required")
+    private Long regionId;
+
     @NotNull(message = "provider is required")
     private Long vendorId;
 
     @NotNull(message = "Locality is required")
     private Long localityId;
 
-    // Nested DTOs for read operations
     private OperationalStatusDTO operationalStatus;
+    
+    private RegionDTO region;
+    
     private VendorDTO vendor;
+    
     private LocalityDTO locality;
 
     @Override
@@ -113,6 +110,12 @@ public class FacilityDTO extends GenericDTO<Facility> {
             OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
             entity.setOperationalStatus(status);
+        }
+        
+        if (this.regionId != null) {
+        	Region region = new Region();
+        	region.setId(this.regionId);
+        	entity.setRegion(region);
         }
         
         if (this.vendorId != null) {
@@ -148,6 +151,12 @@ public class FacilityDTO extends GenericDTO<Facility> {
             entity.setOperationalStatus(status);
         }
         
+        if (this.regionId != null) {
+        	Region region = new Region();
+        	region.setId(this.regionId);
+        	entity.setRegion(region);
+        }
+        
         if (this.vendorId != null) {
         	Vendor vendor = new Vendor();
         	vendor.setId(this.vendorId);
@@ -177,10 +186,12 @@ public class FacilityDTO extends GenericDTO<Facility> {
                 .elevation(entity.getElevation())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
+                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
+                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
                 .build();

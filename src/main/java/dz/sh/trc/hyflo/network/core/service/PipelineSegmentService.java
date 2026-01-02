@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSegmentService
- *	@CreatedOn	: 12-11-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Service
- *	@Layer		: Network / Service
- *	@Package	: Network / Service
+ *	@Type		: Class
+ *	@Layer		: Service
+ *	@Package	: Network / Core
  *
  **/
 
