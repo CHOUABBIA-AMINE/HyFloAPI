@@ -1,9 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: ResetPasswordRequest
- *	@CreatedOn	: 12-08-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-11-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO

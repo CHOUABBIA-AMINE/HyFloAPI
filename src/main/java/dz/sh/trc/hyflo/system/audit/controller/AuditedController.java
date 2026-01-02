@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: AuditedController
- *	@CreatedOn	: 10-27-2025
- *	@Updated	: 12-19-2025 (Extended GenericController, added PreAuthorize)
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller

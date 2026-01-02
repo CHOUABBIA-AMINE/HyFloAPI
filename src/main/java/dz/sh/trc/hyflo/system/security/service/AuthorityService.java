@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: AuthorityService
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
  *	@Updated	: 12-11-2025
  *
- *	@Type		: Service
+ *	@Type		: Class
  *	@Layer		: Service
  *	@Package	: System / Security
  *

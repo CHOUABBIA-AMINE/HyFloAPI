@@ -1,3 +1,17 @@
+/**
+ *	
+ *	@author		: MEDJERAB Abir
+ *
+ *	@Name		: UserRepository
+ *	@CreatedOn	: 06-26-2025
+ *	@Updated	: 12-12-2025
+ *
+ *	@Type		: Interface
+ *	@Layer		: Repository
+ *	@Package	: System / Security
+ *
+ **/
+
 package dz.sh.trc.hyflo.system.security.repository;
 
 import java.util.Optional;

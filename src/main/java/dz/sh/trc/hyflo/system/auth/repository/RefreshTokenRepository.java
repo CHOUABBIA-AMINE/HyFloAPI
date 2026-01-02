@@ -1,11 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: RefreshTokenRepository
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
- *	@Type		: Class
+ *	@Type		: Interface
  *	@Layer		: Repository
  *	@Package	: System / Authentication
  *

@@ -1,9 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: TokenRefreshResponse
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO

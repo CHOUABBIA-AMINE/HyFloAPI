@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: AuditedRepository
- *	@CreatedOn	: 10-27-2025
- *	@Updated	: 12-19-2025 (Minimized custom queries)
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
  *	@Type		: Interface
  *	@Layer		: Repository

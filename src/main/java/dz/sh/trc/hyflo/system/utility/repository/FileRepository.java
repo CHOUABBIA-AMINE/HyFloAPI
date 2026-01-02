@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: FileRepository
  *	@CreatedOn	: 06-26-2023
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
- *	@Type		: Repository
+ *	@Type		: Interface
  *	@Layer		: Repository
  *	@Package	: System / Utility
  *

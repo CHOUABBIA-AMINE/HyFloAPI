@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: File
  *	@CreatedOn	: 06-26-2023
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
- *	@Type		: Entity
+ *	@Type		: Class
  *	@Layer		: Model
  *	@Package	: System / Utility
  *

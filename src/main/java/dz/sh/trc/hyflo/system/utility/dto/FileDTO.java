@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: FileDTO
- *	@CreatedOn	: 10-14-2025
- *	@Updated	: 12-11-2025
+ *	@CreatedOn	: 06-26-2023
+ *	@UpdatedOn	: 12-11-2025
  *
- *	@Type		: Data Transfer Object
- *	@Layer		: System / Utility / DTO
- *	@Package	: System / Utility / DTO
+ *	@Type		: Class
+ *	@Layer		: DTO
+ *	@Package	: System / Utility
  *
  **/
 

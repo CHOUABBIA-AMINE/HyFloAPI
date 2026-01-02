@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: FileService
  *	@CreatedOn	: 06-26-2023
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
- *	@Type		: Service
+ *	@Type		: Class
  *	@Layer		: Service
  *	@Package	: System / Utility
  *

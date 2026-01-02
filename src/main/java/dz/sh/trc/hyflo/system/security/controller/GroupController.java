@@ -1,9 +1,9 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: GroupController
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
  *	@Updated	: 12-12-2025
  *
  *	@Type		: Class

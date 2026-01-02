@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: PermissionRepository
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
  *	@Updated	: 12-12-2025
  *
- *	@Type		: Repository
+ *	@Type		: Interface
  *	@Layer		: Repository
  *	@Package	: System / Security
  *

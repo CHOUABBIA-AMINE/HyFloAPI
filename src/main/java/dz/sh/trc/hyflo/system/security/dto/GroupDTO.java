@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@author		: MEDJERAB Abir
  *
  *	@Name		: GroupDTO
- *	@CreatedOn	: 11-18-2025
- *	@Updated	: 12-11-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-11-2025
  *
- *	@Type		: DTO
+ *	@Type		: Class
  *	@Layer		: DTO
  *	@Package	: System / Security
  *
