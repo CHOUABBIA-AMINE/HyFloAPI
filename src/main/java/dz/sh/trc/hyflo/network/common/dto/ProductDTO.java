@@ -4,7 +4,7 @@
  *
  *	@Name		: ProductDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -27,20 +27,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Product Data Transfer Object - Extends GenericDTO
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - name (F_01) - required
- * - code (F_02) - unique, required
- * - density (F_03) - required
- * - viscosity (F_04) - required
- * - flashPoint (F_05) - required
- * - sulfurContent (F_06) - required
- * - isHazardous (F_07) - required
- * - description (F_08) - required
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

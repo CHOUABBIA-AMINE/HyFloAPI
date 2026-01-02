@@ -4,7 +4,7 @@
  *
  *	@Name		: JwtAuthenticationEntryPoint
  *	@CreatedOn	: 11-18-2025
- *	@Updated	: 12-06-2025 (Fixed ObjectMapper issue)
+ *	@UpdatedOn	: 12-06-2025 (Fixed ObjectMapper issue)
  *
  *	@Type		: Class
  *	@Layer		: jwt

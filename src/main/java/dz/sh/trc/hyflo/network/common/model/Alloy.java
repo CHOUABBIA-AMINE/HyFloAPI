@@ -1,29 +1,23 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: Alloy
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Common
  *
  **/
 
 
 package dz.sh.trc.hyflo.network.common.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -40,11 +34,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Alloy")
-@Table(name="T_03_02_06", uniqueConstraints = { @UniqueConstraint(name="T_03_02_06_UK_01", columnNames = "F_01"),
-												@UniqueConstraint(name="T_03_02_06_UK_02", columnNames = "F_04")})
+@Table(name="T_02_02_03", uniqueConstraints = { @UniqueConstraint(name="T_02_02_03_UK_01", columnNames = "F_01"),
+												@UniqueConstraint(name="T_02_02_03_UK_02", columnNames = "F_04")})
 public class Alloy extends GenericModel {
 
-	@Column(name = "F_01", nullable = false, unique = true, length = 20)
+	@Column(name="F_01", length=20, nullable=false)
     private String code;
 
     @Column(name="F_02", length=100)
@@ -65,13 +59,13 @@ public class Alloy extends GenericModel {
     @Column(name="F_07", length=200)
     private String descriptionFr;
 
-    @OneToMany(mappedBy = "constructionMaterial", cascade = CascadeType.ALL)
+    /*@OneToMany(mappedBy = "constructionMaterial", cascade = CascadeType.ALL)
     private Set<PipelineSegment> pipelineSegments = new HashSet<>();
 
     @OneToMany(mappedBy = "interiorCoating", cascade = CascadeType.ALL)
     private Set<PipelineSegment> segmentsInnerCaoted = new HashSet<>();
 
     @OneToMany(mappedBy = "exteriorCoating", cascade = CascadeType.ALL)
-    private Set<PipelineSegment> segmentsOuterCaoted = new HashSet<>();
+    private Set<PipelineSegment> segmentsOuterCaoted = new HashSet<>();*/
     
 }

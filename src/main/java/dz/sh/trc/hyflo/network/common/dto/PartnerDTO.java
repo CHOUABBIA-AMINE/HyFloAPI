@@ -4,7 +4,7 @@
  *
  *	@Name		: PartnerDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-19-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -17,9 +17,11 @@ package dz.sh.trc.hyflo.network.common.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
+import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.network.common.model.Partner;
-import dz.sh.trc.hyflo.network.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.network.type.dto.PartnerTypeDTO;
+import dz.sh.trc.hyflo.network.type.model.PartnerType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -29,17 +31,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Partner Data Transfer Object - Extends GenericDTO
- * Maps Partner entity extending GenericModel
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - name (F_01) - optional name
- * - shortName (F_02) - unique, required identifier
- * - partnerTypeId (F_03) - required foreign key to PartnerType
- * - countryId (F_04) - required foreign key to Country
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -73,15 +64,13 @@ public class PartnerDTO extends GenericDTO<Partner> {
         entity.setShortName(this.shortName);
         
         if (this.partnerTypeId != null) {
-            dz.sh.trc.hyflo.network.type.model.PartnerType type = 
-                new dz.sh.trc.hyflo.network.type.model.PartnerType();
+            PartnerType type = new PartnerType();
             type.setId(this.partnerTypeId);
             entity.setPartnerType(type);
         }
         
         if (this.countryId != null) {
-            dz.sh.trc.hyflo.network.localization.model.Country country = 
-                new dz.sh.trc.hyflo.network.localization.model.Country();
+            Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
         }
@@ -95,15 +84,13 @@ public class PartnerDTO extends GenericDTO<Partner> {
         if (this.shortName != null) entity.setShortName(this.shortName);
         
         if (this.partnerTypeId != null) {
-            dz.sh.trc.hyflo.network.type.model.PartnerType type = 
-                new dz.sh.trc.hyflo.network.type.model.PartnerType();
+            PartnerType type = new PartnerType();
             type.setId(this.partnerTypeId);
             entity.setPartnerType(type);
         }
         
         if (this.countryId != null) {
-            dz.sh.trc.hyflo.network.localization.model.Country country = 
-                new dz.sh.trc.hyflo.network.localization.model.Country();
+            Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
         }

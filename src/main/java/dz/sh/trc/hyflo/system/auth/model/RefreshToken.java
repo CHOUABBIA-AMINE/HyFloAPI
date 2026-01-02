@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: RefreshToken
  *	@CreatedOn	: 06-26-2025
@@ -40,7 +40,7 @@ import lombok.ToString;
  * Stores refresh tokens in the database for token rotation and invalidation.
  * Each refresh token is associated with a user and has an expiration date.
  * 
- * @author RAAS Security Team
+ * @Author RAAS Security Team
  * @version 1.0
  */
 

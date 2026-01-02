@@ -3,12 +3,12 @@
  *	@author		: CHOUABBIA Amine
  *
  *	@Name		: PartnerService
- *	@CreatedOn	: 12-19-2025
- *	@Updated	: 12-19-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Service
- *	@Layer		: Network / Service
- *	@Package	: Network / Common / Service
+ *	@Type		: Class
+ *	@Layer		: Service
+ *	@Package	: Network / Common
  *
  **/
 

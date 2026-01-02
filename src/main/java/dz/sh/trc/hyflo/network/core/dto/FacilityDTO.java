@@ -4,7 +4,7 @@
  *
  *	@Name		: FacilityDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -19,13 +19,13 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
+import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.Facility;
-import dz.sh.trc.hyflo.network.localization.dto.LocalityDTO;
-import dz.sh.trc.hyflo.network.localization.model.Locality;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

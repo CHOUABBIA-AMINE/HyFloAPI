@@ -4,7 +4,7 @@
  *
  *	@Name		: Facility
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -17,8 +17,8 @@ package dz.sh.trc.hyflo.network.core.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
-import dz.sh.trc.hyflo.network.localization.model.Locality;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

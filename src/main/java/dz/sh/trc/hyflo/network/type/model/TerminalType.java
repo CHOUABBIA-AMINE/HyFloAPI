@@ -1,10 +1,10 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: TerminalType
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -31,7 +31,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity(name="TerminalType")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name="T_03_01_06")
+@Table(name="T_02_01_06")
 public class TerminalType extends FacilityType {
 
 }

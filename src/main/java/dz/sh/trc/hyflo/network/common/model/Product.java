@@ -4,11 +4,11 @@
  *
  *	@Name		: Product
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Common
  *
  **/
 
@@ -26,23 +26,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Product Entity - Extends GenericModel
- * 
- * Database table: T_03_02_04
- * Primary key: F_00 (id) - inherited from GenericModel
- * 
- * Fields:
- * - F_00: id (inherited) - Primary key
- * - F_01: name - Product name (required)
- * - F_02: code - Product code (unique, required)
- * - F_03: density - Density (required)
- * - F_04: viscosity - Viscosity (required)
- * - F_05: flashPoint - Flash point (required)
- * - F_06: sulfurContent - Sulfur content (required)
- * - F_07: isHazardous - Hazardous flag (required)
- * - F_08: description - Description (required)
- */
 @Setter
 @Getter
 @ToString
@@ -50,8 +33,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Product")
-@Table(name="T_03_02_04", uniqueConstraints = { @UniqueConstraint(name="T_03_02_04_UK_01", columnNames={"F_01"}),
-												@UniqueConstraint(name="T_03_02_04_UK_01", columnNames={"F_04"})})
+@Table(name="T_02_02_01", uniqueConstraints = { @UniqueConstraint(name="T_02_02_01_UK_01", columnNames={"F_01"}),
+												@UniqueConstraint(name="T_02_02_01_UK_01", columnNames={"F_04"})})
 public class Product extends GenericModel {
 
     @Column(name="F_01", length=20, nullable=false)

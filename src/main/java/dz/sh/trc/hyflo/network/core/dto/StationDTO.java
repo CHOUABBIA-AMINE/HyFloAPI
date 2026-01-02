@@ -4,7 +4,7 @@
  *
  *	@Name		: StationDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-19-2025
+ *	@UpdatedOn	: 12-19-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -21,14 +21,14 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
+import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.model.Station;
-import dz.sh.trc.hyflo.network.localization.dto.LocalityDTO;
-import dz.sh.trc.hyflo.network.localization.model.Locality;
 import dz.sh.trc.hyflo.network.type.dto.StationTypeDTO;
 import dz.sh.trc.hyflo.network.type.model.StationType;
 import jakarta.validation.constraints.NotBlank;

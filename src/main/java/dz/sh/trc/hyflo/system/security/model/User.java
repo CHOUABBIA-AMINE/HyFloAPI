@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: User
  *	@CreatedOn	: 06-26-2025

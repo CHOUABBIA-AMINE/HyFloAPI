@@ -1,10 +1,10 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: EquipmentType
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -33,8 +33,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="EquipmentType")
-@Table(name="T_03_01_08", uniqueConstraints = { @UniqueConstraint(name="T_03_01_08_UK_01", columnNames={"F_01"}),
-												@UniqueConstraint(name="T_03_01_08_UK_02", columnNames={"F_04"})})
+@Table(name="T_02_01_08", uniqueConstraints = { @UniqueConstraint(name="T_02_01_08_UK_01", columnNames={"F_01"}),
+												@UniqueConstraint(name="T_02_01_08_UK_02", columnNames={"F_04"})})
 public class EquipmentType extends GenericModel {
 
     @Column(name="F_01", length=20, nullable=false)

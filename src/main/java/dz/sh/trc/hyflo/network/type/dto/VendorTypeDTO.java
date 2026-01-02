@@ -1,10 +1,10 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: VendorTypeDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -26,13 +26,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * VendorType Data Transfer Object - Extends GenericDTO
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - designation (F_01) - type designation (unique, required)
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

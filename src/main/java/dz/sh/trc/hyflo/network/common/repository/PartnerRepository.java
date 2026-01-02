@@ -3,11 +3,11 @@
  *	@author		: CHOUABBIA Amine
  *
  *	@Name		: PartnerRepository
- *	@CreatedOn	: 12-19-2025
- *	@Updated	: 12-19-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Repository
- *	@Layer		: Network / Repository
+ *	@Type		: Interface
+ *	@Layer		: Repository
  *	@Package	: Network / Common
  *
  **/

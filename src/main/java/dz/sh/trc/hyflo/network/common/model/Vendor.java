@@ -4,11 +4,11 @@
  *
  *	@Name		: Vendor
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Common
  *
  **/
 
@@ -16,7 +16,7 @@
 package dz.sh.trc.hyflo.network.common.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.network.localization.model.Country;
+import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.network.type.model.VendorType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +39,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Vendor")
-@Table(name="T_03_02_08", uniqueConstraints = { @UniqueConstraint(name="T_03_02_08_UK_01", columnNames={"F_02"})})
+@Table(name="T_02_02_05", uniqueConstraints = { @UniqueConstraint(name="T_02_02_05_UK_01", columnNames={"F_02"})})
 public class Vendor extends GenericModel {
 
     @Column(name="F_01", length=100, nullable=true)
@@ -49,10 +49,10 @@ public class Vendor extends GenericModel {
     private String shortName;
 
 	@ManyToOne
-    @JoinColumn(name = "F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_02_08_FK_01"), nullable = false)
+    @JoinColumn(name = "F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_02_05_FK_01"), nullable = false)
     private VendorType vendorType;
 	
 	@ManyToOne
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_02_08_FK_02"), nullable = false)
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_02_05_FK_02"), nullable = false)
     private Country country;
 }

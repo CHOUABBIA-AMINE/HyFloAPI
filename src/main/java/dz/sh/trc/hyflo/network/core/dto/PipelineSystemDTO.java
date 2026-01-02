@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineSystemDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -17,13 +17,13 @@ package dz.sh.trc.hyflo.network.core.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
+import dz.sh.trc.hyflo.general.organization.model.Region;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.ProductDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
-import dz.sh.trc.hyflo.network.organization.dto.RegionDTO;
-import dz.sh.trc.hyflo.network.organization.model.Region;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

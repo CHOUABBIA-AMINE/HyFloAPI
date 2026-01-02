@@ -1,0 +1,236 @@
+/**
+ *	
+ *	@Author		: MEDJERAB Abir
+ *
+ *	@Name		: EmployeeDTO
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
+ *
+ *	@Type		: Class
+ *	@Layer		: DTO
+ *	@Package	: General / Organization
+ *
+ **/
+
+package dz.sh.trc.hyflo.general.organization.dto;
+
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
+import dz.sh.trc.hyflo.general.localization.dto.StateDTO;
+import dz.sh.trc.hyflo.general.localization.model.Country;
+import dz.sh.trc.hyflo.general.localization.model.State;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
+import dz.sh.trc.hyflo.general.organization.model.Job;
+import dz.sh.trc.hyflo.system.utility.dto.FileDTO;
+import dz.sh.trc.hyflo.system.utility.model.File;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class EmployeeDTO extends GenericDTO<Employee> {
+
+    @NotBlank(message = "Arabic last name is required")
+    @Size(max = 100, message = "Arabic last name must not exceed 100 characters")
+    private String lastNameAr;
+
+    @NotBlank(message = "Arabic first name is required")
+    @Size(max = 100, message = "Arabic first name must not exceed 100 characters")
+    private String firstNameAr;
+
+    @NotBlank(message = "Latin last name is required")
+    @Size(max = 100, message = "Latin last name must not exceed 100 characters")
+    private String lastNameLt;
+
+    @NotBlank(message = "Latin first name is required")
+    @Size(max = 100, message = "Latin first name must not exceed 100 characters")
+    private String firstNameLt;
+
+    private Date birthDate;
+
+    @Size(max = 200, message = "Birth place must not exceed 200 characters")
+    private String birthPlaceAr;
+
+    @Size(max = 200, message = "Birth place must not exceed 200 characters")
+    private String birthPlaceLt;
+
+    @Size(max = 200, message = "Birth place must not exceed 200 characters")
+    private String addressAr;
+
+    @Size(max = 200, message = "Birth place must not exceed 200 characters")
+    private String addressLt;
+
+    @Size(max = 50, message = "Registration number must not exceed 50 characters")
+    private String registrationNumber;
+
+    private Long birthStateId;
+
+    private Long addressStateId;
+
+    private Long pictureId;
+
+    private Long countryId;
+
+    private Long jobId;
+
+    //private Long structureId;
+
+    private StateDTO birthState;
+
+    private StateDTO addressState;
+
+    private FileDTO picture;
+
+    private CountryDTO country;
+
+    private JobDTO job;
+
+    //private StructureDTO structure;
+
+    @Override
+    public Employee toEntity() {
+        Employee entity = new Employee();
+        entity.setId(this.getId());
+        entity.setLastNameAr(this.lastNameAr);
+        entity.setFirstNameAr(this.firstNameAr);
+        entity.setLastNameLt(this.lastNameLt);
+        entity.setFirstNameLt(this.firstNameLt);
+        entity.setBirthDate(this.birthDate);
+        entity.setBirthPlaceAr(this.birthPlaceAr);
+        entity.setBirthPlaceLt(this.birthPlaceLt);
+        entity.setAddressAr(this.addressAr);
+        entity.setAddressLt(this.addressLt);
+        entity.setRegistrationNumber(this.registrationNumber);
+        
+        if (this.birthStateId != null) {
+            State birthState = new State();
+            birthState.setId(this.birthStateId);
+            entity.setBirthState(birthState);
+        }
+        
+        if (this.addressStateId != null) {
+            State addressState = new State();
+            addressState.setId(this.addressStateId);
+            entity.setAddressState(addressState);
+        }
+        
+        if (this.pictureId != null) {
+            File picture = new File();
+            picture.setId(this.pictureId);
+            entity.setPicture(picture);
+        }
+        
+        if (this.countryId != null) {
+        	Country country = new Country();
+            country.setId(this.countryId);
+            entity.setCountry(country);
+        }
+        
+        if (this.jobId != null) {
+        	Job job = new Job();
+        	job.setId(this.jobId);
+            entity.setJob(job);
+        }
+        
+        /*if (this.structureId != null) {
+            Structure structure = new Structure();
+            structure.setId(this.structureId);
+            entity.setStructure(structure);
+        }*/
+        
+        return entity;
+    }
+
+    @Override
+    public void updateEntity(Employee entity) {
+        if (this.lastNameAr != null) entity.setLastNameAr(this.lastNameAr);
+        if (this.firstNameAr != null) entity.setFirstNameAr(this.firstNameAr);
+        if (this.lastNameLt != null) entity.setLastNameLt(this.lastNameLt);
+        if (this.firstNameLt != null) entity.setFirstNameLt(this.firstNameLt);
+        if (this.birthDate != null) entity.setBirthDate(this.birthDate);
+        if (this.birthPlaceAr != null) entity.setBirthPlaceAr(this.birthPlaceAr);
+        if (this.birthPlaceLt != null) entity.setBirthPlaceLt(this.birthPlaceLt);
+        if (this.addressAr != null) entity.setAddressAr(this.addressAr);
+        if (this.addressLt != null) entity.setAddressLt(this.addressLt);
+        if (this.registrationNumber != null) entity.setRegistrationNumber(this.registrationNumber);
+        
+        if (this.birthStateId != null) {
+            State birthState = new State();
+            birthState.setId(this.birthStateId);
+            entity.setBirthState(birthState);
+        }
+        
+        if (this.addressStateId != null) {
+            State addressState = new State();
+            addressState.setId(this.addressStateId);
+            entity.setAddressState(addressState);
+        }
+        
+        if (this.pictureId != null) {
+            File picture = new File();
+            picture.setId(this.pictureId);
+            entity.setPicture(picture);
+        }
+        
+        if (this.countryId != null) {
+        	Country country = new Country();
+            country.setId(this.countryId);
+            entity.setCountry(country);
+        }
+		
+		if (this.jobId != null) {
+			Job job = new Job();
+			job.setId(this.jobId);
+		    entity.setJob(job);
+		}
+		
+		/*if (this.structureId != null) {
+		    Structure structure = new Structure();
+		    structure.setId(this.structureId);
+		    entity.setStructure(structure);
+		}*/
+    }
+
+    public static EmployeeDTO fromEntity(Employee entity) {
+        if (entity == null) return null;
+        return EmployeeDTO.builder()
+                .id(entity.getId())
+                .lastNameAr(entity.getLastNameAr())
+                .firstNameAr(entity.getFirstNameAr())
+                .lastNameLt(entity.getLastNameLt())
+                .firstNameLt(entity.getFirstNameLt())
+                .birthDate(entity.getBirthDate())
+                .birthPlaceAr(entity.getBirthPlaceAr())
+                .birthPlaceLt(entity.getBirthPlaceLt())
+                .addressAr(entity.getAddressAr())
+                .addressLt(entity.getAddressLt())
+                .registrationNumber(entity.getRegistrationNumber())
+                .birthStateId(entity.getBirthState() != null ? entity.getBirthState().getId() : null)
+                .addressStateId(entity.getAddressState() != null ? entity.getAddressState().getId() : null)
+                .pictureId(entity.getPicture() != null ? entity.getPicture().getId() : null)
+                .countryId(entity.getCountry() != null ? entity.getCountry().getId() : null)
+                .jobId(entity.getJob() != null ? entity.getJob().getId() : null)
+                //.structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
+                
+                .birthState(entity.getBirthState() != null ? StateDTO.fromEntity(entity.getBirthState()) : null)
+                .addressState(entity.getAddressState() != null ? StateDTO.fromEntity(entity.getAddressState()) : null)
+                .picture(entity.getPicture() != null ? FileDTO.fromEntity(entity.getPicture()) : null)
+                .country(entity.getCountry() != null ? CountryDTO.fromEntity(entity.getCountry()) : null)
+                .job(entity.getJob() != null ? JobDTO.fromEntity(entity.getJob()) : null)
+                //.structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
+                .build();
+    }
+}

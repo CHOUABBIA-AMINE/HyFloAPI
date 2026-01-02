@@ -1,10 +1,10 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PartnerType
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -29,7 +29,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity(name="PartnerType")
-@Table(name="T_03_01_02")
+@Table(name="T_02_01_02")
 public class PartnerType extends CompanyType {
 
 }

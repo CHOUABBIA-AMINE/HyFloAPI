@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: RefreshTokenRepository
  *	@CreatedOn	: 06-26-2025
@@ -31,7 +31,7 @@ import dz.sh.trc.hyflo.system.security.model.User;
  * Repository interface for RefreshToken entity operations.
  * Provides methods for token lookup, deletion, and cleanup.
  * 
- * @author RAAS Security Team
+ * @Author RAAS Security Team
  * @version 1.0
  */
 @Repository

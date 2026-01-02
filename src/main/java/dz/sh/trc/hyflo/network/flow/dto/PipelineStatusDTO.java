@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineStatusDTO
  *	@CreatedOn	: 12-27-2025
- *	@Updated	: 12-27-2025
+ *	@UpdatedOn	: 12-27-2025
  *
  *	@Type		: Record
  *	@Layer		: DTO

@@ -4,7 +4,7 @@
  *
  *	@Name		: OperationalStatusDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -26,14 +26,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * OperationalStatus Data Transfer Object - Extends GenericDTO
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - code (F_01) - required
- * - designation (F_02) - required
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

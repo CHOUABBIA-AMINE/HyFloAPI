@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineSystem
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 12-11-2025
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -15,9 +15,9 @@
 package dz.sh.trc.hyflo.network.core.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.general.organization.model.Region;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
-import dz.sh.trc.hyflo.network.organization.model.Region;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;

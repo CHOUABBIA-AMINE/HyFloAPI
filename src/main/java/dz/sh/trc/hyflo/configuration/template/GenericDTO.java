@@ -4,7 +4,7 @@
  *
  *	@Name		: GenericDTO
  *	@CreatedOn	: 12-10-2025
- *	@Updated	: 12-10-2025
+ *	@UpdatedOn	: 12-10-2025
  *
  *	@Type		: Abstract Class
  *	@Layer		: DTO Base

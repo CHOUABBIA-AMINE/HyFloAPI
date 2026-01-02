@@ -4,7 +4,7 @@
  *
  *	@Name		: GlobalExceptionHandler
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-20-2025
+ *	@UpdatedOn	: 12-20-2025
  *
  *	@Type		: Class
  *	@Layer		: Controller

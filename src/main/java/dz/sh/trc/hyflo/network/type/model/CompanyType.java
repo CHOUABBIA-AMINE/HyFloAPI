@@ -1,10 +1,10 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: CompanyType
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -37,7 +37,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="CompanyType")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name="T_03_01_01", uniqueConstraints = { @UniqueConstraint(name="T_03_01_01_UK_01", columnNames={"F_03"})})
+@Table(name="T_02_01_01", uniqueConstraints = { @UniqueConstraint(name="T_02_01_01_UK_01", columnNames={"F_03"})})
 public class CompanyType extends GenericModel {
 
     @Column(name="F_01", length=100, nullable=true)

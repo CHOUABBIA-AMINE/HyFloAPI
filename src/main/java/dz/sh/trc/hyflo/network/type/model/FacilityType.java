@@ -1,10 +1,10 @@
 /**
  *	
- *	@Author		: MEDJERAB ABIR
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: FacilityType
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -36,8 +36,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="FacilityType")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name="T_03_01_04", uniqueConstraints = { @UniqueConstraint(name="T_03_01_04_UK_01", columnNames={"F_01"}),
-												@UniqueConstraint(name="T_03_01_04_UK_02", columnNames={"F_04"})})
+@Table(name="T_02_01_04", uniqueConstraints = { @UniqueConstraint(name="T_02_01_04_UK_01", columnNames={"F_01"}),
+												@UniqueConstraint(name="T_02_01_04_UK_02", columnNames={"F_04"})})
 public class FacilityType extends GenericModel {
 
     @Column(name="F_01", length=20, nullable=false)

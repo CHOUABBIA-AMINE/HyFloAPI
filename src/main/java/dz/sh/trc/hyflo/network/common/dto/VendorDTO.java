@@ -4,7 +4,7 @@
  *
  *	@Name		: VendorDTO
  *	@CreatedOn	: 06-26-2025
- *	@Updated	: 12-19-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -17,9 +17,11 @@ package dz.sh.trc.hyflo.network.common.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
+import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
-import dz.sh.trc.hyflo.network.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.network.type.dto.VendorTypeDTO;
+import dz.sh.trc.hyflo.network.type.model.VendorType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -28,17 +30,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * Vendor Data Transfer Object - Extends GenericDTO
- * Maps Vendor entity extending GenericModel
- * 
- * Fields:
- * - id (F_00) - inherited from GenericDTO
- * - name (F_01) - optional name
- * - shortName (F_02) - optional identifier
- * - vendorTypeId (F_03) - required foreign key to VendorType (unique)
- * - countryId (F_04) - required foreign key to Country
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -71,15 +62,13 @@ public class VendorDTO extends GenericDTO<Vendor> {
         entity.setShortName(this.shortName);
         
         if (this.vendorTypeId != null) {
-            dz.sh.trc.hyflo.network.type.model.VendorType type = 
-                new dz.sh.trc.hyflo.network.type.model.VendorType();
+            VendorType type = new VendorType();
             type.setId(this.vendorTypeId);
             entity.setVendorType(type);
         }
         
         if (this.countryId != null) {
-            dz.sh.trc.hyflo.network.localization.model.Country country = 
-                new dz.sh.trc.hyflo.network.localization.model.Country();
+            Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
         }
@@ -93,15 +82,13 @@ public class VendorDTO extends GenericDTO<Vendor> {
         if (this.shortName != null) entity.setShortName(this.shortName);
         
         if (this.vendorTypeId != null) {
-            dz.sh.trc.hyflo.network.type.model.VendorType type = 
-                new dz.sh.trc.hyflo.network.type.model.VendorType();
+            VendorType type = new VendorType();
             type.setId(this.vendorTypeId);
             entity.setVendorType(type);
         }
         
         if (this.countryId != null) {
-            dz.sh.trc.hyflo.network.localization.model.Country country = 
-                new dz.sh.trc.hyflo.network.localization.model.Country();
+            Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
         }
