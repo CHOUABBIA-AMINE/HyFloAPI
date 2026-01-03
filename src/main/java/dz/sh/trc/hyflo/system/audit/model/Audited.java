@@ -19,8 +19,6 @@ import java.util.Date;
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,9 +49,8 @@ public class Audited  extends GenericModel {
     @Column(name = "F_02", nullable = false)
     private Long entityId; // ID of the affected entity
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "F_03", nullable = false, length = 20)
-    private AuditAction action; // CREATE, UPDATE, DELETE, READ
+    private String action; // CREATE, UPDATE, DELETE, READ
 
     @Column(name = "F_04", nullable = true, length = 100)
     private String username; // User who performed the action
@@ -82,9 +79,8 @@ public class Audited  extends GenericModel {
     @Column(name = "F_12", nullable = true, length = 1000)
     private String description; // Human-readable description
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "F_13", nullable = false, length = 20)
-    private AuditStatus status; // SUCCESS, FAILED, PARTIAL
+    private String status; // SUCCESS, FAILED, PARTIAL
 
     @Column(name = "F_14", nullable = true, columnDefinition = "TEXT")
     private String errorMessage; // Error details if status is FAILED
@@ -107,17 +103,4 @@ public class Audited  extends GenericModel {
     @Column(name = "F_20", nullable = true, columnDefinition = "TEXT")
     private String metadata; // Additional JSON metadata
 
-    /**
-     * Audit Action Types
-     */
-    public enum AuditAction {
-        CREATE, UPDATE, DELETE, READ, APPROVE, REJECT, SUBMIT, CANCEL, ARCHIVE, RESTORE
-    }
-
-    /**
-     * Audit Status Types
-     */
-    public enum AuditStatus {
-        SUCCESS, FAILED, PARTIAL
-    }
 }

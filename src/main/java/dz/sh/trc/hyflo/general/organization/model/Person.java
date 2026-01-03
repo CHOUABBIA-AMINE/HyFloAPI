@@ -45,7 +45,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="Person")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name="T_01_03_05")
+@Table(name="T_01_03_03")
 public class Person extends GenericModel {
 
 	@Column(name="F_01", length=100, nullable=false)
@@ -76,19 +76,19 @@ public class Person extends GenericModel {
 	private String addressLt;
 	
 	@ManyToOne
-    @JoinColumn(name="F_10", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_05_FK_01"), nullable=true)
+    @JoinColumn(name="F_10", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_01"), nullable=true)
     private State birthState;
 	
 	@ManyToOne
-    @JoinColumn(name="F_11", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_05_FK_02"), nullable=true)
+    @JoinColumn(name="F_11", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_02"), nullable=true)
     private State addressState;
 	
 	@ManyToOne
-    @JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_05_FK_03"), nullable=true)
+    @JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_03"), nullable=true)
     private File picture;
 
 	@ManyToOne
-	@JoinColumn(name="F_13", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_05_FK_01"), nullable = false)
+	@JoinColumn(name="F_13", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_04"), nullable = false)
 	private Country country;
 
 }

@@ -37,8 +37,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Structure")
-@Table(name="T_01_03_03", uniqueConstraints = { @UniqueConstraint(name = "T_01_03_03_UK_01", columnNames = { "F_01" }),
-												@UniqueConstraint(name = "T_01_03_03_UK_02", columnNames = { "F_04" })})
+@Table(name="T_01_03_01", uniqueConstraints = { @UniqueConstraint(name = "T_01_03_01_UK_01", columnNames = { "F_01" }),
+												@UniqueConstraint(name = "T_01_03_01_UK_02", columnNames = { "F_04" })})
 public class Structure extends GenericModel {
 	
 	@Column(name="F_01", length=50, nullable=false)
@@ -54,10 +54,10 @@ public class Structure extends GenericModel {
 	private String designationFr;
 	
 	@ManyToOne
-	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_01"), nullable=false)
+	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_01_FK_01"), nullable=false)
 	private StructureType structureType;
 	
 	@ManyToOne
-	@JoinColumn(name="F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_02"), nullable=true)
+	@JoinColumn(name="F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_01_FK_02"), nullable=true)
 	private Structure parentStructure;
 }

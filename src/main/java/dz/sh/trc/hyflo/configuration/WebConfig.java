@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: WebConfig
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-06-2025 (Spring Boot 4.0 - Properties Only)
+ *	@UpdatedOn	: 12-06-2025
  *
  *	@Type		: Class
  *	@Layer		: Configuration

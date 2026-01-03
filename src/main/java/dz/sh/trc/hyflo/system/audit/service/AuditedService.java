@@ -30,8 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.system.audit.dto.AuditedDTO;
 import dz.sh.trc.hyflo.system.audit.model.Audited;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditAction;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditStatus;
 import dz.sh.trc.hyflo.system.audit.repository.AuditedRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +121,7 @@ public class AuditedService extends GenericService<Audited, AuditedDTO, Long> {
      */
     @Transactional(readOnly = true)
     public Page<AuditedDTO> getFailedOperations(Pageable pageable) {
-        return auditedRepository.findByStatus(AuditStatus.FAILED, pageable)
+        return auditedRepository.findByStatus("FAILED", pageable)
                 .map(this::toDTO);
     }
 
@@ -143,7 +141,7 @@ public class AuditedService extends GenericService<Audited, AuditedDTO, Long> {
                 .totalOperations(totalOperations)
                 .activityBreakdown(activityData.stream()
                         .collect(Collectors.toMap(
-                                row -> (AuditAction) row[0],
+                                row -> (String) row[0],
                                 row -> (Long) row[1]
                         )))
                 .build();
@@ -169,7 +167,7 @@ public class AuditedService extends GenericService<Audited, AuditedDTO, Long> {
             return this;
         }
 
-        public AuditEventBuilder action(AuditAction action) {
+        public AuditEventBuilder action(String action) {
             audited.setAction(action);
             return this;
         }
@@ -226,7 +224,7 @@ public class AuditedService extends GenericService<Audited, AuditedDTO, Long> {
             return this;
         }
 
-        public AuditEventBuilder status(AuditStatus status) {
+        public AuditEventBuilder status(String status) {
             audited.setStatus(status);
             return this;
         }
@@ -271,6 +269,6 @@ public class AuditedService extends GenericService<Audited, AuditedDTO, Long> {
         private String username;
         private int periodDays;
         private long totalOperations;
-        private java.util.Map<AuditAction, Long> activityBreakdown;
+        private java.util.Map<String, Long> activityBreakdown;
     }
 }

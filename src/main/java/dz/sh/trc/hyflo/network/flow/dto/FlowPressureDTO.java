@@ -1,22 +1,20 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: FlowPressureDTO
- *	@CreatedOn	: 12-19-2025
- *	@UpdatedOn	: 12-19-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Data Transfer Object
- *	@Layer		: Network / DTO
- *	@Package	: Network / DTO
+ *	@Type		: Class
+ *	@Layer		: DTO
+ *	@Package	: Network / Flow
  *
  **/
 
 package dz.sh.trc.hyflo.network.flow.dto;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -28,25 +26,11 @@ import dz.sh.trc.hyflo.network.flow.model.MeasurementHour;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-/**
- * FlowPressure Data Transfer Object - Extends GenericDTO
- * Maps FlowPressure entity which extends Facility which extends Infrastructure
- * 
- * Inherited from Infrastructure:
- * - code, name, installationDate, commissioningDate, decommissioningDate, operationalStatusId
- * 
- * Inherited from Facility:
- * - vendor, location (vendorId, locationId)
- * 
- * FlowPressure specific:
- * - stationType, pipelines
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -55,7 +39,7 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FlowPressureDTO extends GenericDTO<FlowPressure> {
 
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "pressure is required")
     private double pressure;
 
     private LocalDate measurementDate;
@@ -68,9 +52,6 @@ public class FlowPressureDTO extends GenericDTO<FlowPressure> {
     
     private MeasurementHourDTO measurementHour;
     private PipelineDTO pipeline;
-
-    @Builder.Default
-    private Set<Long> pipelineIds = new HashSet<>();
 
     @Override
     public FlowPressure toEntity() {

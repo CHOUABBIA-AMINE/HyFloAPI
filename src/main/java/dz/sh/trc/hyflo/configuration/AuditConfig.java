@@ -1,9 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: AuditConfig
- *	@CreatedOn	: 10-27-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 10-27-2025
  *
  *	@Type		: Class
  *	@Layer		: Configuration

@@ -1,9 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: SecurityConfig
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
  *	@Type		: Class
  *	@Layer		: Configuration
@@ -44,7 +45,7 @@ import lombok.RequiredArgsConstructor;
  * Modern Spring Security 6+ configuration.
  * Uses Spring Boot auto-configuration for authentication provider.
  * 
- * @author IAAS Security Team
+ * @Author IAAS Security Team
  * @version 3.0 (Spring Boot 3.x / Spring Security 6+ compatible)
  */
 @Configuration

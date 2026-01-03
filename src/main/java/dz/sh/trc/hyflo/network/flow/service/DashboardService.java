@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: DashboardService
- *	@CreatedOn	: 12-27-2025
- *	@UpdatedOn	: 12-27-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Service
+ *	@Type		: Class
  *	@Layer		: Service
  *	@Package	: Network / Flow
  *

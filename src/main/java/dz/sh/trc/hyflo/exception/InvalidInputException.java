@@ -1,11 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: InvalidInputException
- *	@CreatedOn	: 12-20-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
- *	@Type		: Exception
+ *	@Type		: Class
  *	@Layer		: Exception
  *	@Package	: Exception
  *
@@ -19,8 +20,6 @@ import org.springframework.http.HttpStatus;
  * Exception thrown when input data is invalid
  * Different from validation - used for semantic/logical errors
  * 
- * @author CHOUABBIA Amine
- * @created 2025-12-20
  */
 public class InvalidInputException extends IaasException {
 

@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: StationDTO
  *	@CreatedOn	: 06-26-2025
@@ -23,8 +23,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
-import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
-import dz.sh.trc.hyflo.general.organization.model.Region;
+import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
@@ -82,8 +82,8 @@ public class StationDTO extends GenericDTO<Station> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Region is required")
-    private Long regionId;
+    @NotNull(message = "Structure is required")
+    private Long structureId;
 
     @NotNull(message = "Vendor is required")
     private Long vendorId;
@@ -99,7 +99,7 @@ public class StationDTO extends GenericDTO<Station> {
     
     private OperationalStatusDTO operationalStatus;
     
-    private RegionDTO region;
+    private StructureDTO structure;
     
     private VendorDTO vendor;
     
@@ -132,10 +132,10 @@ public class StationDTO extends GenericDTO<Station> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-        	entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+        	entity.setStructure(structure);
         }
         
         if (this.vendorId != null) {
@@ -183,10 +183,10 @@ public class StationDTO extends GenericDTO<Station> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-        	entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+        	entity.setStructure(structure);
         }
         
         if (this.vendorId != null) {
@@ -235,7 +235,7 @@ public class StationDTO extends GenericDTO<Station> {
                 .elevation(entity.getElevation())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
+                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
                 .stationTypeId(entity.getStationType() != null ? entity.getStationType().getId() : null)
@@ -243,7 +243,7 @@ public class StationDTO extends GenericDTO<Station> {
                 .pipelineIds(pipelineIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
+                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
                 .stationType(entity.getStationType() != null ? StationTypeDTO.fromEntity(entity.getStationType()) : null)

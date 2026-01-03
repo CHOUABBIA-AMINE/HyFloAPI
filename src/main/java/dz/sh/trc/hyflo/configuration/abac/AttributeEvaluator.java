@@ -1,13 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: AttributeEvaluator
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-06-2025
  *
  *	@Type		: Class
- *	@Layer		: abac
- *	@Package	: Configuration
+ *	@Layer		: Security
+ *	@Package	: Configuration / abac
  *
  **/
 
@@ -26,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * Evaluates attribute-based access control policies.
  * Supports evaluation of user attributes, resource attributes, and conditions.
  * 
- * @author RAAS Security Team
+ * @Author RAAS Security Team
  * @version 2.0
  */
 @Component

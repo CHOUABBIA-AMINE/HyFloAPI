@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PipelineDTO
  *	@CreatedOn	: 06-26-2025
@@ -19,8 +19,8 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
-import dz.sh.trc.hyflo.general.organization.model.Region;
+import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
@@ -105,8 +105,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Region is required")
-    private Long regionId;
+    @NotNull(message = "Structure is required")
+    private Long structureId;
 
     @NotNull(message = "Nominal construction material ID is required")
     private Long nominalConstructionMaterialId;
@@ -131,7 +131,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     
     private OperationalStatusDTO operationalStatus;
     
-    private RegionDTO region;
+    private StructureDTO structure;
     
     private AlloyDTO nominalConstructionMaterial;
     
@@ -173,10 +173,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-        	entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+        	entity.setStructure(structure);
         }
         
         if (this.nominalConstructionMaterialId != null) {
@@ -249,10 +249,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-        	entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+        	entity.setStructure(structure);
         }
         
         if (this.nominalConstructionMaterialId != null) {
@@ -319,7 +319,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .designCapacity(entity.getDesignCapacity())
                 .operationalCapacity(entity.getOperationalCapacity())
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
+                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 .nominalConstructionMaterialId(entity.getNominalConstructionMaterial() != null ? entity.getNominalConstructionMaterial().getId() : null)
                 .nominalExteriorCoatingId(entity.getNominalExteriorCoating() != null ? entity.getNominalExteriorCoating().getId() : null)
                 .nominalInteriorCoatingId(entity.getNominalInteriorCoating() != null ? entity.getNominalInteriorCoating().getId() : null)
@@ -329,7 +329,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .arrivalFacilityId(entity.getArrivalFacility() != null ? entity.getArrivalFacility().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
+                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .nominalConstructionMaterial(entity.getNominalConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getNominalConstructionMaterial()) : null)
                 .nominalExteriorCoating(entity.getNominalExteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalExteriorCoating()) : null)
                 .nominalInteriorCoating(entity.getNominalInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalInteriorCoating()) : null)

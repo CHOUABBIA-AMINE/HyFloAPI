@@ -1,11 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: DataIntegrityViolationException
- *	@CreatedOn	: 12-20-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
- *	@Type		: Exception
+ *	@Type		: Class
  *	@Layer		: Exception
  *	@Package	: Exception
  *
@@ -19,8 +20,6 @@ import org.springframework.http.HttpStatus;
  * Exception thrown when data integrity constraints are violated
  * Examples: unique constraint, foreign key constraint, not null constraint
  * 
- * @author CHOUABBIA Amine
- * @created 2025-12-20
  */
 public class DataIntegrityViolationException extends IaasException {
 

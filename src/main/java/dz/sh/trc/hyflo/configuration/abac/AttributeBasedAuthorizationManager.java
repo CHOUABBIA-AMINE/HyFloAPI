@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: AttributeBasedAuthorizationManager
- *	@CreatedOn	: 11-18-2025
- *	@UpdatedOn	: 12-06-2025 (Fixed for Spring Security 6.x - Spring Boot 4.0)
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-06-2025
  *
  *	@Type		: Class
- *	@Layer		: abac
- *	@Package	: Configuration
+ *	@Layer		: Security
+ *	@Package	: Configuration / abac
  *
  **/
 
@@ -36,7 +36,7 @@ import java.util.function.Supplier;
  * - Return type changed from AuthorizationDecision to AuthorizationDecision (same but different signature)
  * - Follows Spring Security 6.x AuthorizationManager contract
  * 
- * @author IAAS Security Team
+ * @Author IAAS Security Team
  * @version 3.0 (Spring Security 6.x compatible - Spring Boot 4.0)
  */
 @Component

@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSystemController
  *	@CreatedOn	: 06-26-2025
@@ -124,10 +124,10 @@ public class PipelineSystemController extends GenericController<PipelineSystemDT
         return ResponseEntity.ok(pipelineSystemService.findByOperationalStatus(operationalStatusId));
     }
 
-    @GetMapping("/region/{regionId}")
+    @GetMapping("/structure/{structureId}")
     @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:READ')")
-    public ResponseEntity<List<PipelineSystemDTO>> getByRegion(@PathVariable Long regionId) {
-        log.info("REST request to get Pipeline System by region id: {}", regionId);
-        return ResponseEntity.ok(pipelineSystemService.findByRegion(regionId));
+    public ResponseEntity<List<PipelineSystemDTO>> getByStructure(@PathVariable Long structureId) {
+        log.info("REST request to get Pipeline System by structure id: {}", structureId);
+        return ResponseEntity.ok(pipelineSystemService.findByStructure(structureId));
     }
 }

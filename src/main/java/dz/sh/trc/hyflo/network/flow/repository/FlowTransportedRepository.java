@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: FlowTransportedRepository
- *	@CreatedOn	: 12-19-2025
- *	@UpdatedOn	: 12-27-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Repository
- *	@Layer		: Network / Repository
- *	@Package	: Network / Core
+ *	@Type		: Interface
+ *	@Layer		: Repository
+ *	@Package	: Network / Flow
  *
  **/
 

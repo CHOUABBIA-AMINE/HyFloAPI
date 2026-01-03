@@ -1,9 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: MethodSecurityConfig
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
  *	@Type		: Class
  *	@Layer		: Configuration
@@ -25,7 +26,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
  * Configuration for method-level security with custom expressions.
  * Enables @PreAuthorize, @PostAuthorize, @Secured annotations.
  * 
- * @author IAAS Security Team
+ * @Author IAAS Security Team
  * @version 1.0
  */
 @Configuration

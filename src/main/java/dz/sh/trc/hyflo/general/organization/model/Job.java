@@ -36,8 +36,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Job")
-@Table(name="T_01_03_04", uniqueConstraints = { @UniqueConstraint(name = "T_01_03_04_UK_01", columnNames = { "F_01" }),
-												@UniqueConstraint(name = "T_01_03_04_UK_02", columnNames = { "F_04" })})
+@Table(name="T_01_03_02", uniqueConstraints = { @UniqueConstraint(name = "T_01_03_02_UK_01", columnNames = { "F_01" }),
+												@UniqueConstraint(name = "T_01_03_02_UK_02", columnNames = { "F_04" })})
 public class Job extends GenericModel {
 	
 	@Column(name="F_01", length=10, nullable=false)
@@ -53,6 +53,6 @@ public class Job extends GenericModel {
 	private String designationFr;
 	
 	@ManyToOne
-	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_04_FK_01"), nullable=false)
+	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_02_FK_01"), nullable=false)
 	private Structure structure;
 }

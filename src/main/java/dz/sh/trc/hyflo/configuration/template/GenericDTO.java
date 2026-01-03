@@ -1,13 +1,13 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: GenericDTO
- *	@CreatedOn	: 12-10-2025
+ *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 12-10-2025
  *
  *	@Type		: Abstract Class
- *	@Layer		: DTO Base
+ *	@Layer		: Template
  *	@Package	: Configuration / Template
  *
  **/

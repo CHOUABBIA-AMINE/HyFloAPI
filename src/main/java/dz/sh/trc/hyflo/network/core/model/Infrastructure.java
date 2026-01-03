@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.network.core.model;
 import java.time.LocalDate;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.general.organization.model.Region;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,6 +67,6 @@ public class Infrastructure extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_02"), nullable = true)
-    private Region region;
+    private Structure structure;
     
 }

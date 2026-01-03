@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSystemDTO
  *	@CreatedOn	: 06-26-2025
@@ -17,8 +17,8 @@ package dz.sh.trc.hyflo.network.core.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
-import dz.sh.trc.hyflo.general.organization.model.Region;
+import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.ProductDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
@@ -55,14 +55,14 @@ public class PipelineSystemDTO extends GenericDTO<PipelineSystem> {
     @NotNull(message = "OperationalStatus is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Region is required")
-    private Long regionId;
+    @NotNull(message = "Structure is required")
+    private Long structureId;
     
     private ProductDTO product;
     
     private OperationalStatusDTO operationalStatus;
     
-    private RegionDTO region;
+    private StructureDTO structure;
 
     @Override
     public PipelineSystem toEntity() {
@@ -83,10 +83,10 @@ public class PipelineSystemDTO extends GenericDTO<PipelineSystem> {
             entity.setOperationalStatus(operationalStatus);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-            entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+            entity.setStructure(structure);
         }
         
         return entity;
@@ -109,10 +109,10 @@ public class PipelineSystemDTO extends GenericDTO<PipelineSystem> {
             entity.setOperationalStatus(operationalStatus);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-            entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+            entity.setStructure(structure);
         }
     }
 
@@ -125,11 +125,11 @@ public class PipelineSystemDTO extends GenericDTO<PipelineSystem> {
                 .name(entity.getName())
                 .productId(entity.getProduct() != null ? entity.getProduct().getId() : null)
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
+                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 
                 .product(entity.getProduct() != null ? ProductDTO.fromEntity(entity.getProduct()) : null)
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
+                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .build();
     }
 }

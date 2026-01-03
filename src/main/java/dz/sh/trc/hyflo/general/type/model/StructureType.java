@@ -44,4 +44,5 @@ public class StructureType extends GenericModel {
 	
 	@Column(name="F_03", length=100, nullable=false)
 	private String designationFr;
+	
 }

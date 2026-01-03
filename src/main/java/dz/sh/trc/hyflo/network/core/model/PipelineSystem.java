@@ -15,7 +15,7 @@
 package dz.sh.trc.hyflo.network.core.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.general.organization.model.Region;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import jakarta.persistence.Column;
@@ -58,5 +58,5 @@ public class PipelineSystem extends GenericModel {
 
     @ManyToOne
     @JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_03"), nullable=false)
-    private Region region;
+    private Structure structure;
 }

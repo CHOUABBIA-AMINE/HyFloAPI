@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSystemRepository
  *	@CreatedOn	: 06-26-2025
@@ -38,7 +38,7 @@ public interface PipelineSystemRepository extends JpaRepository<PipelineSystem, 
 
     List<PipelineSystem> findByOperationalStatusId(Long operationalStatusId);
 
-    List<PipelineSystem> findByRegionId(Long regionId);
+    List<PipelineSystem> findByStructureId(Long structureId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     

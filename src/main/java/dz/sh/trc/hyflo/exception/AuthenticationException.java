@@ -1,11 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: AuthenticationException
- *	@CreatedOn	: 12-20-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
- *	@Type		: Exception
+ *	@Type		: Class
  *	@Layer		: Exception
  *	@Package	: Exception
  *
@@ -18,8 +19,6 @@ import org.springframework.http.HttpStatus;
 /**
  * Exception thrown when authentication fails
  * 
- * @author CHOUABBIA Amine
- * @created 2025-12-20
  */
 public class AuthenticationException extends IaasException {
     

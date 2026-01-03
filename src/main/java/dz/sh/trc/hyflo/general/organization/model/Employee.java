@@ -34,14 +34,14 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Employee")
-@Table(name="T_01_03_06")
+@Table(name="T_01_03_04")
 public class Employee extends Person {
 
 	@Column(name="F_14", length=50)
 	private String registrationNumber;
 
 	@ManyToOne
-	@JoinColumn(name="F_15", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_06_FK_01"), nullable=false)
+	@JoinColumn(name="F_15", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_04_FK_01"), nullable=false)
 	private Job job;
 
 	//@ManyToOne

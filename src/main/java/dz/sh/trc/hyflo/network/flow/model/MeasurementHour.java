@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: MeasurementHour
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network
+ *	@Package	: Network / Flow
  *
  **/
 
@@ -26,28 +26,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Facility Entity - Extends Facility
- * 
- * Database table: T_03_02_04
- * inherited from GenericModel:
- * - Primary key: F_00 (id) 
- * inherited from Infrastructure:
- * - Field: F_01 (code)
- * - Field: F_02 (name)
- * - Field: F_03 (installationDate)
- * - Field: F_04 (commissioningDate)
- * - Field: F_05 (decommissioningDate)
- * - Field: F_06 (operationalStatus)
- * 
- * Fields:
- * - F_00: id (inherited) - Primary key
- * - F_01: name - Facility name (required)
- * - F_02: code - Facility code (unique, required)
- * - F_03: operationalStatus - Operational status relationship (required)
- * - F_04: location - Location relationship (required)
- * - F_05: facilityType - Facility type relationship (required)
- */
 @Setter
 @Getter
 @ToString
@@ -55,7 +33,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="MeasurementHour")
-@Table(name="T_03_04_01", uniqueConstraints = { @UniqueConstraint(name="T_03_04_01_UK_01", columnNames={"F_01"})})
+@Table(name="T_02_04_01", uniqueConstraints = { @UniqueConstraint(name="T_02_04_01_UK_01", columnNames={"F_01"})})
 public class MeasurementHour extends GenericModel {
 
     @Column(name="F_01", length=20, nullable=false)

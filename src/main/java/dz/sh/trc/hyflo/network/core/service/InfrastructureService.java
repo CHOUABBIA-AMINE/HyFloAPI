@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: InfrastructureService
  *	@CreatedOn	: 06-26-2025
@@ -98,9 +98,9 @@ public class InfrastructureService extends GenericService<Infrastructure, Infras
         return executeQuery(p -> infrastructureRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
-    public List<InfrastructureDTO> findByRegion(Long regionId) {
-        log.debug("Finding infrastructure by region id: {}", regionId);
-        return infrastructureRepository.findByRegionId(regionId).stream()
+    public List<InfrastructureDTO> findByStructure(Long structureId) {
+        log.debug("Finding infrastructure by region id: {}", structureId);
+        return infrastructureRepository.findByStructureId(structureId).stream()
                 .map(InfrastructureDTO::fromEntity)
                 .collect(Collectors.toList());
     }

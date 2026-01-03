@@ -25,8 +25,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import dz.sh.trc.hyflo.system.audit.model.Audited;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditAction;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditStatus;
 
 @Repository
 public interface AuditedRepository extends JpaRepository<Audited, Long> {
@@ -36,11 +34,11 @@ public interface AuditedRepository extends JpaRepository<Audited, Long> {
     
     Page<Audited> findByUsername(String username, Pageable pageable);
     
-    Page<Audited> findByAction(AuditAction action, Pageable pageable);
+    Page<Audited> findByAction(String action, Pageable pageable);
     
     Page<Audited> findByModule(String module, Pageable pageable);
     
-    Page<Audited> findByStatus(AuditStatus status, Pageable pageable);
+    Page<Audited> findByStatus(String status, Pageable pageable);
 
     // Only essential custom queries that cannot be derived
     @Query("SELECT a FROM Audited a WHERE a.timestamp BETWEEN :startDate AND :endDate")

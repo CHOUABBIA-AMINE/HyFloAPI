@@ -1,14 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: JwtAuthenticationEntryPoint
- *	@CreatedOn	: 11-18-2025
- *	@UpdatedOn	: 12-06-2025 (Fixed ObjectMapper issue)
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-06-2025
  *
  *	@Type		: Class
- *	@Layer		: jwt
- *	@Package	: Configuration
+ *	@Layer		: Security
+ *	@Package	: Configuration / Jwt
  *
  **/
 

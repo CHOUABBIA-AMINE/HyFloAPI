@@ -1,10 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: MeasurementHourRepository
- *	@CreatedOn	: 12-11-2025
- *	@UpdatedOn	: 12-19-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
  *	@Type		: Interface
  *	@Layer		: Repository

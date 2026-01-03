@@ -21,8 +21,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.system.audit.model.Audited;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditAction;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -52,7 +50,7 @@ public class AuditedDTO extends GenericDTO<Audited> {
     private Long entityId;
 
     @NotNull(message = "Action is required")
-    private AuditAction action;
+    private String action;
 
     @Size(max = 100, message = "Username must not exceed 100 characters")
     private String username;
@@ -80,7 +78,7 @@ public class AuditedDTO extends GenericDTO<Audited> {
     private String description;
 
     @NotNull(message = "Status is required")
-    private AuditStatus status;
+    private String status;
 
     private String errorMessage;
 

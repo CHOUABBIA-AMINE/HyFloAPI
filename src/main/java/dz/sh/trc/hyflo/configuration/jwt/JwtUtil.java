@@ -1,13 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: JwtUtil
- *	@CreatedOn	: 11-18-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-06-2025
  *
  *	@Type		: Class
- *	@Layer		: jwt
- *	@Package	: Configuration
+ *	@Layer		: Security
+ *	@Package	: Configuration / Jwt
  *
  **/
 
@@ -32,7 +33,7 @@ import java.util.function.Function;
  * Handles JWT token generation, validation, and claims extraction.
  * Compatible with io.jsonwebtoken version 0.13.0
  * 
- * @author RAAS Security Team
+ * @Author RAAS Security Team
  * @version 2.0 (Updated for JJWT 0.13.0)
  */
 @Component

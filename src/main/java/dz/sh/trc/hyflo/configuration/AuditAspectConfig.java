@@ -1,9 +1,10 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: AuditAspect
- *	@CreatedOn	: 10-27-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 10-27-2025
  *
  *	@Type		: Class
  *	@Layer		: Aspect
@@ -25,7 +26,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import dz.sh.trc.hyflo.configuration.annotation.Auditable;
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditStatus;
 import dz.sh.trc.hyflo.system.audit.service.AuditedService;
 import dz.sh.trc.hyflo.system.audit.service.AuditedService.AuditEventBuilder;
 import jakarta.servlet.http.HttpServletRequest;
@@ -89,9 +89,9 @@ public class AuditAspectConfig {
             eventBuilder
                     .entityId(entityId)
                     .newValues(result)
-                    .status(AuditStatus.SUCCESS)
+                    .status("SUCCESS")
                     .duration(duration)
-                    .description(generateDescription(auditable, entityId, AuditStatus.SUCCESS));
+                    .description(generateDescription(auditable, entityId, "SUCCESS"));
             
             auditedService.logAuditEvent(eventBuilder);
             
@@ -103,10 +103,10 @@ public class AuditAspectConfig {
             
             // Log failed operation
             eventBuilder
-                    .status(AuditStatus.FAILED)
+                    .status("FAILED")
                     .errorMessage(e.getMessage())
                     .duration(duration)
-                    .description(generateDescription(auditable, null, AuditStatus.FAILED));
+                    .description(generateDescription(auditable, null, "FAILED"));
             
             auditedService.logAuditEvent(eventBuilder);
             
@@ -177,24 +177,24 @@ public class AuditAspectConfig {
     /**
      * Generate human-readable description
      */
-    private String generateDescription(Auditable auditable, Long entityId, AuditStatus status) {
+    private String generateDescription(Auditable auditable, Long entityId, String status) {
         StringBuilder description = new StringBuilder();
         
         switch (auditable.action()) {
-            case CREATE:
+            case "CREATE":
                 description.append("Created new ").append(auditable.entityName().toLowerCase());
                 break;
-            case UPDATE:
+            case "UPDATE":
                 description.append("Updated ").append(auditable.entityName().toLowerCase());
                 break;
-            case DELETE:
+            case "DELETE":
                 description.append("Deleted ").append(auditable.entityName().toLowerCase());
                 break;
-            case READ:
+            case "READ":
                 description.append("Retrieved ").append(auditable.entityName().toLowerCase());
                 break;
             default:
-                description.append(auditable.action().name().toLowerCase())
+                description.append("DEFAULT")
                           .append(" operation on ").append(auditable.entityName().toLowerCase());
         }
         
@@ -202,7 +202,7 @@ public class AuditAspectConfig {
             description.append(" with ID ").append(entityId);
         }
         
-        if (status == AuditStatus.FAILED) {
+        if (status == "FAILED") {
             description.append(" - Operation failed");
         }
         

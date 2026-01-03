@@ -1,12 +1,13 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: GenericController
- *	@CreatedOn	: 12-10-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-10-2025
  *
  *	@Type		: Abstract Class
- *	@Layer		: Controller Base
+ *	@Layer		: Template
  *	@Package	: Configuration / Template
  *
  **/

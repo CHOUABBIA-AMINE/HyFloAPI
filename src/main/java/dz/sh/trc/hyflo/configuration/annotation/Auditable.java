@@ -1,11 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: Auditable
- *	@CreatedOn	: 10-27-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-06-2025
  *
- *	@Type		: Annotation
+ *	@Type		: Interface
  *	@Layer		: Annotation
  *	@Package	: Configuration / Annotation
  *
@@ -17,8 +18,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import dz.sh.trc.hyflo.system.audit.model.Audited.AuditAction;
 
 /**
  * Annotation to mark methods for automatic audit logging
@@ -35,7 +34,7 @@ public @interface Auditable {
     /**
      * Type of action being performed
      */
-    AuditAction action();
+    String action();
     
     /**
      * Business module (e.g., "CONSULTATION", "CONTRACT")

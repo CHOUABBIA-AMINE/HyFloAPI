@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: InfrastructureController
  *	@CreatedOn	: 06-26-2025
@@ -115,10 +115,10 @@ public class InfrastructureController extends GenericController<InfrastructureDT
         return super.count();
     }
     
-    @GetMapping("/region/{regionId}")
+    @GetMapping("/structure/{structureId}")
     @PreAuthorize("hasAuthority('INFRASTRUCTURE:READ')")
-    public ResponseEntity<List<InfrastructureDTO>> getByRegionId(@PathVariable Long regionId) {
-        log.info("GET /network/infrastructure/activity/{} - Getting infrastructures by region", regionId);
-        return ResponseEntity.ok(infrastructureService.findByRegion(regionId));
+    public ResponseEntity<List<InfrastructureDTO>> getByStructureId(@PathVariable Long structureId) {
+        log.info("GET /network/infrastructure/structure/{} - Getting infrastructures by structure", structureId);
+        return ResponseEntity.ok(infrastructureService.findByStructure(structureId));
     }	
 }

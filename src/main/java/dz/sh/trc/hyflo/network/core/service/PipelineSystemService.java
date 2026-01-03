@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: PipelineSystemService
  *	@CreatedOn	: 06-26-2025
@@ -25,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.general.organization.model.Region;
-import dz.sh.trc.hyflo.general.organization.repository.RegionRepository;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
+import dz.sh.trc.hyflo.general.organization.repository.StructureRepository;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.common.repository.OperationalStatusRepository;
@@ -46,7 +46,7 @@ public class PipelineSystemService extends GenericService<PipelineSystem, Pipeli
     private final PipelineSystemRepository pipelineSystemRepository;
     private final ProductRepository productRepository;
     private final OperationalStatusRepository operationalStatusRepository;
-    private final RegionRepository regionRepository;
+    private final StructureRepository structureRepository;
 
     @Override
     protected JpaRepository<PipelineSystem, Long> getRepository() {
@@ -79,10 +79,10 @@ public class PipelineSystemService extends GenericService<PipelineSystem, Pipeli
             entity.setOperationalStatus(operationalStatus);
         }
         
-        if (dto.getRegionId() != null) {
-        	Region region = regionRepository.findById(dto.getRegionId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getRegionId()));
-            entity.setRegion(region);
+        if (dto.getStructureId() != null) {
+        	Structure structure = structureRepository.findById(dto.getStructureId())
+                    .orElseThrow(() -> new RuntimeException("Structure not found with id: " + dto.getStructureId()));
+            entity.setStructure(structure);
         }
         
         return entity;
@@ -91,24 +91,6 @@ public class PipelineSystemService extends GenericService<PipelineSystem, Pipeli
     @Override
     protected void updateEntityFromDTO(PipelineSystem entity, PipelineSystemDTO dto) {
         dto.updateEntity(entity);
-        
-        if (dto.getProductId() != null) {
-            Product product = productRepository.findById(dto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
-            entity.setProduct(product);
-        }
-        
-        if (dto.getOperationalStatusId() != null) {
-        	OperationalStatus operationalStatus = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(operationalStatus);
-        }
-        
-        if (dto.getRegionId() != null) {
-        	Region region = regionRepository.findById(dto.getRegionId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getRegionId()));
-            entity.setRegion(region);
-        }
     }
 
     @Override
@@ -166,9 +148,9 @@ public class PipelineSystemService extends GenericService<PipelineSystem, Pipeli
                 .collect(Collectors.toList());
     }
 
-    public List<PipelineSystemDTO> findByRegion(Long regionId) {
-        log.debug("Finding pipeline systems by region id: {}", regionId);
-        return pipelineSystemRepository.findByRegionId(regionId).stream()
+    public List<PipelineSystemDTO> findByStructure(Long structureId) {
+        log.debug("Finding pipeline systems by structure id: {}", structureId);
+        return pipelineSystemRepository.findByStructureId(structureId).stream()
                 .map(PipelineSystemDTO::fromEntity)
                 .collect(Collectors.toList());
     }

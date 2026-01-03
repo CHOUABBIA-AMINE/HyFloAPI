@@ -1,12 +1,13 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: ConsultationException
  *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 11-18-2025
  *
  *	@Type		: Class
- *	@Layaer		: Exception
+ *	@Layer		: Exception
  *	@Package	: Exception
  *
  **/

@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: InfrastructureRepository
  *	@CreatedOn	: 06-26-2025
@@ -34,10 +34,8 @@ public interface InfrastructureRepository extends JpaRepository<Infrastructure, 
     
     boolean existsByCodeAndIdNot(String code, Long id);
     
-    List<Infrastructure> findByRegionId(Long regionId);
+    List<Infrastructure> findByStructureId(Long structureId);
     
-    List<Infrastructure> findByRegion_ActivityId(Long activityId);
-
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT i FROM Infrastructure i WHERE "

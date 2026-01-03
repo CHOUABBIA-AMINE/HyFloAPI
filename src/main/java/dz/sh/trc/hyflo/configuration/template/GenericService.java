@@ -1,13 +1,13 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: GenericService
- *	@CreatedOn	: 12-09-2025
+ *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 12-10-2025
  *
  *	@Type		: Abstract Class
- *	@Layer		: Service Base
+ *	@Layer		: Template
  *	@Package	: Configuration / Template
  *
  **/

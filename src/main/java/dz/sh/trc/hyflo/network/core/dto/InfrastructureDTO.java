@@ -1,6 +1,6 @@
 /**
  *	
- *	@author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: InfrastructureDTO
  *	@CreatedOn	: 06-26-2025
@@ -19,8 +19,8 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.organization.dto.RegionDTO;
-import dz.sh.trc.hyflo.general.organization.model.Region;
+import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
@@ -58,12 +58,12 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Region is required")
-    private Long regionId;
+    @NotNull(message = "Structure is required")
+    private Long structureId;
     
     private OperationalStatusDTO operationalStatus;
     
-    private RegionDTO region;
+    private StructureDTO structure;
 
     @Override
     public Infrastructure toEntity() {
@@ -81,10 +81,10 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-        	entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+        	entity.setStructure(structure);
         }
         
         return entity;
@@ -104,10 +104,10 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.regionId != null) {
-        	Region region = new Region();
-        	region.setId(this.regionId);
-        	entity.setRegion(region);
+        if (this.structureId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.structureId);
+        	entity.setStructure(structure);
         }
     }
 
@@ -122,10 +122,10 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
                 .commissioningDate(entity.getCommissioningDate())
                 .decommissioningDate(entity.getDecommissioningDate())
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .regionId(entity.getRegion() != null ? entity.getRegion().getId() : null)
+                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .region(entity.getRegion() != null ? RegionDTO.fromEntity(entity.getRegion()) : null)
+                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .build();
     }
 }

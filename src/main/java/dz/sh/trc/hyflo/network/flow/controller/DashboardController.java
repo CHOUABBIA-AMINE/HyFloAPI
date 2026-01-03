@@ -1,12 +1,12 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: DashboardController
- *	@CreatedOn	: 12-27-2025
- *	@UpdatedOn	: 12-27-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
  *
- *	@Type		: Controller
+ *	@Type		: Class
  *	@Layer		: Controller
  *	@Package	: Network / Flow
  *
@@ -33,18 +33,6 @@ import dz.sh.trc.hyflo.network.flow.dto.DashboardSummaryDTO;
 import dz.sh.trc.hyflo.network.flow.dto.PipelineStatusDTO;
 import dz.sh.trc.hyflo.network.flow.service.DashboardService;
 
-/**
- * Dashboard Controller
- * Provides REST API endpoints for flow monitoring dashboard
- * 
- * Base URL: /iaas/api/network/flow/dashboard
- * 
- * Endpoints:
- * - GET /summary - Get overall dashboard summary
- * - GET /pipelines - Get all pipeline statuses
- * - GET /pipeline/{id} - Get specific pipeline status
- * - GET /trends - Get daily trend data for charts
- */
 @RestController
 @RequestMapping("/network/flow/dashboard")
 @CrossOrigin(origins = "*")
@@ -53,18 +41,6 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
-    /**
-     * GET /network/flow/dashboard/summary
-     * 
-     * Get comprehensive dashboard summary including:
-     * - Infrastructure counts
-     * - Today's volume and pressure metrics
-     * - Transported vs estimated comparison
-     * - Status breakdown (on target, below, above, offline)
-     * - Monthly summary
-     * 
-     * @return DashboardSummaryDTO with all dashboard metrics
-     */
     @GetMapping("/summary")
     public ResponseEntity<DashboardSummaryDTO> getDashboardSummary() {
         try {
@@ -75,20 +51,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * GET /network/flow/dashboard/pipelines
-     * GET /network/flow/dashboard/pipelines?date=2025-12-27
-     * 
-     * Get status for all pipelines for a specific date
-     * Includes:
-     * - Latest volume and pressure readings
-     * - Daily accumulated volume
-     * - Transported vs estimated comparison
-     * - Status indicators
-     * 
-     * @param date Optional date parameter (format: yyyy-MM-dd). Defaults to today
-     * @return List of PipelineStatusDTO
-     */
     @GetMapping("/pipelines")
     public ResponseEntity<List<PipelineStatusDTO>> getPipelineStatuses(
             @RequestParam(required = false) 
@@ -103,16 +65,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * GET /network/flow/dashboard/pipeline/{id}
-     * GET /network/flow/dashboard/pipeline/{id}?date=2025-12-27
-     * 
-     * Get detailed status for a specific pipeline
-     * 
-     * @param id Pipeline ID
-     * @param date Optional date parameter (format: yyyy-MM-dd). Defaults to today
-     * @return PipelineStatusDTO for the specified pipeline
-     */
     @GetMapping("/pipeline/{id}")
     public ResponseEntity<PipelineStatusDTO> getPipelineStatus(
             @PathVariable Long id,
@@ -130,17 +82,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * GET /network/flow/dashboard/trends
-     * GET /network/flow/dashboard/trends?startDate=2025-12-20&endDate=2025-12-27
-     * 
-     * Get daily trend data for charts
-     * Used for volume comparison charts and pressure trends
-     * 
-     * @param startDate Optional start date (format: yyyy-MM-dd). Defaults to 7 days ago
-     * @param endDate Optional end date (format: yyyy-MM-dd). Defaults to today
-     * @return List of DailyTrendDTO with daily metrics
-     */
     @GetMapping("/trends")
     public ResponseEntity<List<DailyTrendDTO>> getDailyTrends(
             @RequestParam(required = false) 

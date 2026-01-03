@@ -491,7 +491,7 @@ CREATE TABLE `r_t030305_t030204` (
 -- Déchargement des données de la table `r_t030305_t030204`
 --
 
-INSERT INTO `r_t030305_t030204` (`f_01`, `f_02`) VALUES
+INSERT INTO `R_T020305_T020204` (`f_01`, `f_02`) VALUES
 (124, 1),
 (124, 3),
 (125, 1),
@@ -535,7 +535,7 @@ CREATE TABLE `r_t030305_t030207` (
 -- Déchargement des données de la table `r_t030305_t030207`
 --
 
-INSERT INTO `r_t030305_t030207` (`f_01`, `f_02`) VALUES
+INSERT INTO `R_T020305_T020204` (`f_01`, `f_02`) VALUES
 (124, 1),
 (125, 1),
 (126, 1),
@@ -611,13 +611,11 @@ CREATE TABLE `t_00_02_01` (
 
 INSERT INTO `t_00_02_01` (`f_00`, `f_02`, `f_01`) VALUES
 (1, 'Group Members has all permissions on data belongs to system component', 'System Administrators'),
-(2, 'Group Members has all permissions on data belongs to business component', 'Business Administrators'),
-(3, 'Group Members has all permissions on data belongs to common component', 'Common Administrators'),
-(4, 'Group Members has all permissions on data belongs to network component', 'Network Administrators'),
-(5, 'Group Members has read permission on data belongs to system component', 'System Users'),
-(6, 'Group Members has read permission on data belongs to business component', 'Business Users'),
-(7, 'Group Members has read permission on data belongs to common component', 'Common Users'),
-(8, 'Group Members has read permission on data belongs to network component', 'Network Users');
+(2, 'Group Members has all permissions on data belongs to common component', 'General Administrators'),
+(3, 'Group Members has all permissions on data belongs to network component', 'Network Administrators'),
+(4, 'Group Members has read permission on data belongs to system component', 'System Users'),
+(5, 'Group Members has read permission on data belongs to common component', 'General Users'),
+(6, 'Group Members has read permission on data belongs to network component', 'Network Users');
 
 -- --------------------------------------------------------
 
@@ -677,34 +675,22 @@ CREATE TABLE `t_00_02_03` (
 INSERT INTO `t_00_02_03` (`f_00`, `f_02`, `f_01`) VALUES
 (1, 'Manage system security data', 'SYSTEM-SECURITY_ADMIN_ROLE'),
 (2, 'Manage system audit data', 'SYSTEM-AUDIT_ADMIN_ROLE'),
-(3, 'Manage business core data', 'BUSINESS-CORE_ADMIN_ROLE'),
-(4, 'Manage business plan data', 'BUSINESS-PLAN_ADMIN_ROLE'),
-(5, 'Manage business provider data', 'BUSINESS-PROVIDER_ADMIN_ROLE'),
-(6, 'Manage business consultation data', 'BUSINESS-CONSULTATION_ADMIN_ROLE'),
-(7, 'Manage business contract data', 'BUSINESS-CONTRACT_ADMIN_ROLE'),
-(8, 'Manage business amendment data', 'BUSINESS-AMENDMENT_ADMIN_ROLE'),
-(9, 'Manage common Environment data', 'COMMON-ENVIRONMENT_ADMIN_ROLE'),
-(10, 'Manage common communication data', 'COMMON-COMMUNICATION_ADMIN_ROLE'),
-(11, 'Manage common document data', 'COMMON-DOCUMENT_ADMIN_ROLE'),
-(12, 'Manage common administration data', 'COMMON-ADMINISTRATION_ADMIN_ROLE'),
-(13, 'Manage network type data', 'NETWORK-TYPE_ADMIN_ROLE'),
-(14, 'Manage network common data', 'NETWORK-COMMON_ADMIN_ROLE'),
-(15, 'Manage network core data', 'NETWORK-CORE_ADMIN_ROLE'),
-(16, 'View system security data', 'SYSTEM-SECURITY_READ_ROLE'),
-(17, 'View system audit data', 'SYSTEM-AUDIT_READ_ROLE'),
-(18, 'View business core data', 'BUSINESS-CORE_READ_ROLE'),
-(19, 'View business plan data', 'BUSINESS-PLAN_READ_ROLE'),
-(20, 'View business provider data', 'BUSINESS-PROVIDER_READ_ROLE'),
-(21, 'View business consultation data', 'BUSINESS-CONSULTATION_READ_ROLE'),
-(22, 'View business contract data', 'BUSINESS-CONTRACT_READ_ROLE'),
-(23, 'View business amendment data', 'BUSINESS-AMENDMENT_READ_ROLE'),
-(24, 'View common environment data', 'COMMON-ENVIRONMENT_READ_ROLE'),
-(25, 'View common communication data', 'COMMON-COMMUNICATION_READ_ROLE'),
-(26, 'View common document data', 'COMMON-DOCUMENT_READ_ROLE'),
-(27, 'View common administration data', 'COMMON-ADMINISTRATION_READ_ROLE'),
-(28, 'View network type data', 'NETWORK-TYPE_READ_ROLE'),
-(29, 'View network common data', 'NETWORK-COMMON_READ_ROLE'),
-(30, 'View network core data', 'NETWORK-CORE_READ_ROLE');
+(3, 'Manage general type data', 'GENERAL-TYPE_ADMIN_ROLE'),
+(4, 'Manage general organization data', 'GENERAL-ORGANIZATION_ADMIN_ROLE'),
+(5, 'Manage general localization data', 'GENERAL-LOCALIZATION_ADMIN_ROLE'),
+(6, 'Manage network type data', 'NETWORK-TYPE_ADMIN_ROLE'),
+(7, 'Manage network common data', 'NETWORK-COMMON_ADMIN_ROLE'),
+(8, 'Manage network core data', 'NETWORK-CORE_ADMIN_ROLE'),
+(9, 'Manage network flow data', 'NETWORK-FLOW_ADMIN_ROLE'),
+(10, 'View system security data', 'SYSTEM-SECURITY_READ_ROLE'),
+(11, 'View system audit data', 'SYSTEM-AUDIT_READ_ROLE'),
+(12, 'View general type data', 'GENERAL-TYPE_READ_ROLE'),
+(13, 'View general organization data', 'GENERAL-ORGANIZATION_READ_ROLE'),
+(14, 'View general localization data', 'GENERAL-LOCALIZATION_READ_ROLE'),
+(15, 'View network type data', 'NETWORK-TYPE_READ_ROLE'),
+(16, 'View network common data', 'NETWORK-COMMON_READ_ROLE'),
+(17, 'View network core data', 'NETWORK-CORE_READ_ROLE');
+(18, 'View network flow data', 'NETWORK-FLOW_READ_ROLE');
 
 -- --------------------------------------------------------
 
@@ -731,54 +717,6 @@ INSERT INTO `t_00_02_04` (`f_00`, `f_04`, `f_02`, `f_01`, `f_03`) VALUES
 (4, 'ADMIN', 'PERMISSION ADMINISTRATION', 'PERMISSION:ADMIN', 'PERMISSION'),
 (5, 'ADMIN', 'AUTHORITY ADMINISTRATION', 'AUTHORITY:ADMIN', 'AUTHORITY'),
 (6, 'ADMIN', 'AUDIT ADMINISTRATION', 'AUDIT:ADMIN', 'AUDIT'),
-(7, 'ADMIN', 'CURRENCY ADMINISTRATION', 'CURRENCY:ADMIN', 'CURRENCY'),
-(8, 'ADMIN', 'APPROVAL_STATUS ADMINISTRATION', 'APPROVAL_STATUS:ADMIN', 'APPROVAL_STATUS'),
-(9, 'ADMIN', 'PROCUREMENT_DIRECTOR ADMINISTRATION', 'PROCUREMENT_DIRECTOR:ADMIN', 'PROCUREMENT_DIRECTOR'),
-(10, 'ADMIN', 'PROCUREMENT_NATURE ADMINISTRATION', 'PROCUREMENT_NATURE:ADMIN', 'PROCUREMENT_NATURE'),
-(11, 'ADMIN', 'PROCUREMENT_STATUS ADMINISTRATION', 'PROCUREMENT_STATUS:ADMIN', 'PROCUREMENT_STATUS'),
-(12, 'ADMIN', 'BUDGET_TYPE ADMINISTRATION', 'BUDGET_TYPE:ADMIN', 'BUDGET_TYPE'),
-(13, 'ADMIN', 'ITEM_STATUS ADMINISTRATION', 'ITEM_STATUS:ADMIN', 'ITEM_STATUS'),
-(14, 'ADMIN', 'FINANCIAL_OPERATION ADMINISTRATION', 'FINANCIAL_OPERATION:ADMIN', 'FINANCIAL_OPERATION'),
-(15, 'ADMIN', 'DOMAIN ADMINISTRATION', 'DOMAIN:ADMIN', 'DOMAIN'),
-(16, 'ADMIN', 'RUBRIC ADMINISTRATION', 'RUBRIC:ADMIN', 'RUBRIC'),
-(17, 'ADMIN', 'ITEM ADMINISTRATION', 'ITEM:ADMIN', 'ITEM'),
-(18, 'ADMIN', 'BUDGET_MODIFICATION ADMINISTRATION', 'BUDGET_MODIFICATION:ADMIN', 'BUDGET_MODIFICATION'),
-(19, 'ADMIN', 'PLANNED_ITEM ADMINISTRATION', 'PLANNED_ITEM:ADMIN', 'PLANNED_ITEM'),
-(20, 'ADMIN', 'ITEM_DISTRIBUTION ADMINISTRATION', 'ITEM_DISTRIBUTION:ADMIN', 'ITEM_DISTRIBUTION'),
-(21, 'ADMIN', 'ECONOMIC_DOMAIN ADMINISTRATION', 'ECONOMIC_DOMAIN:ADMIN', 'ECONOMIC_DOMAIN'),
-(22, 'ADMIN', 'ECONOMIC_NATURE ADMINISTRATION', 'ECONOMIC_NATURE:ADMIN', 'ECONOMIC_NATURE'),
-(23, 'ADMIN', 'EXCLUSION_TYPE ADMINISTRATION', 'EXCLUSION_TYPE:ADMIN', 'EXCLUSION_TYPE'),
-(24, 'ADMIN', 'PROVIDER ADMINISTRATION', 'PROVIDER:ADMIN', 'PROVIDER'),
-(25, 'ADMIN', 'PROVIDER_REPRESENTATOR ADMINISTRATION', 'PROVIDER_REPRESENTATOR:ADMIN', 'PROVIDER_REPRESENTATOR'),
-(26, 'ADMIN', 'CLEARANCE ADMINISTRATION', 'CLEARANCE:ADMIN', 'CLEARANCE'),
-(27, 'ADMIN', 'PROVIDER_EXCLUSION ADMINISTRATION', 'PROVIDER_EXCLUSION:ADMIN', 'PROVIDER_EXCLUSION'),
-(28, 'ADMIN', 'AWARD_METHOD ADMINISTRATION', 'AWARD_METHOD:ADMIN', 'AWARD_METHOD'),
-(29, 'ADMIN', 'CONSULTATION_PHASE ADMINISTRATION', 'CONSULTATION_PHASE:ADMIN', 'CONSULTATION_PHASE'),
-(30, 'ADMIN', 'CONSULTATION_STEP ADMINISTRATION', 'CONSULTATION_STEP:ADMIN', 'CONSULTATION_STEP'),
-(31, 'ADMIN', 'CONSULTATION ADMINISTRATION', 'CONSULTATION:ADMIN', 'CONSULTATION'),
-(32, 'ADMIN', 'SUBMISSION ADMINISTRATION', 'SUBMISSION:ADMIN', 'SUBMISSION'),
-(33, 'ADMIN', 'CONTRACT_TYPE ADMINISTRATION', 'CONTRACT_TYPE:ADMIN', 'CONTRACT_TYPE'),
-(34, 'ADMIN', 'CONTRACT_PHASE ADMINISTRATION', 'CONTRACT_PHASE:ADMIN', 'CONTRACT_PHASE'),
-(35, 'ADMIN', 'CONTRACT_STEP ADMINISTRATION', 'CONTRACT_STEP:ADMIN', 'CONTRACT_STEP'),
-(36, 'ADMIN', 'CONTRACT ADMINISTRATION', 'CONTRACT:ADMIN', 'CONTRACT'),
-(37, 'ADMIN', 'CONTRACT_ITEM ADMINISTRATION', 'CONTRACT_ITEM:ADMIN', 'CONTRACT_ITEM'),
-(38, 'ADMIN', 'AMENDMENT_TYPE ADMINISTRATION', 'AMENDMENT_TYPE:ADMIN', 'AMENDMENT_TYPE'),
-(39, 'ADMIN', 'AMENDMENT_PHASE ADMINISTRATION', 'AMENDMENT_PHASE:ADMIN', 'AMENDMENT_PHASE'),
-(40, 'ADMIN', 'AMENDMENT_STEP ADMINISTRATION', 'AMENDMENT_STEP:ADMIN', 'AMENDMENT_STEP'),
-(41, 'ADMIN', 'AMENDMENT ADMINISTRATION', 'AMENDMENT:ADMIN', 'AMENDMENT'),
-(42, 'ADMIN', 'BLOC ADMINISTRATION', 'BLOC:ADMIN', 'BLOC'),
-(43, 'ADMIN', 'FLOOR ADMINISTRATION', 'FLOOR:ADMIN', 'FLOOR'),
-(44, 'ADMIN', 'ROOM ADMINISTRATION', 'ROOM:ADMIN', 'ROOM'),
-(45, 'ADMIN', 'SHELF_FLOOR ADMINISTRATION', 'SHELF_FLOOR:ADMIN', 'SHELF_FLOOR'),
-(46, 'ADMIN', 'SHELF ADMINISTRATION', 'SHELF:ADMIN', 'SHELF'),
-(47, 'ADMIN', 'ARCHIVE_BOX ADMINISTRATION', 'ARCHIVE_BOX:ADMIN', 'ARCHIVE_BOX'),
-(48, 'ADMIN', 'FOLDER ADMINISTRATION', 'FOLDER:ADMIN', 'FOLDER'),
-(49, 'ADMIN', 'MAIL_NATURE ADMINISTRATION', 'MAIL_NATURE:ADMIN', 'MAIL_NATURE'),
-(50, 'ADMIN', 'MAIL_TYPE ADMINISTRATION', 'MAIL_TYPE:ADMIN', 'MAIL_TYPE'),
-(51, 'ADMIN', 'MAIL ADMINISTRATION', 'MAIL:ADMIN', 'MAIL'),
-(52, 'ADMIN', 'DOCUMENT_TYPE ADMINISTRATION', 'DOCUMENT_TYPE:ADMIN', 'DOCUMENT_TYPE'),
-(53, 'ADMIN', 'DOCUMENT ADMINISTRATION', 'DOCUMENT:ADMIN', 'DOCUMENT'),
-(54, 'ADMIN', 'COUNTRY ADMINISTRATION', 'COUNTRY:ADMIN', 'COUNTRY'),
 (55, 'ADMIN', 'STATE ADMINISTRATION', 'STATE:ADMIN', 'STATE'),
 (56, 'ADMIN', 'LOCALITY ADMINISTRATION', 'LOCALITY:ADMIN', 'LOCALITY'),
 (57, 'ADMIN', 'MILITARY_CATEGORY ADMINISTRATION', 'MILITARY_CATEGORY:ADMIN', 'MILITARY_CATEGORY'),
@@ -1335,7 +1273,7 @@ CREATE TABLE `t_01_04_01` (
 -- Déchargement des données de la table `t_01_04_01`
 --
 
-INSERT INTO `t_01_04_01` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_01_02_02` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'AF', 'أفغانستان', 'Afghanistan', 'Afghanistan'),
 (2, 'AX', 'جزر آلاند', 'Åland Islands', 'Îles Åland'),
 (3, 'AL', 'ألبانيا', 'Albania', 'Albanie'),
@@ -1525,7 +1463,7 @@ INSERT INTO `t_01_04_01` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (187, 'SH', 'سانت هيلينا وأسنسيون وتريستان دا كونا', 'Saint Helena', 'Sainte-Hélène'),
 (188, 'KN', 'سانت كيتس ونيفيس', 'Saint Kitts and Nevis', 'Saint-Kitts-et-Nevis'),
 (189, 'LC', 'سانت لوسيا', 'Saint Lucia', 'Sainte-Lucie'),
-(190, 'MF', 'سانت مارتن', 'Saint Martin', 'Saint-Martin'),
+(190, 'MF', 'سانت مارتن', 'Saint Martin', 'Saint Martin'),
 (191, 'PM', 'سان بيير وميكلون', 'Saint Pierre and Miquelon', 'Saint-Pierre-et-Miquelon'),
 (192, 'VC', 'سانت فينسنت والغرينادين', 'Saint Vincent and the Grenadines', 'Saint-Vincent-et-les-Grenadines'),
 (193, 'WS', 'ساموا', 'Samoa', 'Samoa'),
@@ -1537,7 +1475,7 @@ INSERT INTO `t_01_04_01` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (199, 'SC', 'سيشل', 'Seychelles', 'Seychelles'),
 (200, 'SL', 'سيراليون', 'Sierra Leone', 'Sierra Leone'),
 (201, 'SG', 'سنغافورة', 'Singapore', 'Singapour'),
-(202, 'SX', 'سينت مارتن', 'Sint Maarten', 'Saint-Martin'),
+(202, 'SX', 'سينت مارتن', 'Sint-Maarten', 'Saint-Martin'),
 (203, 'SK', 'سلوفاكيا', 'Slovakia', 'Slovaquie'),
 (204, 'SI', 'سلوفينيا', 'Slovenia', 'Slovénie'),
 (205, 'SB', 'جزر سليمان', 'Solomon Islands', 'Îles Salomon'),
@@ -1604,7 +1542,7 @@ CREATE TABLE `t_01_04_02` (
 -- Déchargement des données de la table `t_01_04_02`
 --
 
-INSERT INTO `t_01_04_02` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_01_02_03` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (1, '1', 'أدرار', NULL, 'Adrar'),
 (2, '2', 'الشلف', NULL, 'Chlef'),
 (3, '3', 'الأغواط', NULL, 'Laghouat'),
@@ -1683,7 +1621,7 @@ CREATE TABLE `t_01_04_03` (
 -- Déchargement des données de la table `t_01_04_03`
 --
 
-INSERT INTO `t_01_04_03` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`, `f_05`) VALUES
+INSERT INTO `T_01_02_04` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`, `f_05`) VALUES
 (1, '0001', 'أدرار', 'Adrar', 'Adrar', 1),
 (2, '0002', 'اقبلي', 'Akabli', 'Akabli', 1),
 (3, '0003', 'أوقروت', 'Aougrout', 'Aougrout', 49),
@@ -2579,7 +2517,7 @@ INSERT INTO `t_01_04_03` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`, `f_05`) VALUES
 (893, '0893', 'الخروب', 'El Khroub', 'El Khroub', 25),
 (894, '0894', 'حامة بوزيان', 'Hamma Bouziane', 'Hamma Bouziane', 25),
 (895, '0895', 'ابن زياد', 'Ibn Ziad', 'Ibn Ziad', 25);
-INSERT INTO `t_01_04_03` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`, `f_05`) VALUES
+INSERT INTO `T_01_02_04` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`, `f_05`) VALUES
 (896, '0896', 'بوجريو مسعود', 'Messaoud Boudjeriou', 'Messaoud Boudjeriou', 25),
 (897, '0897', 'أولاد رحمون', 'Ouled Rahmoun', 'Ouled Rahmoun', 25),
 (898, '0898', 'زيغود يوسف', 'Zighoud Youcef', 'Zighoud Youcef', 25),
@@ -5545,7 +5483,7 @@ CREATE TABLE `t_03_01_01` (
 -- Déchargement des données de la table `t_03_01_01`
 --
 
-INSERT INTO `t_03_01_01` (`f_00`, `f_01`, `f_02`, `f_03`) VALUES
+INSERT INTO `T_02_01_01` (`f_00`, `f_01`, `f_02`, `f_03`) VALUES
 (1, 'مشغل عام وطني', 'National Public Operator', 'Opérateur Public National'),
 (2, 'مشغل خاص وطني', 'National Private Operator', 'Opérateur Privé National'),
 (3, 'مشغل دولي', 'International Operator', 'Opérateur International'),
@@ -5583,7 +5521,7 @@ CREATE TABLE `t_03_01_02` (
 -- Déchargement des données de la table `t_03_01_02`
 --
 
-INSERT INTO `t_03_01_02` (`f_00`) VALUES
+INSERT INTO `T_02_01_02` (`f_00`) VALUES
 (1),
 (2),
 (3),
@@ -5608,7 +5546,7 @@ CREATE TABLE `t_03_01_03` (
 -- Déchargement des données de la table `t_03_01_03`
 --
 
-INSERT INTO `t_03_01_03` (`f_00`) VALUES
+INSERT INTO `T_02_01_03` (`f_00`) VALUES
 (10),
 (11),
 (12),
@@ -5641,7 +5579,7 @@ CREATE TABLE `t_03_01_04` (
 -- Déchargement des données de la table `t_03_01_04`
 --
 
-INSERT INTO `t_03_01_04` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_02_01_04` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'PUMP-STN', 'محطة ضخ', 'Pumping Station', 'Station de Pompage'),
 (2, 'COMP-STN', 'محطة ضغط', 'Compression Station', 'Station de Compression'),
 (3, 'PR-STN', 'محطة خفض الضغط', 'Pressure Reduction Station', 'Station de Détente'),
@@ -5676,7 +5614,7 @@ CREATE TABLE `t_03_01_05` (
 -- Déchargement des données de la table `t_03_01_05`
 --
 
-INSERT INTO `t_03_01_05` (`f_00`) VALUES
+INSERT INTO `T_02_01_05` (`f_00`) VALUES
 (1),
 (2),
 (3),
@@ -5699,7 +5637,7 @@ CREATE TABLE `t_03_01_06` (
 -- Déchargement des données de la table `t_03_01_06`
 --
 
-INSERT INTO `t_03_01_06` (`f_00`) VALUES
+INSERT INTO `T_02_01_06` (`f_00`) VALUES
 (8),
 (9),
 (10),
@@ -5724,7 +5662,7 @@ CREATE TABLE `t_03_01_07` (
 -- Déchargement des données de la table `t_03_01_07`
 --
 
-INSERT INTO `t_03_01_07` (`f_00`) VALUES
+INSERT INTO `T_02_01_07` (`f_00`) VALUES
 (17),
 (18),
 (19);
@@ -5747,7 +5685,7 @@ CREATE TABLE `t_03_01_08` (
 -- Déchargement des données de la table `t_03_01_08`
 --
 
-INSERT INTO `t_03_01_08` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_02_01_08` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'T', 'توربين', 'Turbine', 'Turbine'),
 (2, 'M', 'محرك', 'Motor', 'Moteur'),
 (3, 'EM', 'محرك كهربائي', 'Electric Motor', 'Moteur Électrique'),
@@ -5803,7 +5741,7 @@ CREATE TABLE `t_03_02_01` (
 -- Déchargement des données de la table `t_03_02_01`
 --
 
-INSERT INTO `t_03_02_01` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_01_02_01` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'SUD', 'المنطقة الجنوبية للشبكة الوطنية للنقل', 'Southern zone of the national transport network', 'Zone sud du réseau national de transport', 'الجنوب', 'South', 'Sud'),
 (2, 'NORD', 'المنطقة الشمالية للشبكة الوطنية للنقل', 'Northern zone of the national transport network', 'Zone nord du réseau national de transport', 'الشمال', 'North', 'Nord');
 
@@ -5830,16 +5768,16 @@ CREATE TABLE `t_03_02_02` (
 -- Déchargement des données de la table `t_03_02_02`
 --
 
-INSERT INTO `t_03_02_02` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`, `f_08`, `f_09`) VALUES
-(1, 'SCA', 'المقر الرئيسي المركزي لأنشطة النقل', 'Central headquarters for transport activities', 'Siège central pour les activités de transport', 'المقر المركزي للنشاط', 'Activity Central Headquarters', 'Siège Centrale de l\'Activité', 2, NULL),
-(2, 'RTO', 'منطقة النقل الغربية للشبكة الوطنية', 'Western transport region of the national network', 'Région de transport ouest du réseau national', 'منطقة النقل الغربية', 'Western Transport Region', 'Region de Transport Ouest', 2, NULL),
-(3, 'RTC', 'منطقة النقل المركزية للشبكة الوطنية', 'Central transport region of the national network', 'Région de transport centre du réseau national', 'منطقة النقل المركزية', 'Central Transport Region', 'Region de Transport Centre', 2, NULL),
-(4, 'RTE', 'منطقة النقل الشرقية للشبكة الوطنية', 'Eastern transport region of the national network', 'Région de transport est du réseau national', 'منطقة النقل الشرقية', 'Eastern Transport Region', 'Region de Transport Est', 2, NULL),
-(5, 'PDF', 'منطقة بيدرو دوران فاريل', 'Pedro Duran Farel region', 'Région Pedro Duran Farel', 'بيدرو دوران فاريل', 'Pedro Duran Farel', 'Pedro Duran Farel', 1, NULL),
-(6, 'EM', 'منطقة إنريكو ماتي', 'Enrico Mattei region', 'Région Enrico Mattei', 'إنريكو ماتي', 'Enrico Mattei', 'Enrico Mattei', 1, NULL),
-(7, 'HEH', 'منطقة حوض الحمراء للإنتاج', 'Haoud El Hamra production region', 'Région de production Haoud El Hamra', 'منطقة حوض الحمراء', 'Haoud El Hamra Region', 'Region Haoud El Hamra', 1, NULL),
-(8, 'HRM', 'منطقة حاسي الرمل للغاز الطبيعي', 'Hassi R\'Mel natural gas region', 'Région de gaz naturel Hassi R\'Mel', 'منطقة حاسي الرمل', 'Hassi R\'Mel Region', 'Region Hassi R\'Mel', 1, NULL),
-(9, 'RTI', 'منطقة النقل إليزي في الصحراء الشرقية', 'Illizi transport region in the eastern Sahara', 'Région de transport Illizi dans le Sahara oriental', 'منطقة النقل إليزي', 'Illizi Transport Region', 'Region de Transport Illizi', 1, NULL);
+INSERT INTO `T_01_03_02` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`, `f_05`, `f_06`) VALUES
+(1, 'SCA', 'المقر المركزي للنشاط', 'Activity Central Headquarters', 'Siège Centrale de l\'Activité', 2, NULL),
+(2, 'RTO', 'منطقة النقل الغربية', 'Western Transport Region', 'Region de Transport Ouest', 2, NULL),
+(3, 'RTC', 'منطقة النقل المركزية', 'Central Transport Region', 'Region de Transport Centre', 2, NULL),
+(4, 'RTE', 'منطقة النقل الشرقية', 'Eastern Transport Region', 'Region de Transport Est', 2, NULL),
+(5, 'PDF', 'بيدرو دوران فاريل', 'Pedro Duran Farel', 'Pedro Duran Farel', 1, NULL),
+(6, 'EM', 'إنريكو ماتي', 'Enrico Mattei', 'Enrico Mattei', 1, NULL),
+(7, 'HEH', 'منطقة حوض الحمراء', 'Haoud El Hamra Region', 'Region Haoud El Hamra', 1, NULL),
+(8, 'HRM', 'منطقة حاسي الرمل', 'Hassi R\'Mel Region', 'Region Hassi R\'Mel', 1, NULL),
+(9, 'RTI', 'منطقة النقل إليزي', 'Illizi Transport Region', 'Region de Transport Illizi', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -5882,7 +5820,7 @@ CREATE TABLE `t_03_02_04` (
 -- Déchargement des données de la table `t_03_02_04`
 --
 
-INSERT INTO `t_03_02_04` (`f_00`, `f_01`, `f_05`, `f_02`, `f_03`, `f_04`, `f_07`, `f_09`, `f_08`, `f_06`) VALUES
+INSERT INTO `T_02_02_01` (`f_00`, `f_01`, `f_05`, `f_02`, `f_03`, `f_04`, `f_07`, `f_09`, `f_08`, `f_06`) VALUES
 (1, 'GN', 0.7, 'الغاز الطبيعي', 'Natural Gas', 'Gaz naturel', -188, b'1', 0.01, 0.01),
 (2, 'PB', 0.85, 'النفط الخام', 'Crude Oil', 'Pétrole brut', -30, b'1', 1.5, 10.5),
 (3, 'COND', 0.75, 'المكثفات', 'Condensate', 'Condensat', -40, b'1', 0.05, 0.8),
@@ -5909,7 +5847,7 @@ CREATE TABLE `t_03_02_05` (
 -- Déchargement des données de la table `t_03_02_05`
 --
 
-INSERT INTO `t_03_02_05` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_02_02_02` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'INSERVICE', 'العمليات العادية', 'Normal operations', 'Opérations normales', 'قيد الخدمة', 'In Service', 'En Service'),
 (2, 'STOPPED', 'ظروف السوق، المرونة التشغيلية', 'Market conditions, operational flexibility', 'Conditions du marché, flexibilité opérationnelle', 'متوقف مؤقتا', 'Stopped', 'À l\'Arrêt'),
 (3, 'SHUTDOWN', 'صيانة مخططة أو حادث غير متوقع', 'Planned maintenance or unexpected incident', 'Maintenance planifiée ou incident imprévu', 'متوقف', 'Shutdown', 'Arrêté'),
@@ -5940,7 +5878,7 @@ CREATE TABLE `t_03_02_06` (
 -- Déchargement des données de la table `t_03_02_06`
 --
 
-INSERT INTO `t_03_02_06` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_02_02_03` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'API-5L-B', 'فولاذ كربوني منخفض المقاومة للأنابيب العامة، حد أدنى للخضوع 35 كيلو باوند/بوصة²', 'Low-strength carbon steel for general purpose pipelines, minimum yield 35 ksi', 'Acier au carbone de résistance faible pour pipelines usage général, limite élastique min 35 ksi', 'فولاذ API 5L درجة B', 'API 5L Grade B', 'Acier API 5L Grade B'),
 (2, 'API-5L-X42', 'فولاذ متوسط المقاومة للضغوط المعتدلة، حد أدنى للخضوع 42 كيلو باوند/بوصة²', 'Medium-strength steel for moderate pressure applications, minimum yield 42 ksi', 'Acier de résistance moyenne pour applications à pression modérée, limite élastique min 42 ksi', 'فولاذ API 5L X42', 'API 5L Grade X42', 'Acier API 5L Grade X42'),
 (3, 'API-5L-X52', 'فولاذ عالي المقاومة للأنابيب القياسية، حد أدنى للخضوع 52 كيلو باوند/بوصة²', 'High-strength steel for standard pipelines, minimum yield 52 ksi, widely used', 'Acier haute résistance pour pipelines standard, limite élastique min 52 ksi, très utilisé', 'فولاذ API 5L X52', 'API 5L Grade X52', 'Acier API 5L Grade X52'),
@@ -5983,7 +5921,7 @@ CREATE TABLE `t_03_02_07` (
 -- Déchargement des données de la table `t_03_02_07`
 --
 
-INSERT INTO `t_03_02_07` (`f_00`, `f_01`, `f_02`, `f_04`, `f_03`) VALUES
+INSERT INTO `T_02_02_04` (`f_00`, `f_01`, `f_02`, `f_04`, `f_03`) VALUES
 (1, 'Société Nationale pour la Recherche, la Production, le Transport, la Transformation et la Commercial', 'SONATRACH', 4, 1),
 (2, 'Société Nationale de l\'Électricité et du Gaz', 'SONELGAZ', 4, 1),
 (3, 'Société Nationale de Transport Maritime des Hydrocarbures', 'SNTM-HYPROC', 4, 1),
@@ -6032,7 +5970,7 @@ CREATE TABLE `t_03_02_08` (
 -- Déchargement des données de la table `t_03_02_08`
 --
 
-INSERT INTO `t_03_02_08` (`f_00`, `f_01`, `f_02`, `f_04`, `f_03`) VALUES
+INSERT INTO `T_02_02_05` (`f_00`, `f_01`, `f_02`, `f_04`, `f_03`) VALUES
 (1, 'Saipem S.p.A.', 'SAIPEM-EPC', 111, 10),
 (2, 'Technip Energies Algeria', 'TECHNIP-EPC', 77, 10),
 (3, 'China National Petroleum Corporation', 'CNPC-EPC', 46, 10),
@@ -6094,7 +6032,7 @@ CREATE TABLE `t_03_02_09` (
 -- Déchargement des données de la table `t_03_02_09`
 --
 
-INSERT INTO `t_03_02_09` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_01_03_01` (`f_00`, `f_01`, `f_05`, `f_06`, `f_07`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 'EP', 'تشمل هذه النشاطات البحث الجيولوجي والجيوفيزيائي، وحفر الآبار، وتقييم المكامن، وتطوير الحقول، وإنتاج النفط والغاز والمكثفات، مع تحسين مردودية الاستخلاص وضمان استدامة الموارد.', 'Covers geological and geophysical exploration, drilling operations, reservoir evaluation, field development, and the production of crude oil, natural gas, and condensates, with a focus on efficiency and resource sustainability.', 'Englobe les études géologiques et géophysiques, les opérations de forage, l’évaluation des réservoirs, le développement des champs ainsi que la production de pétrole, de gaz naturel et de condensats, en assurant l’optimisation des ressources.', 'الاستكشاف والإنتاج', 'Exploration & Production', 'Exploration et Production'),
 (2, 'TRC', 'يختص هذا النشاط بنقل النفط والغاز والمكثفات وغاز البترول المسال عبر شبكة الأنابيب الوطنية والدولية، مع ضمان السلامة، الاستمرارية، والموثوقية التشغيلية.', 'Involves the transportation of oil, gas, condensates, and LPG through national and international pipeline networks, ensuring operational safety, continuity, and reliability.', 'Concerne le transport du pétrole, du gaz, des condensats et du GPL à travers les réseaux de canalisations nationaux et internationaux, dans le respect des normes de sécurité et de fiabilité.', 'النقل عبر الأنابيب', 'Transport by Pipelines', 'Transport par Canalisations'),
 (3, 'LS', 'يضم هذا النشاط معالجة الغاز الطبيعي، وفصل مكوناته، وتسييله لإنتاج الغاز الطبيعي المسال، إضافة إلى استخلاص غاز البترول المسال والكبريت والمنتجات المرافقة.', 'Includes natural gas processing, component separation, and liquefaction to produce LNG, as well as the recovery of LPG, sulfur, and associated products.', 'Regroupe le traitement du gaz naturel, la séparation de ses composants et sa liquéfaction pour la production de GNL, ainsi que la récupération du GPL, du soufre et des produits associés.', 'التسييل والفصل', 'Liquefaction & Separation', 'Liquéfaction et Séparation'),
@@ -6122,7 +6060,7 @@ CREATE TABLE `t_03_03_01` (
 -- Déchargement des données de la table `t_03_03_01`
 --
 
-INSERT INTO `t_03_03_01` (`f_00`, `f_01`, `f_04`, `f_05`, `f_03`, `f_02`, `f_06`, `f_07`) VALUES
+INSERT INTO `T_02_03_01` (`f_00`, `f_01`, `f_04`, `f_05`, `f_03`, `f_02`, `f_06`, `f_07`) VALUES
 (1, 'CNDG', '1985-01-01', NULL, '1983-01-01', 'Centre National de Dispatching Gaz', 1, NULL),
 (2, 'CDHL', '1982-01-01', NULL, '1980-01-01', 'Centre de Dispatching des Hydrocarbures Liquides', 1, NULL),
 (3, 'PEHZ', '1965-01-01', NULL, '1964-01-01', 'Port d\'Exportation des Hydrocarbures d\'Arzew', 1, NULL),
@@ -6288,7 +6226,7 @@ CREATE TABLE `t_03_03_02` (
 -- Déchargement des données de la table `t_03_03_02`
 --
 
-INSERT INTO `t_03_03_02` (`f_10`, `f_08`, `f_09`, `f_07`, `f_00`, `f_12`, `f_11`, `f_13`) VALUES
+INSERT INTO `T_02_03_02` (`f_11`, `f_09`, `f_10`, `f_08`, `f_00`, `f_13`, `f_12`, `f_14`) VALUES
 (750, 32.95, 3.17, 'Hassi R\'Mel', 1, 76, 39, NULL),
 (130, 31.61, 5.92, 'Haoud El Hamra', 2, 1096, 39, NULL),
 (5, 35.82, -0.28, 'Arzew', 3, 1113, 39, NULL),
@@ -6405,7 +6343,7 @@ CREATE TABLE `t_03_03_03` (
 -- Déchargement des données de la table `t_03_03_03`
 --
 
-INSERT INTO `t_03_03_03` (`f_00`, `f_14`, `f_13`) VALUES
+INSERT INTO `T_02_03_03` (`f_00`, `f_15`, `f_14`) VALUES
 (17, NULL, 1),
 (18, NULL, 1),
 (19, NULL, 1),
@@ -6482,7 +6420,7 @@ CREATE TABLE `t_03_03_04` (
 -- Déchargement des données de la table `t_03_03_04`
 --
 
-INSERT INTO `t_03_03_04` (`f_00`, `f_13`) VALUES
+INSERT INTO `T_02_03_04` (`f_00`, `f_14`) VALUES
 (3, 8),
 (4, 8),
 (5, 8),
@@ -6518,7 +6456,7 @@ CREATE TABLE `t_03_03_05` (
 -- Déchargement des données de la table `t_03_03_05`
 --
 
-INSERT INTO `t_03_03_05` (`f_00`, `f_13`) VALUES
+INSERT INTO `T_02_03_05` (`f_00`, `f_14`) VALUES
 (124, 17),
 (125, 17),
 (126, 17),
@@ -6558,7 +6496,7 @@ CREATE TABLE `t_03_03_06` (
 -- Déchargement des données de la table `t_03_03_06`
 --
 
-INSERT INTO `t_03_03_06` (`f_00`, `f_01`, `f_02`, `f_04`, `f_03`, `f_05`) VALUES
+INSERT INTO `T_02_03_06` (`f_00`, `f_01`, `f_02`, `f_04`, `f_03`, `f_05`) VALUES
 (1, 'OZ1/OZ2', 'STC OZ1/OZ2', 1, 2, 2),
 (2, 'OK1', 'STC OK1', 1, 2, 4),
 (3, 'OB1/OG1', 'STC OB1/OG1', 1, 2, 3),
@@ -6613,7 +6551,7 @@ CREATE TABLE `t_03_03_07` (
 -- Déchargement des données de la table `t_03_03_07`
 --
 
-INSERT INTO `t_03_03_07` (`f_15`, `f_11`, `f_13`, `f_08`, `f_07`, `f_10`, `f_09`, `f_16`, `f_12`, `f_14`, `f_00`, `f_23`, `f_22`, `f_17`, `f_18`, `f_19`, `f_21`, `f_20`) VALUES
+INSERT INTO `T_02_03_07` (`f_15`, `f_11`, `f_13`, `f_08`, `f_07`, `f_10`, `f_09`, `f_16`, `f_12`, `f_14`, `f_00`, `f_23`, `f_22`, `f_17`, `f_18`, `f_19`, `f_21`, `f_20`) VALUES
 (21, 63, 0, 801.478, 20, 0.5, 1, 11, 54, 0, 81, 3, 2, 1, 1, 1, 1, 1),
 (34, 70, 0, 821, 20, 0.5, 1, 34, 70, 0, 82, 3, 2, 1, 1, 1, 1, 1),
 (30, 75, 0, 646, 20, 0.5, 1, 30, 75, 0, 83, 4, 2, 1, 1, 1, 2, 1),
@@ -6717,7 +6655,7 @@ CREATE TABLE `t_03_04_01` (
 -- Déchargement des données de la table `t_03_04_01`
 --
 
-INSERT INTO `t_03_04_01` (`f_00`, `f_01`) VALUES
+INSERT INTO `T_02_04_01` (`f_00`, `f_01`) VALUES
 (1, '00:00'),
 (2, '04:00'),
 (3, '08:00'),
@@ -6743,7 +6681,7 @@ CREATE TABLE `t_03_04_02` (
 -- Déchargement des données de la table `t_03_04_02`
 --
 
-INSERT INTO `t_03_04_02` (`f_00`, `f_02`, `f_01`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_02_04_02` (`f_00`, `f_02`, `f_01`, `f_03`, `f_04`) VALUES
 (1, '2025-01-01', 0, 1, 101),
 (2, '2025-01-01', 25693505, 1, 102),
 (3, '2025-01-01', 15735352, 1, 104),
@@ -39638,7 +39576,7 @@ CREATE TABLE `t_03_04_03` (
 -- Déchargement des données de la table `t_03_04_03`
 --
 
-INSERT INTO `t_03_04_03` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
+INSERT INTO `T_02_04_03` (`f_00`, `f_01`, `f_02`, `f_03`, `f_04`) VALUES
 (1, 0, '2025-01-01', 1, 101),
 (2, 48.1, '2025-01-01', 1, 102),
 (3, 48.5, '2025-01-01', 1, 104),
@@ -72530,7 +72468,7 @@ CREATE TABLE `t_03_04_04` (
 -- Déchargement des données de la table `t_03_04_04`
 --
 
-INSERT INTO `t_03_04_04` (`f_00`, `f_03`, `f_01`, `f_02`, `f_04`) VALUES
+INSERT INTO `T_02_04_04` (`f_00`, `f_03`, `f_01`, `f_02`, `f_04`) VALUES
 (1, '2025-01-01', 26695176, 21556502, 102),
 (2, '2025-01-01', 20053389, 16193222, 104),
 (3, '2025-01-01', 23773355, 19197115, 105),

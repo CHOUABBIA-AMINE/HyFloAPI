@@ -1,18 +1,14 @@
 /**
  *	
- *	@author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: GenericModel
- *	@CreatedOn	: 12-10-2025
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 12-10-2025
  *
  *	@Type		: Abstract Class
- *	@Layer		: Configuration / Template
+ *	@Layer		: Template
  *	@Package	: Configuration / Template
- *
- *	@Description: Base abstract class for all JPA entities.
- *	              Provides common ID field with standard configuration.
- *	              All entity models should extend this class to inherit
- *	              the primary key definition and maintain consistency.
  *
  **/
 
@@ -52,8 +48,6 @@ import lombok.Setter;
  * - Single point of maintenance for primary key strategy
  * - Follows DRY (Don't Repeat Yourself) principle
  * 
- * @author CHOUABBIA Amine
- * @since 1.0
  */
 @Getter
 @Setter
