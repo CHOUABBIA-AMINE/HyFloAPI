@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.system.security.model.Group;
 import dz.sh.trc.hyflo.system.security.model.Role;
 import dz.sh.trc.hyflo.system.security.model.User;
@@ -49,6 +51,10 @@ public class UserDTO extends GenericDTO<User> {
     private Boolean accountNonLocked;
     private Boolean credentialsNonExpired;
     
+    private Long employeeId;
+    
+    private EmployeeDTO employee;
+    
     private Set<RoleDTO> roles;
     private Set<GroupDTO> groups;
 
@@ -66,6 +72,12 @@ public class UserDTO extends GenericDTO<User> {
         
         if (getId() != null) {
             entity.setId(getId());
+        }
+        
+        if (this.employeeId != null) {
+        	Employee employee = new Employee();
+        	employee.setId(this.employeeId);
+            entity.setEmployee(employee);
         }
         
         if (this.roles != null && !this.roles.isEmpty()) {
@@ -94,6 +106,12 @@ public class UserDTO extends GenericDTO<User> {
         if (this.accountNonExpired != null) entity.setAccountNonExpired(this.accountNonExpired);
         if (this.accountNonLocked != null) entity.setAccountNonLocked(this.accountNonLocked);
         if (this.credentialsNonExpired != null) entity.setCredentialsNonExpired(this.credentialsNonExpired);
+        
+        if (this.employeeId != null) {
+        	Employee employee = new Employee();
+        	employee.setId(this.employeeId);
+            entity.setEmployee(employee);
+        }
         
         if (this.roles != null) {
             Set<Role> roleEntities = this.roles.stream()
@@ -140,6 +158,9 @@ public class UserDTO extends GenericDTO<User> {
                 .accountNonExpired(entity.isAccountNonExpired())
                 .accountNonLocked(entity.isAccountNonLocked())
                 .credentialsNonExpired(entity.isCredentialsNonExpired())
+                .employeeId(entity.getEmployee() != null ? entity.getEmployee().getId() : null)
+                
+                .employee(entity.getEmployee() != null ? EmployeeDTO.fromEntity(entity.getEmployee()) : null)
                 .roles(roleDTOs)
                 .groups(groupDTOs)
                 .build();

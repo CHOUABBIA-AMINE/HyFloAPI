@@ -14,18 +14,36 @@
 
 package dz.sh.trc.hyflo.system.security.model;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
@@ -69,6 +87,10 @@ public class User extends GenericModel implements UserDetails {
     @Column(name="F_07", nullable=false)
     private boolean enabled = true;
 
+	@ManyToOne
+	@JoinColumn(name="F_08", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_00_02_02_FK_01"), nullable = true)
+	private Employee employee;
+	
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
