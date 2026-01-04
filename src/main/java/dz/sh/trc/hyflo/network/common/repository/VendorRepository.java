@@ -26,6 +26,7 @@ import dz.sh.trc.hyflo.network.common.model.Vendor;
 @Repository
 public interface VendorRepository extends JpaRepository<Vendor, Long> {
 
-    @Query("SELECT v FROM Vendor v WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(v.shortName) LIKE LOWER(CONCAT('%', :search, '%'))")
+    @Query("SELECT v FROM Vendor v WHERE LOWER(v.name) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+    		+ " LOWER(v.shortName) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Vendor> searchByAnyField(@Param("search") String search, Pageable pageable);
 }
