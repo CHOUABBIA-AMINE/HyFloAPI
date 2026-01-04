@@ -14,7 +14,11 @@
 
 package dz.sh.trc.hyflo.general.localization.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import dz.sh.trc.hyflo.general.localization.model.Country;
@@ -26,8 +30,14 @@ import dz.sh.trc.hyflo.general.localization.model.Country;
  */
 @Repository
 public interface CountryRepository extends JpaRepository<Country, Long> {
-    // All basic CRUD operations (findById, findAll, save, delete, existsById, count) 
-    // are inherited from JpaRepository
+
+    // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
-    // Add custom query methods here only if needed by service
+    @Query("SELECT l FROM Country l WHERE "
+            + "LOWER(l.code) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(l.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(l.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(l.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Country> searchByAnyField(@Param("search") String search, Pageable pageable);
+    
 }

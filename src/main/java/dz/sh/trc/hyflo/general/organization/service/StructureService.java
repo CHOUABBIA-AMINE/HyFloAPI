@@ -121,7 +121,7 @@ public class StructureService extends GenericService<Structure, StructureDTO, Lo
             return getAll(pageable);
         }
         
-        return getAll(pageable);
+        return executeQuery(p -> structureRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
     public List<StructureDTO> getByStructureTypeId(Long structureTypeId) {

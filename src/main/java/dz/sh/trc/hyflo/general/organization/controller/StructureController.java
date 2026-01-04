@@ -115,6 +115,7 @@ public class StructureController extends GenericController<StructureDTO, Long> {
         if (query == null || query.trim().isEmpty()) {
             return structureService.getAll(pageable);
         }
+        log.debug("GET /search?q={} - Searching", query);
         return structureService.globalSearch(query, pageable);
     }
 

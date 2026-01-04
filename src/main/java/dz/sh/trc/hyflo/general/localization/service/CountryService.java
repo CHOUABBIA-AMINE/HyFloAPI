@@ -90,6 +90,6 @@ public class CountryService extends GenericService<Country, CountryDTO, Long> {
             return getAll(pageable);
         }
         
-        return getAll(pageable);
+        return executeQuery(p -> countryRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

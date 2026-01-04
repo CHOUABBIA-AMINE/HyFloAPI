@@ -14,6 +14,15 @@
 
 package dz.sh.trc.hyflo.general.localization.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
@@ -21,14 +30,6 @@ import dz.sh.trc.hyflo.general.localization.model.State;
 import dz.sh.trc.hyflo.general.localization.repository.LocalityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -107,7 +108,7 @@ public class LocalityService extends GenericService<Locality, LocalityDTO, Long>
             return getAll(pageable);
         }
         
-        return getAll(pageable);
+        return executeQuery(p -> localityRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
     public List<LocalityDTO> getByStateId(Long stateId) {

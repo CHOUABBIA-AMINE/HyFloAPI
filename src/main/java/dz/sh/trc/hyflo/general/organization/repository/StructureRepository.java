@@ -14,12 +14,16 @@
 
 package dz.sh.trc.hyflo.general.organization.repository;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import dz.sh.trc.hyflo.general.organization.model.Structure;
-
-import java.util.List;
 
 /**
  * Structure Repository
@@ -46,4 +50,11 @@ public interface StructureRepository extends JpaRepository<Structure, Long> {
      * Used by StructureService.getRootStructures()
      */
     List<Structure> findByParentStructureIsNull();
+    
+    @Query("SELECT p FROM Structure p WHERE "
+            + "LOWER(p.code) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(p.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(p.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(p.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Structure> searchByAnyField(@Param("search") String search, Pageable pageable);
 }

@@ -94,6 +94,6 @@ public class StateService extends GenericService<State, StateDTO, Long> {
             return getAll(pageable);
         }
         
-        return getAll(pageable);
+        return executeQuery(p -> stateRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

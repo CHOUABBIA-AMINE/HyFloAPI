@@ -94,7 +94,7 @@ public class JobService extends GenericService<Job, JobDTO, Long> {
             return getAll(pageable);
         }
         
-        return getAll(pageable);
+        return executeQuery(p -> jobRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
     public List<JobDTO> getByStructureId(Long structureId) {
