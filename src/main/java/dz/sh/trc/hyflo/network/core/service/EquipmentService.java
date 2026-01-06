@@ -25,15 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.common.repository.OperationalStatusRepository;
 import dz.sh.trc.hyflo.network.core.dto.EquipmentDTO;
 import dz.sh.trc.hyflo.network.core.model.Equipment;
-import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.core.repository.EquipmentRepository;
-import dz.sh.trc.hyflo.network.core.repository.FacilityRepository;
-import dz.sh.trc.hyflo.network.type.model.EquipmentType;
-import dz.sh.trc.hyflo.network.type.repository.EquipmentTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,9 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class EquipmentService extends GenericService<Equipment, EquipmentDTO, Long> {
 
     private final EquipmentRepository equipmentRepository;
-    private final OperationalStatusRepository operationalStatusRepository;
-    private final EquipmentTypeRepository equipmentTypeRepository;
-    private final FacilityRepository facilityRepository;
 
     @Override
     protected JpaRepository<Equipment, Long> getRepository() {
@@ -67,48 +58,12 @@ public class EquipmentService extends GenericService<Equipment, EquipmentDTO, Lo
     protected Equipment toEntity(EquipmentDTO dto) {
         Equipment entity = dto.toEntity();
         
-        if (dto.getOperationalStatusId() != null) {
-            OperationalStatus status = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Operational status not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(status);
-        }
-        
-        if (dto.getEquipmentTypeId() != null) {
-            EquipmentType type = equipmentTypeRepository.findById(dto.getEquipmentTypeId())
-                    .orElseThrow(() -> new RuntimeException("Equipment type not found with id: " + dto.getEquipmentTypeId()));
-            entity.setEquipmentType(type);
-        }
-        
-        if (dto.getFacilityId() != null) {
-            Facility facility = facilityRepository.findById(dto.getFacilityId())
-                    .orElseThrow(() -> new RuntimeException("Facility not found with id: " + dto.getFacilityId()));
-            entity.setFacility(facility);
-        }
-        
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(Equipment entity, EquipmentDTO dto) {
         dto.updateEntity(entity);
-        
-        if (dto.getOperationalStatusId() != null) {
-            OperationalStatus status = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Operational status not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(status);
-        }
-        
-        if (dto.getEquipmentTypeId() != null) {
-            EquipmentType type = equipmentTypeRepository.findById(dto.getEquipmentTypeId())
-                    .orElseThrow(() -> new RuntimeException("Equipment type not found with id: " + dto.getEquipmentTypeId()));
-            entity.setEquipmentType(type);
-        }
-        
-        if (dto.getFacilityId() != null) {
-            Facility facility = facilityRepository.findById(dto.getFacilityId())
-                    .orElseThrow(() -> new RuntimeException("Facility not found with id: " + dto.getFacilityId()));
-            entity.setFacility(facility);
-        }
     }
 
     @Override

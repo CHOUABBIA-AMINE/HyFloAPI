@@ -26,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.network.core.dto.PipelineSegmentDTO;
-import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
-import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import dz.sh.trc.hyflo.network.core.repository.PipelineSegmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineSegmentService extends GenericService<PipelineSegment, PipelineSegmentDTO, Long> {
 
     private final PipelineSegmentRepository pipelineSegmentRepository;
-    private final PipelineRepository pipelineRepository;
 
     @Override
     protected JpaRepository<PipelineSegment, Long> getRepository() {
@@ -61,24 +58,12 @@ public class PipelineSegmentService extends GenericService<PipelineSegment, Pipe
     protected PipelineSegment toEntity(PipelineSegmentDTO dto) {
         PipelineSegment entity = dto.toEntity();
         
-        if (dto.getPipelineId() != null) {
-            Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId())
-                    .orElseThrow(() -> new RuntimeException("Pipeline not found with id: " + dto.getPipelineId()));
-            entity.setPipeline(pipeline);
-        }
-        
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(PipelineSegment entity, PipelineSegmentDTO dto) {
         dto.updateEntity(entity);
-        
-        if (dto.getPipelineId() != null) {
-            Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId())
-                    .orElseThrow(() -> new RuntimeException("Pipeline not found with id: " + dto.getPipelineId()));
-            entity.setPipeline(pipeline);
-        }
     }
 
     @Override

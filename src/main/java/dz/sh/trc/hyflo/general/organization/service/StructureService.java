@@ -14,22 +14,21 @@
 
 package dz.sh.trc.hyflo.general.organization.service;
 
-import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
-import dz.sh.trc.hyflo.general.organization.model.Structure;
-import dz.sh.trc.hyflo.general.organization.repository.StructureRepository;
-import dz.sh.trc.hyflo.general.type.model.StructureType;
-import dz.sh.trc.hyflo.general.type.service.StructureTypeService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import dz.sh.trc.hyflo.configuration.template.GenericService;
+import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
+import dz.sh.trc.hyflo.general.organization.repository.StructureRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Structure Service - Extends GenericService
@@ -41,7 +40,6 @@ import java.util.stream.Collectors;
 public class StructureService extends GenericService<Structure, StructureDTO, Long> {
 
     private final StructureRepository structureRepository;
-    private final StructureTypeService structureTypeService;
 
     @Override
     protected JpaRepository<Structure, Long> getRepository() {
@@ -62,34 +60,12 @@ public class StructureService extends GenericService<Structure, StructureDTO, Lo
     protected Structure toEntity(StructureDTO dto) {
         Structure entity = dto.toEntity();
         
-        // Set relationships
-        if (dto.getParentStructureId() != null) {
-            Structure parentStructure = getEntityById(dto.getParentStructureId());
-            entity.setParentStructure(parentStructure);
-        }
-        
-        if (dto.getStructureTypeId() != null) {
-            StructureType structureType = structureTypeService.getEntityById(dto.getStructureTypeId());
-            entity.setStructureType(structureType);
-        }
-        
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(Structure entity, StructureDTO dto) {
         dto.updateEntity(entity);
-        
-        // Update relationships
-        if (dto.getParentStructureId() != null) {
-            Structure parentStructure = getEntityById(dto.getParentStructureId());
-            entity.setParentStructure(parentStructure);
-        }
-        
-        if (dto.getStructureTypeId() != null) {
-            StructureType structureType = structureTypeService.getEntityById(dto.getStructureTypeId());
-            entity.setStructureType(structureType);
-        }
     }
 
     @Override

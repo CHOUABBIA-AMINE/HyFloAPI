@@ -25,12 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.general.organization.model.Structure;
-import dz.sh.trc.hyflo.general.organization.repository.StructureRepository;
-import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.common.model.Product;
-import dz.sh.trc.hyflo.network.common.repository.OperationalStatusRepository;
-import dz.sh.trc.hyflo.network.common.repository.ProductRepository;
 import dz.sh.trc.hyflo.network.core.dto.PipelineSystemDTO;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.repository.PipelineSystemRepository;
@@ -44,9 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineSystemService extends GenericService<PipelineSystem, PipelineSystemDTO, Long> {
 
     private final PipelineSystemRepository pipelineSystemRepository;
-    private final ProductRepository productRepository;
-    private final OperationalStatusRepository operationalStatusRepository;
-    private final StructureRepository structureRepository;
 
     @Override
     protected JpaRepository<PipelineSystem, Long> getRepository() {
@@ -66,24 +57,6 @@ public class PipelineSystemService extends GenericService<PipelineSystem, Pipeli
     @Override
     protected PipelineSystem toEntity(PipelineSystemDTO dto) {
         PipelineSystem entity = dto.toEntity();
-        
-        if (dto.getProductId() != null) {
-            Product product = productRepository.findById(dto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getProductId()));
-            entity.setProduct(product);
-        }
-        
-        if (dto.getOperationalStatusId() != null) {
-        	OperationalStatus operationalStatus = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(operationalStatus);
-        }
-        
-        if (dto.getStructureId() != null) {
-        	Structure structure = structureRepository.findById(dto.getStructureId())
-                    .orElseThrow(() -> new RuntimeException("Structure not found with id: " + dto.getStructureId()));
-            entity.setStructure(structure);
-        }
         
         return entity;
     }

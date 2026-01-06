@@ -26,9 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.general.localization.dto.LocationDTO;
-import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.general.localization.model.Location;
-import dz.sh.trc.hyflo.general.localization.repository.LocalityRepository;
 import dz.sh.trc.hyflo.general.localization.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class LocationService extends GenericService<Location, LocationDTO, Long> {
 
     private final LocationRepository locationRepository;
-    private final LocalityRepository localityRepository;
 
     @Override
     protected JpaRepository<Location, Long> getRepository() {
@@ -60,22 +57,12 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     @Override
     protected Location toEntity(LocationDTO dto) {
         Location entity = dto.toEntity();
-        if (dto.getLocalityId() != null) {
-            Locality locality = localityRepository.findById(dto.getLocalityId())
-                    .orElseThrow(() -> new RuntimeException("Locality not found with id: " + dto.getLocalityId()));
-            entity.setLocality(locality);
-        }
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(Location entity, LocationDTO dto) {
         dto.updateEntity(entity);
-        if (dto.getLocalityId() != null) {
-            Locality locality = localityRepository.findById(dto.getLocalityId())
-                    .orElseThrow(() -> new RuntimeException("Locality not found with id: " + dto.getLocalityId()));
-            entity.setLocality(locality);
-        }
     }
 
     @Override

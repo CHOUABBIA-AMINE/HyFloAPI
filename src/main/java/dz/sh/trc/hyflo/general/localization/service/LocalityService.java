@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
-import dz.sh.trc.hyflo.general.localization.model.State;
 import dz.sh.trc.hyflo.general.localization.repository.LocalityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class LocalityService extends GenericService<Locality, LocalityDTO, Long> {
 
     private final LocalityRepository localityRepository;
-    private final StateService stateService;
 
     @Override
     protected JpaRepository<Locality, Long> getRepository() {
@@ -59,24 +57,12 @@ public class LocalityService extends GenericService<Locality, LocalityDTO, Long>
     protected Locality toEntity(LocalityDTO dto) {
         Locality entity = dto.toEntity();
         
-        // Set relationships
-        if (dto.getStateId() != null) {
-            State state = stateService.getEntityById(dto.getStateId());
-            entity.setState(state);
-        }
-        
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(Locality entity, LocalityDTO dto) {
         dto.updateEntity(entity);
-        
-        // Update relationships
-        if (dto.getStateId() != null) {
-            State state = stateService.getEntityById(dto.getStateId());
-            entity.setState(state);
-        }
     }
 
     @Override

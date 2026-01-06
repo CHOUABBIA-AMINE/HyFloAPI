@@ -25,15 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.common.repository.OperationalStatusRepository;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
-import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
-import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
-import dz.sh.trc.hyflo.network.core.repository.FacilityRepository;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
-import dz.sh.trc.hyflo.network.core.repository.PipelineSystemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,9 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineService extends GenericService<Pipeline, PipelineDTO, Long> {
 
     private final PipelineRepository pipelineRepository;
-    private final OperationalStatusRepository operationalStatusRepository;
-    private final PipelineSystemRepository pipelineSystemRepository;
-    private final FacilityRepository facilityRepository;
 
     @Override
     protected JpaRepository<Pipeline, Long> getRepository() {
@@ -67,60 +58,12 @@ public class PipelineService extends GenericService<Pipeline, PipelineDTO, Long>
     protected Pipeline toEntity(PipelineDTO dto) {
         Pipeline entity = dto.toEntity();
         
-        if (dto.getOperationalStatusId() != null) {
-            OperationalStatus status = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Operational status not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(status);
-        }
-        
-        if (dto.getPipelineSystemId() != null) {
-            PipelineSystem system = pipelineSystemRepository.findById(dto.getPipelineSystemId())
-                    .orElseThrow(() -> new RuntimeException("Pipeline system not found with id: " + dto.getPipelineSystemId()));
-            entity.setPipelineSystem(system);
-        }
-        
-        if (dto.getDepartureFacilityId() != null) {
-            Facility facility = facilityRepository.findById(dto.getDepartureFacilityId())
-                    .orElseThrow(() -> new RuntimeException("Departure terminal not found with id: " + dto.getDepartureFacilityId()));
-            entity.setDepartureFacility(facility);
-        }
-        
-        if (dto.getArrivalFacilityId() != null) {
-            Facility facility = facilityRepository.findById(dto.getArrivalFacilityId())
-                    .orElseThrow(() -> new RuntimeException("Arrival terminal not found with id: " + dto.getArrivalFacilityId()));
-            entity.setArrivalFacility(facility);
-        }
-        
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(Pipeline entity, PipelineDTO dto) {
         dto.updateEntity(entity);
-        
-        if (dto.getOperationalStatusId() != null) {
-            OperationalStatus status = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Operational status not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(status);
-        }
-        
-        if (dto.getPipelineSystemId() != null) {
-            PipelineSystem system = pipelineSystemRepository.findById(dto.getPipelineSystemId())
-                    .orElseThrow(() -> new RuntimeException("Pipeline system not found with id: " + dto.getPipelineSystemId()));
-            entity.setPipelineSystem(system);
-        }
-        
-        if (dto.getDepartureFacilityId() != null) {
-            Facility facility = facilityRepository.findById(dto.getDepartureFacilityId())
-                    .orElseThrow(() -> new RuntimeException("Departure terminal not found with id: " + dto.getDepartureFacilityId()));
-            entity.setDepartureFacility(facility);
-        }
-        
-        if (dto.getArrivalFacilityId() != null) {
-            Facility facility = facilityRepository.findById(dto.getArrivalFacilityId())
-                    .orElseThrow(() -> new RuntimeException("Arrival terminal not found with id: " + dto.getArrivalFacilityId()));
-            entity.setArrivalFacility(facility);
-        }
     }
 
     @Override

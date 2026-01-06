@@ -25,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.common.repository.OperationalStatusRepository;
 import dz.sh.trc.hyflo.network.core.dto.FacilityDTO;
 import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.core.repository.FacilityRepository;
@@ -40,8 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FacilityService extends GenericService<Facility, FacilityDTO, Long> {
 
     private final FacilityRepository facilityRepository;
-    private final OperationalStatusRepository operationalStatusRepository;
-    //private final LocationRepository locationRepository;
 
     @Override
     protected JpaRepository<Facility, Long> getRepository() {
@@ -62,36 +58,12 @@ public class FacilityService extends GenericService<Facility, FacilityDTO, Long>
     protected Facility toEntity(FacilityDTO dto) {
         Facility entity = dto.toEntity();
         
-        if (dto.getOperationalStatusId() != null) {
-            OperationalStatus status = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Operational status not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(status);
-        }
-        
-        //if (dto.getLocationId() != null) {
-        //    Location location = locationRepository.findById(dto.getLocationId())
-        //            .orElseThrow(() -> new RuntimeException("Location not found with id: " + dto.getLocationId()));
-        //    entity.setLocation(location);
-        //}
-        
         return entity;
     }
 
     @Override
     protected void updateEntityFromDTO(Facility entity, FacilityDTO dto) {
         dto.updateEntity(entity);
-        
-        if (dto.getOperationalStatusId() != null) {
-            OperationalStatus status = operationalStatusRepository.findById(dto.getOperationalStatusId())
-                    .orElseThrow(() -> new RuntimeException("Operational status not found with id: " + dto.getOperationalStatusId()));
-            entity.setOperationalStatus(status);
-        }
-        
-        //if (dto.getLocationId() != null) {
-        //    Location location = locationRepository.findById(dto.getLocationId())
-        //            .orElseThrow(() -> new RuntimeException("Location not found with id: " + dto.getLocationId()));
-        //    entity.setLocation(location);
-        //}
     }
 
     @Override
