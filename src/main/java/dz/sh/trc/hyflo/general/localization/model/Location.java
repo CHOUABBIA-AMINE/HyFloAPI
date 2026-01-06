@@ -42,26 +42,17 @@ public class Location extends GenericModel {
     @Column(name="F_01", length=10, nullable=false)
     private String code;
 
-	@Column(name="F_02", length=100)
-	private String designationAr;
-
-	@Column(name="F_03", length=100)
-	private String designationEn;
-	
-	@Column(name="F_04", length=100, nullable=false)
-	private String designationFr;
-
-    @Column(name="F_05", nullable=false)
+    @Column(name="F_02", nullable=false)
     private Double latitude;
 
-    @Column(name="F_06", nullable=false)
+    @Column(name="F_03", nullable=false)
     private Double longitude;
 
-	@Column(name = "F_07")
+	@Column(name = "F_04")
     private Double elevation;
 
     @ManyToOne
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_05_FK_01"), nullable = false)
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_05_FK_01"), nullable = true)
     private Locality locality;
 
 }

@@ -39,16 +39,6 @@ public class LocationDTO extends GenericDTO<Location> {
 	@NotBlank(message = "Code is required")
     @Size(max = 10, message = "Code must not exceed 10 characters")
     private String code;
-    
-    @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
-    private String designationAr;
-
-    @Size(max = 100, message = "English designation must not exceed 100 characters")
-    private String designationEn;
-
-    @NotBlank(message = "French designation is required")
-    @Size(max = 100, message = "French designation must not exceed 100 characters")
-    private String designationFr;
 
     @NotNull(message = "Latitude is required")
     private Double latitude;
@@ -68,9 +58,6 @@ public class LocationDTO extends GenericDTO<Location> {
         Location entity = new Location();
         entity.setId(getId());
         entity.setCode(this.code);
-        entity.setDesignationAr(this.designationAr);
-        entity.setDesignationEn(this.designationEn);
-        entity.setDesignationFr(this.designationFr);
         entity.setLatitude(this.latitude);
         entity.setLongitude(this.longitude);
         entity.setElevation(this.elevation);
@@ -87,9 +74,6 @@ public class LocationDTO extends GenericDTO<Location> {
     @Override
     public void updateEntity(Location entity) {
     	if (this.code != null) { entity.setCode(this.code); }
-        if (this.designationAr != null) { entity.setDesignationAr(this.designationAr); }
-        if (this.designationEn != null) { entity.setDesignationEn(this.designationEn); }
-        if (this.designationFr != null) { entity.setDesignationFr(this.designationFr); }
         if (this.latitude != null) entity.setLatitude(this.latitude);
         if (this.longitude != null) entity.setLongitude(this.longitude);
         if (this.longitude != null) entity.setElevation(this.elevation);        
@@ -107,9 +91,6 @@ public class LocationDTO extends GenericDTO<Location> {
         return LocationDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
-                .designationAr(entity.getDesignationAr())
-                .designationEn(entity.getDesignationEn())
-                .designationFr(entity.getDesignationFr())
                 .latitude(entity.getLatitude())
                 .longitude(entity.getLongitude())
                 .elevation(entity.getElevation())

@@ -15,6 +15,8 @@
 package dz.sh.trc.hyflo.network.core.dto;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -35,6 +37,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -128,6 +131,9 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Arrival facility ID is required")
     private Long arrivalFacilityId;
+    
+    @Builder.Default
+    private Set<Long> locationIds = new HashSet<>();
     
     private OperationalStatusDTO operationalStatus;
     
@@ -301,6 +307,11 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     public static PipelineDTO fromEntity(Pipeline entity) {
         if (entity == null) return null;
         
+        Set<Long> locationIds = new HashSet<>();
+        if (entity.getLocations() != null) {
+            entity.getLocations().forEach(l -> locationIds.add(l.getId()));
+        }
+        
         return PipelineDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
@@ -327,7 +338,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .pipelineSystemId(entity.getPipelineSystem() != null ? entity.getPipelineSystem().getId() : null)
                 .departureFacilityId(entity.getDepartureFacility() != null ? entity.getDepartureFacility().getId() : null)
                 .arrivalFacilityId(entity.getArrivalFacility() != null ? entity.getArrivalFacility().getId() : null)
-                
+                .locationIds(locationIds)
+
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .nominalConstructionMaterial(entity.getNominalConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getNominalConstructionMaterial()) : null)
