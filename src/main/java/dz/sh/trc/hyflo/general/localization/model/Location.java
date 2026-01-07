@@ -15,7 +15,7 @@
 package dz.sh.trc.hyflo.general.localization.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.network.core.model.Infrastructure;
+import dz.sh.trc.hyflo.network.core.model.Facility;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -57,7 +57,7 @@ public class Location extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name = "F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_05_FK_01"), nullable = false)
-    private Infrastructure infrastructure;
+    private Facility facility;
 
     @ManyToOne
     @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_05_FK_02"), nullable = true)

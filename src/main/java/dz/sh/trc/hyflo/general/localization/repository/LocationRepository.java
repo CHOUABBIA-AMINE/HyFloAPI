@@ -36,7 +36,7 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     
     List<Location> findByLocalityId(Long localityId);
     
-    List<Location> findByInfrastructureId(Long infrastructureId);
+    List<Location> findByFacilityId(Long facilityId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     

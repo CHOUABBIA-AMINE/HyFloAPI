@@ -51,7 +51,7 @@ public class LocationDTO extends GenericDTO<Location> {
 
     private Double elevation;
 
-    private Long infrastructureId;
+    private Long facilityId;
 
     private Long localityId;
     
@@ -102,7 +102,7 @@ public class LocationDTO extends GenericDTO<Location> {
                 .longitude(entity.getLongitude())
                 .elevation(entity.getElevation())
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
-                .infrastructureId(entity.getInfrastructure() != null ? entity.getInfrastructure().getId() : null)
+                .facilityId(entity.getFacility() != null ? entity.getFacility().getId() : null)
                 
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
                 .build();

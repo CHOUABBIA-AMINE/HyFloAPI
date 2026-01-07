@@ -113,9 +113,9 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
                 .collect(Collectors.toList());
     }
 
-    public List<LocationDTO> findByInfrastructure(Long infrastructureId) {
-        log.debug("Finding locations by infrastructure id: {}", infrastructureId);
-        return locationRepository.findByInfrastructureId(infrastructureId).stream()
+    public List<LocationDTO> findByFacility(Long facilityId) {
+        log.debug("Finding locations by facility id: {}", facilityId);
+        return locationRepository.findByFacilityId(facilityId).stream()
                 .map(LocationDTO::fromEntity)
                 .collect(Collectors.toList());
     }

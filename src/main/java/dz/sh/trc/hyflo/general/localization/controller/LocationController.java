@@ -14,17 +14,23 @@
 
 package dz.sh.trc.hyflo.general.localization.controller;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.general.localization.dto.LocationDTO;
 import dz.sh.trc.hyflo.general.localization.service.LocationService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/general/localization/location")
@@ -108,10 +114,10 @@ public class LocationController extends GenericController<LocationDTO, Long> {
         return ResponseEntity.ok(locationService.findByLocality(localityId));
     }
 
-    @GetMapping("/infrastructure/{infrastructureId}")
+    @GetMapping("/facility/{facilityId}")
     @PreAuthorize("hasAuthority('LOCATION:READ')")
-    public ResponseEntity<List<LocationDTO>> getByInfrastructure(@PathVariable Long infrastructureId) {
-        log.info("GET /network/location/infrastructure/{} - Getting locations by infrastructure", infrastructureId);
-        return ResponseEntity.ok(locationService.findByInfrastructure(infrastructureId));
+    public ResponseEntity<List<LocationDTO>> getByFacility(@PathVariable Long facilityId) {
+        log.info("GET /network/location/infrastructure/{} - Getting locations by facility", facilityId);
+        return ResponseEntity.ok(locationService.findByFacility(facilityId));
     }
 }
