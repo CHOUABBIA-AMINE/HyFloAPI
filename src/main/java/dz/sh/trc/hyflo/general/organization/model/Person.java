@@ -48,10 +48,10 @@ import lombok.ToString;
 @Table(name="T_01_03_03")
 public class Person extends GenericModel {
 
-	@Column(name="F_01", length=100, nullable=false)
+	@Column(name="F_01", length=100, nullable=true)
 	private String lastNameAr;
 
-	@Column(name="F_02", length=100, nullable=false)
+	@Column(name="F_02", length=100, nullable=true)
 	private String firstNameAr;
 
 	@Column(name="F_03", length=100, nullable=false)
@@ -82,13 +82,13 @@ public class Person extends GenericModel {
 	@ManyToOne
     @JoinColumn(name="F_11", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_02"), nullable=true)
     private State addressState;
-	
-	@ManyToOne
-    @JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_03"), nullable=true)
-    private File picture;
 
 	@ManyToOne
-	@JoinColumn(name="F_13", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_04"), nullable = false)
+	@JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_03"), nullable=true)
 	private Country country;
+	
+	@ManyToOne
+    @JoinColumn(name="F_13", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_04"), nullable=true)
+    private File picture;
 
 }

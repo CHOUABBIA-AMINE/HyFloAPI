@@ -42,11 +42,9 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PersonDTO extends GenericDTO<Person> {
 
-    @NotBlank(message = "Arabic last name is required")
     @Size(max = 100, message = "Arabic last name must not exceed 100 characters")
     private String lastNameAr;
 
-    @NotBlank(message = "Arabic first name is required")
     @Size(max = 100, message = "Arabic first name must not exceed 100 characters")
     private String firstNameAr;
 
@@ -76,9 +74,9 @@ public class PersonDTO extends GenericDTO<Person> {
 
     private Long addressStateId;
 
-    private Long pictureId;
-
     private Long countryId;
+
+    private Long pictureId;
 
     private StateDTO birthState;
 
@@ -114,16 +112,16 @@ public class PersonDTO extends GenericDTO<Person> {
             entity.setAddressState(addressState);
         }
         
-        if (this.pictureId != null) {
-            File picture = new File();
-            picture.setId(this.pictureId);
-            entity.setPicture(picture);
-        }
-        
         if (this.countryId != null) {
         	Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
+        }
+        
+        if (this.pictureId != null) {
+            File picture = new File();
+            picture.setId(this.pictureId);
+            entity.setPicture(picture);
         }
         
         return entity;
@@ -153,16 +151,16 @@ public class PersonDTO extends GenericDTO<Person> {
             entity.setAddressState(addressState);
         }
         
-        if (this.pictureId != null) {
-            File picture = new File();
-            picture.setId(this.pictureId);
-            entity.setPicture(picture);
-        }
-        
         if (this.countryId != null) {
         	Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
+        }
+        
+        if (this.pictureId != null) {
+            File picture = new File();
+            picture.setId(this.pictureId);
+            entity.setPicture(picture);
         }
     }
 
@@ -181,13 +179,13 @@ public class PersonDTO extends GenericDTO<Person> {
                 .addressLt(entity.getAddressLt())
                 .birthStateId(entity.getBirthState() != null ? entity.getBirthState().getId() : null)
                 .addressStateId(entity.getAddressState() != null ? entity.getAddressState().getId() : null)
-                .pictureId(entity.getPicture() != null ? entity.getPicture().getId() : null)
                 .countryId(entity.getCountry() != null ? entity.getCountry().getId() : null)
+                .pictureId(entity.getPicture() != null ? entity.getPicture().getId() : null)
                 
                 .birthState(entity.getBirthState() != null ? StateDTO.fromEntity(entity.getBirthState()) : null)
                 .addressState(entity.getAddressState() != null ? StateDTO.fromEntity(entity.getAddressState()) : null)
-                .picture(entity.getPicture() != null ? FileDTO.fromEntity(entity.getPicture()) : null)
                 .country(entity.getCountry() != null ? CountryDTO.fromEntity(entity.getCountry()) : null)
+                .picture(entity.getPicture() != null ? FileDTO.fromEntity(entity.getPicture()) : null)
                 .build();
     }
 }

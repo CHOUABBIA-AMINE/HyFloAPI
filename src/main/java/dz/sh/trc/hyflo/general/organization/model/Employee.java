@@ -43,9 +43,5 @@ public class Employee extends Person {
 	@ManyToOne
 	@JoinColumn(name="F_15", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_04_FK_01"), nullable=false)
 	private Job job;
-
-	//@ManyToOne
-	//@JoinColumn(name="F_16", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_06_FK_02"), nullable=false)
-	//private Structure structure;
 	
 }

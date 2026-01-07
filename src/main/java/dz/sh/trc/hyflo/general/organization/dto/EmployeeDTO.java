@@ -80,25 +80,21 @@ public class EmployeeDTO extends GenericDTO<Employee> {
 
     private Long addressStateId;
 
-    private Long pictureId;
-
     private Long countryId;
 
-    private Long jobId;
+    private Long pictureId;
 
-    //private Long structureId;
+    private Long jobId;
 
     private StateDTO birthState;
 
     private StateDTO addressState;
 
-    private FileDTO picture;
-
     private CountryDTO country;
 
-    private JobDTO job;
+    private FileDTO picture;
 
-    //private StructureDTO structure;
+    private JobDTO job;
 
     @Override
     public Employee toEntity() {
@@ -127,16 +123,16 @@ public class EmployeeDTO extends GenericDTO<Employee> {
             entity.setAddressState(addressState);
         }
         
-        if (this.pictureId != null) {
-            File picture = new File();
-            picture.setId(this.pictureId);
-            entity.setPicture(picture);
-        }
-        
         if (this.countryId != null) {
         	Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
+        }
+        
+        if (this.pictureId != null) {
+            File picture = new File();
+            picture.setId(this.pictureId);
+            entity.setPicture(picture);
         }
         
         if (this.jobId != null) {
@@ -144,12 +140,6 @@ public class EmployeeDTO extends GenericDTO<Employee> {
         	job.setId(this.jobId);
             entity.setJob(job);
         }
-        
-        /*if (this.structureId != null) {
-            Structure structure = new Structure();
-            structure.setId(this.structureId);
-            entity.setStructure(structure);
-        }*/
         
         return entity;
     }
@@ -179,16 +169,16 @@ public class EmployeeDTO extends GenericDTO<Employee> {
             entity.setAddressState(addressState);
         }
         
-        if (this.pictureId != null) {
-            File picture = new File();
-            picture.setId(this.pictureId);
-            entity.setPicture(picture);
-        }
-        
         if (this.countryId != null) {
         	Country country = new Country();
             country.setId(this.countryId);
             entity.setCountry(country);
+        }
+        
+        if (this.pictureId != null) {
+            File picture = new File();
+            picture.setId(this.pictureId);
+            entity.setPicture(picture);
         }
 		
 		if (this.jobId != null) {
@@ -196,12 +186,6 @@ public class EmployeeDTO extends GenericDTO<Employee> {
 			job.setId(this.jobId);
 		    entity.setJob(job);
 		}
-		
-		/*if (this.structureId != null) {
-		    Structure structure = new Structure();
-		    structure.setId(this.structureId);
-		    entity.setStructure(structure);
-		}*/
     }
 
     public static EmployeeDTO fromEntity(Employee entity) {
@@ -220,17 +204,15 @@ public class EmployeeDTO extends GenericDTO<Employee> {
                 .registrationNumber(entity.getRegistrationNumber())
                 .birthStateId(entity.getBirthState() != null ? entity.getBirthState().getId() : null)
                 .addressStateId(entity.getAddressState() != null ? entity.getAddressState().getId() : null)
-                .pictureId(entity.getPicture() != null ? entity.getPicture().getId() : null)
                 .countryId(entity.getCountry() != null ? entity.getCountry().getId() : null)
+                .pictureId(entity.getPicture() != null ? entity.getPicture().getId() : null)
                 .jobId(entity.getJob() != null ? entity.getJob().getId() : null)
-                //.structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 
                 .birthState(entity.getBirthState() != null ? StateDTO.fromEntity(entity.getBirthState()) : null)
                 .addressState(entity.getAddressState() != null ? StateDTO.fromEntity(entity.getAddressState()) : null)
-                .picture(entity.getPicture() != null ? FileDTO.fromEntity(entity.getPicture()) : null)
                 .country(entity.getCountry() != null ? CountryDTO.fromEntity(entity.getCountry()) : null)
+                .picture(entity.getPicture() != null ? FileDTO.fromEntity(entity.getPicture()) : null)
                 .job(entity.getJob() != null ? JobDTO.fromEntity(entity.getJob()) : null)
-                //.structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .build();
     }
 }
