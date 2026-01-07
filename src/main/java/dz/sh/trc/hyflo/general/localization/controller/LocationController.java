@@ -107,4 +107,11 @@ public class LocationController extends GenericController<LocationDTO, Long> {
         log.info("GET /network/location/locality/{} - Getting locations by locality", localityId);
         return ResponseEntity.ok(locationService.findByLocality(localityId));
     }
+
+    @GetMapping("/infrastructure/{infrastructureId}")
+    @PreAuthorize("hasAuthority('LOCATION:READ')")
+    public ResponseEntity<List<LocationDTO>> getByInfrastructure(@PathVariable Long infrastructureId) {
+        log.info("GET /network/location/infrastructure/{} - Getting locations by infrastructure", infrastructureId);
+        return ResponseEntity.ok(locationService.findByInfrastructure(infrastructureId));
+    }
 }

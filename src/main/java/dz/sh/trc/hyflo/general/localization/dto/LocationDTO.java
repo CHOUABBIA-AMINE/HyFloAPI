@@ -36,6 +36,9 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LocationDTO extends GenericDTO<Location> {
 
+	@NotBlank(message = "Sequence is required")
+    private int sequence;
+
 	@NotBlank(message = "Code is required")
     @Size(max = 10, message = "Code must not exceed 10 characters")
     private String code;
@@ -48,7 +51,8 @@ public class LocationDTO extends GenericDTO<Location> {
 
     private Double elevation;
 
-    @NotNull(message = "Locality is required")
+    private Long infrastructureId;
+
     private Long localityId;
     
     private LocalityDTO locality;
@@ -57,6 +61,7 @@ public class LocationDTO extends GenericDTO<Location> {
     public Location toEntity() {
         Location entity = new Location();
         entity.setId(getId());
+        entity.setSequence(this.sequence);
         entity.setCode(this.code);
         entity.setLatitude(this.latitude);
         entity.setLongitude(this.longitude);
@@ -73,6 +78,7 @@ public class LocationDTO extends GenericDTO<Location> {
 
     @Override
     public void updateEntity(Location entity) {
+    	if (this.sequence >= 0) { entity.setSequence(this.sequence); }
     	if (this.code != null) { entity.setCode(this.code); }
         if (this.latitude != null) entity.setLatitude(this.latitude);
         if (this.longitude != null) entity.setLongitude(this.longitude);
@@ -90,11 +96,13 @@ public class LocationDTO extends GenericDTO<Location> {
         
         return LocationDTO.builder()
                 .id(entity.getId())
+                .sequence(entity.getSequence())
                 .code(entity.getCode())
                 .latitude(entity.getLatitude())
                 .longitude(entity.getLongitude())
                 .elevation(entity.getElevation())
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
+                .infrastructureId(entity.getInfrastructure() != null ? entity.getInfrastructure().getId() : null)
                 
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
                 .build();
