@@ -45,7 +45,7 @@ import lombok.ToString;
 public class Terminal extends Facility {
 
     @ManyToOne
-    @JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_04_FK_01"), nullable=false)
+    @JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_04_FK_01"), nullable=false)
     private TerminalType terminalType;
 
     @ManyToMany(fetch = FetchType.LAZY)

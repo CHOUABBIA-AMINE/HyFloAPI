@@ -45,11 +45,11 @@ import lombok.ToString;
 public class Station extends Facility {
 
     @ManyToOne
-    @JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_01"), nullable=false)
+    @JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_01"), nullable=false)
     private StationType stationType;
 
     @ManyToOne
-    @JoinColumn(name="F_15", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_02"), nullable=true)
+    @JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_02"), nullable=true)
     private PipelineSystem pipelineSystem;
 
     @ManyToMany(fetch = FetchType.LAZY)

@@ -41,7 +41,7 @@ public class LocationDTO extends GenericDTO<Location> {
 
 	@NotBlank(message = "Code is required")
     @Size(max = 10, message = "Code must not exceed 10 characters")
-    private String code;
+    private String placeName;
 
     @NotNull(message = "Latitude is required")
     private Double latitude;
@@ -50,8 +50,6 @@ public class LocationDTO extends GenericDTO<Location> {
     private Double longitude;
 
     private Double elevation;
-
-    private Long facilityId;
 
     private Long localityId;
     
@@ -62,7 +60,7 @@ public class LocationDTO extends GenericDTO<Location> {
         Location entity = new Location();
         entity.setId(getId());
         entity.setSequence(this.sequence);
-        entity.setCode(this.code);
+        entity.setPlaceName(this.placeName);
         entity.setLatitude(this.latitude);
         entity.setLongitude(this.longitude);
         entity.setElevation(this.elevation);
@@ -79,7 +77,7 @@ public class LocationDTO extends GenericDTO<Location> {
     @Override
     public void updateEntity(Location entity) {
     	if (this.sequence >= 0) { entity.setSequence(this.sequence); }
-    	if (this.code != null) { entity.setCode(this.code); }
+    	if (this.placeName != null) { entity.setPlaceName(this.placeName); }
         if (this.latitude != null) entity.setLatitude(this.latitude);
         if (this.longitude != null) entity.setLongitude(this.longitude);
         if (this.longitude != null) entity.setElevation(this.elevation);        
@@ -97,12 +95,11 @@ public class LocationDTO extends GenericDTO<Location> {
         return LocationDTO.builder()
                 .id(entity.getId())
                 .sequence(entity.getSequence())
-                .code(entity.getCode())
+                .placeName(entity.getPlaceName())
                 .latitude(entity.getLatitude())
                 .longitude(entity.getLongitude())
                 .elevation(entity.getElevation())
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
-                .facilityId(entity.getFacility() != null ? entity.getFacility().getId() : null)
                 
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
                 .build();

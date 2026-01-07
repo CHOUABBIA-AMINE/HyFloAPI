@@ -68,10 +68,10 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     @Override
     @Transactional
     public LocationDTO create(LocationDTO dto) {
-        log.info("Creating location: code={}", dto.getCode());
+        log.info("Creating location: code={}", dto.getPlaceName());
         
-        if (locationRepository.existsByCode(dto.getCode())) {
-            throw new BusinessValidationException("Location with code '" + dto.getCode() + "' already exists");
+        if (locationRepository.existsByCode(dto.getPlaceName())) {
+            throw new BusinessValidationException("Location with code '" + dto.getPlaceName() + "' already exists");
         }
         
         return super.create(dto);
@@ -82,8 +82,8 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     public LocationDTO update(Long id, LocationDTO dto) {
         log.info("Updating location with ID: {}", id);
         
-        if (locationRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
-            throw new BusinessValidationException("Location with code '" + dto.getCode() + "' already exists");
+        if (locationRepository.existsByCodeAndIdNot(dto.getPlaceName(), id)) {
+            throw new BusinessValidationException("Location with code '" + dto.getPlaceName() + "' already exists");
         }
         
         return super.update(id, dto);
@@ -109,13 +109,6 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     public List<LocationDTO> findByLocality(Long localityId) {
         log.debug("Finding locations by locality id: {}", localityId);
         return locationRepository.findByLocalityId(localityId).stream()
-                .map(LocationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<LocationDTO> findByFacility(Long facilityId) {
-        log.debug("Finding locations by facility id: {}", facilityId);
-        return locationRepository.findByFacilityId(facilityId).stream()
                 .map(LocationDTO::fromEntity)
                 .collect(Collectors.toList());
     }

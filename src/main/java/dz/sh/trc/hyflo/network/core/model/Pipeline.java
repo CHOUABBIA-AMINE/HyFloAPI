@@ -20,14 +20,16 @@ import java.util.Set;
 import dz.sh.trc.hyflo.general.localization.model.Location;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -103,7 +105,13 @@ public class Pipeline extends Infrastructure {
     @JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_07"), nullable=false)
     private Facility arrivalFacility;
     
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "R_T020307_T010205",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020307_T010205_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020307_T010205_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020307_T010205_UK_01", columnNames = {"F_01", "F_02"})
+    )
     private Set<Location> locations = new HashSet<>();
     
 }

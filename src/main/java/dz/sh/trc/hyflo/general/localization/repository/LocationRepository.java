@@ -35,12 +35,10 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     boolean existsByCodeAndIdNot(String code, Long id);
     
     List<Location> findByLocalityId(Long localityId);
-    
-    List<Location> findByFacilityId(Long facilityId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT l FROM Location l WHERE "
-            + "LOWER(l.code) LIKE LOWER(CONCAT('%', :search, '%'))")
+            + "LOWER(l.placeName) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Location> searchByAnyField(@Param("search") String search, Pageable pageable);
 }
