@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.general.localization.dto.LocationDTO;
 import dz.sh.trc.hyflo.general.localization.model.Location;
 import dz.sh.trc.hyflo.general.localization.repository.LocationRepository;
@@ -70,10 +69,6 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     public LocationDTO create(LocationDTO dto) {
         log.info("Creating location: code={}", dto.getPlaceName());
         
-        if (locationRepository.existsByCode(dto.getPlaceName())) {
-            throw new BusinessValidationException("Location with code '" + dto.getPlaceName() + "' already exists");
-        }
-        
         return super.create(dto);
     }
 
@@ -81,10 +76,6 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     @Transactional
     public LocationDTO update(Long id, LocationDTO dto) {
         log.info("Updating location with ID: {}", id);
-        
-        if (locationRepository.existsByCodeAndIdNot(dto.getPlaceName(), id)) {
-            throw new BusinessValidationException("Location with code '" + dto.getPlaceName() + "' already exists");
-        }
         
         return super.update(id, dto);
     }

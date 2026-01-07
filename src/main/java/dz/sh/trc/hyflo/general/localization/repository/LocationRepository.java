@@ -30,10 +30,6 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
-    boolean existsByCode(String code);
-    
-    boolean existsByCodeAndIdNot(String code, Long id);
-    
     List<Location> findByLocalityId(Long localityId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
