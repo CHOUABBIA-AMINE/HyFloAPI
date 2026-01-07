@@ -43,11 +43,9 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmployeeDTO extends GenericDTO<Employee> {
 
-    @NotBlank(message = "Arabic last name is required")
     @Size(max = 100, message = "Arabic last name must not exceed 100 characters")
     private String lastNameAr;
 
-    @NotBlank(message = "Arabic first name is required")
     @Size(max = 100, message = "Arabic first name must not exceed 100 characters")
     private String firstNameAr;
 
