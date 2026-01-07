@@ -114,13 +114,6 @@ public class FacilityService extends GenericService<Facility, FacilityDTO, Long>
                 .collect(Collectors.toList());
     }
 
-    public List<FacilityDTO> findByLocality(Long localityId) {
-        log.debug("Finding locations by locality id: {}", localityId);
-        return facilityRepository.findByLocalityId(localityId).stream()
-                .map(FacilityDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
     public List<FacilityDTO> findByOperationalStatus(Long operationalStatusId) {
         log.debug("Finding locations by operational status id: {}", operationalStatusId);
         return facilityRepository.findByOperationalStatusId(operationalStatusId).stream()

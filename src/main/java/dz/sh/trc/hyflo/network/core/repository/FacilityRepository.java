@@ -35,9 +35,7 @@ public interface FacilityRepository extends JpaRepository<Facility, Long> {
     boolean existsByCodeAndIdNot(String code, Long id);
     
     List<Facility> findByVendorId(Long vendorId);
-    
-    List<Facility> findByLocalityId(Long localityId);
-    
+        
     List<Facility> findByOperationalStatusId(Long operationalStatusId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========

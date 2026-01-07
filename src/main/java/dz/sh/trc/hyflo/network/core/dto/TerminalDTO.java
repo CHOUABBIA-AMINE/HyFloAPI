@@ -21,8 +21,8 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
-import dz.sh.trc.hyflo.general.localization.model.Locality;
+import dz.sh.trc.hyflo.general.localization.dto.LocationDTO;
+import dz.sh.trc.hyflo.general.localization.model.Location;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
@@ -85,9 +85,9 @@ public class TerminalDTO extends GenericDTO<Terminal> {
 
     @NotNull(message = "provider is required")
     private Long vendorId;
-
-    @NotNull(message = "Locality is required")
-    private Long localityId;
+    
+    @NotNull(message = "Location is required")
+    private Long locationId;
 
     @NotNull(message = "Station type ID is required")
     private Long terminalTypeId;
@@ -98,7 +98,7 @@ public class TerminalDTO extends GenericDTO<Terminal> {
     
     private VendorDTO vendor;
     
-    private LocalityDTO locality;
+    private LocationDTO location;
     
     private TerminalTypeDTO terminalType;
 
@@ -114,10 +114,6 @@ public class TerminalDTO extends GenericDTO<Terminal> {
         entity.setInstallationDate(this.installationDate);
         entity.setCommissioningDate(this.commissioningDate);
         entity.setDecommissioningDate(this.decommissioningDate);
-        entity.setPlaceName(this.placeName);
-        entity.setLatitude(this.latitude);
-        entity.setLongitude(this.longitude);
-        entity.setElevation(this.elevation);
         
         if (this.operationalStatusId != null) {
             OperationalStatus status = new OperationalStatus();
@@ -137,10 +133,10 @@ public class TerminalDTO extends GenericDTO<Terminal> {
         	entity.setVendor(vendor);
         }
         
-        if (this.localityId != null) {
-        	Locality locality = new Locality();
-        	locality.setId(this.localityId);
-        	entity.setLocality(locality);
+        if (this.locationId != null) {
+        	Location location = new Location();
+        	location.setId(this.locationId);
+        	entity.setLocation(location);
         }
         
         if (this.terminalTypeId != null) {
@@ -158,11 +154,7 @@ public class TerminalDTO extends GenericDTO<Terminal> {
         if (this.name != null) entity.setName(this.name);
         if (this.installationDate != null) entity.setInstallationDate(this.installationDate);
         if (this.commissioningDate != null) entity.setCommissioningDate(this.commissioningDate);
-        if (this.decommissioningDate != null) entity.setDecommissioningDate(this.decommissioningDate);        
-        if (this.placeName != null) entity.setPlaceName(this.placeName);
-        if (this.latitude != null) entity.setLatitude(this.latitude);
-        if (this.longitude != null) entity.setLongitude(this.longitude);
-        if (this.elevation != null) entity.setElevation(this.elevation);
+        if (this.decommissioningDate != null) entity.setDecommissioningDate(this.decommissioningDate); 
         
         if (this.operationalStatusId != null) {
             OperationalStatus status = new OperationalStatus();
@@ -182,10 +174,10 @@ public class TerminalDTO extends GenericDTO<Terminal> {
         	entity.setVendor(vendor);
         }
         
-        if (this.localityId != null) {
-        	Locality locality = new Locality();
-        	locality.setId(this.localityId);
-        	entity.setLocality(locality);
+        if (this.locationId != null) {
+        	Location location = new Location();
+        	location.setId(this.locationId);
+        	entity.setLocation(location);
         }
         
         if (this.terminalTypeId != null) {
@@ -210,22 +202,18 @@ public class TerminalDTO extends GenericDTO<Terminal> {
                 .installationDate(entity.getInstallationDate())
                 .commissioningDate(entity.getCommissioningDate())
                 .decommissioningDate(entity.getDecommissioningDate())
-                .placeName(entity.getPlaceName())
-                .latitude(entity.getLatitude())
-                .longitude(entity.getLongitude())
-                .elevation(entity.getElevation())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
                 .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
-                .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
+                .locationId(entity.getLocation() != null ? entity.getLocation().getId() : null)
                 .terminalTypeId(entity.getTerminalType() != null ? entity.getTerminalType().getId() : null)
                 .pipelineIds(pipelineIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
-                .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
+                .location(entity.getLocation() != null ? LocationDTO.fromEntity(entity.getLocation()) : null)
                 .terminalType(entity.getTerminalType() != null ? TerminalTypeDTO.fromEntity(entity.getTerminalType()) : null)
                 .build();
     }

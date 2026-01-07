@@ -109,13 +109,6 @@ public class FacilityController extends GenericController<FacilityDTO, Long> {
         return super.count();
     }
 
-    @GetMapping("/locality/{localityId}")
-    @PreAuthorize("hasAuthority('FACILITY:READ')")
-    public ResponseEntity<List<FacilityDTO>> getByLocality(@PathVariable Long localityId) {
-        log.info("GET /network/facility/locality/{} - Getting facilities by locality", localityId);
-        return ResponseEntity.ok(facilityService.findByLocality(localityId));
-    }
-
     @GetMapping("/vendor/{vendorId}")
     @PreAuthorize("hasAuthority('FACILITY:READ')")
     public ResponseEntity<List<FacilityDTO>> getByVendor(@PathVariable Long vendorId) {
