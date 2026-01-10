@@ -37,7 +37,7 @@ public class OpenAPIConfig {
     private String prodUrl;
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    OpenAPI customOpenAPI() {
         // Define JWT Security Scheme
         SecurityScheme securityScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
