@@ -57,4 +57,13 @@ public class Terminal extends Facility {
     )
     private Set<Pipeline> pipelines = new HashSet<>();
     
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "R_T020304_T020302",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020304_T020302_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020304_T020302_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020304_T020302_UK_01", columnNames = {"F_01", "F_02"})
+    )
+    private Set<Facility> facilities = new HashSet<>();
+    
 }

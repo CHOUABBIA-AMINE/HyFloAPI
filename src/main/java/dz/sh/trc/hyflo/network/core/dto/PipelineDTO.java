@@ -29,9 +29,9 @@ import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
-import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
+import dz.sh.trc.hyflo.network.core.model.Terminal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -127,10 +127,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private Long pipelineSystemId;
 
     @NotNull(message = "Departure facility ID is required")
-    private Long departureFacilityId;
+    private Long departureTerminalId;
 
     @NotNull(message = "Arrival facility ID is required")
-    private Long arrivalFacilityId;
+    private Long arrivalTerminalId;
     
     @Builder.Default
     private Set<Long> locationIds = new HashSet<>();
@@ -149,9 +149,9 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     
     private PipelineSystemDTO pipelineSystem;
     
-    private FacilityDTO departureFacility;
+    private TerminalDTO departureTerminal;
     
-    private FacilityDTO arrivalFacility;
+    private TerminalDTO arrivalTerminal;
 
     @Override
     public Pipeline toEntity() {
@@ -215,16 +215,16 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setPipelineSystem(system);
         }
         
-        if (this.departureFacilityId != null) {
-            Facility facility = new Facility();
-            entity.setId(this.departureFacilityId);
-            entity.setDepartureFacility(facility);
+        if (this.departureTerminalId != null) {
+        	Terminal terminal = new Terminal();
+            entity.setId(this.departureTerminalId);
+            entity.setDepartureTerminal(terminal);
         }
         
-        if (this.arrivalFacilityId != null) {
-            Facility facility = new Facility();
-            entity.setId(this.arrivalFacilityId);
-            entity.setArrivalFacility(facility);
+        if (this.arrivalTerminalId != null) {
+        	Terminal terminal = new Terminal();
+            entity.setId(this.arrivalTerminalId);
+            entity.setArrivalTerminal(terminal);
         }
         
         return entity;
@@ -291,16 +291,16 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setPipelineSystem(system);
         }
         
-        if (this.departureFacilityId != null) {
-            Facility facility = new Facility();
-            entity.setId(this.departureFacilityId);
-            entity.setDepartureFacility(facility);
+        if (this.departureTerminalId != null) {
+        	Terminal terminal = new Terminal();
+            entity.setId(this.departureTerminalId);
+            entity.setDepartureTerminal(terminal);
         }
         
-        if (this.arrivalFacilityId != null) {
-            Facility facility = new Facility();
-            entity.setId(this.arrivalFacilityId);
-            entity.setArrivalFacility(facility);
+        if (this.arrivalTerminalId != null) {
+        	Terminal terminal = new Terminal();
+            entity.setId(this.arrivalTerminalId);
+            entity.setArrivalTerminal(terminal);
         }
     }
 
@@ -336,8 +336,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .nominalInteriorCoatingId(entity.getNominalInteriorCoating() != null ? entity.getNominalInteriorCoating().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .pipelineSystemId(entity.getPipelineSystem() != null ? entity.getPipelineSystem().getId() : null)
-                .departureFacilityId(entity.getDepartureFacility() != null ? entity.getDepartureFacility().getId() : null)
-                .arrivalFacilityId(entity.getArrivalFacility() != null ? entity.getArrivalFacility().getId() : null)
+                .departureTerminalId(entity.getDepartureTerminal() != null ? entity.getDepartureTerminal().getId() : null)
+                .arrivalTerminalId(entity.getArrivalTerminal() != null ? entity.getArrivalTerminal().getId() : null)
                 .locationIds(locationIds)
 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
@@ -347,8 +347,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .nominalInteriorCoating(entity.getNominalInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalInteriorCoating()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .pipelineSystem(entity.getPipelineSystem() != null ? PipelineSystemDTO.fromEntity(entity.getPipelineSystem()) : null)
-                .departureFacility(entity.getDepartureFacility() != null ? FacilityDTO.fromEntity(entity.getDepartureFacility()) : null)
-                .arrivalFacility(entity.getArrivalFacility() != null ? FacilityDTO.fromEntity(entity.getArrivalFacility()) : null)
+                .departureTerminal(entity.getDepartureTerminal() != null ? TerminalDTO.fromEntity(entity.getDepartureTerminal()) : null)
+                .arrivalTerminal(entity.getArrivalTerminal() != null ? TerminalDTO.fromEntity(entity.getArrivalTerminal()) : null)
                 .build();
     }
 }

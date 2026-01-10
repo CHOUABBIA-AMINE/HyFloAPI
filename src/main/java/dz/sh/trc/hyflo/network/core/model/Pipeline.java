@@ -99,11 +99,11 @@ public class Pipeline extends Infrastructure {
 
     @ManyToOne
     @JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_06"), nullable=false)
-    private Facility departureFacility;
+    private Terminal departureTerminal;
 
     @ManyToOne
     @JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_07"), nullable=false)
-    private Facility arrivalFacility;
+    private Terminal arrivalTerminal;
     
 	@ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -51,33 +51,20 @@ import lombok.experimental.SuperBuilder;
 public class TerminalDTO extends GenericDTO<Terminal> {
 
     @NotBlank(message = "Code is required")
-    @Size(min = 2, max = 20, message = "Code must be between 2 and 20 characters")
+    @Size(max = 20, message = "Code must not exceed 20 characters")
     private String code;
 
     @NotBlank(message = "Name is required")
-    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
+    @Size(max = 100, message = "Name must not exceed 100 characters")
     private String name;
-
+    
     private LocalDate installationDate;
-    
-    private LocalDate commissioningDate;
-    
-    private LocalDate decommissioningDate;
-    
-    @NotBlank(message = "Place name is required")
-    @Size(max = 100, message = "PlaceName must not exceed 100 characters")
-    private String placeName;
-    
-    @NotNull(message = "Latitude thickness is required")
-    private Double latitude;
-    
-    @NotNull(message = "Longitude thickness is required")
-    private Double longitude;
-    
-    @NotNull(message = "Elevation is required")
-    private Double elevation;
 
-    @NotNull(message = "Operational status ID is required")
+    private LocalDate commissioningDate;
+
+    private LocalDate decommissioningDate;
+
+    @NotNull(message = "Operational status is required")
     private Long operationalStatusId;
 
     @NotNull(message = "Structure is required")
@@ -104,6 +91,9 @@ public class TerminalDTO extends GenericDTO<Terminal> {
 
     @Builder.Default
     private Set<Long> pipelineIds = new HashSet<>();
+
+    @Builder.Default
+    private Set<Long> facilityIds = new HashSet<>();
 
     @Override
     public Terminal toEntity() {
@@ -195,6 +185,11 @@ public class TerminalDTO extends GenericDTO<Terminal> {
             entity.getPipelines().forEach(p -> pipelineIds.add(p.getId()));
         }
         
+        Set<Long> facilityIds = new HashSet<>();
+        if (entity.getFacilities() != null) {
+            entity.getFacilities().forEach(p -> facilityIds.add(p.getId()));
+        }
+        
         return TerminalDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
@@ -209,6 +204,7 @@ public class TerminalDTO extends GenericDTO<Terminal> {
                 .locationId(entity.getLocation() != null ? entity.getLocation().getId() : null)
                 .terminalTypeId(entity.getTerminalType() != null ? entity.getTerminalType().getId() : null)
                 .pipelineIds(pipelineIds)
+                .facilityIds(facilityIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
