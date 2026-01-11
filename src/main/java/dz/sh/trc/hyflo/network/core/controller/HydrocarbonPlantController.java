@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonFieldController
+ *	@Name		: HydrocarbonPlantController
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -15,8 +15,8 @@
 package dz.sh.trc.hyflo.network.core.controller;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.network.core.dto.HydrocarbonFieldDTO;
-import dz.sh.trc.hyflo.network.core.service.HydrocarbonFieldService;
+import dz.sh.trc.hyflo.network.core.dto.HydrocarbonPlantDTO;
+import dz.sh.trc.hyflo.network.core.service.HydrocarbonPlantService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,28 +28,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/network/core/hydrocarbon/field")
+@RequestMapping("/network/core/hydrocarbon/plant")
 @Slf4j
-public class HydrocarbonFieldController extends GenericController<HydrocarbonFieldDTO, Long> {
+public class HydrocarbonPlantController extends GenericController<HydrocarbonPlantDTO, Long> {
 
-    private final HydrocarbonFieldService hydrocarbonFieldService;
+    private final HydrocarbonPlantService hydrocarbonPlantService;
 
-    public HydrocarbonFieldController(HydrocarbonFieldService hydrocarbonFieldService) {
-        super(hydrocarbonFieldService, "HydrocarbonField");
-        this.hydrocarbonFieldService = hydrocarbonFieldService;
+    public HydrocarbonPlantController(HydrocarbonPlantService hydrocarbonPlantService) {
+        super(hydrocarbonPlantService, "HydrocarbonPlant");
+        this.hydrocarbonPlantService = hydrocarbonPlantService;
     }
 
     // ========== SECURED CRUD OPERATIONS ==========
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<HydrocarbonFieldDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<HydrocarbonPlantDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<Page<HydrocarbonFieldDTO>> getAll(
+    public ResponseEntity<Page<HydrocarbonPlantDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -59,19 +59,19 @@ public class HydrocarbonFieldController extends GenericController<HydrocarbonFie
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<List<HydrocarbonFieldDTO>> getAll() {
+    public ResponseEntity<List<HydrocarbonPlantDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
-    public ResponseEntity<HydrocarbonFieldDTO> create(@Valid @RequestBody HydrocarbonFieldDTO dto) {
+    public ResponseEntity<HydrocarbonPlantDTO> create(@Valid @RequestBody HydrocarbonPlantDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
-    public ResponseEntity<HydrocarbonFieldDTO> update(@PathVariable Long id, @Valid @RequestBody HydrocarbonFieldDTO dto) {
+    public ResponseEntity<HydrocarbonPlantDTO> update(@PathVariable Long id, @Valid @RequestBody HydrocarbonPlantDTO dto) {
         return super.update(id, dto);
     }
 
@@ -83,7 +83,7 @@ public class HydrocarbonFieldController extends GenericController<HydrocarbonFie
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<Page<HydrocarbonFieldDTO>> search(
+    public ResponseEntity<Page<HydrocarbonPlantDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -93,8 +93,8 @@ public class HydrocarbonFieldController extends GenericController<HydrocarbonFie
     }
 
     @Override
-    protected Page<HydrocarbonFieldDTO> searchByQuery(String query, Pageable pageable) {
-        return hydrocarbonFieldService.globalSearch(query, pageable);
+    protected Page<HydrocarbonPlantDTO> searchByQuery(String query, Pageable pageable) {
+        return hydrocarbonPlantService.globalSearch(query, pageable);
     }
 
     @Override

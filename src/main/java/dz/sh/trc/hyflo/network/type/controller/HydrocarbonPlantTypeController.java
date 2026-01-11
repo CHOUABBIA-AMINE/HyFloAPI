@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonFieldTypeController
+ *	@Name		: HydrocarbonPlantTypeController
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -15,8 +15,8 @@
 package dz.sh.trc.hyflo.network.type.controller;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.network.type.dto.HydrocarbonFieldTypeDTO;
-import dz.sh.trc.hyflo.network.type.service.HydrocarbonFieldTypeService;
+import dz.sh.trc.hyflo.network.type.dto.HydrocarbonPlantTypeDTO;
+import dz.sh.trc.hyflo.network.type.service.HydrocarbonPlantTypeService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,26 +28,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/network/type/hydrocarbon/field")
+@RequestMapping("/network/type/hydrocarbon/plant")
 @Slf4j
-public class HydrocarbonFieldTypeController extends GenericController<HydrocarbonFieldTypeDTO, Long> {
+public class HydrocarbonPlantTypeController extends GenericController<HydrocarbonPlantTypeDTO, Long> {
 
-    private final HydrocarbonFieldTypeService hydrocarbonFieldTypeService;
+    private final HydrocarbonPlantTypeService hydrocarbonPlantTypeService;
 
-    public HydrocarbonFieldTypeController(HydrocarbonFieldTypeService hydrocarbonFieldTypeService) {
-        super(hydrocarbonFieldTypeService, "HydrocarbonFieldType");
-        this.hydrocarbonFieldTypeService = hydrocarbonFieldTypeService;
+    public HydrocarbonPlantTypeController(HydrocarbonPlantTypeService hydrocarbonPlantTypeService) {
+        super(hydrocarbonPlantTypeService, "HydrocarbonPlantType");
+        this.hydrocarbonPlantTypeService = hydrocarbonPlantTypeService;
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
-    public ResponseEntity<HydrocarbonFieldTypeDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<HydrocarbonPlantTypeDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
-    public ResponseEntity<Page<HydrocarbonFieldTypeDTO>> getAll(
+    public ResponseEntity<Page<HydrocarbonPlantTypeDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -57,19 +57,19 @@ public class HydrocarbonFieldTypeController extends GenericController<Hydrocarbo
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
-    public ResponseEntity<List<HydrocarbonFieldTypeDTO>> getAll() {
+    public ResponseEntity<List<HydrocarbonPlantTypeDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:ADMIN')")
-    public ResponseEntity<HydrocarbonFieldTypeDTO> create(@Valid @RequestBody HydrocarbonFieldTypeDTO dto) {
+    public ResponseEntity<HydrocarbonPlantTypeDTO> create(@Valid @RequestBody HydrocarbonPlantTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:ADMIN')")
-    public ResponseEntity<HydrocarbonFieldTypeDTO> update(@PathVariable Long id, @Valid @RequestBody HydrocarbonFieldTypeDTO dto) {
+    public ResponseEntity<HydrocarbonPlantTypeDTO> update(@PathVariable Long id, @Valid @RequestBody HydrocarbonPlantTypeDTO dto) {
         return super.update(id, dto);
     }
 
@@ -81,7 +81,7 @@ public class HydrocarbonFieldTypeController extends GenericController<Hydrocarbo
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
-    public ResponseEntity<Page<HydrocarbonFieldTypeDTO>> search(
+    public ResponseEntity<Page<HydrocarbonPlantTypeDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -91,8 +91,8 @@ public class HydrocarbonFieldTypeController extends GenericController<Hydrocarbo
     }
 
     @Override
-    protected Page<HydrocarbonFieldTypeDTO> searchByQuery(String query, Pageable pageable) {
-        return hydrocarbonFieldTypeService.globalSearch(query, pageable);
+    protected Page<HydrocarbonPlantTypeDTO> searchByQuery(String query, Pageable pageable) {
+        return hydrocarbonPlantTypeService.globalSearch(query, pageable);
     }
 
     @Override
