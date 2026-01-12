@@ -31,7 +31,7 @@ public interface FlowProducedRepository extends JpaRepository<FlowProduced, Long
     /**
      * Find transported flow record for a specific pipeline and date
      */
-    Optional<FlowProduced> findByHydrocarbonFieldIdAndMeasurementDate(Long pipelineId, LocalDate date);
+    Optional<FlowProduced> findByProcessingPlantIdAndMeasurementDate(Long pipelineId, LocalDate date);
     
     /**
      * Get all transported flow records for a specific date
@@ -64,7 +64,7 @@ public interface FlowProducedRepository extends JpaRepository<FlowProduced, Long
            "WHERE fp.measurementDate = :date " +
            "AND fp.volumeProduced IS NOT NULL " +
            "AND ABS((fp.volumeProduced - fp.volumeEstimated) / fp.volumeEstimated * 100) <= 5")
-    Integer countHydrocarbonFieldsOnTarget(@Param("date") LocalDate date);
+    Integer countProcessingPlantsOnTarget(@Param("date") LocalDate date);
     
     /**
      * Count pipelines below target for a specific date (variance < -5%)
@@ -73,7 +73,7 @@ public interface FlowProducedRepository extends JpaRepository<FlowProduced, Long
            "WHERE fp.measurementDate = :date " +
            "AND fp.volumeProduced IS NOT NULL " +
            "AND ((fp.volumeProduced - fp.volumeEstimated) / fp.volumeEstimated * 100) < -5")
-    Integer countHydrocarbonFieldsBelowTarget(@Param("date") LocalDate date);
+    Integer countProcessingPlantsBelowTarget(@Param("date") LocalDate date);
     
     /**
      * Count pipelines above target for a specific date (variance > +5%)
@@ -82,7 +82,7 @@ public interface FlowProducedRepository extends JpaRepository<FlowProduced, Long
            "WHERE fp.measurementDate = :date " +
            "AND fp.volumeProduced IS NOT NULL " +
            "AND ((fp.volumeProduced - fp.volumeEstimated) / fp.volumeEstimated * 100) > 5")
-    Integer countHydrocarbonFieldsAboveTarget(@Param("date") LocalDate date);
+    Integer countProcessingPlantsAboveTarget(@Param("date") LocalDate date);
     
     /**
      * Count pipelines offline for a specific date (no transported data)
@@ -90,6 +90,6 @@ public interface FlowProducedRepository extends JpaRepository<FlowProduced, Long
     @Query("SELECT COUNT(fp) FROM FlowProduced fp " +
            "WHERE fp.measurementDate = :date " +
            "AND fp.volumeProduced IS NULL")
-    Integer countHydrocarbonFieldsOffline(@Param("date") LocalDate date);
+    Integer countProcessingPlantsOffline(@Param("date") LocalDate date);
 
 }
