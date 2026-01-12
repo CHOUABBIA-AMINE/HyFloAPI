@@ -64,6 +64,8 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
     private LocalDate commissioningDate;
     
     private LocalDate decommissioningDate;
+    
+    private double capacity;
 
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
@@ -108,7 +110,8 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
         entity.setInstallationDate(this.installationDate);
         entity.setCommissioningDate(this.commissioningDate);
         entity.setDecommissioningDate(this.decommissioningDate);
-        
+        entity.setCapacity(this.capacity);
+
         if (this.operationalStatusId != null) {
             OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
@@ -149,7 +152,8 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
         if (this.installationDate != null) entity.setInstallationDate(this.installationDate);
         if (this.commissioningDate != null) entity.setCommissioningDate(this.commissioningDate);
         if (this.decommissioningDate != null) entity.setDecommissioningDate(this.decommissioningDate);
-        
+        if (this.capacity != 0) entity.setCapacity(this.capacity);
+
         if (this.operationalStatusId != null) {
             OperationalStatus status = new OperationalStatus();
             status.setId(this.operationalStatusId);
@@ -206,7 +210,8 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
                 .installationDate(entity.getInstallationDate())
                 .commissioningDate(entity.getCommissioningDate())
                 .decommissioningDate(entity.getDecommissioningDate())
-                
+                .capacity(entity.getCapacity())
+
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
                 .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)

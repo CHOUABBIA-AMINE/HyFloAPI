@@ -20,6 +20,7 @@ import java.util.Set;
 import dz.sh.trc.hyflo.network.common.model.Partner;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.type.model.ProcessingPlantType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -46,8 +47,11 @@ import lombok.ToString;
 @Table(name="T_02_03_05")
 public class ProcessingPlant extends Facility {
 
+	@Column(name="F_10", nullable=true)
+	protected double capacity;
+
     @ManyToOne
-    @JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_05_FK_01"), nullable=false)
+    @JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_05_FK_01"), nullable=false)
     private ProcessingPlantType processingPlantType;
 
     @ManyToMany(fetch = FetchType.LAZY)
