@@ -129,14 +129,14 @@ public class LocalityController extends GenericController<LocalityDTO, Long> {
     }
 
     /**
-     * Get localities by state ID
-     * GET /locality/state/{stateId}
+     * Get localities by district ID
+     * GET /locality/district/{districtId}
      */
-    @GetMapping("/state/{stateId}")
+    @GetMapping("/district/{districtId}")
     @PreAuthorize("hasAuthority('LOCALITY:READ')")
-    public ResponseEntity<List<LocalityDTO>> getByStateId(@PathVariable Long stateId) {
-        log.debug("GET /locality/state/{} - Getting localities by state ID", stateId);
-        List<LocalityDTO> localities = localityService.getByStateId(stateId);
+    public ResponseEntity<List<LocalityDTO>> getByDistrictId(@PathVariable Long districtId) {
+        log.debug("GET /locality/district/{} - Getting localities by district ID", districtId);
+        List<LocalityDTO> localities = localityService.getByDistrictId(districtId);
         return success(localities);
     }
 }

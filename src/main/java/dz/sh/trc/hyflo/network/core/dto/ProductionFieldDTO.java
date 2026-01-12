@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantDTO
+ *	@Name		: ProductionFieldDTO
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2025
  *
@@ -29,9 +29,10 @@ import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
-import dz.sh.trc.hyflo.network.core.model.HydrocarbonPlant;
-import dz.sh.trc.hyflo.network.type.dto.HydrocarbonPlantTypeDTO;
-import dz.sh.trc.hyflo.network.type.model.HydrocarbonPlantType;
+import dz.sh.trc.hyflo.network.core.model.ProductionField;
+import dz.sh.trc.hyflo.network.core.model.ProcessingPlant;
+import dz.sh.trc.hyflo.network.type.dto.ProductionFieldTypeDTO;
+import dz.sh.trc.hyflo.network.type.model.ProductionFieldType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -48,7 +49,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
+public class ProductionFieldDTO extends GenericDTO<ProductionField> {
 
     // Infrastructure fields
     @NotBlank(message = "Code is required")
@@ -77,8 +78,10 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
     @NotNull(message = "Location is required")
     private Long locationId;
 
-    @NotNull(message = "HydrocarbonPlantType type ID is required")
-    private Long hydrocarbonPlantTypeId;
+    @NotNull(message = "ProductionFieldType type ID is required")
+    private Long productionFieldTypeId;
+
+    private Long processingPlantId;
     
     private OperationalStatusDTO operationalStatus;
     
@@ -88,10 +91,9 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
     
     private LocationDTO location;
     
-    private HydrocarbonPlantTypeDTO hydrocarbonPlantType;
-
-    @Builder.Default
-    private Set<Long> pipelineIds = new HashSet<>();
+    private ProductionFieldTypeDTO productionFieldType;
+    
+    private ProcessingPlantDTO processingPlant;
 	
 	@Builder.Default
     private Set<Long> partnerIds = new HashSet<>();
@@ -100,8 +102,8 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
     private Set<Long> productIds = new HashSet<>();
 
     @Override
-    public HydrocarbonPlant toEntity() {
-        HydrocarbonPlant entity = new HydrocarbonPlant();
+    public ProductionField toEntity() {
+        ProductionField entity = new ProductionField();
         entity.setId(getId());
         entity.setCode(this.code);
         entity.setName(this.name);
@@ -133,17 +135,23 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
         	entity.setLocation(location);
         }
         
-        if (this.hydrocarbonPlantTypeId != null) {
-        	HydrocarbonPlantType hydrocarbonPlantType = new HydrocarbonPlantType();
-            hydrocarbonPlantType.setId(this.hydrocarbonPlantTypeId);
-            entity.setHydrocarbonPlantType(hydrocarbonPlantType);
+        if (this.productionFieldTypeId != null) {
+        	ProductionFieldType productionFieldType = new ProductionFieldType();
+            productionFieldType.setId(this.productionFieldTypeId);
+            entity.setProductionFieldType(productionFieldType);
+        }
+        
+        if (this.processingPlantId != null) {
+        	ProcessingPlant processingPlant = new ProcessingPlant();
+        	processingPlant.setId(this.processingPlantId);
+            entity.setProcessingPlant(processingPlant);
         }
         
         return entity;
     }
 
     @Override
-    public void updateEntity(HydrocarbonPlant entity) {
+    public void updateEntity(ProductionField entity) {
         if (this.code != null) entity.setCode(this.code);
         if (this.name != null) entity.setName(this.name);
         if (this.installationDate != null) entity.setInstallationDate(this.installationDate);
@@ -174,20 +182,21 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
         	entity.setLocation(location);
         }
         
-        if (this.hydrocarbonPlantTypeId != null) {
-        	HydrocarbonPlantType hydrocarbonPlantType = new HydrocarbonPlantType();
-            hydrocarbonPlantType.setId(this.hydrocarbonPlantTypeId);
-            entity.setHydrocarbonPlantType(hydrocarbonPlantType);
+        if (this.productionFieldTypeId != null) {
+        	ProductionFieldType productionFieldType = new ProductionFieldType();
+            productionFieldType.setId(this.productionFieldTypeId);
+            entity.setProductionFieldType(productionFieldType);
+        }
+        
+        if (this.processingPlantId != null) {
+        	ProcessingPlant processingPlant = new ProcessingPlant();
+        	processingPlant.setId(this.processingPlantId);
+            entity.setProcessingPlant(processingPlant);
         }
     }
 
-    public static HydrocarbonPlantDTO fromEntity(HydrocarbonPlant entity) {
+    public static ProductionFieldDTO fromEntity(ProductionField entity) {
         if (entity == null) return null;
-        
-        Set<Long> pipelineIds = new HashSet<>();
-        if (entity.getPipelines() != null) {
-            entity.getPipelines().forEach(p -> pipelineIds.add(p.getId()));
-        }
 		
 		Set<Long> partnerIds = new HashSet<>();
         if (entity.getPartners() != null) {
@@ -199,7 +208,7 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
             entity.getProducts().forEach(p -> productIds.add(p.getId()));
         }
         
-        return HydrocarbonPlantDTO.builder()
+        return ProductionFieldDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
                 .name(entity.getName())
@@ -211,8 +220,8 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
                 .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .locationId(entity.getLocation() != null ? entity.getLocation().getId() : null)
-                .hydrocarbonPlantTypeId(entity.getHydrocarbonPlantType() != null ? entity.getHydrocarbonPlantType().getId() : null)
-                .pipelineIds(pipelineIds)
+                .productionFieldTypeId(entity.getProductionFieldType() != null ? entity.getProductionFieldType().getId() : null)
+                .processingPlantId(entity.getProcessingPlant() != null ? entity.getProcessingPlant().getId() : null)
                 .partnerIds(partnerIds)
                 .productIds(productIds)
                 
@@ -220,7 +229,8 @@ public class HydrocarbonPlantDTO extends GenericDTO<HydrocarbonPlant> {
                 .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .location(entity.getLocation() != null ? LocationDTO.fromEntity(entity.getLocation()) : null)
-                .hydrocarbonPlantType(entity.getHydrocarbonPlantType() != null ? HydrocarbonPlantTypeDTO.fromEntity(entity.getHydrocarbonPlantType()) : null)
+                .productionFieldType(entity.getProductionFieldType() != null ? ProductionFieldTypeDTO.fromEntity(entity.getProductionFieldType()) : null)
+                .processingPlant(entity.getProcessingPlant() != null ? ProcessingPlantDTO.fromEntity(entity.getProcessingPlant()) : null)
                 .build();
     }
 }

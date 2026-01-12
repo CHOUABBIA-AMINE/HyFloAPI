@@ -39,7 +39,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="PipelineSystem")
-@Table(name="T_02_03_06", uniqueConstraints = { @UniqueConstraint(name="T_02_03_06_UK_01", columnNames={"F_01"}) })
+@Table(name="T_02_03_07", uniqueConstraints = { @UniqueConstraint(name="T_02_03_07_UK_01", columnNames={"F_01"}) })
 public class PipelineSystem extends GenericModel {
 
     @Column(name="F_01", length=50, nullable=false)
@@ -49,14 +49,14 @@ public class PipelineSystem extends GenericModel {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_01"), nullable=false)
+    @JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_01"), nullable=false)
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_02"), nullable=false)
+    @JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_02"), nullable=false)
     private OperationalStatus operationalStatus;
 
     @ManyToOne
-    @JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_03"), nullable=false)
+    @JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_03"), nullable=false)
     private Structure structure;
 }

@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantService
+ *	@Name		: ProductionFieldService
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -22,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.network.core.dto.HydrocarbonPlantDTO;
-import dz.sh.trc.hyflo.network.core.model.HydrocarbonPlant;
-import dz.sh.trc.hyflo.network.core.repository.HydrocarbonPlantRepository;
+import dz.sh.trc.hyflo.network.core.dto.ProductionFieldDTO;
+import dz.sh.trc.hyflo.network.core.model.ProductionField;
+import dz.sh.trc.hyflo.network.core.repository.ProductionFieldRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,41 +32,41 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class HydrocarbonPlantService extends GenericService<HydrocarbonPlant, HydrocarbonPlantDTO, Long> {
+public class ProductionFieldService extends GenericService<ProductionField, ProductionFieldDTO, Long> {
 
-    private final HydrocarbonPlantRepository hydrocarbonPlantRepository;
+    private final ProductionFieldRepository hydrocarbonFieldRepository;
 
     @Override
-    protected JpaRepository<HydrocarbonPlant, Long> getRepository() {
-        return hydrocarbonPlantRepository;
+    protected JpaRepository<ProductionField, Long> getRepository() {
+        return hydrocarbonFieldRepository;
     }
 
     @Override
     protected String getEntityName() {
-        return "HydrocarbonPlant";
+        return "ProductionField";
     }
 
     @Override
-    protected HydrocarbonPlantDTO toDTO(HydrocarbonPlant entity) {
-        return HydrocarbonPlantDTO.fromEntity(entity);
+    protected ProductionFieldDTO toDTO(ProductionField entity) {
+        return ProductionFieldDTO.fromEntity(entity);
     }
 
     @Override
-    protected HydrocarbonPlant toEntity(HydrocarbonPlantDTO dto) {
+    protected ProductionField toEntity(ProductionFieldDTO dto) {
         return dto.toEntity();
     }
 
     @Override
-    protected void updateEntityFromDTO(HydrocarbonPlant entity, HydrocarbonPlantDTO dto) {
+    protected void updateEntityFromDTO(ProductionField entity, ProductionFieldDTO dto) {
         dto.updateEntity(entity);
     }
 
     @Override
     @Transactional
-    public HydrocarbonPlantDTO create(HydrocarbonPlantDTO dto) {
+    public ProductionFieldDTO create(ProductionFieldDTO dto) {
         log.info("Creating hydrocarbon field: code={}", dto.getCode());
         
-        if (hydrocarbonPlantRepository.existsByCode(dto.getCode())) {
+        if (hydrocarbonFieldRepository.existsByCode(dto.getCode())) {
             throw new BusinessValidationException("Hydrocarbon field with code '" + dto.getCode() + "' already exists");
         }
         
@@ -75,23 +75,23 @@ public class HydrocarbonPlantService extends GenericService<HydrocarbonPlant, Hy
 
     @Override
     @Transactional
-    public HydrocarbonPlantDTO update(Long id, HydrocarbonPlantDTO dto) {
+    public ProductionFieldDTO update(Long id, ProductionFieldDTO dto) {
         log.info("Updating hydrocarbon field with ID: {}", id);
         
-        if (hydrocarbonPlantRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
+        if (hydrocarbonFieldRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
             throw new BusinessValidationException("Hydrocarbon field with code '" + dto.getCode() + "' already exists");
         }
         
         return super.update(id, dto);
     }
 
-    public Page<HydrocarbonPlantDTO> globalSearch(String searchTerm, Pageable pageable) {
+    public Page<ProductionFieldDTO> globalSearch(String searchTerm, Pageable pageable) {
         log.debug("Global search for hydrocarbon fields with term: {}", searchTerm);
         
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return getAll(pageable);
         }
         
-        return executeQuery(p -> hydrocarbonPlantRepository.searchByAnyPlant(searchTerm.trim(), p), pageable);
+        return executeQuery(p -> hydrocarbonFieldRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

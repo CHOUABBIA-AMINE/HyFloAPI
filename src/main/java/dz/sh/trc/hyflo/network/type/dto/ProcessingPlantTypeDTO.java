@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantTypeDTO
+ *	@Name		: ProcessingPlantTypeDTO
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.network.type.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.network.type.model.HydrocarbonPlantType;
+import dz.sh.trc.hyflo.network.type.model.ProcessingPlantType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -32,7 +32,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HydrocarbonPlantTypeDTO extends GenericDTO<HydrocarbonPlantType> {
+public class ProcessingPlantTypeDTO extends GenericDTO<ProcessingPlantType> {
 
 	@NotBlank(message = "Code is required")
     @Size(max = 20, message = "Code must not exceed 20 characters")
@@ -49,8 +49,8 @@ public class HydrocarbonPlantTypeDTO extends GenericDTO<HydrocarbonPlantType> {
     private String designationFr;
 
     @Override
-    public HydrocarbonPlantType toEntity() {
-        HydrocarbonPlantType type = new HydrocarbonPlantType();
+    public ProcessingPlantType toEntity() {
+        ProcessingPlantType type = new ProcessingPlantType();
         type.setId(getId());
         type.setCode(this.code);
         type.setDesignationAr(this.designationAr);
@@ -60,17 +60,17 @@ public class HydrocarbonPlantTypeDTO extends GenericDTO<HydrocarbonPlantType> {
     }
 
     @Override
-    public void updateEntity(HydrocarbonPlantType type) {
+    public void updateEntity(ProcessingPlantType type) {
         if (this.code != null) type.setCode(this.code);
         if (this.designationAr != null) type.setDesignationAr(this.designationAr);
         if (this.designationEn != null) type.setDesignationEn(this.designationEn);
         if (this.designationFr != null) type.setDesignationFr(this.designationFr);
     }
 
-    public static HydrocarbonPlantTypeDTO fromEntity(HydrocarbonPlantType type) {
+    public static ProcessingPlantTypeDTO fromEntity(ProcessingPlantType type) {
         if (type == null) return null;
         
-        return HydrocarbonPlantTypeDTO.builder()
+        return ProcessingPlantTypeDTO.builder()
                 .id(type.getId())
                 .code(type.getCode())
                 .designationAr(type.getDesignationAr())

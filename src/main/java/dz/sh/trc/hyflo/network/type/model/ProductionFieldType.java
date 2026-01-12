@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantType
+ *	@Name		: ProductionFieldType
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -29,9 +29,9 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@Entity(name="HydrocarbonPlantType")
+@Entity(name="ProductionFieldType")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Table(name="T_02_01_08")
-public class HydrocarbonPlantType extends FacilityType {
+@Table(name="T_02_01_07")
+public class ProductionFieldType extends FacilityType {
 
 }

@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantRepository
+ *	@Name		: ProcessingPlantRepository
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -21,10 +21,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import dz.sh.trc.hyflo.network.core.model.HydrocarbonPlant;
+import dz.sh.trc.hyflo.network.core.model.ProcessingPlant;
 
 @Repository
-public interface HydrocarbonPlantRepository extends JpaRepository<HydrocarbonPlant, Long> {
+public interface ProcessingPlantRepository extends JpaRepository<ProcessingPlant, Long> {
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
@@ -34,7 +34,7 @@ public interface HydrocarbonPlantRepository extends JpaRepository<HydrocarbonPla
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
-    @Query("SELECT h FROM HydrocarbonPlant h WHERE "
+    @Query("SELECT h FROM ProcessingPlant h WHERE "
          + "LOWER(h.code) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Page<HydrocarbonPlant> searchByAnyPlant(@Param("search") String search, Pageable pageable);
+    Page<ProcessingPlant> searchByAnyPlant(@Param("search") String search, Pageable pageable);
 }

@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantTypeRepository
+ *	@Name		: ProcessingPlantTypeRepository
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -21,16 +21,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import dz.sh.trc.hyflo.network.type.model.HydrocarbonPlantType;
+import dz.sh.trc.hyflo.network.type.model.ProcessingPlantType;
 
 @Repository
-public interface HydrocarbonPlantTypeRepository extends JpaRepository<HydrocarbonPlantType, Long> {
+public interface ProcessingPlantTypeRepository extends JpaRepository<ProcessingPlantType, Long> {
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
-    @Query("SELECT t FROM HydrocarbonPlantType t WHERE "
+    @Query("SELECT t FROM ProcessingPlantType t WHERE "
          + "LOWER(t.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR "
          + "LOWER(t.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR "
          + "LOWER(t.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Page<HydrocarbonPlantType> searchByAnyField(@Param("search") String search, Pageable pageable);
+    Page<ProcessingPlantType> searchByAnyField(@Param("search") String search, Pageable pageable);
 }

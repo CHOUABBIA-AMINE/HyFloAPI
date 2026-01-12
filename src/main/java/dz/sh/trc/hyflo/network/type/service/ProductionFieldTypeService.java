@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantTypeService
+ *	@Name		: ProductionFieldTypeService
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.network.type.dto.HydrocarbonPlantTypeDTO;
-import dz.sh.trc.hyflo.network.type.model.HydrocarbonPlantType;
-import dz.sh.trc.hyflo.network.type.repository.HydrocarbonPlantTypeRepository;
+import dz.sh.trc.hyflo.network.type.dto.ProductionFieldTypeDTO;
+import dz.sh.trc.hyflo.network.type.model.ProductionFieldType;
+import dz.sh.trc.hyflo.network.type.repository.ProductionFieldTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,42 +31,42 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class HydrocarbonPlantTypeService extends GenericService<HydrocarbonPlantType, HydrocarbonPlantTypeDTO, Long> {
+public class ProductionFieldTypeService extends GenericService<ProductionFieldType, ProductionFieldTypeDTO, Long> {
 
-    private final HydrocarbonPlantTypeRepository hydrocarbonPlantTypeRepository;
+    private final ProductionFieldTypeRepository productionFieldTypeRepository;
 
     @Override
-    protected JpaRepository<HydrocarbonPlantType, Long> getRepository() {
-        return hydrocarbonPlantTypeRepository;
+    protected JpaRepository<ProductionFieldType, Long> getRepository() {
+        return productionFieldTypeRepository;
     }
 
     @Override
     protected String getEntityName() {
-        return "HydrocarbonPlantType";
+        return "ProductionFieldType";
     }
 
     @Override
-    protected HydrocarbonPlantTypeDTO toDTO(HydrocarbonPlantType entity) {
-        return HydrocarbonPlantTypeDTO.fromEntity(entity);
+    protected ProductionFieldTypeDTO toDTO(ProductionFieldType entity) {
+        return ProductionFieldTypeDTO.fromEntity(entity);
     }
 
     @Override
-    protected HydrocarbonPlantType toEntity(HydrocarbonPlantTypeDTO dto) {
+    protected ProductionFieldType toEntity(ProductionFieldTypeDTO dto) {
         return dto.toEntity();
     }
 
     @Override
-    protected void updateEntityFromDTO(HydrocarbonPlantType entity, HydrocarbonPlantTypeDTO dto) {
+    protected void updateEntityFromDTO(ProductionFieldType entity, ProductionFieldTypeDTO dto) {
         dto.updateEntity(entity);
     }
 
-    public Page<HydrocarbonPlantTypeDTO> globalSearch(String searchTerm, Pageable pageable) {
+    public Page<ProductionFieldTypeDTO> globalSearch(String searchTerm, Pageable pageable) {
         log.debug("Global search for hydrocarbon field types with term: {}", searchTerm);
         
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return getAll(pageable);
         }
         
-        return executeQuery(p -> hydrocarbonPlantTypeRepository.searchByAnyField(searchTerm.trim(), p), pageable);
+        return executeQuery(p -> productionFieldTypeRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

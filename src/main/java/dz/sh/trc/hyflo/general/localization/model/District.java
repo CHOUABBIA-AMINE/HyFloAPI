@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: Locality
+ *	@Name		: District
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -35,9 +35,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="Locality")
-@Table(name="T_01_02_05", uniqueConstraints = { @UniqueConstraint(name = "T_01_02_05_UK_01", columnNames = { "F_01" })})
-public class Locality extends GenericModel {
+@Entity(name="District")
+@Table(name="T_01_02_04", uniqueConstraints = { @UniqueConstraint(name = "T_01_02_04_UK_01", columnNames = { "F_01" })})
+public class District extends GenericModel {
 	
 	@Column(name="F_01", length=10, nullable=false)
 	private String code;
@@ -52,6 +52,6 @@ public class Locality extends GenericModel {
 	private String designationFr;
 	
 	@ManyToOne
-	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_05_FK_01"), nullable=false)
-	private District district;
+	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_04_FK_01"), nullable=false)
+	private State state;
 }

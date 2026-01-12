@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonFieldRepository
+ *	@Name		: ProductionFieldRepository
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -21,10 +21,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import dz.sh.trc.hyflo.network.core.model.HydrocarbonField;
+import dz.sh.trc.hyflo.network.core.model.ProductionField;
 
 @Repository
-public interface HydrocarbonFieldRepository extends JpaRepository<HydrocarbonField, Long> {
+public interface ProductionFieldRepository extends JpaRepository<ProductionField, Long> {
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
@@ -34,7 +34,7 @@ public interface HydrocarbonFieldRepository extends JpaRepository<HydrocarbonFie
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
-    @Query("SELECT h FROM HydrocarbonField h WHERE "
+    @Query("SELECT h FROM ProductionField h WHERE "
          + "LOWER(h.code) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Page<HydrocarbonField> searchByAnyField(@Param("search") String search, Pageable pageable);
+    Page<ProductionField> searchByAnyField(@Param("search") String search, Pageable pageable);
 }

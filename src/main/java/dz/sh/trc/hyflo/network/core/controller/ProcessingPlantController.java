@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlantController
+ *	@Name		: ProcessingPlantController
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -15,8 +15,8 @@
 package dz.sh.trc.hyflo.network.core.controller;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.network.core.dto.HydrocarbonPlantDTO;
-import dz.sh.trc.hyflo.network.core.service.HydrocarbonPlantService;
+import dz.sh.trc.hyflo.network.core.dto.ProcessingPlantDTO;
+import dz.sh.trc.hyflo.network.core.service.ProcessingPlantService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,26 +30,26 @@ import java.util.List;
 @RestController
 @RequestMapping("/network/core/hydrocarbon/plant")
 @Slf4j
-public class HydrocarbonPlantController extends GenericController<HydrocarbonPlantDTO, Long> {
+public class ProcessingPlantController extends GenericController<ProcessingPlantDTO, Long> {
 
-    private final HydrocarbonPlantService hydrocarbonPlantService;
+    private final ProcessingPlantService processingPlantService;
 
-    public HydrocarbonPlantController(HydrocarbonPlantService hydrocarbonPlantService) {
-        super(hydrocarbonPlantService, "HydrocarbonPlant");
-        this.hydrocarbonPlantService = hydrocarbonPlantService;
+    public ProcessingPlantController(ProcessingPlantService processingPlantService) {
+        super(processingPlantService, "ProcessingPlant");
+        this.processingPlantService = processingPlantService;
     }
 
     // ========== SECURED CRUD OPERATIONS ==========
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<HydrocarbonPlantDTO> getById(@PathVariable Long id) {
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    public ResponseEntity<ProcessingPlantDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<Page<HydrocarbonPlantDTO>> getAll(
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    public ResponseEntity<Page<ProcessingPlantDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -58,32 +58,32 @@ public class HydrocarbonPlantController extends GenericController<HydrocarbonPla
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<List<HydrocarbonPlantDTO>> getAll() {
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    public ResponseEntity<List<ProcessingPlantDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
-    public ResponseEntity<HydrocarbonPlantDTO> create(@Valid @RequestBody HydrocarbonPlantDTO dto) {
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:ADMIN')")
+    public ResponseEntity<ProcessingPlantDTO> create(@Valid @RequestBody ProcessingPlantDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
-    public ResponseEntity<HydrocarbonPlantDTO> update(@PathVariable Long id, @Valid @RequestBody HydrocarbonPlantDTO dto) {
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:ADMIN')")
+    public ResponseEntity<ProcessingPlantDTO> update(@PathVariable Long id, @Valid @RequestBody ProcessingPlantDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<Page<HydrocarbonPlantDTO>> search(
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    public ResponseEntity<Page<ProcessingPlantDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -93,18 +93,18 @@ public class HydrocarbonPlantController extends GenericController<HydrocarbonPla
     }
 
     @Override
-    protected Page<HydrocarbonPlantDTO> searchByQuery(String query, Pageable pageable) {
-        return hydrocarbonPlantService.globalSearch(query, pageable);
+    protected Page<ProcessingPlantDTO> searchByQuery(String query, Pageable pageable) {
+        return processingPlantService.globalSearch(query, pageable);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
     public ResponseEntity<Boolean> exists(@PathVariable Long id) {
         return super.exists(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
+    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
     public ResponseEntity<Long> count() {
         return super.count();
     }

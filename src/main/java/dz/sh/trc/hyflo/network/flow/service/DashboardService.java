@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
-import dz.sh.trc.hyflo.network.core.repository.HydrocarbonFieldRepository;
+import dz.sh.trc.hyflo.network.core.repository.ProcessingPlantRepository;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import dz.sh.trc.hyflo.network.core.repository.StationRepository;
 import dz.sh.trc.hyflo.network.core.repository.TerminalRepository;
@@ -65,7 +65,7 @@ public class DashboardService {
     private TerminalRepository terminalRepository;
     
     @Autowired
-    private HydrocarbonFieldRepository hydrocarbonFieldRepository;
+    private ProcessingPlantRepository processingPlantRepository;
     
     private static final int EXPECTED_READINGS_PER_DAY = 6; // 00:00, 04:00, 08:00, 12:00, 16:00, 20:00
     private static final double ON_TARGET_THRESHOLD = 5.0; // ±5%
@@ -79,7 +79,7 @@ public class DashboardService {
         // Infrastructure counts - placeholder for now, to be replaced with actual counts
         Long totalStations = stationRepository.count();
         Long totalTerminals = terminalRepository.count();
-        Long totalFields = hydrocarbonFieldRepository.count();
+        Long totalFields = processingPlantRepository.count();
         Long totalPipelines = pipelineRepository.count();
         
         // Today's metrics

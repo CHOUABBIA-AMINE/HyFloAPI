@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonFieldTypeDTO
+ *	@Name		: ProductionFieldTypeDTO
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.network.type.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.network.type.model.HydrocarbonFieldType;
+import dz.sh.trc.hyflo.network.type.model.ProductionFieldType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -32,7 +32,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class HydrocarbonFieldTypeDTO extends GenericDTO<HydrocarbonFieldType> {
+public class ProductionFieldTypeDTO extends GenericDTO<ProductionFieldType> {
 
 	@NotBlank(message = "Code is required")
     @Size(max = 20, message = "Code must not exceed 20 characters")
@@ -49,8 +49,8 @@ public class HydrocarbonFieldTypeDTO extends GenericDTO<HydrocarbonFieldType> {
     private String designationFr;
 
     @Override
-    public HydrocarbonFieldType toEntity() {
-        HydrocarbonFieldType type = new HydrocarbonFieldType();
+    public ProductionFieldType toEntity() {
+        ProductionFieldType type = new ProductionFieldType();
         type.setId(getId());
         type.setCode(this.code);
         type.setDesignationAr(this.designationAr);
@@ -60,17 +60,17 @@ public class HydrocarbonFieldTypeDTO extends GenericDTO<HydrocarbonFieldType> {
     }
 
     @Override
-    public void updateEntity(HydrocarbonFieldType type) {
+    public void updateEntity(ProductionFieldType type) {
         if (this.code != null) type.setCode(this.code);
         if (this.designationAr != null) type.setDesignationAr(this.designationAr);
         if (this.designationEn != null) type.setDesignationEn(this.designationEn);
         if (this.designationFr != null) type.setDesignationFr(this.designationFr);
     }
 
-    public static HydrocarbonFieldTypeDTO fromEntity(HydrocarbonFieldType type) {
+    public static ProductionFieldTypeDTO fromEntity(ProductionFieldType type) {
         if (type == null) return null;
         
-        return HydrocarbonFieldTypeDTO.builder()
+        return ProductionFieldTypeDTO.builder()
                 .id(type.getId())
                 .code(type.getCode())
                 .designationAr(type.getDesignationAr())

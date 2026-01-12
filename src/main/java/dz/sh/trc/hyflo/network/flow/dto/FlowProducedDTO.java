@@ -19,8 +19,8 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.network.core.dto.HydrocarbonFieldDTO;
-import dz.sh.trc.hyflo.network.core.model.HydrocarbonField;
+import dz.sh.trc.hyflo.network.core.dto.ProcessingPlantDTO;
+import dz.sh.trc.hyflo.network.core.model.ProcessingPlant;
 import dz.sh.trc.hyflo.network.flow.model.FlowProduced;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -46,9 +46,9 @@ public class FlowProducedDTO extends GenericDTO<FlowProduced> {
     private LocalDate measurementDate;
 
     @NotNull(message = "Pipeline is required")
-    private Long hydrocarbonFieldId;
+    private Long processingPlantId;
     
-    private HydrocarbonFieldDTO hydrocarbonField;
+    private ProcessingPlantDTO processingPlant;
 
     @Override
     public FlowProduced toEntity() {
@@ -58,10 +58,10 @@ public class FlowProducedDTO extends GenericDTO<FlowProduced> {
         flow.setVolumeProduced(this.volumeProduced);
         flow.setMeasurementDate(this.measurementDate);
         
-        if (this.hydrocarbonFieldId != null) {
-        	HydrocarbonField hydrocarbonField = new HydrocarbonField();
-        	hydrocarbonField.setId(this.hydrocarbonFieldId);
-            flow.setHydrocarbonField(hydrocarbonField);
+        if (this.processingPlantId != null) {
+        	ProcessingPlant processingPlant = new ProcessingPlant();
+        	processingPlant.setId(this.processingPlantId);
+            flow.setProcessingPlant(processingPlant);
         }
         
         return flow;
@@ -73,10 +73,10 @@ public class FlowProducedDTO extends GenericDTO<FlowProduced> {
         if (this.volumeProduced != 0) flow.setVolumeProduced(this.volumeProduced);
         if (this.measurementDate != null) flow.setMeasurementDate(this.measurementDate);
         
-        if (this.hydrocarbonFieldId != null) {
-        	HydrocarbonField hydrocarbonField = new HydrocarbonField();
-        	hydrocarbonField.setId(this.hydrocarbonFieldId);
-            flow.setHydrocarbonField(hydrocarbonField);
+        if (this.processingPlantId != null) {
+        	ProcessingPlant processingPlant = new ProcessingPlant();
+        	processingPlant.setId(this.processingPlantId);
+            flow.setProcessingPlant(processingPlant);
         }
     }
 
@@ -88,9 +88,9 @@ public class FlowProducedDTO extends GenericDTO<FlowProduced> {
                 .volumeEstimated(flow.getVolumeEstimated())
                 .volumeProduced(flow.getVolumeProduced())
                 .measurementDate(flow.getMeasurementDate())
-                .hydrocarbonFieldId(flow.getHydrocarbonField() != null ? flow.getHydrocarbonField().getId() : null)
+                .processingPlantId(flow.getProcessingPlant() != null ? flow.getProcessingPlant().getId() : null)
                 
-                .hydrocarbonField(flow.getHydrocarbonField() != null ? HydrocarbonFieldDTO.fromEntity(flow.getHydrocarbonField()) : null)
+                .processingPlant(flow.getProcessingPlant() != null ? ProcessingPlantDTO.fromEntity(flow.getProcessingPlant()) : null)
                 .build();
     }
 }

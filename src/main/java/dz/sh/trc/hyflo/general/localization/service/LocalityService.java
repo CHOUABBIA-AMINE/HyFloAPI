@@ -68,8 +68,8 @@ public class LocalityService extends GenericService<Locality, LocalityDTO, Long>
     @Override
     @Transactional
     public LocalityDTO create(LocalityDTO dto) {
-        log.info("Creating locality: code={}, designationFr={}, stateId={}", 
-                dto.getCode(), dto.getDesignationFr(), dto.getStateId());
+        log.info("Creating locality: code={}, designationFr={}, districtId={}", 
+                dto.getCode(), dto.getDesignationFr(), dto.getDistrictId());
         return super.create(dto);
     }
 
@@ -97,9 +97,9 @@ public class LocalityService extends GenericService<Locality, LocalityDTO, Long>
         return executeQuery(p -> localityRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
-    public List<LocalityDTO> getByStateId(Long stateId) {
-        log.debug("Getting localities by state ID: {}", stateId);
-        return localityRepository.findByStateId(stateId).stream()
+    public List<LocalityDTO> getByDistrictId(Long districtId) {
+        log.debug("Getting localities by district ID: {}", districtId);
+        return localityRepository.findByDistrictId(districtId).stream()
                 .map(LocalityDTO::fromEntity)
                 .collect(Collectors.toList());
     }

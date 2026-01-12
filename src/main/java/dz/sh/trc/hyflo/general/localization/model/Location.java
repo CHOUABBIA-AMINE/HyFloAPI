@@ -35,7 +35,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Location")
-@Table(name="T_01_02_05")
+@Table(name="T_01_02_06")
 public class Location extends GenericModel {
 
     @Column(name="F_01", nullable=false)
@@ -54,7 +54,7 @@ public class Location extends GenericModel {
     private Double elevation;
 
     @ManyToOne
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_05_FK_02"), nullable = true)
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_06_FK_01"), nullable = true)
     private Locality locality;
 
 }

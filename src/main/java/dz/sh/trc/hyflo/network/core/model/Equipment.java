@@ -41,7 +41,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Equipment")
-@Table(name="T_02_03_09", uniqueConstraints = { @UniqueConstraint(name="T_02_03_09_UK_01", columnNames={"F_02"}) })
+@Table(name="T_02_03_10", uniqueConstraints = { @UniqueConstraint(name="T_02_03_10_UK_01", columnNames={"F_02"}) })
 public class Equipment extends GenericModel {
 
     @Column(name="F_01", length=100, nullable=false)
@@ -72,18 +72,18 @@ public class Equipment extends GenericModel {
     private LocalDate decommissioningDate;
 
     @ManyToOne
-    @JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_01"), nullable=false)
+    @JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_01"), nullable=false)
     private OperationalStatus operationalStatus;
 
     @ManyToOne
-    @JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_02"), nullable=false)
+    @JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_02"), nullable=false)
     private EquipmentType equipmentType;
 
     @ManyToOne
-    @JoinColumn(name="F_12", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_03"), nullable=false)
+    @JoinColumn(name="F_12", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_03"), nullable=false)
     private Facility facility;
 
     @ManyToOne
-    @JoinColumn(name="F_13", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_04"), nullable=false)
+    @JoinColumn(name="F_13", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_04"), nullable=false)
     private Vendor manufacturer;
 }

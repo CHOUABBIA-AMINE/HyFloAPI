@@ -35,7 +35,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="PipelineSegment")
-@Table(name="T_02_03_08")
+@Table(name="T_02_03_09")
 public class PipelineSegment extends Infrastructure {
 
 	@Column(name="F_08", nullable=false)
@@ -57,19 +57,19 @@ public class PipelineSegment extends Infrastructure {
     private Double endPoint;
 
     @ManyToOne
-    @JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_01"), nullable=true)
+    @JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_01"), nullable=true)
     private Alloy constructionMaterial;
 
     @ManyToOne
-    @JoinColumn(name="F_15", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_02"), nullable=true)
+    @JoinColumn(name="F_15", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_02"), nullable=true)
     private Alloy exteriorCoating;
 
     @ManyToOne
-    @JoinColumn(name="F_16", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=true)
+    @JoinColumn(name="F_16", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_03"), nullable=true)
     private Alloy interiorCoating;
 
     @ManyToOne
-    @JoinColumn(name="F_17", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_04"), nullable=false)
+    @JoinColumn(name="F_17", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_04"), nullable=false)
     private Pipeline pipeline;
     
 }

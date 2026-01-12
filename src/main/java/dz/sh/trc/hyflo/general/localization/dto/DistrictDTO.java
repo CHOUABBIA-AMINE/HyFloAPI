@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: LocalityDTO
+ *	@Name		: DistrictDTO
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -17,8 +17,8 @@ package dz.sh.trc.hyflo.general.localization.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.general.localization.model.District;
+import dz.sh.trc.hyflo.general.localization.model.State;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -34,7 +34,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class LocalityDTO extends GenericDTO<Locality> {
+public class DistrictDTO extends GenericDTO<District> {
 
     @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
     private String designationAr;
@@ -50,54 +50,54 @@ public class LocalityDTO extends GenericDTO<Locality> {
     @Size(max = 10, message = "Code must not exceed 10 characters")
     private String code;
 
-    @NotNull(message = "District ID is required")
-    private Long districtId;
+    @NotNull(message = "State ID is required")
+    private Long stateId;
 
-    private DistrictDTO district;
+    private StateDTO state;
 
     @Override
-    public Locality toEntity() {
-        Locality entity = new Locality();
+    public District toEntity() {
+        District entity = new District();
         entity.setId(this.getId());
         entity.setDesignationAr(this.designationAr);
         entity.setDesignationEn(this.designationEn);
         entity.setDesignationFr(this.designationFr);
         entity.setCode(this.code);
         
-        if (this.districtId != null) {
-            District district = new District();
-            district.setId(this.districtId);
-            entity.setDistrict(district);
+        if (this.stateId != null) {
+            State state = new State();
+            state.setId(this.stateId);
+            entity.setState(state);
         }
         
         return entity;
     }
 
     @Override
-    public void updateEntity(Locality entity) {
+    public void updateEntity(District entity) {
         if (this.designationAr != null) entity.setDesignationAr(this.designationAr);
         if (this.designationEn != null) entity.setDesignationEn(this.designationEn);
         if (this.designationFr != null) entity.setDesignationFr(this.designationFr);
         if (this.code != null) entity.setCode(this.code);
         
-        if (this.districtId != null) {
-            District district = new District();
-            district.setId(this.districtId);
-            entity.setDistrict(district);
+        if (this.stateId != null) {
+            State state = new State();
+            state.setId(this.stateId);
+            entity.setState(state);
         }
     }
 
-    public static LocalityDTO fromEntity(Locality entity) {
+    public static DistrictDTO fromEntity(District entity) {
         if (entity == null) return null;
-        return LocalityDTO.builder()
+        return DistrictDTO.builder()
                 .id(entity.getId())
                 .designationAr(entity.getDesignationAr())
                 .designationEn(entity.getDesignationEn())
                 .designationFr(entity.getDesignationFr())
                 .code(entity.getCode())
-                .districtId(entity.getDistrict() != null ? entity.getDistrict().getId() : null)
+                .stateId(entity.getState() != null ? entity.getState().getId() : null)
                 
-                .district(entity.getDistrict() != null ? DistrictDTO.fromEntity(entity.getDistrict()) : null)
+                .state(entity.getState() != null ? StateDTO.fromEntity(entity.getState()) : null)
                 .build();
     }
 }

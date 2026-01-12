@@ -44,7 +44,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Pipeline")
-@Table(name="T_02_03_07")
+@Table(name="T_02_03_08")
 public class Pipeline extends Infrastructure {  
     
     @Column(name="F_08", nullable=false)
@@ -78,39 +78,39 @@ public class Pipeline extends Infrastructure {
     private Double operationalCapacity;
 
     @ManyToOne
-    @JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_01"), nullable=false)
+    @JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_01"), nullable=false)
     private Alloy nominalConstructionMaterial;
 
     @ManyToOne
-    @JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_02"), nullable=false)
+    @JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_02"), nullable=false)
     private Alloy nominalExteriorCoating;
 
     @ManyToOne
-    @JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_03"), nullable=false)
+    @JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=false)
     private Alloy nominalInteriorCoating;
 
 	@ManyToOne
-    @JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_04"), nullable=false)
+    @JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_04"), nullable=false)
     private Vendor vendor;
 	
     @ManyToOne
-    @JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_05"), nullable=false)
+    @JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_05"), nullable=false)
     private PipelineSystem pipelineSystem;
 
     @ManyToOne
-    @JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_06"), nullable=false)
+    @JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_06"), nullable=false)
     private Terminal departureTerminal;
 
     @ManyToOne
-    @JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_07_FK_07"), nullable=false)
+    @JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_07"), nullable=false)
     private Terminal arrivalTerminal;
     
 	@ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "R_T020307_T010205",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020307_T010205_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020307_T010205_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T020307_T010205_UK_01", columnNames = {"F_01", "F_02"})
+        name = "R_T020308_T010206",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020308_T010206_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020308_T010206_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020308_T010206_UK_01", columnNames = {"F_01", "F_02"})
     )
     private Set<Location> locations = new HashSet<>();
     

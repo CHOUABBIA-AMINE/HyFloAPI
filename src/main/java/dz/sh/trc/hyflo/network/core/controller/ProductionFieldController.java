@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonFieldController
+ *	@Name		: ProductionFieldController
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -15,8 +15,8 @@
 package dz.sh.trc.hyflo.network.core.controller;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.network.core.dto.HydrocarbonFieldDTO;
-import dz.sh.trc.hyflo.network.core.service.HydrocarbonFieldService;
+import dz.sh.trc.hyflo.network.core.dto.ProductionFieldDTO;
+import dz.sh.trc.hyflo.network.core.service.ProductionFieldService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,26 +30,26 @@ import java.util.List;
 @RestController
 @RequestMapping("/network/core/hydrocarbon/field")
 @Slf4j
-public class HydrocarbonFieldController extends GenericController<HydrocarbonFieldDTO, Long> {
+public class ProductionFieldController extends GenericController<ProductionFieldDTO, Long> {
 
-    private final HydrocarbonFieldService hydrocarbonFieldService;
+    private final ProductionFieldService productionFieldService;
 
-    public HydrocarbonFieldController(HydrocarbonFieldService hydrocarbonFieldService) {
-        super(hydrocarbonFieldService, "HydrocarbonField");
-        this.hydrocarbonFieldService = hydrocarbonFieldService;
+    public ProductionFieldController(ProductionFieldService productionFieldService) {
+        super(productionFieldService, "ProductionField");
+        this.productionFieldService = productionFieldService;
     }
 
     // ========== SECURED CRUD OPERATIONS ==========
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<HydrocarbonFieldDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<ProductionFieldDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<Page<HydrocarbonFieldDTO>> getAll(
+    public ResponseEntity<Page<ProductionFieldDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -59,19 +59,19 @@ public class HydrocarbonFieldController extends GenericController<HydrocarbonFie
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<List<HydrocarbonFieldDTO>> getAll() {
+    public ResponseEntity<List<ProductionFieldDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
-    public ResponseEntity<HydrocarbonFieldDTO> create(@Valid @RequestBody HydrocarbonFieldDTO dto) {
+    public ResponseEntity<ProductionFieldDTO> create(@Valid @RequestBody ProductionFieldDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:ADMIN')")
-    public ResponseEntity<HydrocarbonFieldDTO> update(@PathVariable Long id, @Valid @RequestBody HydrocarbonFieldDTO dto) {
+    public ResponseEntity<ProductionFieldDTO> update(@PathVariable Long id, @Valid @RequestBody ProductionFieldDTO dto) {
         return super.update(id, dto);
     }
 
@@ -83,7 +83,7 @@ public class HydrocarbonFieldController extends GenericController<HydrocarbonFie
 
     @Override
     @PreAuthorize("hasAuthority('HYDROCARBON_FIELD:READ')")
-    public ResponseEntity<Page<HydrocarbonFieldDTO>> search(
+    public ResponseEntity<Page<ProductionFieldDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -93,8 +93,8 @@ public class HydrocarbonFieldController extends GenericController<HydrocarbonFie
     }
 
     @Override
-    protected Page<HydrocarbonFieldDTO> searchByQuery(String query, Pageable pageable) {
-        return hydrocarbonFieldService.globalSearch(query, pageable);
+    protected Page<ProductionFieldDTO> searchByQuery(String query, Pageable pageable) {
+        return productionFieldService.globalSearch(query, pageable);
     }
 
     @Override

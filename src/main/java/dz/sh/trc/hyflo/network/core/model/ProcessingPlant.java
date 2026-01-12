@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: HydrocarbonPlant
+ *	@Name		: ProcessingPlant
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *
@@ -19,7 +19,7 @@ import java.util.Set;
 
 import dz.sh.trc.hyflo.network.common.model.Partner;
 import dz.sh.trc.hyflo.network.common.model.Product;
-import dz.sh.trc.hyflo.network.type.model.HydrocarbonPlantType;
+import dz.sh.trc.hyflo.network.type.model.ProcessingPlantType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -42,20 +42,20 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="HydrocarbonPlant")
+@Entity(name="ProcessingPlant")
 @Table(name="T_02_03_05")
-public class HydrocarbonPlant extends Facility {
+public class ProcessingPlant extends Facility {
 
     @ManyToOne
     @JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_05_FK_01"), nullable=false)
-    private HydrocarbonPlantType hydrocarbonPlantType;
+    private ProcessingPlantType processingPlantType;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "R_T020305_T020307",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020307_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020307_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020307_UK_01", columnNames = {"F_01", "F_02"})
+        name = "R_T020305_T020308",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020308_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020308_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020308_UK_01", columnNames = {"F_01", "F_02"})
     )
     private Set<Pipeline> pipelines = new HashSet<>();
     

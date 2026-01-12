@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.network.flow.model;
 import java.time.LocalDate;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.network.core.model.HydrocarbonField;
+import dz.sh.trc.hyflo.network.core.model.ProcessingPlant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -53,6 +53,6 @@ public class FlowProduced extends GenericModel {
 
     @ManyToOne
     @JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_04_05_FK_01"), nullable=false)
-    private HydrocarbonField hydrocarbonField;
+    private ProcessingPlant processingPlant;
     
 }
