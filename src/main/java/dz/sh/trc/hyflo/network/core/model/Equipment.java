@@ -44,11 +44,11 @@ import lombok.ToString;
 @Table(name="T_02_03_10", uniqueConstraints = { @UniqueConstraint(name="T_02_03_10_UK_01", columnNames={"F_02"}) })
 public class Equipment extends GenericModel {
 
-    @Column(name="F_01", length=100, nullable=false)
-    private String name;
-
-    @Column(name="F_02", length=50, nullable=false)
+    @Column(name="F_01", length=50, nullable=false)
     private String code;
+
+    @Column(name="F_02", length=100, nullable=false)
+    private String name;
 
     @Column(name="F_03", length=50, nullable=true)
     private String modelNumber;
