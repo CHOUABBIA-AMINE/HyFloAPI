@@ -48,16 +48,16 @@ import lombok.ToString;
 public class Pipeline extends Infrastructure {  
     
     @Column(name="F_08", nullable=false)
-    private Double nominalDiameter;
+    private String nominalDiameter;
 
     @Column(name="F_09", nullable=false)
     private Double length;
 
     @Column(name="F_10", nullable=false)
-    private Double nominalThickness;
+    private String nominalThickness;
 
     @Column(name="F_11", nullable=false)
-    private Double nominalRoughness;
+    private String nominalRoughness;
 
     @Column(name="F_12", nullable=false)
     private Double designMaxServicePressure;
