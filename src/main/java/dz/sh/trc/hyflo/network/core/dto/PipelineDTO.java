@@ -67,7 +67,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Nominal diameter is required")
     @PositiveOrZero(message = "Nominal diameter must be positive")
-    private Double nominalDiameter;
+    private String nominalDiameter;
 
     @NotNull(message = "Length is required")
     @PositiveOrZero(message = "Length must be positive")
@@ -75,11 +75,11 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Nominal thickness is required")
     @PositiveOrZero(message = "Nominal thickness must be positive")
-    private Double nominalThickness;
+    private String nominalThickness;
 
     @NotNull(message = "Nominal roughness is required")
     @PositiveOrZero(message = "Nominal roughness must be positive")
-    private Double nominalRoughness;
+    private String nominalRoughness;
 
     @NotNull(message = "Design max service pressure is required")
     @PositiveOrZero(message = "Design max service pressure must be positive")
