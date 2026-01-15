@@ -53,24 +53,6 @@ public class ProcessingPlant extends Facility {
     @ManyToOne
     @JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_05_FK_01"), nullable=false)
     private ProcessingPlantType processingPlantType;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "R_T020305_T020308",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020308_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020308_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020308_UK_01", columnNames = {"F_01", "F_02"})
-    )
-    private Set<Pipeline> pipelines = new HashSet<>();
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "R_T020305_T020204",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020204_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020204_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020204_UK_01", columnNames = {"F_01", "F_02"})
-    )
-    private Set<Partner> partners = new HashSet<>();
 	
 	@ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -80,5 +62,23 @@ public class ProcessingPlant extends Facility {
         uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020201_UK_01", columnNames = {"F_01", "F_02"})
     )
     private Set<Product> products = new HashSet<>();
+    
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "R_T020305_T020204",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020204_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020204_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020204_UK_01", columnNames = {"F_01", "F_02"})
+    )
+    private Set<Partner> partners = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "R_T020305_T020308",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020308_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020305_T020308_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020305_T020308_UK_01", columnNames = {"F_01", "F_02"})
+    )
+    private Set<Pipeline> pipelines = new HashSet<>();
     
 }

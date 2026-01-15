@@ -54,10 +54,10 @@ public class Station extends Facility {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "R_T020303_T020307",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020303_T020307_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020303_T020307_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T020303_T020307_UK_01", columnNames = {"F_01", "F_02"})
+        name = "R_T020303_T020308",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020303_T020308_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020303_T020308_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020303_T020308_UK_01", columnNames = {"F_01", "F_02"})
     )
     private Set<Pipeline> pipelines = new HashSet<>();
     

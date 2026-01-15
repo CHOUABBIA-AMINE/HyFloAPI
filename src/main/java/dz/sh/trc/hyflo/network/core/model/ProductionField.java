@@ -57,15 +57,6 @@ public class ProductionField extends Facility {
     @ManyToOne
     @JoinColumn(name="F_12", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_02"), nullable=true)
     private ProcessingPlant processingPlant;
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "R_T020306_T020204",
-        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020306_T020204_FK_01")),
-        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020306_T020204_FK_02")),
-        uniqueConstraints = @UniqueConstraint(name = "R_T020306_T020204_UK_01", columnNames = {"F_01", "F_02"})
-    )
-    private Set<Partner> partners = new HashSet<>();
 	
 	@ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -75,5 +66,14 @@ public class ProductionField extends Facility {
         uniqueConstraints = @UniqueConstraint(name = "R_T020306_T020201_UK_01", columnNames = {"F_01", "F_02"})
     )
     private Set<Product> products = new HashSet<>();
+    
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "R_T020306_T020204",
+        joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020306_T020204_FK_01")),
+        inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020306_T020204_FK_02")),
+        uniqueConstraints = @UniqueConstraint(name = "R_T020306_T020204_UK_01", columnNames = {"F_01", "F_02"})
+    )
+    private Set<Partner> partners = new HashSet<>();
     
 }
