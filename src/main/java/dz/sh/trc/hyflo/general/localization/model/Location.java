@@ -41,7 +41,7 @@ public class Location extends GenericModel {
     @Column(name="F_01", nullable=false)
     private int sequence;
 
-    @Column(name="F_02", length=10, nullable=false)
+    @Column(name="F_02", length=50, nullable=false)
     private String placeName;
 
     @Column(name="F_03", nullable=false)
