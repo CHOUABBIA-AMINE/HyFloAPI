@@ -28,6 +28,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -45,6 +46,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="ProductionField")
 @Table(name="T_02_03_06")
+@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_00"))
 public class ProductionField extends Facility {
 
 	@Column(name="F_10", nullable=true)

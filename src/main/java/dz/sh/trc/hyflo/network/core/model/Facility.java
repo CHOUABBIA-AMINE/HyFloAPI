@@ -27,6 +27,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,6 +47,7 @@ import lombok.ToString;
 @Entity(name="Facility")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name="T_02_03_02")
+@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_02_FK_00"))
 public class Facility extends Infrastructure {
 
 	@ManyToOne

@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/network/type/hydrocarbon/plant")
+@RequestMapping("/network/type/processingPlant")
 @Slf4j
 public class ProcessingPlantTypeController extends GenericController<ProcessingPlantTypeDTO, Long> {
 
@@ -40,13 +40,13 @@ public class ProcessingPlantTypeController extends GenericController<ProcessingP
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:READ')")
     public ResponseEntity<ProcessingPlantTypeDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:READ')")
     public ResponseEntity<Page<ProcessingPlantTypeDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -56,31 +56,31 @@ public class ProcessingPlantTypeController extends GenericController<ProcessingP
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:READ')")
     public ResponseEntity<List<ProcessingPlantTypeDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:ADMIN')")
     public ResponseEntity<ProcessingPlantTypeDTO> create(@Valid @RequestBody ProcessingPlantTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:ADMIN')")
     public ResponseEntity<ProcessingPlantTypeDTO> update(@PathVariable Long id, @Valid @RequestBody ProcessingPlantTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:READ')")
     public ResponseEntity<Page<ProcessingPlantTypeDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
@@ -96,13 +96,13 @@ public class ProcessingPlantTypeController extends GenericController<ProcessingP
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:READ')")
     public ResponseEntity<Boolean> exists(@PathVariable Long id) {
         return super.exists(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT_TYPE:READ')")
     public ResponseEntity<Long> count() {
         return super.count();
     }

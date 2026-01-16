@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/network/type/hydrocarbon/field")
+@RequestMapping("/network/type/productionField")
 @Slf4j
 public class ProductionFieldTypeController extends GenericController<ProductionFieldTypeDTO, Long> {
 
@@ -40,13 +40,13 @@ public class ProductionFieldTypeController extends GenericController<ProductionF
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:READ')")
     public ResponseEntity<ProductionFieldTypeDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:READ')")
     public ResponseEntity<Page<ProductionFieldTypeDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -56,31 +56,31 @@ public class ProductionFieldTypeController extends GenericController<ProductionF
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:READ')")
     public ResponseEntity<List<ProductionFieldTypeDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:ADMIN')")
     public ResponseEntity<ProductionFieldTypeDTO> create(@Valid @RequestBody ProductionFieldTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:ADMIN')")
     public ResponseEntity<ProductionFieldTypeDTO> update(@PathVariable Long id, @Valid @RequestBody ProductionFieldTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:READ')")
     public ResponseEntity<Page<ProductionFieldTypeDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
@@ -96,13 +96,13 @@ public class ProductionFieldTypeController extends GenericController<ProductionF
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:READ')")
     public ResponseEntity<Boolean> exists(@PathVariable Long id) {
         return super.exists(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_FIELD_TYPE:READ')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:READ')")
     public ResponseEntity<Long> count() {
         return super.count();
     }

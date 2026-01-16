@@ -25,6 +25,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -42,6 +43,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="Station")
 @Table(name="T_02_03_03")
+@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_00"))
 public class Station extends Facility {
 
     @ManyToOne

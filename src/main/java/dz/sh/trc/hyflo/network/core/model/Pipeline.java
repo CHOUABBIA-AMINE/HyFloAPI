@@ -28,6 +28,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -45,6 +46,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="Pipeline")
 @Table(name="T_02_03_08")
+@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_00"))
 public class Pipeline extends Infrastructure {  
     
     @Column(name="F_08", nullable=false)

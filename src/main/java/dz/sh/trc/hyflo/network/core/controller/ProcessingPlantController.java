@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/network/core/hydrocarbon/plant")
+@RequestMapping("/network/core/processingPlant")
 @Slf4j
 public class ProcessingPlantController extends GenericController<ProcessingPlantDTO, Long> {
 
@@ -42,13 +42,13 @@ public class ProcessingPlantController extends GenericController<ProcessingPlant
     // ========== SECURED CRUD OPERATIONS ==========
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:READ')")
     public ResponseEntity<ProcessingPlantDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:READ')")
     public ResponseEntity<Page<ProcessingPlantDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -58,31 +58,31 @@ public class ProcessingPlantController extends GenericController<ProcessingPlant
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:READ')")
     public ResponseEntity<List<ProcessingPlantDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:ADMIN')")
     public ResponseEntity<ProcessingPlantDTO> create(@Valid @RequestBody ProcessingPlantDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:ADMIN')")
     public ResponseEntity<ProcessingPlantDTO> update(@PathVariable Long id, @Valid @RequestBody ProcessingPlantDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:READ')")
     public ResponseEntity<Page<ProcessingPlantDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
@@ -98,13 +98,13 @@ public class ProcessingPlantController extends GenericController<ProcessingPlant
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:READ')")
     public ResponseEntity<Boolean> exists(@PathVariable Long id) {
         return super.exists(id);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('HYDROCARBON_PLANT:READ')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:READ')")
     public ResponseEntity<Long> count() {
         return super.count();
     }
