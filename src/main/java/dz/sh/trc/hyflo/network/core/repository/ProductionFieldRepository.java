@@ -4,7 +4,7 @@
  *
  *	@Name		: ProductionFieldRepository
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 01-16-2026
  *
  *	@Type		: Interface
  *	@Layer		: Repository
@@ -13,6 +13,8 @@
  **/
 
 package dz.sh.trc.hyflo.network.core.repository;
+
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,14 @@ public interface ProductionFieldRepository extends JpaRepository<ProductionField
     boolean existsByCode(String code);
     
     boolean existsByCodeAndIdNot(String code, Long id);
+
+    List<ProductionField> findByProcessingPlantId(Long processingPlantId);
+    
+    List<ProductionField> findByOperationalStatusId(Long operationalStatusId);
+    
+    List<ProductionField> findByLocationId(Long locationId);
+    
+    List<ProductionField> findByProductionFieldTypeId(Long productionFieldTypeId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     

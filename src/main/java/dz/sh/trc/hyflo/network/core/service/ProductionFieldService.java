@@ -14,6 +14,9 @@
 
 package dz.sh.trc.hyflo.network.core.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,11 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class ProductionFieldService extends GenericService<ProductionField, ProductionFieldDTO, Long> {
 
-    private final ProductionFieldRepository hydrocarbonFieldRepository;
+    private final ProductionFieldRepository productionFieldRepository;
 
     @Override
     protected JpaRepository<ProductionField, Long> getRepository() {
-        return hydrocarbonFieldRepository;
+        return productionFieldRepository;
     }
 
     @Override
@@ -64,9 +67,9 @@ public class ProductionFieldService extends GenericService<ProductionField, Prod
     @Override
     @Transactional
     public ProductionFieldDTO create(ProductionFieldDTO dto) {
-        log.info("Creating hydrocarbon field: code={}", dto.getCode());
+        log.info("Creating production field: code={}", dto.getCode());
         
-        if (hydrocarbonFieldRepository.existsByCode(dto.getCode())) {
+        if (productionFieldRepository.existsByCode(dto.getCode())) {
             throw new BusinessValidationException("Hydrocarbon field with code '" + dto.getCode() + "' already exists");
         }
         
@@ -76,9 +79,9 @@ public class ProductionFieldService extends GenericService<ProductionField, Prod
     @Override
     @Transactional
     public ProductionFieldDTO update(Long id, ProductionFieldDTO dto) {
-        log.info("Updating hydrocarbon field with ID: {}", id);
+        log.info("Updating production field with ID: {}", id);
         
-        if (hydrocarbonFieldRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
+        if (productionFieldRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
             throw new BusinessValidationException("Hydrocarbon field with code '" + dto.getCode() + "' already exists");
         }
         
@@ -86,12 +89,40 @@ public class ProductionFieldService extends GenericService<ProductionField, Prod
     }
 
     public Page<ProductionFieldDTO> globalSearch(String searchTerm, Pageable pageable) {
-        log.debug("Global search for hydrocarbon fields with term: {}", searchTerm);
+        log.debug("Global search for production fields with term: {}", searchTerm);
         
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return getAll(pageable);
         }
         
-        return executeQuery(p -> hydrocarbonFieldRepository.searchByAnyField(searchTerm.trim(), p), pageable);
+        return executeQuery(p -> productionFieldRepository.searchByAnyField(searchTerm.trim(), p), pageable);
+    }
+
+    public List<ProductionFieldDTO> findByProcessingPlant(Long plantId) {
+        log.debug("Finding production fields by processing plant id: {}", plantId);
+        return productionFieldRepository.findByProcessingPlantId(plantId).stream()
+                .map(ProductionFieldDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductionFieldDTO> findByOperationalStatus(Long statusId) {
+        log.debug("Finding production fields by operational status id: {}", statusId);
+        return productionFieldRepository.findByOperationalStatusId(statusId).stream()
+                .map(ProductionFieldDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductionFieldDTO> findByLocation(Long locationId) {
+        log.debug("Finding production fields by location id: {}", locationId);
+        return productionFieldRepository.findByLocationId(locationId).stream()
+                .map(ProductionFieldDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductionFieldDTO> findByProductionFieldType(Long typeId) {
+        log.debug("Finding production fields by production field type id: {}", typeId);
+        return productionFieldRepository.findByProductionFieldTypeId(typeId).stream()
+                .map(ProductionFieldDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 }
