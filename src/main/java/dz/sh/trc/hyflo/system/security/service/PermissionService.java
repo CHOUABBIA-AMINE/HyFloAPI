@@ -14,17 +14,20 @@
 
 package dz.sh.trc.hyflo.system.security.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.system.security.dto.PermissionDTO;
 import dz.sh.trc.hyflo.system.security.model.Permission;
 import dz.sh.trc.hyflo.system.security.repository.PermissionRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -150,5 +153,15 @@ public class PermissionService extends GenericService<Permission, PermissionDTO,
     @Transactional(readOnly = true)
     public boolean existsByName(String name) {
         return permissionRepository.existsByName(name);
+    }
+
+    public Page<PermissionDTO> globalSearch(String searchTerm, Pageable pageable) {
+        log.debug("Global search for permissions with term: {}", searchTerm);
+        
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAll(pageable);
+        }
+        
+        return executeQuery(p -> permissionRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

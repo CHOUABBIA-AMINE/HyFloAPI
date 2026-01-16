@@ -14,18 +14,25 @@
 
 package dz.sh.trc.hyflo.system.security.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.system.security.dto.AuthorityDTO;
 import dz.sh.trc.hyflo.system.security.service.AuthorityService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/system/security/authority")
@@ -106,14 +113,23 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
 
     // ========== CUSTOM QUERY OPERATIONS ==========
 
-    @GetMapping("/by-name/{name}")
+    @Override
+    protected Page<AuthorityDTO> searchByQuery(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            return authorityService.getAll(pageable);
+        }
+        log.debug("GET /search?q={} - Searching", query);
+        return authorityService.globalSearch(query, pageable);
+    }
+
+    @GetMapping("/name/{name}")
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
     public ResponseEntity<AuthorityDTO> getByName(@PathVariable String name) {
         log.info("REST request to get Authority by name: {}", name);
         return ResponseEntity.ok(authorityService.findByName(name));
     }
 
-    @GetMapping("/by-type/{type}")
+    @GetMapping("/type/{type}")
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
     public ResponseEntity<List<AuthorityDTO>> getByType(@PathVariable String type) {
         log.info("REST request to get Authorities by type: {}", type);

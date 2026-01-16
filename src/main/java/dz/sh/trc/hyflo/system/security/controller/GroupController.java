@@ -14,18 +14,27 @@
 
 package dz.sh.trc.hyflo.system.security.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.system.security.dto.GroupDTO;
 import dz.sh.trc.hyflo.system.security.service.GroupService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/system/security/group")
@@ -126,14 +135,23 @@ public class GroupController extends GenericController<GroupDTO, Long> {
 
     // ========== CUSTOM QUERY OPERATIONS ==========
 
-    @GetMapping("/by-name/{name}")
+    @Override
+    protected Page<GroupDTO> searchByQuery(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            return groupService.getAll(pageable);
+        }
+        log.debug("GET /search?q={} - Searching", query);
+        return groupService.globalSearch(query, pageable);
+    }
+
+    @GetMapping("/name/{name}")
     @PreAuthorize("hasAuthority('GROUP:READ')")
     public ResponseEntity<GroupDTO> getByName(@PathVariable String name) {
         log.info("REST request to get Group by name: {}", name);
         return ResponseEntity.ok(groupService.findByName(name));
     }
 
-    @GetMapping("/by-role/{roleId}")
+    @GetMapping("/role/{roleId}")
     @PreAuthorize("hasAuthority('GROUP:READ')")
     public ResponseEntity<List<GroupDTO>> getByRole(@PathVariable Long roleId) {
         log.info("REST request to get Groups by role: {}", roleId);

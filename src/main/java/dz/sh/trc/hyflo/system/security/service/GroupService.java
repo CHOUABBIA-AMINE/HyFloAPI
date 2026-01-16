@@ -14,6 +14,15 @@
 
 package dz.sh.trc.hyflo.system.security.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.system.security.dto.GroupDTO;
@@ -22,12 +31,6 @@ import dz.sh.trc.hyflo.system.security.model.Role;
 import dz.sh.trc.hyflo.system.security.repository.GroupRepository;
 import dz.sh.trc.hyflo.system.security.repository.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -211,5 +214,15 @@ public class GroupService extends GenericService<Group, GroupDTO, Long> {
                 }
             });
         }
+    }
+
+    public Page<GroupDTO> globalSearch(String searchTerm, Pageable pageable) {
+        log.debug("Global search for permissions with term: {}", searchTerm);
+        
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAll(pageable);
+        }
+        
+        return executeQuery(p -> groupRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

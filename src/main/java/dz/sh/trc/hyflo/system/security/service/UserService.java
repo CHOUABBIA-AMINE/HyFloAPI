@@ -17,6 +17,8 @@ package dz.sh.trc.hyflo.system.security.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -437,5 +439,15 @@ public class UserService extends GenericService<User, UserDTO, Long> {
                 }
             });
         }
+    }
+
+    public Page<UserDTO> globalSearch(String searchTerm, Pageable pageable) {
+        log.debug("Global search for users with term: {}", searchTerm);
+        
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAll(pageable);
+        }
+        
+        return executeQuery(p -> userRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 }

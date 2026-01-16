@@ -14,18 +14,25 @@
 
 package dz.sh.trc.hyflo.system.security.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.system.security.dto.PermissionDTO;
 import dz.sh.trc.hyflo.system.security.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/system/security/permission")
@@ -106,28 +113,37 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
 
     // ========== CUSTOM QUERY OPERATIONS ==========
 
-    @GetMapping("/by-name/{name}")
+    @Override
+    protected Page<PermissionDTO> searchByQuery(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
+            return permissionService.getAll(pageable);
+        }
+        log.debug("GET /search?q={} - Searching", query);
+        return permissionService.globalSearch(query, pageable);
+    }
+
+    @GetMapping("/name/{name}")
     @PreAuthorize("hasAuthority('PERMISSION:READ')")
     public ResponseEntity<PermissionDTO> getByName(@PathVariable String name) {
         log.info("REST request to get Permission by name: {}", name);
         return ResponseEntity.ok(permissionService.findByName(name));
     }
 
-    @GetMapping("/by-resource/{resource}")
+    @GetMapping("/resource/{resource}")
     @PreAuthorize("hasAuthority('PERMISSION:READ')")
     public ResponseEntity<List<PermissionDTO>> getByResource(@PathVariable String resource) {
         log.info("REST request to get Permissions by resource: {}", resource);
         return ResponseEntity.ok(permissionService.findByResource(resource));
     }
 
-    @GetMapping("/by-action/{action}")
+    @GetMapping("/action/{action}")
     @PreAuthorize("hasAuthority('PERMISSION:READ')")
     public ResponseEntity<List<PermissionDTO>> getByAction(@PathVariable String action) {
         log.info("REST request to get Permissions by action: {}", action);
         return ResponseEntity.ok(permissionService.findByAction(action));
     }
 
-    @GetMapping("/by-resource-action")
+    @GetMapping("/resource-action")
     @PreAuthorize("hasAuthority('PERMISSION:READ')")
     public ResponseEntity<List<PermissionDTO>> getByResourceAndAction(
             @RequestParam String resource,
