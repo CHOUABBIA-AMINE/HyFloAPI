@@ -40,8 +40,16 @@ public class LocationDTO extends GenericDTO<Location> {
     private int sequence;
 
 	@NotBlank(message = "Code is required")
-    @Size(max = 10, message = "Code must not exceed 10 characters")
-    private String placeName;
+    @Size(max = 10, message = "Code must not exceed 100 characters")
+    private String designationAr;
+
+	@NotBlank(message = "Code is required")
+    @Size(max = 10, message = "Code must not exceed 100 characters")
+    private String designationEn;
+
+	@NotBlank(message = "Code is required")
+    @Size(max = 10, message = "Code must not exceed 100 characters")
+    private String designationFr;
 
     @NotNull(message = "Latitude is required")
     private Double latitude;
@@ -60,7 +68,9 @@ public class LocationDTO extends GenericDTO<Location> {
         Location entity = new Location();
         entity.setId(getId());
         entity.setSequence(this.sequence);
-        entity.setPlaceName(this.placeName);
+        entity.setDesignationAr(this.designationAr);
+        entity.setDesignationEn(this.designationEn);
+        entity.setDesignationFr(this.designationFr);
         entity.setLatitude(this.latitude);
         entity.setLongitude(this.longitude);
         entity.setElevation(this.elevation);
@@ -77,7 +87,9 @@ public class LocationDTO extends GenericDTO<Location> {
     @Override
     public void updateEntity(Location entity) {
     	if (this.sequence >= 0) { entity.setSequence(this.sequence); }
-    	if (this.placeName != null) { entity.setPlaceName(this.placeName); }
+    	if (this.designationAr != null) { entity.setDesignationAr(this.designationAr);}
+    	if (this.designationEn != null) { entity.setDesignationEn(this.designationEn);}
+    	if (this.designationFr != null) { entity.setDesignationFr(this.designationFr);}
         if (this.latitude != null) entity.setLatitude(this.latitude);
         if (this.longitude != null) entity.setLongitude(this.longitude);
         if (this.longitude != null) entity.setElevation(this.elevation);        
@@ -95,7 +107,9 @@ public class LocationDTO extends GenericDTO<Location> {
         return LocationDTO.builder()
                 .id(entity.getId())
                 .sequence(entity.getSequence())
-                .placeName(entity.getPlaceName())
+                .designationAr(entity.getDesignationAr())
+                .designationEn(entity.getDesignationEn())
+                .designationFr(entity.getDesignationFr())
                 .latitude(entity.getLatitude())
                 .longitude(entity.getLongitude())
                 .elevation(entity.getElevation())

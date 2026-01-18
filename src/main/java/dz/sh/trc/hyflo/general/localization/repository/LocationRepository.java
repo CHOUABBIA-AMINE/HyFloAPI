@@ -35,6 +35,8 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT l FROM Location l WHERE "
-            + "LOWER(l.placeName) LIKE LOWER(CONCAT('%', :search, '%'))")
+            + "LOWER(l.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(l.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+            + "LOWER(l.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Location> searchByAnyField(@Param("search") String search, Pageable pageable);
 }

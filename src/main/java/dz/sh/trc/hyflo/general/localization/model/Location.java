@@ -41,20 +41,26 @@ public class Location extends GenericModel {
     @Column(name="F_01", nullable=false)
     private int sequence;
 
-    @Column(name="F_02", length=50, nullable=false)
-    private String placeName;
+    @Column(name="F_02", length=100, nullable=true)
+    private String designationAr;
 
-    @Column(name="F_03", nullable=false)
+    @Column(name="F_03", length=100, nullable=true)
+    private String designationEn;
+
+    @Column(name="F_04", length=100, nullable=false)
+    private String designationFr;
+
+    @Column(name="F_05", nullable=false)
     private Double latitude;
 
-    @Column(name="F_04", nullable=false)
+    @Column(name="F_06", nullable=false)
     private Double longitude;
 
-	@Column(name = "F_05")
+	@Column(name = "F_07")
     private Double elevation;
 
     @ManyToOne
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_06_FK_01"), nullable = true)
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_06_FK_01"), nullable = true)
     private Locality locality;
 
 }

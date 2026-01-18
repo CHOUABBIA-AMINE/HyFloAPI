@@ -67,7 +67,7 @@ public class LocationService extends GenericService<Location, LocationDTO, Long>
     @Override
     @Transactional
     public LocationDTO create(LocationDTO dto) {
-        log.info("Creating location: code={}", dto.getPlaceName());
+        log.info("Creating location: designationFr={}", dto.getDesignationFr());
         
         return super.create(dto);
     }
