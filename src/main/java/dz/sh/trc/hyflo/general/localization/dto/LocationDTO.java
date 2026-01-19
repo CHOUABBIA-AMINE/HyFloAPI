@@ -36,9 +36,6 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LocationDTO extends GenericDTO<Location> {
 
-	@NotBlank(message = "Sequence is required")
-    private int sequence;
-
 	@NotBlank(message = "Code is required")
     @Size(max = 10, message = "Code must not exceed 100 characters")
     private String designationAr;
@@ -67,7 +64,6 @@ public class LocationDTO extends GenericDTO<Location> {
     public Location toEntity() {
         Location entity = new Location();
         entity.setId(getId());
-        entity.setSequence(this.sequence);
         entity.setDesignationAr(this.designationAr);
         entity.setDesignationEn(this.designationEn);
         entity.setDesignationFr(this.designationFr);
@@ -86,7 +82,6 @@ public class LocationDTO extends GenericDTO<Location> {
 
     @Override
     public void updateEntity(Location entity) {
-    	if (this.sequence >= 0) { entity.setSequence(this.sequence); }
     	if (this.designationAr != null) { entity.setDesignationAr(this.designationAr);}
     	if (this.designationEn != null) { entity.setDesignationEn(this.designationEn);}
     	if (this.designationFr != null) { entity.setDesignationFr(this.designationFr);}
@@ -106,7 +101,6 @@ public class LocationDTO extends GenericDTO<Location> {
         
         return LocationDTO.builder()
                 .id(entity.getId())
-                .sequence(entity.getSequence())
                 .designationAr(entity.getDesignationAr())
                 .designationEn(entity.getDesignationEn())
                 .designationFr(entity.getDesignationFr())
