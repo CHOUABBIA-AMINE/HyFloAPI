@@ -4,7 +4,7 @@
  *
  *	@Name		: Coordinate
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 01-19-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -36,7 +36,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Location")
-@Table(name="T_01_02_06")
+@Table(name="T_01_02_07")
 public class Coordinate extends GenericModel {
 
     @Column(name="F_01", nullable=false)
@@ -52,7 +52,7 @@ public class Coordinate extends GenericModel {
     private Double elevation;
 	
 	@ManyToOne
-	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_06_FK_01"), nullable=false)
+	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_02_07_FK_01"), nullable=false)
 	private Infrastructure infrastructure;
 
 }
