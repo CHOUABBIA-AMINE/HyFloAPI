@@ -20,9 +20,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
-import dz.sh.trc.hyflo.general.localization.dto.StateDTO;
+import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Country;
-import dz.sh.trc.hyflo.general.localization.model.State;
+import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.model.Job;
 import dz.sh.trc.hyflo.system.utility.dto.FileDTO;
@@ -74,9 +74,9 @@ public class EmployeeDTO extends GenericDTO<Employee> {
     @Size(max = 50, message = "Registration number must not exceed 50 characters")
     private String registrationNumber;
 
-    private Long birthStateId;
+    private Long birthLocalityId;
 
-    private Long addressStateId;
+    private Long addressLocalityId;
 
     private Long countryId;
 
@@ -84,9 +84,9 @@ public class EmployeeDTO extends GenericDTO<Employee> {
 
     private Long jobId;
 
-    private StateDTO birthState;
+    private LocalityDTO birthLocality;
 
-    private StateDTO addressState;
+    private LocalityDTO addressLocality;
 
     private CountryDTO country;
 
@@ -109,16 +109,16 @@ public class EmployeeDTO extends GenericDTO<Employee> {
         entity.setAddressLt(this.addressLt);
         entity.setRegistrationNumber(this.registrationNumber);
         
-        if (this.birthStateId != null) {
-            State birthState = new State();
-            birthState.setId(this.birthStateId);
-            entity.setBirthState(birthState);
+        if (this.birthLocalityId != null) {
+            Locality birthLocality = new Locality();
+            birthLocality.setId(this.birthLocalityId);
+            entity.setBirthLocality(birthLocality);
         }
         
-        if (this.addressStateId != null) {
-            State addressState = new State();
-            addressState.setId(this.addressStateId);
-            entity.setAddressState(addressState);
+        if (this.addressLocalityId != null) {
+            Locality addressLocality = new Locality();
+            addressLocality.setId(this.addressLocalityId);
+            entity.setAddressLocality(addressLocality);
         }
         
         if (this.countryId != null) {
@@ -155,16 +155,16 @@ public class EmployeeDTO extends GenericDTO<Employee> {
         if (this.addressLt != null) entity.setAddressLt(this.addressLt);
         if (this.registrationNumber != null) entity.setRegistrationNumber(this.registrationNumber);
         
-        if (this.birthStateId != null) {
-            State birthState = new State();
-            birthState.setId(this.birthStateId);
-            entity.setBirthState(birthState);
+        if (this.birthLocalityId != null) {
+            Locality birthLocality = new Locality();
+            birthLocality.setId(this.birthLocalityId);
+            entity.setBirthLocality(birthLocality);
         }
         
-        if (this.addressStateId != null) {
-            State addressState = new State();
-            addressState.setId(this.addressStateId);
-            entity.setAddressState(addressState);
+        if (this.addressLocalityId != null) {
+            Locality addressLocality = new Locality();
+            addressLocality.setId(this.addressLocalityId);
+            entity.setAddressLocality(addressLocality);
         }
         
         if (this.countryId != null) {
@@ -200,14 +200,14 @@ public class EmployeeDTO extends GenericDTO<Employee> {
                 .addressAr(entity.getAddressAr())
                 .addressLt(entity.getAddressLt())
                 .registrationNumber(entity.getRegistrationNumber())
-                .birthStateId(entity.getBirthState() != null ? entity.getBirthState().getId() : null)
-                .addressStateId(entity.getAddressState() != null ? entity.getAddressState().getId() : null)
+                .birthLocalityId(entity.getBirthLocality() != null ? entity.getBirthLocality().getId() : null)
+                .addressLocalityId(entity.getAddressLocality() != null ? entity.getAddressLocality().getId() : null)
                 .countryId(entity.getCountry() != null ? entity.getCountry().getId() : null)
                 .pictureId(entity.getPicture() != null ? entity.getPicture().getId() : null)
                 .jobId(entity.getJob() != null ? entity.getJob().getId() : null)
                 
-                .birthState(entity.getBirthState() != null ? StateDTO.fromEntity(entity.getBirthState()) : null)
-                .addressState(entity.getAddressState() != null ? StateDTO.fromEntity(entity.getAddressState()) : null)
+                .birthLocality(entity.getBirthLocality() != null ? LocalityDTO.fromEntity(entity.getBirthLocality()) : null)
+                .addressLocality(entity.getAddressLocality() != null ? LocalityDTO.fromEntity(entity.getAddressLocality()) : null)
                 .country(entity.getCountry() != null ? CountryDTO.fromEntity(entity.getCountry()) : null)
                 .picture(entity.getPicture() != null ? FileDTO.fromEntity(entity.getPicture()) : null)
                 .job(entity.getJob() != null ? JobDTO.fromEntity(entity.getJob()) : null)

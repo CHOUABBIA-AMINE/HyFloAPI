@@ -18,7 +18,7 @@ import java.util.Date;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.general.localization.model.Country;
-import dz.sh.trc.hyflo.general.localization.model.State;
+import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.system.utility.model.File;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -77,11 +77,11 @@ public class Person extends GenericModel {
 	
 	@ManyToOne
     @JoinColumn(name="F_10", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_01"), nullable=true)
-    private State birthState;
+    private Locality birthLocality;
 	
 	@ManyToOne
     @JoinColumn(name="F_11", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_02"), nullable=true)
-    private State addressState;
+    private Locality addressLocality;
 
 	@ManyToOne
 	@JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_03"), nullable=true)
