@@ -84,4 +84,11 @@ public class CoordinateService extends GenericService<Coordinate, CoordinateDTO,
                 .collect(Collectors.toList());
     }
 
+    public List<CoordinateDTO> findByInfrastructure(Long infrastructureId) {
+        log.debug("Finding coordinates by infrastructure id: {}", infrastructureId);
+        return coordinateRepository.findByInfrastructureId(infrastructureId).stream()
+                .map(CoordinateDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 }
