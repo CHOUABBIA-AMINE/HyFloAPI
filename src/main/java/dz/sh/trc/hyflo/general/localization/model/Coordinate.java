@@ -35,7 +35,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="Location")
+@Entity(name="Coordinate")
 @Table(name="T_01_02_07")
 public class Coordinate extends GenericModel {
 
