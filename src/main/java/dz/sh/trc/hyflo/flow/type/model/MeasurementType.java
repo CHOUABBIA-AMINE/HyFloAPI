@@ -26,10 +26,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="MeasurementType")
-@Table(name="T_02_04_11", 
-    uniqueConstraints = {
-        @UniqueConstraint(name="T_02_04_11_UK_01", columnNames={"F_01"})
-    })
+@Table(name="T_03_01_01", uniqueConstraints = {@UniqueConstraint(name="T_03_01_01_UK_01", columnNames={"F_01"})})
 public class MeasurementType extends GenericModel {
     
     @Column(name="F_01", length=50, nullable=false)

@@ -49,17 +49,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="FlowReading")
-@Table(name="T_02_04_10", 
-    indexes = {
-        @Index(name="T_02_04_10_IDX_01", columnList="F_01"),
-        @Index(name="T_02_04_10_IDX_02", columnList="F_08"),
-        @Index(name="T_02_04_10_IDX_03", columnList="F_14,F_01"),
-        @Index(name="T_02_04_10_IDX_04", columnList="F_12,F_08")
-    },
-    uniqueConstraints = {
-        @UniqueConstraint(name="T_02_04_10_UK_01", 
-                         columnNames={"F_14", "F_02", "F_01"})
-    })
+@Table(name="T_03_03_01", indexes = {@Index(name="T_03_03_01_IX_01", columnList="F_01"),
+        							 @Index(name="T_03_03_01_IX_02", columnList="F_08"),
+        							 @Index(name="T_03_03_01_IX_03", columnList="F_14,F_01"),
+        							 @Index(name="T_03_03_01_IX_04", columnList="F_12,F_08")},
+    					  uniqueConstraints = {@UniqueConstraint(name="T_03_03_01_UK_01", columnNames={"F_14", "F_02", "F_01"})})
 public class FlowReading extends GenericModel {
 
     @Column(name="F_01", nullable=false)
@@ -68,7 +62,7 @@ public class FlowReading extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name="F_02", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_05"), nullable=false)
+                foreignKey=@ForeignKey(name="T_03_03_01_FK_05"), nullable=false)
     @NotNull(message = "Measurement type is required")
     private MeasurementType measurementType;
     
@@ -94,14 +88,12 @@ public class FlowReading extends GenericModel {
     private Double cumulativeVolume;
     
     @ManyToOne
-    @JoinColumn(name="F_08", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_06"), nullable=false)
+    @JoinColumn(name="F_08", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_06"), nullable=false)
     @NotNull(message = "Validation status is required")
     private ValidationStatus validationStatus;
     
     @ManyToOne
-    @JoinColumn(name="F_09", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_07"), nullable=true)
+    @JoinColumn(name="F_09", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_07"), nullable=true)
     private QualityFlag qualityFlag;
     
     @Column(name="F_10", nullable=true, length=1000)
@@ -111,31 +103,26 @@ public class FlowReading extends GenericModel {
     private LocalDateTime validatedAt;
     
     @ManyToOne
-    @JoinColumn(name="F_12", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_01"), nullable=false)
+    @JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_01"), nullable=false)
     @NotNull(message = "Operator (Employee) is required")
     private Employee recordedBy;
     
     @ManyToOne
-    @JoinColumn(name="F_13", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_02"), nullable=true)
+    @JoinColumn(name="F_13", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_02"), nullable=true)
     private Employee validatedBy;
     
     @ManyToOne
-    @JoinColumn(name="F_14", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_03"), nullable=false)
+    @JoinColumn(name="F_14", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_03"), nullable=false)
     @NotNull(message = "Infrastructure is required")
     private Infrastructure infrastructure;
     
     @ManyToOne
-    @JoinColumn(name="F_15", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_04"), nullable=false)
+    @JoinColumn(name="F_15", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_04"), nullable=false)
     @NotNull(message = "Product is required")
     private Product product;
     
     @ManyToOne
-    @JoinColumn(name="F_16", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_02_04_10_FK_08"), nullable=true)
+    @JoinColumn(name="F_16", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_03_03_01_FK_08"), nullable=true)
     private DataSource dataSource;
     
     @Column(name="F_17", nullable=true, length=100)

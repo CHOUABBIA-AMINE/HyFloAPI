@@ -26,10 +26,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="QualityFlag")
-@Table(name="T_02_04_13", 
-    uniqueConstraints = {
-        @UniqueConstraint(name="T_02_04_13_UK_01", columnNames={"F_01"})
-    })
+@Table(name="T_03_02_02", uniqueConstraints = {@UniqueConstraint(name="T_03_02_02_UK_01", columnNames={"F_01"})})
 public class QualityFlag extends GenericModel {
     
     @Column(name="F_01", length=50, nullable=false)

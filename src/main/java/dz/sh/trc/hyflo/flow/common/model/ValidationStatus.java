@@ -26,10 +26,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="ValidationStatus")
-@Table(name="T_02_04_12", 
-    uniqueConstraints = {
-        @UniqueConstraint(name="T_02_04_12_UK_01", columnNames={"F_01"})
-    })
+@Table(name="T_03_02_03", uniqueConstraints = {@UniqueConstraint(name="T_03_02_03_UK_01", columnNames={"F_01"})})
 public class ValidationStatus extends GenericModel {
     
     @Column(name="F_01", length=50, nullable=false)

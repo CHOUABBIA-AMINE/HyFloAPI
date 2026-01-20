@@ -26,10 +26,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="DataSource")
-@Table(name="T_02_04_14", 
-    uniqueConstraints = {
-        @UniqueConstraint(name="T_02_04_14_UK_01", columnNames={"F_01"})
-    })
+@Table(name="T_03_02_01", uniqueConstraints = {@UniqueConstraint(name="T_03_02_01_UK_01", columnNames={"F_01"})})
 public class DataSource extends GenericModel {
     
     @Column(name="F_01", length=50, nullable=false)
