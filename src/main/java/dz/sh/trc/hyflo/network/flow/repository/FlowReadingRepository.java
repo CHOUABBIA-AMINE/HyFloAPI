@@ -1,6 +1,6 @@
 /**
  *	
- *	@Author		: CHOUABBIA-AMINE
+ *	@Author		: MEDJERAB Abir
  *
  *	@Name		: FlowReadingRepository
  *	@CreatedOn	: 01-20-2026
@@ -20,6 +20,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long>,
                                                JpaSpecificationExecutor<FlowReading> {
     
     @Query("SELECT fr FROM FlowReading fr WHERE fr.validationStatus.code = :statusCode")
-    List<FlowReading> findByValidationStatusCode(@Param("statusCode") String statusCode);
+    List<FlowReading> findByValidationStatus(@Param("statusCode") String statusCode);
     
     @Query("SELECT fr FROM FlowReading fr " +
            "JOIN fr.recordedBy e " +
@@ -37,7 +38,8 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long>,
            "WHERE s.id = :structureId AND fr.validationStatus.code = 'SUBMITTED'")
     List<FlowReading> findPendingValidationByStructure(@Param("structureId") Long structureId);
     
-    List<FlowReading> findByReadingTimestampBetween(LocalDateTime start, LocalDateTime end);
+    List<FlowReading> findByReadingTimestampBetween(
+        LocalDateTime start, LocalDateTime end);
     
     @Query("SELECT fr FROM FlowReading fr WHERE " +
            "fr.infrastructure.id = :infrastructureId AND " +
@@ -66,6 +68,34 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long>,
            "ORDER BY fr.readingTimestamp DESC")
     List<FlowReading> findByStructureAndDateRange(
         @Param("structureId") Long structureId,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end);
+    
+    @Query("SELECT fr FROM FlowReading fr " +
+           "JOIN fr.recordedBy e " +
+           "JOIN e.job j " +
+           "JOIN j.structure s " +
+           "WHERE s.id = :structureId AND fr.validationStatus.code = :status")
+    List<FlowReading> findByStructureAndStatus(
+        @Param("structureId") Long structureId,
+        @Param("status") String status);
+    
+    @Query("SELECT fr FROM FlowReading fr WHERE " +
+           "fr.infrastructure.id = :infrastructureId AND " +
+           "fr.measurementType.code IN ('ENTRY', 'EXIT') AND " +
+           "fr.readingTimestamp BETWEEN :start AND :end AND " +
+           "fr.validationStatus.code = 'VALIDATED' " +
+           "ORDER BY fr.measurementType.code, fr.readingTimestamp ASC")
+    List<FlowReading> findValidatedFlowsForBalance(
+        @Param("infrastructureId") Long infrastructureId,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end);
+    
+    @Query("SELECT fr FROM FlowReading fr WHERE " +
+           "fr.qualityFlag.code IN :flags AND " +
+           "fr.readingTimestamp BETWEEN :start AND :end")
+    List<FlowReading> findByQualityFlagsAndDateRange(
+        @Param("flags") List<String> flags,
         @Param("start") LocalDateTime start,
         @Param("end") LocalDateTime end);
     
