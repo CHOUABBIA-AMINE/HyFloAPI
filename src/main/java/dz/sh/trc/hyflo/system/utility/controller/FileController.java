@@ -97,6 +97,28 @@ public class FileController extends GenericController<FileDTO, Long> {
                         "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
+    
+    /**
+     * View file inline (for images, PDFs, etc.)
+     * GET /system/utility/file/{id}/view
+     */
+    @GetMapping("/{id}/view")
+    public ResponseEntity<Resource> viewFile(@PathVariable Long id) {
+        log.info("REST request to view file with id: {}", id);
+        
+        Resource resource = fileService.downloadFile(id);
+        FileDTO fileDTO = fileService.getById(id);
+        
+        // Get content type from service
+        String contentType = fileService.getContentType(fileDTO.getExtension());
+        
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, 
+                        "inline; filename=\"" + resource.getFilename() + "\"")  // ← KEY DIFFERENCE
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000")  // Cache for 1 year
+                .body(resource);
+    }
 
     /**
      * Replace file content
