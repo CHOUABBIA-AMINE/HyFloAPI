@@ -43,11 +43,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="FlowEvent")
-@Table(name="T_03_03_04",
+@Table(name="T_03_03_05",
     indexes = {
-        @Index(name="T_03_03_04_IX_01", columnList="F_01"),
-        @Index(name="T_03_03_04_IX_02", columnList="F_06"),
-        @Index(name="T_03_03_04_IX_03", columnList="F_02,F_01")
+        @Index(name="T_03_03_05_IX_01", columnList="F_01"),
+        @Index(name="T_03_03_05_IX_02", columnList="F_06"),
+        @Index(name="T_03_03_05_IX_03", columnList="F_02,F_01")
     })
 public class FlowEvent extends GenericModel {
     
@@ -76,24 +76,24 @@ public class FlowEvent extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name="F_06", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_04_FK_01"), nullable=false)
+                foreignKey=@ForeignKey(name="T_03_03_05_FK_01"), nullable=false)
     @NotNull(message = "Infrastructure is required")
     private Infrastructure infrastructure;
     
     @ManyToOne
     @JoinColumn(name="F_07", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_04_FK_02"), nullable=false)
+                foreignKey=@ForeignKey(name="T_03_03_05_FK_02"), nullable=false)
     @NotNull(message = "Reporter is required")
     private Employee reportedBy;
     
     @ManyToOne
     @JoinColumn(name="F_08", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_04_FK_03"), nullable=true)
+                foreignKey=@ForeignKey(name="T_03_03_05_FK_03"), nullable=true)
     private FlowReading relatedReading;
     
     @ManyToOne
     @JoinColumn(name="F_09", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_04_FK_04"), nullable=true)
+                foreignKey=@ForeignKey(name="T_03_03_05_FK_04"), nullable=true)
     private FlowAlert relatedAlert;
     
     @Column(name="F_10", nullable=true)

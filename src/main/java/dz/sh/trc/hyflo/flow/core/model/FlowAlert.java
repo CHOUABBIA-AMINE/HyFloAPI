@@ -42,11 +42,11 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="FlowAlert")
-@Table(name="T_03_03_03",
+@Table(name="T_03_03_06",
     indexes = {
-        @Index(name="T_03_03_03_IX_01", columnList="F_01"),
-        @Index(name="T_03_03_03_IX_02", columnList="F_07"),
-        @Index(name="T_03_03_03_IX_03", columnList="F_02,F_07")
+        @Index(name="T_03_03_06_IX_01", columnList="F_01"),
+        @Index(name="T_03_03_06_IX_02", columnList="F_07"),
+        @Index(name="T_03_03_06_IX_03", columnList="F_02,F_07")
     })
 public class FlowAlert extends GenericModel {
     
@@ -56,13 +56,13 @@ public class FlowAlert extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name="F_02", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_03_FK_01"), nullable=false)
+                foreignKey=@ForeignKey(name="T_03_03_06_FK_01"), nullable=false)
     @NotNull(message = "Threshold is required")
     private FlowThreshold threshold;
     
     @ManyToOne
     @JoinColumn(name="F_03", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_03_FK_02"), nullable=true)
+                foreignKey=@ForeignKey(name="T_03_03_06_FK_02"), nullable=true)
     private FlowReading flowReading;
     
     @Column(name="F_04", nullable=false)
@@ -86,7 +86,7 @@ public class FlowAlert extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name="F_09", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_03_FK_03"), nullable=true)
+                foreignKey=@ForeignKey(name="T_03_03_06_FK_03"), nullable=true)
     private Employee acknowledgedBy;
     
     @Column(name="F_10", nullable=true)
@@ -94,7 +94,7 @@ public class FlowAlert extends GenericModel {
     
     @ManyToOne
     @JoinColumn(name="F_11", referencedColumnName="F_00", 
-                foreignKey=@ForeignKey(name="T_03_03_03_FK_04"), nullable=true)
+                foreignKey=@ForeignKey(name="T_03_03_06_FK_04"), nullable=true)
     private Employee resolvedBy;
     
     @Column(name="F_12", length=1000, nullable=true)

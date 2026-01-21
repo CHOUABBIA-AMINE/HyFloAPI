@@ -33,7 +33,7 @@ import java.time.LocalDateTime;
  * Subject to workflow: DRAFT → PENDING → VALIDATED/REJECTED
  */
 @Entity
-@Table(name = "T_03_03_02_FlowOperation",
+@Table(name = "T_03_03_04",
        indexes = {
            @Index(name = "idx_date", columnList = "F_01"),
            @Index(name = "idx_infra", columnList = "F_02"),
@@ -69,7 +69,7 @@ public class FlowOperation extends GenericModel {
     @NotNull
     private OperationType type;  // PRODUCED, TRANSPORTED, CONSUMED
     
-    @Column(name = "F_05", nullable = false, precision = 15, scale = 2)
+    @Column(name = "F_05", nullable = false, precision = 15)
     @DecimalMin("0.0")
     private Double volume;  // m³
     

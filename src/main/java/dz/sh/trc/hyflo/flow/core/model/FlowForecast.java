@@ -32,7 +32,7 @@ import java.time.LocalDate;
  * Supports planning for PRODUCED, TRANSPORTED, CONSUMED operations
  */
 @Entity
-@Table(name = "T_03_04_01_FlowForecast",
+@Table(name = "T_03_03_02",
        indexes = {
            @Index(name = "idx_forecast_date", columnList = "F_01"),
            @Index(name = "idx_forecast_infra", columnList = "F_02")
@@ -67,19 +67,19 @@ public class FlowForecast extends GenericModel {
     @NotNull
     private OperationType type;  // PRODUCED, TRANSPORTED, CONSUMED
     
-    @Column(name = "F_05", nullable = false, precision = 15, scale = 2)
+    @Column(name = "F_05", nullable = false, precision = 15)
     @DecimalMin("0.0")
     private Double predictedVolume;  // m³
     
-    @Column(name = "F_06", precision = 15, scale = 2)
+    @Column(name = "F_06", precision = 15)
     @DecimalMin("0.0")
     private Double adjustedVolume;   // After supervisor adjustment
     
-    @Column(name = "F_07", precision = 15, scale = 2)
+    @Column(name = "F_07", precision = 15)
     @DecimalMin("0.0")
     private Double actualVolume;     // Populated from FlowOperation
     
-    @Column(name = "F_08", precision = 6, scale = 4)
+    @Column(name = "F_08", precision = 6)
     @DecimalMin("0.0")
     @DecimalMax("100.0")
     private Double accuracy;         // Auto-calculated: (1 - |actual-predicted|/predicted) * 100
