@@ -1,14 +1,14 @@
 /**
  *
- * 	@Author: MEDJERAB Abir
+ * 	@Author		: MEDJERAB Abir
  *
- * 	@Name: FlowOperation
- * 	@CreatedOn: 01-21-2026
- * 	@UpdatedOn: 01-21-2026
+ * 	@Name		: FlowOperation
+ * 	@CreatedOn	: 01-21-2026
+ * 	@UpdatedOn	: 01-22-2026
  *
- * 	@Type: Class
- * 	@Layer: Model
- * 	@Package: Flow / Core
+ * 	@Type		: Class
+ * 	@Layer		: Model
+ * 	@Package	: Flow / Core
  *
  **/
 
@@ -23,6 +23,7 @@ import dz.sh.trc.hyflo.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,6 +45,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Daily flow operation recording hydrocarbon movements.
+ * Represents production input, transportation, or consumption output operations.
+ */
+@Schema(description = "Daily flow operation tracking hydrocarbon movements (production, transport, consumption)")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -51,57 +57,102 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Entity(name = "FlowOperation")
-@Table(name = "T_03_03_0-", indexes = {@Index(name = "T_03_03_0-_IX_01", columnList = "F_01"),
-        							   @Index(name = "T_03_03_0-_IX_02", columnList = "F_05"),
-        							   @Index(name = "T_03_03_0-_IX_03", columnList = "F_07")},
-    						uniqueConstraints = @UniqueConstraint(name = "T_03_03_0-_UK_01", columnNames = {"F_01", "F_05", "F_06", "F_07"}))
+@Table(name = "T_03_03_01",indexes = {@Index(name = "T_03_03_01_IX_01", columnList = "F_01"),
+									  @Index(name = "T_03_03_01_IX_02", columnList = "F_05"),
+									  @Index(name = "T_03_03_01_IX_03", columnList = "F_07")},
+						   uniqueConstraints = @UniqueConstraint(name = "T_03_03_01_UK_01", columnNames = {"F_01", "F_05", "F_06", "F_07"}))
 public class FlowOperation extends GenericModel {
     
-    @NotNull(message = "Operation date is required")
-    @PastOrPresent(message = "Operation date cannot be in the future")
-    @Column(name = "F_01", nullable = false)
-    private LocalDate date;
+	@Schema(
+		description = "Date of the flow operation",
+		example = "2026-01-22",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Operation date is mandatory")
+	@PastOrPresent(message = "Operation date cannot be in the future")
+	@Column(name = "F_01", nullable = false)
+	private LocalDate date;
     
-    @NotNull(message = "Volume is required")
-    @DecimalMin(value = "0.0", message = "Volume cannot be negative")
-    @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-    @Column(name = "F_02", nullable = false, precision = 15, scale = 2)
-    private Double volume;
+	@Schema(
+		description = "Volume of product moved (in cubic meters or barrels)",
+		example = "25000.50",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Volume is mandatory")
+	@DecimalMin(value = "0.0", inclusive = true, message = "Volume cannot be negative")
+	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
+	@Column(name = "F_02", nullable = false, precision = 15, scale = 2)
+	private Double volume;
     
-    @PastOrPresent(message = "Validation time cannot be in the future")
-    @Column(name = "F_03")
-    private LocalDateTime validatedAt;
+	@Schema(
+		description = "Timestamp when this operation was validated by supervisor",
+		example = "2026-01-22T08:30:00",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@PastOrPresent(message = "Validation time cannot be in the future")
+	@Column(name = "F_03")
+	private LocalDateTime validatedAt;
     
-    @Size(max = 500, message = "Notes cannot exceed 500 characters")
-    @Column(name = "F_04", length = 500)
-    private String notes;
+	@Schema(
+		description = "Additional notes or comments about this operation",
+		example = "Normal operation, no anomalies detected",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+		maxLength = 500
+	)
+	@Size(max = 500, message = "Notes must not exceed 500 characters")
+	@Column(name = "F_04", length = 500)
+	private String notes;
     
-    @NotNull(message = "Infrastructure is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_05", foreignKey = @ForeignKey(name = "T_03_03_0-_FK_01"), nullable = false)
-    private Infrastructure infrastructure;
+	@Schema(
+		description = "Infrastructure where this operation occurred (facility, station, terminal)",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Infrastructure is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_05", foreignKey = @ForeignKey(name = "T_03_03_01_FK_01"), nullable = false)
+	private Infrastructure infrastructure;
     
-    @NotNull(message = "Product is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_03_0-_FK_02"), nullable = false)
-    private Product product;
+	@Schema(
+		description = "Product type being moved (crude oil, natural gas, condensate, etc.)",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Product is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_03_01_FK_02"), nullable = false)
+	private Product product;
     
-    @NotNull(message = "Operation type is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_0-_FK_03"), nullable = false)
-    private OperationType type;
+	@Schema(
+		description = "Type of operation (production input, transport, consumption output)",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Operation type is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_01_FK_03"), nullable = false)
+	private OperationType type;
     
-    @NotNull(message = "Recording employee is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_0-_FK_04"), nullable = false)
-    private Employee recordedBy;
+	@Schema(
+		description = "Employee who recorded this operation",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Recording employee is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_01_FK_04"), nullable = false)
+	private Employee recordedBy;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_0-_FK_05"))
-    private Employee validatedBy;
+	@Schema(
+		description = "Supervisor who validated this operation",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_01_FK_05"))
+	private Employee validatedBy;
     
-    @NotNull(message = "Validation status is required")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_0-_FK_06"), nullable = false)
-    private ValidationStatus validationStatus;
+	@Schema(
+		description = "Current validation status (pending, approved, rejected)",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Validation status is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_01_FK_06"), nullable = false)
+	private ValidationStatus validationStatus;
 }

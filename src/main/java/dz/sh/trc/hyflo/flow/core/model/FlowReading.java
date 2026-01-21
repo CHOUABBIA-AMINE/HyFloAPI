@@ -4,7 +4,7 @@
  *
  *	@Name		: FlowReading
  *	@CreatedOn	: 01-20-2026
- *	@UpdatedOn	: 01-20-2026
+ *	@UpdatedOn	: 01-22-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -42,6 +42,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Real-time or periodic flow measurement readings from pipelines.
+ * Captures pressure, temperature, flow rate, and volume for monitoring and analysis.
+ */
+@Schema(description = "Flow measurement reading capturing real-time pipeline operational parameters")
 @Setter
 @Getter
 @ToString
@@ -50,62 +55,114 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="FlowReading")
 @Table(name="T_03_03_03", indexes = {@Index(name="T_03_03_03_IX_01", columnList="F_01"),
-        							 @Index(name="T_03_03_03_IX_02", columnList="F_11,F_01")},
-    					  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_14", "F_02", "F_01"})})
+									 @Index(name="T_03_03_03_IX_02", columnList="F_11,F_01")},
+						  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_11", "F_01"})})
 public class FlowReading extends GenericModel {
     
-    @NotNull(message = "Recording timestamp is required")
-    @PastOrPresent(message = "Recording time cannot be in the future")
-    @Column(name = "F_01", nullable = false)
-    private LocalDateTime recordedAt;
+	@Schema(
+		description = "Timestamp when this reading was recorded",
+		example = "2026-01-22T00:15:00",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Recording timestamp is mandatory")
+	@PastOrPresent(message = "Recording time cannot be in the future")
+	@Column(name = "F_01", nullable = false)
+	private LocalDateTime recordedAt;
     
-    @PositiveOrZero(message = "Pressure must be zero or positive")
-    @DecimalMin(value = "0.0", message = "Pressure cannot be negative")
-    @DecimalMax(value = "500.0", message = "Pressure exceeds maximum safe operating limit (500 bar)")
-    @Column(name = "F_02", precision = 12, scale = 2)
-    private Double pressure;
+	@Schema(
+		description = "Pressure measurement in bar",
+		example = "85.50",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+		minimum = "0.0",
+		maximum = "500.0"
+	)
+	@PositiveOrZero(message = "Pressure must be zero or positive")
+	@DecimalMin(value = "0.0", message = "Pressure cannot be negative")
+	@DecimalMax(value = "500.0", message = "Pressure exceeds maximum safe operating limit (500 bar)")
+	@Column(name = "F_02", precision = 12, scale = 2)
+	private Double pressure;
     
-    @DecimalMin(value = "-50.0", message = "Temperature below minimum operating range")
-    @DecimalMax(value = "200.0", message = "Temperature exceeds maximum operating range")
-    @Column(name = "F_03", precision = 12, scale = 2)
-    private Double temperature;
+	@Schema(
+		description = "Temperature measurement in degrees Celsius",
+		example = "65.5",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+		minimum = "-50.0",
+		maximum = "200.0"
+	)
+	@DecimalMin(value = "-50.0", message = "Temperature below minimum operating range")
+	@DecimalMax(value = "200.0", message = "Temperature exceeds maximum operating range")
+	@Column(name = "F_03", precision = 12, scale = 2)
+	private Double temperature;
     
-    @PositiveOrZero(message = "Flow rate must be zero or positive")
-    @Column(name = "F_04", precision = 12, scale = 2)
-    private Double flowRate;
+	@Schema(
+		description = "Flow rate in cubic meters per hour (m³/h) or barrels per day (bpd)",
+		example = "1250.75",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@PositiveOrZero(message = "Flow rate must be zero or positive")
+	@Column(name = "F_04", precision = 12, scale = 2)
+	private Double flowRate;
     
-    @PositiveOrZero(message = "Flow rate must be zero or positive")
-    @Column(name = "F_05", precision = 12, scale = 2)
-    private Double containedVolume;
+	@Schema(
+		description = "Total volume contained in pipeline segment (cubic meters)",
+		example = "5000.00",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@PositiveOrZero(message = "Contained volume must be zero or positive")
+	@Column(name = "F_05", precision = 12, scale = 2)
+	private Double containedVolume;
     
-    @PastOrPresent(message = "Validation time cannot be in the future")
-    @Column(name = "F_06")
-    private LocalDateTime validatedAt;
+	@Schema(
+		description = "Timestamp when this reading was validated by supervisor",
+		example = "2026-01-22T08:30:00",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@PastOrPresent(message = "Validation time cannot be in the future")
+	@Column(name = "F_06")
+	private LocalDateTime validatedAt;
     
-    @Size(max = 500, message = "Notes cannot exceed 500 characters")
-    @Column(name = "F_07", length = 500)
-    private String notes;
+	@Schema(
+		description = "Additional notes about this reading (anomalies, calibration, etc.)",
+		example = "Sensor calibrated this morning, reading within normal parameters",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+		maxLength = 500
+	)
+	@Size(max = 500, message = "Notes must not exceed 500 characters")
+	@Column(name = "F_07", length = 500)
+	private String notes;
     
-	@Schema(description = "Employee who recorded this reading", required = true)
-    @NotNull(message = "Recording employee is required")
-    @ManyToOne
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
-    private Employee recordedBy;
+	@Schema(
+		description = "Employee who recorded this reading",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Recording employee is mandatory")
+	@ManyToOne
+	@JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
+	private Employee recordedBy;
     
-	@Schema(description = "Supervisor who validated this reading")
-    @ManyToOne
-    @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
-    private Employee validatedBy;
+	@Schema(
+		description = "Supervisor who validated this reading",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@ManyToOne
+	@JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
+	private Employee validatedBy;
     
-	@Schema(description = "Current validation status of this reading", required = true)
-    @NotNull(message = "Validation status is required")
-    @ManyToOne
-    @JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
-    private ValidationStatus validationStatus;
+	@Schema(
+		description = "Current validation status of this reading",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Validation status is mandatory")
+	@ManyToOne
+	@JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
+	private ValidationStatus validationStatus;
     
-	@Schema(description = "Pipeline where this reading was taken", required = true)
-    @NotNull(message = "Pipeline reference is required")
-    @ManyToOne
-    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
-    private Pipeline pipeline;
+	@Schema(
+		description = "Pipeline where this reading was taken",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Pipeline reference is mandatory")
+	@ManyToOne
+	@JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
+	private Pipeline pipeline;
 }
