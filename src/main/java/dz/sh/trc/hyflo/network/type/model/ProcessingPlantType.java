@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.network.type.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -24,6 +25,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Classification for processing plant types.
+ * Examples: Refinery, Gas Treatment Plant, Separation Unit, Liquefaction Plant, Fractionation Plant.
+ */
+@Schema(description = "Type classification for processing plants (refinery, gas treatment, separation, liquefaction)")
 @Setter
 @Getter
 @ToString

@@ -42,7 +42,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Schema(description = "Flow reading entity capturing real-time or historical pipeline measurements with validation workflow")
 @Setter
 @Getter
 @ToString
@@ -55,41 +54,34 @@ import lombok.ToString;
     					  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_14", "F_02", "F_01"})})
 public class FlowReading extends GenericModel {
     
-	@Schema(description = "Timestamp when the reading was recorded", example = "2026-01-21T10:30:00", required = true)
     @NotNull(message = "Recording timestamp is required")
     @PastOrPresent(message = "Recording time cannot be in the future")
     @Column(name = "F_01", nullable = false)
     private LocalDateTime recordedAt;
     
-	@Schema(description = "Operating pressure in bar", example = "75.50", minimum = "0", maximum = "500")
     @PositiveOrZero(message = "Pressure must be zero or positive")
     @DecimalMin(value = "0.0", message = "Pressure cannot be negative")
     @DecimalMax(value = "500.0", message = "Pressure exceeds maximum safe operating limit (500 bar)")
     @Column(name = "F_02", precision = 12, scale = 2)
     private Double pressure;
     
-	@Schema(description = "Operating temperature in Celsius", example = "35.20", minimum = "-50", maximum = "200")
     @DecimalMin(value = "-50.0", message = "Temperature below minimum operating range")
     @DecimalMax(value = "200.0", message = "Temperature exceeds maximum operating range")
     @Column(name = "F_03", precision = 12, scale = 2)
     private Double temperature;
     
-	@Schema(description = "Flow rate in cubic meters per hour (m³/h)", example = "12500.75", minimum = "0")
     @PositiveOrZero(message = "Flow rate must be zero or positive")
     @Column(name = "F_04", precision = 12, scale = 2)
     private Double flowRate;
     
-	@Schema(description = "Contained volume in cubic meters (m³)", example = "1250000.75", minimum = "0")
     @PositiveOrZero(message = "Flow rate must be zero or positive")
     @Column(name = "F_05", precision = 12, scale = 2)
     private Double containedVolume;
     
-	@Schema(description = "Timestamp when the reading was validated by supervisor", example = "2026-01-21T11:00:00")
     @PastOrPresent(message = "Validation time cannot be in the future")
     @Column(name = "F_06")
     private LocalDateTime validatedAt;
     
-	@Schema(description = "Additional notes or observations about this reading", example = "Slight pressure fluctuation observed during reading")
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     @Column(name = "F_07", length = 500)
     private String notes;

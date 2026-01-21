@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.network.type.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -24,6 +25,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Classification for terminal types in the pipeline network.
+ * Examples: Export Terminal, Import Terminal, Storage Terminal, Distribution Terminal, Marine Terminal.
+ */
+@Schema(description = "Type classification for terminals (export, import, storage, distribution, marine)")
 @Setter
 @Getter
 @ToString

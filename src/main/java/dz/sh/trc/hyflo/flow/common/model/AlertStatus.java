@@ -2,13 +2,13 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: ValidationStatus
+ *	@Name		: AlertStatus
  *	@CreatedOn	: 01-20-2026
  *	@UpdatedOn	: 01-20-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
- *	@Package	: Network / Flow
+ *	@Package	: Flow / Common
  *
  **/
 
@@ -34,38 +34,21 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "ValidationStatus")
-@Table(name = "T_03_02_06", uniqueConstraints = {@UniqueConstraint(name = "T_03_02_03_UK_01", columnNames = {"F_01"})})
-public class ValidationStatus extends GenericModel {
-    
-    @NotBlank(message = "Validation status code is required")
-    @Size(min = 2, max = 50, message = "Code must be between 2 and 50 characters")
-    @Column(name = "F_01", length = 50, nullable = false)
-    private String code;
-    
+@Entity(name = "AlertStatus")
+@Table(name = "T_03_02_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_02_01_UK_01", columnNames = {"F_01"})})
+public class AlertStatus extends GenericModel {
+      
     @Size(max = 100, message = "Arabic designation cannot exceed 100 characters")
-    @Column(name = "F_02", length = 100)
+    @Column(name = "F_01", length = 100)
     private String designationAr;
     
     @Size(max = 100, message = "English designation cannot exceed 100 characters")
-    @Column(name = "F_03", length = 100)
+    @Column(name = "F_02", length = 100)
     private String designationEn;
     
     @NotBlank(message = "French designation is required")
     @Size(max = 100, message = "French designation cannot exceed 100 characters")
-    @Column(name = "F_04", length = 100, nullable = false)
+    @Column(name = "F_03", length = 100, nullable = false)
     private String designationFr;
-    
-    @Size(max = 255, message = "Arabic description cannot exceed 255 characters")
-    @Column(name = "F_05", length = 255)
-    private String descriptionAr;
-    
-    @Size(max = 255, message = "English description cannot exceed 255 characters")
-    @Column(name = "F_06", length = 255)
-    private String descriptionEn;
-    
-    @Size(max = 255, message = "French description cannot exceed 255 characters")
-    @Column(name = "F_07", length = 255)
-    private String descriptionFr;
 }
 

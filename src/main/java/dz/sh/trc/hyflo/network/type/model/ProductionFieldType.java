@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.network.type.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -24,6 +25,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * Classification for production field types.
+ * Examples: Oil Field, Gas Field, Condensate Field, Associated Gas Field.
+ */
+@Schema(description = "Type classification for production fields (oil, gas, condensate)")
 @Setter
 @Getter
 @ToString
