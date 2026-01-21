@@ -20,77 +20,82 @@ import dz.sh.trc.hyflo.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * FlowOperation - Daily business volume tracking
- * Records PRODUCED (input), TRANSPORTED (mid-check), CONSUMED (output) volumes
- * Subject to workflow: DRAFT → PENDING → VALIDATED/REJECTED
- */
-@Entity
-@Table(name = "T_03_03_04",
-       indexes = {
-           @Index(name = "idx_date", columnList = "F_01"),
-           @Index(name = "idx_infra", columnList = "F_02"),
-           @Index(name = "idx_type", columnList = "F_04")
-       },
-       uniqueConstraints = @UniqueConstraint(
-           name = "uk_operation_daily",
-           columnNames = {"F_01", "F_02", "F_03", "F_04"}
-       ))
+@Schema(description = "Daily flow operation tracking produced, transported, and consumed volumes with validation workflow")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+@Entity(name = "FlowOperation")
+@Table(name = "T_03_03_03", indexes = {@Index(name = "T_03_03_03_IX_01", columnList = "F_01"),
+        							   @Index(name = "T_03_03_03_IX_02", columnList = "F_05"),
+        							   @Index(name = "T_03_03_03_IX_03", columnList = "F_07")},
+    						uniqueConstraints = @UniqueConstraint(name = "T_03_03_03_UK_01", columnNames = {"F_01", "F_05", "F_06", "F_07"}))
 public class FlowOperation extends GenericModel {
     
+	@Schema(description = "Date of the operation", example = "2026-01-21", required = true)
+    @NotNull(message = "Operation date is required")
+    @PastOrPresent(message = "Operation date cannot be in the future")
     @Column(name = "F_01", nullable = false)
     private LocalDate date;
     
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_02", nullable = false, foreignKey = @ForeignKey(name = "fk_operation_infra"))
-    @NotNull
-    private Infrastructure infrastructure;
+    @Schema(description = "Volume in cubic meters (m³)", example = "125000.50", required = true, minimum = "0")
+    @NotNull(message = "Volume is required")
+    @DecimalMin(value = "0.0", message = "Volume cannot be negative")
+    @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
+    @Column(name = "F_02", nullable = false, precision = 15, scale = 2)
+    private Double volume;
     
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_03", nullable = false, foreignKey = @ForeignKey(name = "fk_operation_product"))
-    @NotNull
-    private Product product;
-    
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", nullable = false, foreignKey = @ForeignKey(name = "fk_operation_type"))
-    @NotNull
-    private OperationType type;  // PRODUCED, TRANSPORTED, CONSUMED
-    
-    @Column(name = "F_05", nullable = false, precision = 15)
-    @DecimalMin("0.0")
-    private Double volume;  // m³
-    
-    // WORKFLOW
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_06", nullable = false, foreignKey = @ForeignKey(name = "fk_operation_recorded_by"))
-    @NotNull
-    private Employee recordedBy;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "fk_operation_validated_by"))
-    private Employee validatedBy;
-    
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_08", nullable = false, foreignKey = @ForeignKey(name = "fk_operation_status"))
-    @NotNull
-    private ValidationStatus validationStatus;
-    
-    @Column(name = "F_09")
+    @Schema(description = "Timestamp when this operation was validated", example = "2026-01-21T16:00:00")
+    @PastOrPresent(message = "Validation time cannot be in the future")
+    @Column(name = "F_03")
     private LocalDateTime validatedAt;
     
-    @Column(name = "F_10", length = 500)
+    @Schema(description = "Additional notes or remarks about this operation", example = "Production affected by scheduled maintenance")
+    @Size(max = 500, message = "Notes cannot exceed 500 characters")
+    @Column(name = "F_04", length = 500)
     private String notes;
+    
+    @Schema(description = "Infrastructure where the operation occurred", required = true)
+    @NotNull(message = "Infrastructure is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_05", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
+    private Infrastructure infrastructure;
+    
+    @Schema(description = "Product being handled in the operation", required = true)
+    @NotNull(message = "Product is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"), nullable = false)
+    private Product product;
+    
+    @Schema(description = "Type of operation: PRODUCED, TRANSPORTED, or CONSUMED", required = true)
+    @NotNull(message = "Operation type is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
+    private OperationType type;
+    
+    @Schema(description = "Employee who recorded this operation", required = true)
+    @NotNull(message = "Recording employee is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
+    private Employee recordedBy;
+    
+    @Schema(description = "Supervisor who validated this operation")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_03_FK_05"))
+    private Employee validatedBy;
+    
+    @Schema(description = "Current validation status of this operation", required = true)
+    @NotNull(message = "Validation status is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_03_FK_06"), nullable = false)
+    private ValidationStatus validationStatus;
 }

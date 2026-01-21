@@ -29,8 +29,8 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="QualityFlag")
-@Table(name="T_03_02_02", uniqueConstraints = {@UniqueConstraint(name="T_03_02_02_UK_01", columnNames={"F_01"})})
+@Entity(name = "QualityFlag")
+@Table(name = "T_03_02_02", uniqueConstraints = {@UniqueConstraint(name="T_03_02_02_UK_01", columnNames={"F_01"})})
 public class QualityFlag extends GenericModel {
     
     @Schema(description = "Unique code for quality flag", example = "VERIFIED", required = true)

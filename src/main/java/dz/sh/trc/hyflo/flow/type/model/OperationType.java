@@ -28,8 +28,8 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@Entity
-@Table(name = "T_01_01_01")
+@Entity(name = "OperationType")
+@Table(name = "T_03_01_01")
 public class OperationType extends GenericModel {
     
     @NotBlank(message = "Operation type code is required")

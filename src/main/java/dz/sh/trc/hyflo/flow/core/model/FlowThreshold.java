@@ -20,7 +20,6 @@ import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -39,27 +38,25 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="FlowThreshold")
-@Table(name="T_03_03_01", indexes = {@Index(name="T_03_03_01_IX_01", columnList="F_07"),
-        							 @Index(name="T_03_03_01_IX_02", columnList="F_02,F_03")},
-    					  uniqueConstraints = {@UniqueConstraint(name="T_03_03_01_UK_01", columnNames={"F_07", "F_02", "F_03"})})
+@Table(name="T_03_03_01", uniqueConstraints = {@UniqueConstraint(name="T_03_03_01_UK_01", columnNames={"F_09", "F_10"})})
 public class FlowThreshold extends GenericModel {
     
-    @Column(name="F_01", nullable = false, precision = 12)
+    @Column(name="F_01", nullable = false, precision = 12, scale = 2)
     private Double pressureMin;
     
-    @Column(name="F_02", nullable = false, precision = 12)
+    @Column(name="F_02", nullable = false, precision = 12, scale = 2)
     private Double pressureMax;
     
-    @Column(name="F_03", nullable = false, precision = 12)
+    @Column(name="F_03", nullable = false, precision = 12, scale = 2)
     private Double temperatureMin;
     
-    @Column(name="F_04", nullable = false, precision = 12)
+    @Column(name="F_04", nullable = false, precision = 12, scale = 2)
     private Double temperatureMax;
     
-    @Column(name="F_05", nullable = false, precision = 12)
+    @Column(name="F_05", nullable = false, precision = 12, scale = 2)
     private Double flowRateMin;
     
-    @Column(name="F_06", nullable = false, precision = 12)
+    @Column(name="F_06", nullable = false, precision = 12, scale = 2)
     private Double flowRateMax;
     
     @Column(name="F_07", nullable = false)

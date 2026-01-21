@@ -51,9 +51,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="FlowReading")
 @Table(name="T_03_03_03", indexes = {@Index(name="T_03_03_03_IX_01", columnList="F_01"),
-        							 @Index(name="T_03_03_03_IX_02", columnList="F_08"),
-        							 @Index(name="T_03_03_03_IX_03", columnList="F_14,F_01"),
-        							 @Index(name="T_03_03_03_IX_04", columnList="F_12,F_08")},
+        							 @Index(name="T_03_03_03_IX_02", columnList="F_11,F_01")},
     					  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_14", "F_02", "F_01"})})
 public class FlowReading extends GenericModel {
     
@@ -81,36 +79,41 @@ public class FlowReading extends GenericModel {
     @Column(name = "F_04", precision = 12, scale = 2)
     private Double flowRate;
     
+	@Schema(description = "Contained volume in cubic meters (m³)", example = "1250000.75", minimum = "0")
+    @PositiveOrZero(message = "Flow rate must be zero or positive")
+    @Column(name = "F_05", precision = 12, scale = 2)
+    private Double containedVolume;
+    
 	@Schema(description = "Timestamp when the reading was validated by supervisor", example = "2026-01-21T11:00:00")
     @PastOrPresent(message = "Validation time cannot be in the future")
-    @Column(name = "F_05")
+    @Column(name = "F_06")
     private LocalDateTime validatedAt;
     
 	@Schema(description = "Additional notes or observations about this reading", example = "Slight pressure fluctuation observed during reading")
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
-    @Column(name = "F_06", length = 500)
+    @Column(name = "F_07", length = 500)
     private String notes;
     
 	@Schema(description = "Employee who recorded this reading", required = true)
     @NotNull(message = "Recording employee is required")
     @ManyToOne
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_01_FK_01"), nullable = false)
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
     private Employee recordedBy;
     
 	@Schema(description = "Supervisor who validated this reading")
     @ManyToOne
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_01_FK_02"))
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
     private Employee validatedBy;
     
 	@Schema(description = "Current validation status of this reading", required = true)
     @NotNull(message = "Validation status is required")
     @ManyToOne
-    @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_01_FK_03"), nullable = false)
+    @JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
     private ValidationStatus validationStatus;
     
 	@Schema(description = "Pipeline where this reading was taken", required = true)
     @NotNull(message = "Pipeline reference is required")
     @ManyToOne
-    @JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_01_FK_04"), nullable = false)
+    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
     private Pipeline pipeline;
 }
