@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.core.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
@@ -79,8 +80,8 @@ public class FlowForecast extends GenericModel {
 	@NotNull(message = "Predicted volume is mandatory")
 	@DecimalMin(value = "0.0", inclusive = true, message = "Predicted volume cannot be negative")
 	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-	@Column(name = "F_02", nullable = false, precision = 15, scale = 2)
-	private Double predictedVolume;
+	@Column(name = "F_02", precision = 15, scale = 2, nullable = false)
+	private BigDecimal predictedVolume;
     
 	@Schema(
 		description = "Adjusted forecast volume after expert review",
@@ -90,7 +91,7 @@ public class FlowForecast extends GenericModel {
 	@DecimalMin(value = "0.0", message = "Adjusted volume cannot be negative")
 	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
 	@Column(name = "F_03", precision = 15, scale = 2)
-	private Double adjustedVolume;
+	private BigDecimal adjustedVolume;
     
 	@Schema(
 		description = "Actual volume recorded (filled after forecast date)",
@@ -100,7 +101,7 @@ public class FlowForecast extends GenericModel {
 	@DecimalMin(value = "0.0", message = "Actual volume cannot be negative")
 	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
 	@Column(name = "F_04", precision = 15, scale = 2)
-	private Double actualVolume;
+	private BigDecimal actualVolume;
     
 	@Schema(
 		description = "Forecast accuracy percentage (0-100%)",
@@ -111,7 +112,7 @@ public class FlowForecast extends GenericModel {
 	@DecimalMax(value = "100.0", message = "Accuracy cannot exceed 100%")
 	@Digits(integer = 3, fraction = 4, message = "Accuracy must have at most 3 integer digits and 4 decimal places")
 	@Column(name = "F_05", precision = 7, scale = 4)
-	private Double accuracy;
+	private BigDecimal accuracy;
     
 	@Schema(
 		description = "Notes explaining forecast adjustments",

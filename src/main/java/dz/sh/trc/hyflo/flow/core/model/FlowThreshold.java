@@ -14,6 +14,8 @@
 
 package dz.sh.trc.hyflo.flow.core.model;
 
+import java.math.BigDecimal;
+
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
@@ -58,8 +60,8 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum pressure is mandatory")
 	@PositiveOrZero(message = "Minimum pressure must be zero or positive")
-	@Column(name="F_01", nullable = false, precision = 12, scale = 2)
-	private Double pressureMin;
+	@Column(name="F_01", precision = 12, scale = 2, nullable = false)
+	private BigDecimal pressureMin;
     
 	@Schema(
 		description = "Maximum safe pressure (bar)",
@@ -68,8 +70,8 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum pressure is mandatory")
 	@DecimalMax(value = "500.0", message = "Maximum pressure exceeds absolute limit")
-	@Column(name="F_02", nullable = false, precision = 12, scale = 2)
-	private Double pressureMax;
+	@Column(name="F_02", precision = 12, scale = 2, nullable = false)
+	private BigDecimal pressureMax;
     
 	@Schema(
 		description = "Minimum safe temperature (°C)",
@@ -78,8 +80,8 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum temperature is mandatory")
 	@DecimalMin(value = "-50.0", message = "Minimum temperature below absolute limit")
-	@Column(name="F_03", nullable = false, precision = 12, scale = 2)
-	private Double temperatureMin;
+	@Column(name="F_03", precision = 12, scale = 2, nullable = false)
+	private BigDecimal temperatureMin;
     
 	@Schema(
 		description = "Maximum safe temperature (°C)",
@@ -88,8 +90,8 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum temperature is mandatory")
 	@DecimalMax(value = "200.0", message = "Maximum temperature exceeds absolute limit")
-	@Column(name="F_04", nullable = false, precision = 12, scale = 2)
-	private Double temperatureMax;
+	@Column(name="F_04", precision = 12, scale = 2, nullable = false)
+	private BigDecimal temperatureMax;
     
 	@Schema(
 		description = "Minimum acceptable flow rate (m³/h or bpd)",
@@ -98,8 +100,8 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum flow rate is mandatory")
 	@PositiveOrZero(message = "Minimum flow rate must be zero or positive")
-	@Column(name="F_05", nullable = false, precision = 12, scale = 2)
-	private Double flowRateMin;
+	@Column(name="F_05", precision = 12, scale = 2, nullable = false)
+	private BigDecimal flowRateMin;
     
 	@Schema(
 		description = "Maximum acceptable flow rate (m³/h or bpd)",
@@ -108,8 +110,8 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum flow rate is mandatory")
 	@PositiveOrZero(message = "Maximum flow rate must be positive")
-	@Column(name="F_06", nullable = false, precision = 12, scale = 2)
-	private Double flowRateMax;
+	@Column(name="F_06", precision = 12, scale = 2, nullable = false)
+	private BigDecimal flowRateMax;
     
 	@Schema(
 		description = "Alert tolerance percentage for threshold breaches (e.g., 5.0 for ±5%)",
@@ -119,8 +121,8 @@ public class FlowThreshold extends GenericModel {
 	@NotNull(message = "Alert tolerance is mandatory")
 	@DecimalMin(value = "0.0", message = "Alert tolerance cannot be negative")
 	@DecimalMax(value = "50.0", message = "Alert tolerance cannot exceed 50%")
-	@Column(name="F_07", nullable = false, precision = 5, scale = 2)
-	private Double alertTolerance;
+	@Column(name="F_07", precision = 5, scale = 2, nullable = false)
+	private BigDecimal alertTolerance;
     
 	@Schema(
 		description = "Indicates if this threshold configuration is currently active",

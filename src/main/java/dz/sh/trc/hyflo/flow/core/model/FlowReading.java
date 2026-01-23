@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.core.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
@@ -79,8 +80,8 @@ public class FlowReading extends GenericModel {
 	@PositiveOrZero(message = "Pressure must be zero or positive")
 	@DecimalMin(value = "0.0", message = "Pressure cannot be negative")
 	@DecimalMax(value = "500.0", message = "Pressure exceeds maximum safe operating limit (500 bar)")
-	@Column(name = "F_02", precision = 12, scale = 2)
-	private Double pressure;
+	@Column(name = "F_02")
+	private BigDecimal pressure;
     
 	@Schema(
 		description = "Temperature measurement in degrees Celsius",
@@ -91,8 +92,8 @@ public class FlowReading extends GenericModel {
 	)
 	@DecimalMin(value = "-50.0", message = "Temperature below minimum operating range")
 	@DecimalMax(value = "200.0", message = "Temperature exceeds maximum operating range")
-	@Column(name = "F_03", precision = 12, scale = 2)
-	private Double temperature;
+	@Column(name = "F_03")
+	private BigDecimal temperature;
     
 	@Schema(
 		description = "Flow rate in cubic meters per hour (m³/h) or barrels per day (bpd)",
@@ -100,8 +101,8 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@PositiveOrZero(message = "Flow rate must be zero or positive")
-	@Column(name = "F_04", precision = 12, scale = 2)
-	private Double flowRate;
+	@Column(name = "F_04")
+	private BigDecimal flowRate;
     
 	@Schema(
 		description = "Total volume contained in pipeline segment (cubic meters)",
@@ -109,8 +110,8 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@PositiveOrZero(message = "Contained volume must be zero or positive")
-	@Column(name = "F_05", precision = 12, scale = 2)
-	private Double containedVolume;
+	@Column(name = "F_05")
+	private BigDecimal containedVolume;
     
 	@Schema(
 		description = "Timestamp when this reading was validated by supervisor",

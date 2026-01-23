@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.core.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
@@ -70,16 +71,16 @@ public class FlowAlert extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Actual value is mandatory")
-	@Column(name = "F_02", nullable = false, precision = 12, scale = 2)
-	private Double actualValue;
+	@Column(name = "F_02", nullable = false)
+	private BigDecimal actualValue;
     
 	@Schema(
 		description = "Threshold value that was breached",
 		example = "120.0",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@Column(name = "F_03", precision = 12, scale = 2)
-	private Double thresholdValue;
+	@Column(name = "F_03")
+	private BigDecimal thresholdValue;
     
 	@Schema(
 		description = "Alert message describing the issue",
