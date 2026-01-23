@@ -123,14 +123,6 @@ public class AlertStatusController extends GenericController<AlertStatusDTO, Lon
 
     // ========== CUSTOM ENDPOINTS ==========
 
-    @GetMapping("/code/{code}")
-    @Operation(summary = "Get alert status by code", description = "Find alert status by its unique code (ACTIVE, ACKNOWLEDGED, etc.)")
-    @PreAuthorize("hasAuthority('ALERT_STATUS:READ')")
-    public ResponseEntity<AlertStatusDTO> getByCode(@PathVariable String code) {
-        log.info("GET /flow/common/alertstatus/code/{} - Getting alert status by code", code);
-        return ResponseEntity.ok(alertStatusService.findByCode(code));
-    }
-
     @GetMapping("/designation/{designationFr}")
     @Operation(summary = "Get alert status by French designation", description = "Find alert status by its unique French designation")
     @PreAuthorize("hasAuthority('ALERT_STATUS:READ')")

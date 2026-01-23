@@ -67,13 +67,6 @@ public class AlertStatusService extends GenericService<AlertStatus, AlertStatusD
     @Override
     @Transactional
     public AlertStatusDTO create(AlertStatusDTO dto) {
-        log.info("Creating alert status: code={}", dto.getCode());
-        
-        if (alertStatusRepository.existsByCode(dto.getCode())) {
-            throw new BusinessValidationException(
-                "Alert status with code '" + dto.getCode() + "' already exists"
-            );
-        }
         
         if (alertStatusRepository.existsByDesignationFr(dto.getDesignationFr())) {
             throw new BusinessValidationException(
@@ -87,13 +80,6 @@ public class AlertStatusService extends GenericService<AlertStatus, AlertStatusD
     @Override
     @Transactional
     public AlertStatusDTO update(Long id, AlertStatusDTO dto) {
-        log.info("Updating alert status with ID: {}", id);
-        
-        if (alertStatusRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
-            throw new BusinessValidationException(
-                "Alert status with code '" + dto.getCode() + "' already exists"
-            );
-        }
         
         if (alertStatusRepository.existsByDesignationFrAndIdNot(dto.getDesignationFr(), id)) {
             throw new BusinessValidationException(
@@ -106,7 +92,7 @@ public class AlertStatusService extends GenericService<AlertStatus, AlertStatusD
 
     public List<AlertStatusDTO> getAll() {
         log.debug("Getting all alert statuses without pagination");
-        return alertStatusRepository.findAllByOrderByCodeAsc().stream()
+        return alertStatusRepository.findAll().stream()
                 .map(AlertStatusDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -119,15 +105,6 @@ public class AlertStatusService extends GenericService<AlertStatus, AlertStatusD
         }
         
         return executeQuery(p -> alertStatusRepository.searchByAnyField(searchTerm.trim(), p), pageable);
-    }
-
-    public AlertStatusDTO findByCode(String code) {
-        log.debug("Finding alert status by code: {}", code);
-        return alertStatusRepository.findByCode(code)
-                .map(AlertStatusDTO::fromEntity)
-                .orElseThrow(() -> new BusinessValidationException(
-                    "Alert status with code '" + code + "' not found"
-                ));
     }
 
     public AlertStatusDTO findByDesignationFr(String designationFr) {

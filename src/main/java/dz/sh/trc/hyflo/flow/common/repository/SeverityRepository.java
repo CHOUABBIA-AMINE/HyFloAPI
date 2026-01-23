@@ -14,7 +14,6 @@
 
 package dz.sh.trc.hyflo.flow.common.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -35,24 +34,15 @@ public interface SeverityRepository extends JpaRepository<Severity, Long> {
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
-    boolean existsByCode(String code);
-    
-    boolean existsByCodeAndIdNot(String code, Long id);
-    
     boolean existsByDesignationFr(String designationFr);
     
     boolean existsByDesignationFrAndIdNot(String designationFr, Long id);
     
-    Optional<Severity> findByCode(String code);
-    
     Optional<Severity> findByDesignationFr(String designationFr);
     
-    List<Severity> findAllByOrderByCodeAsc();
-
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT sev FROM Severity sev WHERE " +
-           "LOWER(sev.code) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(sev.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(sev.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(sev.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")

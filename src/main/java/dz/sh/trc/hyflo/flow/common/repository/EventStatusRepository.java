@@ -14,7 +14,6 @@
 
 package dz.sh.trc.hyflo.flow.common.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -35,24 +34,15 @@ public interface EventStatusRepository extends JpaRepository<EventStatus, Long> 
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
-    boolean existsByCode(String code);
-    
-    boolean existsByCodeAndIdNot(String code, Long id);
-    
     boolean existsByDesignationFr(String designationFr);
     
     boolean existsByDesignationFrAndIdNot(String designationFr, Long id);
-    
-    Optional<EventStatus> findByCode(String code);
-    
+        
     Optional<EventStatus> findByDesignationFr(String designationFr);
     
-    List<EventStatus> findAllByOrderByCodeAsc();
-
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT evs FROM EventStatus evs WHERE " +
-           "LOWER(evs.code) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(evs.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(evs.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(evs.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")

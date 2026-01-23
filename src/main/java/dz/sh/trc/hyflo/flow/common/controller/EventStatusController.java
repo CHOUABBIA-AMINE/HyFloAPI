@@ -123,14 +123,6 @@ public class EventStatusController extends GenericController<EventStatusDTO, Lon
 
     // ========== CUSTOM ENDPOINTS ==========
 
-    @GetMapping("/code/{code}")
-    @Operation(summary = "Get event status by code", description = "Find event status by its unique code (IN_PROGRESS, COMPLETED, etc.)")
-    @PreAuthorize("hasAuthority('EVENT_STATUS:READ')")
-    public ResponseEntity<EventStatusDTO> getByCode(@PathVariable String code) {
-        log.info("GET /flow/common/eventstatus/code/{} - Getting event status by code", code);
-        return ResponseEntity.ok(eventStatusService.findByCode(code));
-    }
-
     @GetMapping("/designation/{designationFr}")
     @Operation(summary = "Get event status by French designation", description = "Find event status by its unique French designation")
     @PreAuthorize("hasAuthority('EVENT_STATUS:READ')")

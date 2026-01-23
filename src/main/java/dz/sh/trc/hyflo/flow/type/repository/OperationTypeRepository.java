@@ -79,8 +79,8 @@ public interface OperationTypeRepository extends JpaRepository<OperationType, Lo
      */
     @Query("SELECT ot FROM OperationType ot WHERE " +
            "LOWER(ot.code) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(ot.nameAr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(ot.nameFr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(ot.nameEn) LIKE LOWER(CONCAT('%', :search, '%'))")
+           "LOWER(ot.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(ot.designationFr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(ot.designationEn) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<OperationType> searchByAnyField(@Param("search") String search, Pageable pageable);
 }

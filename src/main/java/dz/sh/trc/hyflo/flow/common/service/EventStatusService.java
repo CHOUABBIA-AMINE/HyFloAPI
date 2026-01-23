@@ -67,13 +67,6 @@ public class EventStatusService extends GenericService<EventStatus, EventStatusD
     @Override
     @Transactional
     public EventStatusDTO create(EventStatusDTO dto) {
-        log.info("Creating event status: code={}", dto.getCode());
-        
-        if (eventStatusRepository.existsByCode(dto.getCode())) {
-            throw new BusinessValidationException(
-                "Event status with code '" + dto.getCode() + "' already exists"
-            );
-        }
         
         if (eventStatusRepository.existsByDesignationFr(dto.getDesignationFr())) {
             throw new BusinessValidationException(
@@ -87,13 +80,6 @@ public class EventStatusService extends GenericService<EventStatus, EventStatusD
     @Override
     @Transactional
     public EventStatusDTO update(Long id, EventStatusDTO dto) {
-        log.info("Updating event status with ID: {}", id);
-        
-        if (eventStatusRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
-            throw new BusinessValidationException(
-                "Event status with code '" + dto.getCode() + "' already exists"
-            );
-        }
         
         if (eventStatusRepository.existsByDesignationFrAndIdNot(dto.getDesignationFr(), id)) {
             throw new BusinessValidationException(
@@ -106,7 +92,7 @@ public class EventStatusService extends GenericService<EventStatus, EventStatusD
 
     public List<EventStatusDTO> getAll() {
         log.debug("Getting all event statuses without pagination");
-        return eventStatusRepository.findAllByOrderByCodeAsc().stream()
+        return eventStatusRepository.findAll().stream()
                 .map(EventStatusDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -119,15 +105,6 @@ public class EventStatusService extends GenericService<EventStatus, EventStatusD
         }
         
         return executeQuery(p -> eventStatusRepository.searchByAnyField(searchTerm.trim(), p), pageable);
-    }
-
-    public EventStatusDTO findByCode(String code) {
-        log.debug("Finding event status by code: {}", code);
-        return eventStatusRepository.findByCode(code)
-                .map(EventStatusDTO::fromEntity)
-                .orElseThrow(() -> new BusinessValidationException(
-                    "Event status with code '" + code + "' not found"
-                ));
     }
 
     public EventStatusDTO findByDesignationFr(String designationFr) {

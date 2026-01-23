@@ -67,13 +67,6 @@ public class SeverityService extends GenericService<Severity, SeverityDTO, Long>
     @Override
     @Transactional
     public SeverityDTO create(SeverityDTO dto) {
-        log.info("Creating severity: code={}", dto.getCode());
-        
-        if (severityRepository.existsByCode(dto.getCode())) {
-            throw new BusinessValidationException(
-                "Severity with code '" + dto.getCode() + "' already exists"
-            );
-        }
         
         if (severityRepository.existsByDesignationFr(dto.getDesignationFr())) {
             throw new BusinessValidationException(
@@ -87,13 +80,6 @@ public class SeverityService extends GenericService<Severity, SeverityDTO, Long>
     @Override
     @Transactional
     public SeverityDTO update(Long id, SeverityDTO dto) {
-        log.info("Updating severity with ID: {}", id);
-        
-        if (severityRepository.existsByCodeAndIdNot(dto.getCode(), id)) {
-            throw new BusinessValidationException(
-                "Severity with code '" + dto.getCode() + "' already exists"
-            );
-        }
         
         if (severityRepository.existsByDesignationFrAndIdNot(dto.getDesignationFr(), id)) {
             throw new BusinessValidationException(
@@ -106,7 +92,7 @@ public class SeverityService extends GenericService<Severity, SeverityDTO, Long>
 
     public List<SeverityDTO> getAll() {
         log.debug("Getting all severities without pagination");
-        return severityRepository.findAllByOrderByCodeAsc().stream()
+        return severityRepository.findAll().stream()
                 .map(SeverityDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -119,15 +105,6 @@ public class SeverityService extends GenericService<Severity, SeverityDTO, Long>
         }
         
         return executeQuery(p -> severityRepository.searchByAnyField(searchTerm.trim(), p), pageable);
-    }
-
-    public SeverityDTO findByCode(String code) {
-        log.debug("Finding severity by code: {}", code);
-        return severityRepository.findByCode(code)
-                .map(SeverityDTO::fromEntity)
-                .orElseThrow(() -> new BusinessValidationException(
-                    "Severity with code '" + code + "' not found"
-                ));
     }
 
     public SeverityDTO findByDesignationFr(String designationFr) {

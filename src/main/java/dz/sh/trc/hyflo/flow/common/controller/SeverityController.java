@@ -123,14 +123,6 @@ public class SeverityController extends GenericController<SeverityDTO, Long> {
 
     // ========== CUSTOM ENDPOINTS ==========
 
-    @GetMapping("/code/{code}")
-    @Operation(summary = "Get severity by code", description = "Find severity level by its unique code (CRITICAL, HIGH, MEDIUM, LOW)")
-    @PreAuthorize("hasAuthority('SEVERITY:READ')")
-    public ResponseEntity<SeverityDTO> getByCode(@PathVariable String code) {
-        log.info("GET /flow/common/severity/code/{} - Getting severity by code", code);
-        return ResponseEntity.ok(severityService.findByCode(code));
-    }
-
     @GetMapping("/designation/{designationFr}")
     @Operation(summary = "Get severity by French designation", description = "Find severity level by its unique French designation")
     @PreAuthorize("hasAuthority('SEVERITY:READ')")
