@@ -47,7 +47,7 @@ public class OperationTypeDTO extends GenericDTO<OperationType> {
              message = "Code must be one of: PRODUCED, TRANSPORTED, CONSUMED")
     @Schema(description = "Unique code for operation type", 
             example = "PRODUCED", 
-            required = true, 
+            requiredMode = Schema.RequiredMode.REQUIRED,
             allowableValues = {"PRODUCED", "TRANSPORTED", "CONSUMED"})
     private String code;
 
@@ -68,18 +68,18 @@ public class OperationTypeDTO extends GenericDTO<OperationType> {
         OperationType entity = new OperationType();
         entity.setId(getId());
         entity.setCode(this.code);
-        entity.setNameAr(this.nameAr);
-        entity.setNameFr(this.nameFr);
-        entity.setNameEn(this.nameEn);
+        entity.setDesignationAr(this.nameAr);
+        entity.setDesignationFr(this.nameFr);
+        entity.setDesignationEn(this.nameEn);
         return entity;
     }
 
     @Override
     public void updateEntity(OperationType entity) {
         if (this.code != null) entity.setCode(this.code);
-        if (this.nameAr != null) entity.setNameAr(this.nameAr);
-        if (this.nameFr != null) entity.setNameFr(this.nameFr);
-        if (this.nameEn != null) entity.setNameEn(this.nameEn);
+        if (this.nameAr != null) entity.setDesignationAr(this.nameAr);
+        if (this.nameFr != null) entity.setDesignationFr(this.nameFr);
+        if (this.nameEn != null) entity.setDesignationEn(this.nameEn);
     }
 
     /**
@@ -94,9 +94,9 @@ public class OperationTypeDTO extends GenericDTO<OperationType> {
         return OperationTypeDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
-                .nameAr(entity.getNameAr())
-                .nameFr(entity.getNameFr())
-                .nameEn(entity.getNameEn())
+                .nameAr(entity.getDesignationAr())
+                .nameFr(entity.getDesignationFr())
+                .nameEn(entity.getDesignationEn())
                 .build();
     }
 }
