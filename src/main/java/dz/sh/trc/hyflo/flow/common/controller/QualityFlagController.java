@@ -35,7 +35,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/flow/common/qualityflag")
+@RequestMapping("/flow/common/qualityFlag")
 @Tag(name = "Quality Flag", description = "Flow quality flag management API")
 @Slf4j
 public class QualityFlagController extends GenericController<QualityFlagDTO, Long> {

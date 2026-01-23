@@ -35,7 +35,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/flow/common/validationstatus")
+@RequestMapping("/flow/common/validationStatus")
 @Tag(name = "Validation Status", description = "Flow validation status management API")
 @Slf4j
 public class ValidationStatusController extends GenericController<ValidationStatusDTO, Long> {

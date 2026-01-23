@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * Provides CRUD endpoints and search functionality for data source management.
  */
 @RestController
-@RequestMapping("/flow/common/datasource")
+@RequestMapping("/flow/common/dataSource")
 @Tag(name = "Data Source", description = "Flow data source management API")
 @Slf4j
 public class DataSourceController extends GenericController<DataSourceDTO, Long> {

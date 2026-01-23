@@ -35,7 +35,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/flow/common/eventstatus")
+@RequestMapping("/flow/common/eventStatus")
 @Tag(name = "Event Status", description = "Operational event status management API")
 @Slf4j
 public class EventStatusController extends GenericController<EventStatusDTO, Long> {

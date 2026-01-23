@@ -35,7 +35,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/flow/common/alertstatus")
+@RequestMapping("/flow/common/alertStatus")
 @Tag(name = "Alert Status", description = "Flow alert status management API")
 @Slf4j
 public class AlertStatusController extends GenericController<AlertStatusDTO, Long> {
