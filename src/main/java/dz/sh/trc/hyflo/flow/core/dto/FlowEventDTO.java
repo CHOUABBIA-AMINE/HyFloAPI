@@ -20,10 +20,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.flow.common.dto.EventStatusDTO;
+import dz.sh.trc.hyflo.flow.common.dto.SeverityDTO;
 import dz.sh.trc.hyflo.flow.common.model.EventStatus;
+import dz.sh.trc.hyflo.flow.common.model.Severity;
+import dz.sh.trc.hyflo.flow.core.model.FlowAlert;
 import dz.sh.trc.hyflo.flow.core.model.FlowEvent;
-import dz.sh.trc.hyflo.flow.type.dto.EventTypeDTO;
-import dz.sh.trc.hyflo.flow.type.model.EventType;
+import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.dto.InfrastructureDTO;
@@ -48,70 +50,71 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "Flow event DTO for operational events and incidents")
 public class FlowEventDTO extends GenericDTO<FlowEvent> {
 
+    @NotNull(message = "Event timestamp is required")
+    @PastOrPresent(message = "Event timestamp cannot be in the future")
+    @Schema(description = "Timestamp when event occurred", example = "2026-01-22T03:15:00", required = true)
+    private LocalDateTime eventTimestamp;
+
     @NotBlank(message = "Event title is required")
-    @Size(max = 200, message = "Title must not exceed 200 characters")
-    @Schema(description = "Event title", example = "Planned Maintenance", required = true, maxLength = 200)
+    @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
+    @Schema(description = "Brief event title", example = "Emergency Shutdown - Pipeline P-101", required = true, minLength = 3, maxLength = 100)
     private String title;
 
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
-    @Schema(description = "Event description", maxLength = 2000)
+    @Schema(description = "Detailed event description", example = "Automatic shutdown triggered", maxLength = 2000)
     private String description;
 
-    @NotNull(message = "Start time is required")
     @PastOrPresent(message = "Start time cannot be in the future")
-    @Schema(description = "Event start timestamp", example = "2026-01-22T08:00:00", required = true)
+    @Schema(description = "Event start timestamp", example = "2026-01-22T03:15:00")
     private LocalDateTime startTime;
 
-    @Schema(description = "Event end timestamp", example = "2026-01-22T12:00:00")
+    @Schema(description = "Event end timestamp", example = "2026-01-22T05:30:00")
     private LocalDateTime endTime;
 
-    @NotNull(message = "Planned flag is required")
-    @Schema(description = "Is this a planned event", example = "true", required = true)
-    private Boolean planned;
+    @Size(max = 2000, message = "Action taken must not exceed 2000 characters")
+    @Schema(description = "Corrective action description", example = "Isolated segment, deployed repair crew", maxLength = 2000)
+    private String actionTaken;
 
-    @Size(max = 100, message = "Impact level must not exceed 100 characters")
-    @Schema(description = "Impact level", example = "MEDIUM", maxLength = 100)
-    private String impactLevel;
-
-    @Size(max = 1000, message = "Resolution notes must not exceed 1000 characters")
-    @Schema(description = "Resolution notes", maxLength = 1000)
-    private String resolutionNotes;
-
-    @PastOrPresent(message = "Resolution time cannot be in the future")
-    @Schema(description = "Resolution timestamp", example = "2026-01-22T12:15:00")
-    private LocalDateTime resolvedAt;
+    @NotNull(message = "Impact on flow flag is required")
+    @Schema(description = "Did this event impact flow operations", example = "true", required = true)
+    private Boolean impactOnFlow;
 
     // Foreign Key IDs
+    @Schema(description = "Severity ID")
+    private Long severityId;
+
     @NotNull(message = "Infrastructure is required")
     @Schema(description = "Infrastructure ID", required = true)
     private Long infrastructureId;
 
-    @NotNull(message = "Event type is required")
-    @Schema(description = "Event type ID", required = true)
-    private Long typeId;
+    @NotNull(message = "Reporter is required")
+    @Schema(description = "Reported by employee ID", required = true)
+    private Long reportedById;
 
-    @NotNull(message = "Recording employee is required")
-    @Schema(description = "Recorded by employee ID", required = true)
-    private Long recordedById;
+    @Schema(description = "Related flow reading ID")
+    private Long relatedReadingId;
 
-    @Schema(description = "Resolved by employee ID")
-    private Long resolvedById;
+    @Schema(description = "Related alert ID")
+    private Long relatedAlertId;
 
     @Schema(description = "Event status ID")
     private Long statusId;
 
     // Nested DTOs
+    @Schema(description = "Severity details")
+    private SeverityDTO severity;
+
     @Schema(description = "Infrastructure details")
     private InfrastructureDTO infrastructure;
 
-    @Schema(description = "Event type details")
-    private EventTypeDTO type;
+    @Schema(description = "Reporter employee details")
+    private EmployeeDTO reportedBy;
 
-    @Schema(description = "Recording employee details")
-    private EmployeeDTO recordedBy;
+    @Schema(description = "Related flow reading details")
+    private FlowReadingDTO relatedReading;
 
-    @Schema(description = "Resolving employee details")
-    private EmployeeDTO resolvedBy;
+    @Schema(description = "Related alert details")
+    private FlowAlertDTO relatedAlert;
 
     @Schema(description = "Event status details")
     private EventStatusDTO status;
@@ -120,14 +123,19 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
     public FlowEvent toEntity() {
         FlowEvent entity = new FlowEvent();
         entity.setId(getId());
+        entity.setEventTimestamp(this.eventTimestamp);
         entity.setTitle(this.title);
         entity.setDescription(this.description);
         entity.setStartTime(this.startTime);
         entity.setEndTime(this.endTime);
-        entity.setPlanned(this.planned);
-        entity.setImpactLevel(this.impactLevel);
-        entity.setResolutionNotes(this.resolutionNotes);
-        entity.setResolvedAt(this.resolvedAt);
+        entity.setActionTaken(this.actionTaken);
+        entity.setImpactOnFlow(this.impactOnFlow);
+
+        if (this.severityId != null) {
+            Severity severity = new Severity();
+            severity.setId(this.severityId);
+            entity.setSeverity(severity);
+        }
 
         if (this.infrastructureId != null) {
             Infrastructure infrastructure = new Infrastructure();
@@ -135,22 +143,22 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
             entity.setInfrastructure(infrastructure);
         }
 
-        if (this.typeId != null) {
-            EventType type = new EventType();
-            type.setId(this.typeId);
-            entity.setType(type);
+        if (this.reportedById != null) {
+            Employee employee = new Employee();
+            employee.setId(this.reportedById);
+            entity.setReportedBy(employee);
         }
 
-        if (this.recordedById != null) {
-            Employee employee = new Employee();
-            employee.setId(this.recordedById);
-            entity.setRecordedBy(employee);
+        if (this.relatedReadingId != null) {
+            FlowReading reading = new FlowReading();
+            reading.setId(this.relatedReadingId);
+            entity.setRelatedReading(reading);
         }
 
-        if (this.resolvedById != null) {
-            Employee employee = new Employee();
-            employee.setId(this.resolvedById);
-            entity.setResolvedBy(employee);
+        if (this.relatedAlertId != null) {
+            FlowAlert alert = new FlowAlert();
+            alert.setId(this.relatedAlertId);
+            entity.setRelatedAlert(alert);
         }
 
         if (this.statusId != null) {
@@ -164,14 +172,19 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
 
     @Override
     public void updateEntity(FlowEvent entity) {
+        if (this.eventTimestamp != null) entity.setEventTimestamp(this.eventTimestamp);
         if (this.title != null) entity.setTitle(this.title);
         if (this.description != null) entity.setDescription(this.description);
         if (this.startTime != null) entity.setStartTime(this.startTime);
         if (this.endTime != null) entity.setEndTime(this.endTime);
-        if (this.planned != null) entity.setPlanned(this.planned);
-        if (this.impactLevel != null) entity.setImpactLevel(this.impactLevel);
-        if (this.resolutionNotes != null) entity.setResolutionNotes(this.resolutionNotes);
-        if (this.resolvedAt != null) entity.setResolvedAt(this.resolvedAt);
+        if (this.actionTaken != null) entity.setActionTaken(this.actionTaken);
+        if (this.impactOnFlow != null) entity.setImpactOnFlow(this.impactOnFlow);
+
+        if (this.severityId != null) {
+            Severity severity = new Severity();
+            severity.setId(this.severityId);
+            entity.setSeverity(severity);
+        }
 
         if (this.infrastructureId != null) {
             Infrastructure infrastructure = new Infrastructure();
@@ -179,22 +192,22 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
             entity.setInfrastructure(infrastructure);
         }
 
-        if (this.typeId != null) {
-            EventType type = new EventType();
-            type.setId(this.typeId);
-            entity.setType(type);
+        if (this.reportedById != null) {
+            Employee employee = new Employee();
+            employee.setId(this.reportedById);
+            entity.setReportedBy(employee);
         }
 
-        if (this.recordedById != null) {
-            Employee employee = new Employee();
-            employee.setId(this.recordedById);
-            entity.setRecordedBy(employee);
+        if (this.relatedReadingId != null) {
+            FlowReading reading = new FlowReading();
+            reading.setId(this.relatedReadingId);
+            entity.setRelatedReading(reading);
         }
 
-        if (this.resolvedById != null) {
-            Employee employee = new Employee();
-            employee.setId(this.resolvedById);
-            entity.setResolvedBy(employee);
+        if (this.relatedAlertId != null) {
+            FlowAlert alert = new FlowAlert();
+            alert.setId(this.relatedAlertId);
+            entity.setRelatedAlert(alert);
         }
 
         if (this.statusId != null) {
@@ -209,25 +222,26 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
 
         return FlowEventDTO.builder()
                 .id(entity.getId())
+                .eventTimestamp(entity.getEventTimestamp())
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .startTime(entity.getStartTime())
                 .endTime(entity.getEndTime())
-                .planned(entity.getPlanned())
-                .impactLevel(entity.getImpactLevel())
-                .resolutionNotes(entity.getResolutionNotes())
-                .resolvedAt(entity.getResolvedAt())
+                .actionTaken(entity.getActionTaken())
+                .impactOnFlow(entity.getImpactOnFlow())
 
+                .severityId(entity.getSeverity() != null ? entity.getSeverity().getId() : null)
                 .infrastructureId(entity.getInfrastructure() != null ? entity.getInfrastructure().getId() : null)
-                .typeId(entity.getType() != null ? entity.getType().getId() : null)
-                .recordedById(entity.getRecordedBy() != null ? entity.getRecordedBy().getId() : null)
-                .resolvedById(entity.getResolvedBy() != null ? entity.getResolvedBy().getId() : null)
+                .reportedById(entity.getReportedBy() != null ? entity.getReportedBy().getId() : null)
+                .relatedReadingId(entity.getRelatedReading() != null ? entity.getRelatedReading().getId() : null)
+                .relatedAlertId(entity.getRelatedAlert() != null ? entity.getRelatedAlert().getId() : null)
                 .statusId(entity.getStatus() != null ? entity.getStatus().getId() : null)
 
+                .severity(entity.getSeverity() != null ? SeverityDTO.fromEntity(entity.getSeverity()) : null)
                 .infrastructure(entity.getInfrastructure() != null ? InfrastructureDTO.fromEntity(entity.getInfrastructure()) : null)
-                .type(entity.getType() != null ? EventTypeDTO.fromEntity(entity.getType()) : null)
-                .recordedBy(entity.getRecordedBy() != null ? EmployeeDTO.fromEntity(entity.getRecordedBy()) : null)
-                .resolvedBy(entity.getResolvedBy() != null ? EmployeeDTO.fromEntity(entity.getResolvedBy()) : null)
+                .reportedBy(entity.getReportedBy() != null ? EmployeeDTO.fromEntity(entity.getReportedBy()) : null)
+                .relatedReading(entity.getRelatedReading() != null ? FlowReadingDTO.fromEntity(entity.getRelatedReading()) : null)
+                .relatedAlert(entity.getRelatedAlert() != null ? FlowAlertDTO.fromEntity(entity.getRelatedAlert()) : null)
                 .status(entity.getStatus() != null ? EventStatusDTO.fromEntity(entity.getStatus()) : null)
                 .build();
     }

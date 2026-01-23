@@ -16,14 +16,13 @@ package dz.sh.trc.hyflo.flow.core.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowForecast;
-import dz.sh.trc.hyflo.flow.type.dto.ForecastTypeDTO;
-import dz.sh.trc.hyflo.flow.type.model.ForecastType;
+import dz.sh.trc.hyflo.flow.type.dto.OperationTypeDTO;
+import dz.sh.trc.hyflo.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.common.dto.ProductDTO;
@@ -31,13 +30,11 @@ import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.dto.InfrastructureDTO;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,38 +48,39 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow forecast DTO for predicted production and consumption")
+@Schema(description = "Flow forecast DTO for production planning and capacity management")
 public class FlowForecastDTO extends GenericDTO<FlowForecast> {
 
     @NotNull(message = "Forecast date is required")
     @Future(message = "Forecast date must be in the future")
-    @Schema(description = "Forecast date", example = "2026-02-01", required = true)
+    @Schema(description = "Forecast target date", example = "2026-01-25", required = true)
     private LocalDate forecastDate;
 
     @NotNull(message = "Predicted volume is required")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Volume cannot be negative")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Predicted volume cannot be negative")
     @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-    @Schema(description = "Predicted volume", example = "28000.00", required = true)
+    @Schema(description = "Predicted volume (m³ or barrels)", example = "28000.00", required = true)
     private BigDecimal predictedVolume;
 
-    @DecimalMin(value = "0.0", message = "Confidence level cannot be negative")
-    @Digits(integer = 3, fraction = 2, message = "Confidence level format: 0.00 to 100.00")
-    @Min(value = 0, message = "Confidence level minimum is 0%")
-    @Max(value = 100, message = "Confidence level maximum is 100%")
-    @Schema(description = "Confidence level percentage", example = "85.50", minimum = "0", maximum = "100")
-    private BigDecimal confidenceLevel;
+    @DecimalMin(value = "0.0", message = "Adjusted volume cannot be negative")
+    @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
+    @Schema(description = "Adjusted forecast volume after expert review", example = "27500.00")
+    private BigDecimal adjustedVolume;
 
-    @Size(max = 100, message = "Model version must not exceed 100 characters")
-    @Schema(description = "Model version used", example = "v2.3.1", maxLength = 100)
-    private String modelVersion;
+    @DecimalMin(value = "0.0", message = "Actual volume cannot be negative")
+    @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
+    @Schema(description = "Actual volume recorded (filled after forecast date)", example = "27250.50")
+    private BigDecimal actualVolume;
 
-    @PastOrPresent(message = "Generation time cannot be in the future")
-    @Schema(description = "Forecast generation timestamp", example = "2026-01-22T10:30:00")
-    private LocalDateTime generatedAt;
+    @DecimalMin(value = "0.0", message = "Accuracy cannot be negative")
+    @DecimalMax(value = "100.0", message = "Accuracy cannot exceed 100%")
+    @Digits(integer = 3, fraction = 4, message = "Accuracy must have at most 3 integer digits and 4 decimal places")
+    @Schema(description = "Forecast accuracy percentage (0-100%)", example = "98.5", minimum = "0.0", maximum = "100.0")
+    private BigDecimal accuracy;
 
-    @Size(max = 1000, message = "Notes must not exceed 1000 characters")
-    @Schema(description = "Additional notes", maxLength = 1000)
-    private String notes;
+    @Size(max = 500, message = "Adjustment notes must not exceed 500 characters")
+    @Schema(description = "Notes explaining forecast adjustments", example = "Adjusted for planned maintenance", maxLength = 500)
+    private String adjustmentNotes;
 
     // Foreign Key IDs
     @NotNull(message = "Infrastructure is required")
@@ -93,13 +91,12 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
     @Schema(description = "Product ID", required = true)
     private Long productId;
 
-    @NotNull(message = "Forecast type is required")
-    @Schema(description = "Forecast type ID", required = true)
-    private Long typeId;
+    @NotNull(message = "Operation type is required")
+    @Schema(description = "Operation type ID", required = true)
+    private Long operationTypeId;
 
-    @NotNull(message = "Recording employee is required")
-    @Schema(description = "Generated by employee ID", required = true)
-    private Long generatedById;
+    @Schema(description = "Supervisor employee ID")
+    private Long supervisorId;
 
     // Nested DTOs
     @Schema(description = "Infrastructure details")
@@ -108,11 +105,11 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
     @Schema(description = "Product details")
     private ProductDTO product;
 
-    @Schema(description = "Forecast type details")
-    private ForecastTypeDTO type;
+    @Schema(description = "Operation type details")
+    private OperationTypeDTO operationType;
 
-    @Schema(description = "Generated by employee details")
-    private EmployeeDTO generatedBy;
+    @Schema(description = "Supervisor employee details")
+    private EmployeeDTO supervisor;
 
     @Override
     public FlowForecast toEntity() {
@@ -120,10 +117,10 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
         entity.setId(getId());
         entity.setForecastDate(this.forecastDate);
         entity.setPredictedVolume(this.predictedVolume);
-        entity.setConfidenceLevel(this.confidenceLevel);
-        entity.setModelVersion(this.modelVersion);
-        entity.setGeneratedAt(this.generatedAt);
-        entity.setNotes(this.notes);
+        entity.setAdjustedVolume(this.adjustedVolume);
+        entity.setActualVolume(this.actualVolume);
+        entity.setAccuracy(this.accuracy);
+        entity.setAdjustmentNotes(this.adjustmentNotes);
 
         if (this.infrastructureId != null) {
             Infrastructure infrastructure = new Infrastructure();
@@ -137,16 +134,16 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
             entity.setProduct(product);
         }
 
-        if (this.typeId != null) {
-            ForecastType type = new ForecastType();
-            type.setId(this.typeId);
-            entity.setType(type);
+        if (this.operationTypeId != null) {
+            OperationType operationType = new OperationType();
+            operationType.setId(this.operationTypeId);
+            entity.setOperationType(operationType);
         }
 
-        if (this.generatedById != null) {
-            Employee employee = new Employee();
-            employee.setId(this.generatedById);
-            entity.setGeneratedBy(employee);
+        if (this.supervisorId != null) {
+            Employee supervisor = new Employee();
+            supervisor.setId(this.supervisorId);
+            entity.setSupervisor(supervisor);
         }
 
         return entity;
@@ -156,10 +153,10 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
     public void updateEntity(FlowForecast entity) {
         if (this.forecastDate != null) entity.setForecastDate(this.forecastDate);
         if (this.predictedVolume != null) entity.setPredictedVolume(this.predictedVolume);
-        if (this.confidenceLevel != null) entity.setConfidenceLevel(this.confidenceLevel);
-        if (this.modelVersion != null) entity.setModelVersion(this.modelVersion);
-        if (this.generatedAt != null) entity.setGeneratedAt(this.generatedAt);
-        if (this.notes != null) entity.setNotes(this.notes);
+        if (this.adjustedVolume != null) entity.setAdjustedVolume(this.adjustedVolume);
+        if (this.actualVolume != null) entity.setActualVolume(this.actualVolume);
+        if (this.accuracy != null) entity.setAccuracy(this.accuracy);
+        if (this.adjustmentNotes != null) entity.setAdjustmentNotes(this.adjustmentNotes);
 
         if (this.infrastructureId != null) {
             Infrastructure infrastructure = new Infrastructure();
@@ -173,16 +170,16 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
             entity.setProduct(product);
         }
 
-        if (this.typeId != null) {
-            ForecastType type = new ForecastType();
-            type.setId(this.typeId);
-            entity.setType(type);
+        if (this.operationTypeId != null) {
+            OperationType operationType = new OperationType();
+            operationType.setId(this.operationTypeId);
+            entity.setOperationType(operationType);
         }
 
-        if (this.generatedById != null) {
-            Employee employee = new Employee();
-            employee.setId(this.generatedById);
-            entity.setGeneratedBy(employee);
+        if (this.supervisorId != null) {
+            Employee supervisor = new Employee();
+            supervisor.setId(this.supervisorId);
+            entity.setSupervisor(supervisor);
         }
     }
 
@@ -193,20 +190,20 @@ public class FlowForecastDTO extends GenericDTO<FlowForecast> {
                 .id(entity.getId())
                 .forecastDate(entity.getForecastDate())
                 .predictedVolume(entity.getPredictedVolume())
-                .confidenceLevel(entity.getConfidenceLevel())
-                .modelVersion(entity.getModelVersion())
-                .generatedAt(entity.getGeneratedAt())
-                .notes(entity.getNotes())
+                .adjustedVolume(entity.getAdjustedVolume())
+                .actualVolume(entity.getActualVolume())
+                .accuracy(entity.getAccuracy())
+                .adjustmentNotes(entity.getAdjustmentNotes())
 
                 .infrastructureId(entity.getInfrastructure() != null ? entity.getInfrastructure().getId() : null)
                 .productId(entity.getProduct() != null ? entity.getProduct().getId() : null)
-                .typeId(entity.getType() != null ? entity.getType().getId() : null)
-                .generatedById(entity.getGeneratedBy() != null ? entity.getGeneratedBy().getId() : null)
+                .operationTypeId(entity.getOperationType() != null ? entity.getOperationType().getId() : null)
+                .supervisorId(entity.getSupervisor() != null ? entity.getSupervisor().getId() : null)
 
                 .infrastructure(entity.getInfrastructure() != null ? InfrastructureDTO.fromEntity(entity.getInfrastructure()) : null)
                 .product(entity.getProduct() != null ? ProductDTO.fromEntity(entity.getProduct()) : null)
-                .type(entity.getType() != null ? ForecastTypeDTO.fromEntity(entity.getType()) : null)
-                .generatedBy(entity.getGeneratedBy() != null ? EmployeeDTO.fromEntity(entity.getGeneratedBy()) : null)
+                .operationType(entity.getOperationType() != null ? OperationTypeDTO.fromEntity(entity.getOperationType()) : null)
+                .supervisor(entity.getSupervisor() != null ? EmployeeDTO.fromEntity(entity.getSupervisor()) : null)
                 .build();
     }
 }

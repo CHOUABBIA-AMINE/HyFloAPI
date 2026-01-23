@@ -19,16 +19,16 @@ import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.flow.common.dto.SeverityDTO;
-import dz.sh.trc.hyflo.flow.common.model.Severity;
 import dz.sh.trc.hyflo.flow.core.model.FlowThreshold;
+import dz.sh.trc.hyflo.network.common.dto.ProductDTO;
+import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -41,56 +41,77 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow threshold DTO for pipeline operational limits configuration")
+@Schema(description = "Flow threshold DTO for pipeline operating thresholds configuration")
 public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
 
-    @NotBlank(message = "Threshold name is required")
-    @Size(max = 100, message = "Name must not exceed 100 characters")
-    @Schema(description = "Threshold name", example = "Max Pressure Warning", required = true, maxLength = 100)
-    private String name;
+    @NotNull(message = "Minimum pressure is required")
+    @PositiveOrZero(message = "Minimum pressure must be zero or positive")
+    @Schema(description = "Minimum safe pressure (bar)", example = "50.0", required = true)
+    private BigDecimal pressureMin;
 
-    @NotBlank(message = "Parameter type is required")
-    @Size(max = 50, message = "Parameter type must not exceed 50 characters")
-    @Schema(description = "Parameter type", example = "PRESSURE", required = true, maxLength = 50)
-    private String parameterType;
+    @NotNull(message = "Maximum pressure is required")
+    @DecimalMax(value = "500.0", message = "Maximum pressure exceeds absolute limit")
+    @Schema(description = "Maximum safe pressure (bar)", example = "120.0", required = true, maximum = "500.0")
+    private BigDecimal pressureMax;
 
-    @DecimalMin(value = "0.0", message = "Minimum value cannot be negative")
-    @Schema(description = "Minimum acceptable value", example = "50.00")
-    private BigDecimal minValue;
+    @NotNull(message = "Minimum temperature is required")
+    @DecimalMin(value = "-50.0", message = "Minimum temperature below absolute limit")
+    @Schema(description = "Minimum safe temperature (°C)", example = "5.0", required = true, minimum = "-50.0")
+    private BigDecimal temperatureMin;
 
-    @DecimalMin(value = "0.0", message = "Maximum value cannot be negative")
-    @Schema(description = "Maximum acceptable value", example = "100.00")
-    private BigDecimal maxValue;
+    @NotNull(message = "Maximum temperature is required")
+    @DecimalMax(value = "200.0", message = "Maximum temperature exceeds absolute limit")
+    @Schema(description = "Maximum safe temperature (°C)", example = "85.0", required = true, maximum = "200.0")
+    private BigDecimal temperatureMax;
 
-    @Size(max = 500, message = "Description must not exceed 500 characters")
-    @Schema(description = "Threshold description", maxLength = 500)
-    private String description;
+    @NotNull(message = "Minimum flow rate is required")
+    @PositiveOrZero(message = "Minimum flow rate must be zero or positive")
+    @Schema(description = "Minimum acceptable flow rate (m³/h)", example = "500.0", required = true)
+    private BigDecimal flowRateMin;
+
+    @NotNull(message = "Maximum flow rate is required")
+    @PositiveOrZero(message = "Maximum flow rate must be positive")
+    @Schema(description = "Maximum acceptable flow rate (m³/h)", example = "2000.0", required = true)
+    private BigDecimal flowRateMax;
+
+    @NotNull(message = "Alert tolerance is required")
+    @DecimalMin(value = "0.0", message = "Alert tolerance cannot be negative")
+    @DecimalMax(value = "50.0", message = "Alert tolerance cannot exceed 50%")
+    @Schema(description = "Alert tolerance percentage (±5%)", example = "5.0", required = true, minimum = "0.0", maximum = "50.0")
+    private BigDecimal alertTolerance;
+
+    @NotNull(message = "Active status is required")
+    @Schema(description = "Is this threshold active", example = "true", required = true)
+    private Boolean active;
 
     // Foreign Key IDs
     @NotNull(message = "Pipeline is required")
     @Schema(description = "Pipeline ID", required = true)
     private Long pipelineId;
 
-    @NotNull(message = "Severity is required")
-    @Schema(description = "Severity ID", required = true)
-    private Long severityId;
+    @NotNull(message = "Product is required")
+    @Schema(description = "Product ID", required = true)
+    private Long productId;
 
     // Nested DTOs
     @Schema(description = "Pipeline details")
     private PipelineDTO pipeline;
 
-    @Schema(description = "Severity details")
-    private SeverityDTO severity;
+    @Schema(description = "Product details")
+    private ProductDTO product;
 
     @Override
     public FlowThreshold toEntity() {
         FlowThreshold entity = new FlowThreshold();
         entity.setId(getId());
-        entity.setName(this.name);
-        entity.setParameterType(this.parameterType);
-        entity.setMinValue(this.minValue);
-        entity.setMaxValue(this.maxValue);
-        entity.setDescription(this.description);
+        entity.setPressureMin(this.pressureMin);
+        entity.setPressureMax(this.pressureMax);
+        entity.setTemperatureMin(this.temperatureMin);
+        entity.setTemperatureMax(this.temperatureMax);
+        entity.setFlowRateMin(this.flowRateMin);
+        entity.setFlowRateMax(this.flowRateMax);
+        entity.setAlertTolerance(this.alertTolerance);
+        entity.setActive(this.active);
 
         if (this.pipelineId != null) {
             Pipeline pipeline = new Pipeline();
@@ -98,10 +119,10 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
             entity.setPipeline(pipeline);
         }
 
-        if (this.severityId != null) {
-            Severity severity = new Severity();
-            severity.setId(this.severityId);
-            entity.setSeverity(severity);
+        if (this.productId != null) {
+            Product product = new Product();
+            product.setId(this.productId);
+            entity.setProduct(product);
         }
 
         return entity;
@@ -109,11 +130,14 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
 
     @Override
     public void updateEntity(FlowThreshold entity) {
-        if (this.name != null) entity.setName(this.name);
-        if (this.parameterType != null) entity.setParameterType(this.parameterType);
-        if (this.minValue != null) entity.setMinValue(this.minValue);
-        if (this.maxValue != null) entity.setMaxValue(this.maxValue);
-        if (this.description != null) entity.setDescription(this.description);
+        if (this.pressureMin != null) entity.setPressureMin(this.pressureMin);
+        if (this.pressureMax != null) entity.setPressureMax(this.pressureMax);
+        if (this.temperatureMin != null) entity.setTemperatureMin(this.temperatureMin);
+        if (this.temperatureMax != null) entity.setTemperatureMax(this.temperatureMax);
+        if (this.flowRateMin != null) entity.setFlowRateMin(this.flowRateMin);
+        if (this.flowRateMax != null) entity.setFlowRateMax(this.flowRateMax);
+        if (this.alertTolerance != null) entity.setAlertTolerance(this.alertTolerance);
+        if (this.active != null) entity.setActive(this.active);
 
         if (this.pipelineId != null) {
             Pipeline pipeline = new Pipeline();
@@ -121,10 +145,10 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
             entity.setPipeline(pipeline);
         }
 
-        if (this.severityId != null) {
-            Severity severity = new Severity();
-            severity.setId(this.severityId);
-            entity.setSeverity(severity);
+        if (this.productId != null) {
+            Product product = new Product();
+            product.setId(this.productId);
+            entity.setProduct(product);
         }
     }
 
@@ -133,17 +157,20 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
 
         return FlowThresholdDTO.builder()
                 .id(entity.getId())
-                .name(entity.getName())
-                .parameterType(entity.getParameterType())
-                .minValue(entity.getMinValue())
-                .maxValue(entity.getMaxValue())
-                .description(entity.getDescription())
+                .pressureMin(entity.getPressureMin())
+                .pressureMax(entity.getPressureMax())
+                .temperatureMin(entity.getTemperatureMin())
+                .temperatureMax(entity.getTemperatureMax())
+                .flowRateMin(entity.getFlowRateMin())
+                .flowRateMax(entity.getFlowRateMax())
+                .alertTolerance(entity.getAlertTolerance())
+                .active(entity.getActive())
 
                 .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
-                .severityId(entity.getSeverity() != null ? entity.getSeverity().getId() : null)
+                .productId(entity.getProduct() != null ? entity.getProduct().getId() : null)
 
                 .pipeline(entity.getPipeline() != null ? PipelineDTO.fromEntity(entity.getPipeline()) : null)
-                .severity(entity.getSeverity() != null ? SeverityDTO.fromEntity(entity.getSeverity()) : null)
+                .product(entity.getProduct() != null ? ProductDTO.fromEntity(entity.getProduct()) : null)
                 .build();
     }
 }
