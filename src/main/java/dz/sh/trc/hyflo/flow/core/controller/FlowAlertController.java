@@ -134,7 +134,7 @@ public class FlowAlertController extends GenericController<FlowAlertDTO, Long> {
             @RequestParam(defaultValue = "20") int size) {
         log.info("GET /flow/core/alert/unacknowledged - Getting unacknowledged alerts");
         return ResponseEntity.ok(flowAlertService.findUnacknowledged(
-                createPageable(page, size, "alertTimestamp", "desc")));
+                buildPageable(page, size, "alertTimestamp", "desc")));
     }
 
     @GetMapping("/unresolved")
@@ -144,7 +144,7 @@ public class FlowAlertController extends GenericController<FlowAlertDTO, Long> {
             @RequestParam(defaultValue = "20") int size) {
         log.info("GET /flow/core/alert/unresolved - Getting unresolved alerts");
         return ResponseEntity.ok(flowAlertService.findUnresolved(
-                createPageable(page, size, "alertTimestamp", "desc")));
+                buildPageable(page, size, "alertTimestamp", "desc")));
     }
 
     @GetMapping("/pipeline/{pipelineId}/unresolved")
@@ -155,7 +155,7 @@ public class FlowAlertController extends GenericController<FlowAlertDTO, Long> {
             @RequestParam(defaultValue = "20") int size) {
         log.info("GET /flow/core/alert/pipeline/{}/unresolved - Getting unresolved alerts for pipeline", pipelineId);
         return ResponseEntity.ok(flowAlertService.findUnresolvedByPipeline(
-                pipelineId, createPageable(page, size, "alertTimestamp", "desc")));
+                pipelineId, buildPageable(page, size, "alertTimestamp", "desc")));
     }
 
     @GetMapping("/pipeline/{pipelineId}/time-range")
@@ -171,7 +171,7 @@ public class FlowAlertController extends GenericController<FlowAlertDTO, Long> {
         log.info("GET /flow/core/alert/pipeline/{}/time-range - Getting alerts from {} to {}", 
                  pipelineId, startTime, endTime);
         return ResponseEntity.ok(flowAlertService.findByPipelineAndTimeRange(
-                pipelineId, startTime, endTime, createPageable(page, size, sortBy, sortDir)));
+                pipelineId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/status/{statusId}/time-range")
@@ -187,6 +187,6 @@ public class FlowAlertController extends GenericController<FlowAlertDTO, Long> {
         log.info("GET /flow/core/alert/status/{}/time-range - Getting alerts from {} to {}", 
                  statusId, startTime, endTime);
         return ResponseEntity.ok(flowAlertService.findByStatusAndTimeRange(
-                statusId, startTime, endTime, createPageable(page, size, sortBy, sortDir)));
+                statusId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 }

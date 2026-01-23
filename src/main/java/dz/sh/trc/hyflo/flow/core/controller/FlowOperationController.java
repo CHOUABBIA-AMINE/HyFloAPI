@@ -171,6 +171,6 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
         log.info("GET /flow/core/operation/infrastructure/{}/date-range - Getting operations from {} to {}", 
                  infrastructureId, startDate, endDate);
         return ResponseEntity.ok(flowOperationService.findByInfrastructureAndDateRange(
-                infrastructureId, startDate, endDate, createPageable(page, size, sortBy, sortDir)));
+                infrastructureId, startDate, endDate, buildPageable(page, size, sortBy, sortDir)));
     }
 }

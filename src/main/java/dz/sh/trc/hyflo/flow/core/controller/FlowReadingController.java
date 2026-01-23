@@ -128,7 +128,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
             @RequestParam(defaultValue = "10") int size) {
         log.info("GET /flow/core/reading/pipeline/{}/latest - Getting latest readings for pipeline", pipelineId);
         return ResponseEntity.ok(flowReadingService.findLatestByPipeline(
-                pipelineId, createPageable(page, size, "recordedAt", "desc")));
+                pipelineId, buildPageable(page, size, "recordedAt", "desc")));
     }
 
     @GetMapping("/time-range")
@@ -153,7 +153,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         log.info("GET /flow/core/reading/pipeline/{}/time-range - Getting readings from {} to {}", 
                  pipelineId, startTime, endTime);
         return ResponseEntity.ok(flowReadingService.findByPipelineAndTimeRangePaginated(
-                pipelineId, startTime, endTime, createPageable(page, size, sortBy, sortDir)));
+                pipelineId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/validation-status/{statusId}")

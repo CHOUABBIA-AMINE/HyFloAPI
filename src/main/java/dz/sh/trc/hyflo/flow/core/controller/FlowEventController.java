@@ -155,7 +155,7 @@ public class FlowEventController extends GenericController<FlowEventDTO, Long> {
         log.info("GET /flow/core/event/infrastructure/{}/time-range - Getting events from {} to {}", 
                  infrastructureId, startTime, endTime);
         return ResponseEntity.ok(flowEventService.findByInfrastructureAndTimeRange(
-                infrastructureId, startTime, endTime, createPageable(page, size, sortBy, sortDir)));
+                infrastructureId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/severity/{severityId}/time-range")
@@ -171,7 +171,7 @@ public class FlowEventController extends GenericController<FlowEventDTO, Long> {
         log.info("GET /flow/core/event/severity/{}/time-range - Getting events from {} to {}", 
                  severityId, startTime, endTime);
         return ResponseEntity.ok(flowEventService.findBySeverityAndTimeRange(
-                severityId, startTime, endTime, createPageable(page, size, sortBy, sortDir)));
+                severityId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/impact-on-flow/time-range")
@@ -186,6 +186,6 @@ public class FlowEventController extends GenericController<FlowEventDTO, Long> {
         log.info("GET /flow/core/event/impact-on-flow/time-range - Getting events with impact from {} to {}", 
                  startTime, endTime);
         return ResponseEntity.ok(flowEventService.findWithImpactOnFlowByTimeRange(
-                startTime, endTime, createPageable(page, size, sortBy, sortDir)));
+                startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 }

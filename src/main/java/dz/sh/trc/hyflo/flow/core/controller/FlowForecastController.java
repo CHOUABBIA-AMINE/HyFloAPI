@@ -158,7 +158,7 @@ public class FlowForecastController extends GenericController<FlowForecastDTO, L
             @RequestParam(defaultValue = "20") int size) {
         log.info("GET /flow/core/forecast/pending - Getting pending forecasts");
         return ResponseEntity.ok(flowForecastService.findPending(
-                createPageable(page, size, "forecastDate", "asc")));
+                buildPageable(page, size, "forecastDate", "asc")));
     }
 
     @GetMapping("/completed")
@@ -170,7 +170,7 @@ public class FlowForecastController extends GenericController<FlowForecastDTO, L
             @RequestParam(defaultValue = "20") int size) {
         log.info("GET /flow/core/forecast/completed - Getting completed forecasts from {} to {}", startDate, endDate);
         return ResponseEntity.ok(flowForecastService.findCompleted(
-                startDate, endDate, createPageable(page, size, "accuracy", "desc")));
+                startDate, endDate, buildPageable(page, size, "accuracy", "desc")));
     }
 
     @GetMapping("/infrastructure/{infrastructureId}/date-range")
@@ -186,6 +186,6 @@ public class FlowForecastController extends GenericController<FlowForecastDTO, L
         log.info("GET /flow/core/forecast/infrastructure/{}/date-range - Getting forecasts from {} to {}", 
                  infrastructureId, startDate, endDate);
         return ResponseEntity.ok(flowForecastService.findByInfrastructureAndDateRange(
-                infrastructureId, startDate, endDate, createPageable(page, size, sortBy, sortDir)));
+                infrastructureId, startDate, endDate, buildPageable(page, size, sortBy, sortDir)));
     }
 }

@@ -135,7 +135,7 @@ public class FlowThresholdController extends GenericController<FlowThresholdDTO,
             @RequestParam(defaultValue = "asc") String sortDir) {
         log.info("GET /flow/core/threshold/active - Getting all active thresholds");
         return ResponseEntity.ok(flowThresholdService.findAllActive(
-                createPageable(page, size, sortBy, sortDir)));
+                buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/pipeline/{pipelineId}/active")
@@ -148,7 +148,7 @@ public class FlowThresholdController extends GenericController<FlowThresholdDTO,
             @RequestParam(defaultValue = "asc") String sortDir) {
         log.info("GET /flow/core/threshold/pipeline/{}/active - Getting active thresholds for pipeline", pipelineId);
         return ResponseEntity.ok(flowThresholdService.findActiveByPipeline(
-                pipelineId, createPageable(page, size, sortBy, sortDir)));
+                pipelineId, buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/pipeline/{pipelineId}/product/{productId}")
