@@ -34,7 +34,7 @@ public interface InfrastructureRepository extends JpaRepository<Infrastructure, 
     
     boolean existsByCodeAndIdNot(String code, Long id);
     
-    List<Infrastructure> findByStructureId(Long structureId);
+    List<Infrastructure> findByOwnerId(Long ownerId);
     
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     

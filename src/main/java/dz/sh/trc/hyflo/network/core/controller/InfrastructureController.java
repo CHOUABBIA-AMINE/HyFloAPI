@@ -115,10 +115,10 @@ public class InfrastructureController extends GenericController<InfrastructureDT
         return super.count();
     }
     
-    @GetMapping("/structure/{structureId}")
+    @GetMapping("/owner/{ownerId}")
     @PreAuthorize("hasAuthority('INFRASTRUCTURE:READ')")
-    public ResponseEntity<List<InfrastructureDTO>> getByStructureId(@PathVariable Long structureId) {
-        log.info("GET /network/infrastructure/structure/{} - Getting infrastructures by structure", structureId);
-        return ResponseEntity.ok(infrastructureService.findByStructure(structureId));
+    public ResponseEntity<List<InfrastructureDTO>> getByOwnerId(@PathVariable Long ownerId) {
+        log.info("GET /network/infrastructure/owner/{} - Getting infrastructures by owner", ownerId);
+        return ResponseEntity.ok(infrastructureService.findByOwner(ownerId));
     }	
 }

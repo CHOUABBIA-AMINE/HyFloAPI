@@ -98,9 +98,9 @@ public class InfrastructureService extends GenericService<Infrastructure, Infras
         return executeQuery(p -> infrastructureRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
-    public List<InfrastructureDTO> findByStructure(Long structureId) {
-        log.debug("Finding infrastructure by region id: {}", structureId);
-        return infrastructureRepository.findByStructureId(structureId).stream()
+    public List<InfrastructureDTO> findByOwner(Long ownerId) {
+        log.debug("Finding infrastructure by owner id: {}", ownerId);
+        return infrastructureRepository.findByOwnerId(ownerId).stream()
                 .map(InfrastructureDTO::fromEntity)
                 .collect(Collectors.toList());
     }
