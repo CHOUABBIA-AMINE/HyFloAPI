@@ -219,7 +219,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne
-	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_07"), nullable = true)
+	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_07"), nullable = false)
 	private Structure manager;
 
 	@Schema(
