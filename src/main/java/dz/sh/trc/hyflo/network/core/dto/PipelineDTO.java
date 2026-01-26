@@ -28,7 +28,6 @@ import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.model.Terminal;
@@ -208,12 +207,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setNominalInteriorCoating(coating);
         }
         
-        if (this.vendorId != null) {
-            Vendor vendor = new Vendor();
-            vendor.setId(this.vendorId);
-            entity.setVendor(vendor);
-        }
-        
         if (this.pipelineSystemId != null) {
             PipelineSystem system = new PipelineSystem();
             system.setId(this.pipelineSystemId);
@@ -290,12 +283,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setNominalInteriorCoating(coating);
         }
         
-        if (this.vendorId != null) {
-            Vendor vendor = new Vendor();
-            vendor.setId(this.vendorId);
-            entity.setVendor(vendor);
-        }
-        
         if (this.pipelineSystemId != null) {
             PipelineSystem system = new PipelineSystem();
             system.setId(this.pipelineSystemId);
@@ -351,7 +338,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .nominalConstructionMaterialId(entity.getNominalConstructionMaterial() != null ? entity.getNominalConstructionMaterial().getId() : null)
                 .nominalExteriorCoatingId(entity.getNominalExteriorCoating() != null ? entity.getNominalExteriorCoating().getId() : null)
                 .nominalInteriorCoatingId(entity.getNominalInteriorCoating() != null ? entity.getNominalInteriorCoating().getId() : null)
-                .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .pipelineSystemId(entity.getPipelineSystem() != null ? entity.getPipelineSystem().getId() : null)
                 .departureTerminalId(entity.getDepartureTerminal() != null ? entity.getDepartureTerminal().getId() : null)
                 .arrivalTerminalId(entity.getArrivalTerminal() != null ? entity.getArrivalTerminal().getId() : null)
@@ -363,7 +349,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .nominalConstructionMaterial(entity.getNominalConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getNominalConstructionMaterial()) : null)
                 .nominalExteriorCoating(entity.getNominalExteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalExteriorCoating()) : null)
                 .nominalInteriorCoating(entity.getNominalInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalInteriorCoating()) : null)
-                .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .pipelineSystem(entity.getPipelineSystem() != null ? PipelineSystemDTO.fromEntity(entity.getPipelineSystem()) : null)
                 .departureTerminal(entity.getDepartureTerminal() != null ? TerminalDTO.fromEntity(entity.getDepartureTerminal()) : null)
                 .arrivalTerminal(entity.getArrivalTerminal() != null ? TerminalDTO.fromEntity(entity.getArrivalTerminal()) : null)

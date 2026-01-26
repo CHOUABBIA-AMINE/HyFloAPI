@@ -189,15 +189,6 @@ public class Pipeline extends Infrastructure {
 	@ManyToOne
 	@JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=false)
 	private Alloy nominalInteriorCoating;
-
-	@Schema(
-		description = "Vendor who supplied or constructed the pipeline",
-		requiredMode = Schema.RequiredMode.REQUIRED
-	)
-	@NotNull(message = "Vendor is mandatory")
-	@ManyToOne
-	@JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_04"), nullable=false)
-	private Vendor vendor;
 	
 	@Schema(
 		description = "Pipeline system to which this pipeline belongs",
@@ -205,7 +196,7 @@ public class Pipeline extends Infrastructure {
 	)
 	@NotNull(message = "Pipeline system is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_05"), nullable=false)
+	@JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_05"), nullable=false)
 	private PipelineSystem pipelineSystem;
 
 	@Schema(
@@ -214,7 +205,7 @@ public class Pipeline extends Infrastructure {
 	)
 	@NotNull(message = "Departure terminal is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_06"), nullable=false)
+	@JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_06"), nullable=false)
 	private Terminal departureTerminal;
 
 	@Schema(
@@ -223,7 +214,7 @@ public class Pipeline extends Infrastructure {
 	)
 	@NotNull(message = "Arrival terminal is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_07"), nullable=false)
+	@JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_07"), nullable=false)
 	private Terminal arrivalTerminal;
     
 	@Schema(
@@ -231,8 +222,21 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne
-	@JoinColumn(name = "F_25", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_02"), nullable = true)
+	@JoinColumn(name = "F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_02"), nullable = true)
 	private Structure manager;
+
+	@Schema(
+		description = "Vendor who supplied or constructed the pipeline",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+		name = "R_T020308_T020205",
+		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020308_T020205_FK_01")),
+		inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020308_T020205_FK_02")),
+		uniqueConstraints = @UniqueConstraint(name = "R_T020308_T020205_UK_01", columnNames = {"F_01", "F_02"})
+	)
+	private Set<Vendor> vendors = new HashSet<>();
     
 	@Schema(
 		description = "Collection of geographic locations through which the pipeline passes",
