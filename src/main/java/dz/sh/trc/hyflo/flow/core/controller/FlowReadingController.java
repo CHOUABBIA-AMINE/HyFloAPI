@@ -156,7 +156,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
                 pipelineId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
     }
 
-    @GetMapping("/validation-status/{statusId}")
+    @GetMapping("/validationStatus/{statusId}")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
     public ResponseEntity<List<FlowReadingDTO>> getByValidationStatus(@PathVariable Long statusId) {
         log.info("GET /flow/core/reading/validation-status/{} - Getting readings by validation status", statusId);
