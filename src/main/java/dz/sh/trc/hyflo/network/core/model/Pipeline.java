@@ -167,27 +167,24 @@ public class Pipeline extends Infrastructure {
 		description = "Alloy or material used for pipeline construction",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@NotNull(message = "Construction material is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_01"), nullable=false)
+	@JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_01"), nullable=true)
 	private Alloy nominalConstructionMaterial;
 
 	@Schema(
 		description = "Alloy or material used for exterior coating/protection",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@NotNull(message = "Exterior coating is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_02"), nullable=false)
+	@JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_02"), nullable=true)
 	private Alloy nominalExteriorCoating;
 
 	@Schema(
 		description = "Alloy or material used for interior coating/lining",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@NotNull(message = "Interior coating is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=false)
+	@JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=true)
 	private Alloy nominalInteriorCoating;
 	
 	@Schema(

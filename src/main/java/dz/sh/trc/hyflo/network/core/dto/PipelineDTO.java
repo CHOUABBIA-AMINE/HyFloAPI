@@ -110,13 +110,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     @NotNull(message = "Owner structure is required")
     private Long ownerId;
 
-    @NotNull(message = "Nominal construction material ID is required")
     private Long nominalConstructionMaterialId;
 
-    @NotNull(message = "Nominal exterior coating ID is required")
     private Long nominalExteriorCoatingId;
 
-    @NotNull(message = "Nominal interior coating ID is required")
     private Long nominalInteriorCoatingId;
 
     @NotNull(message = "Vendor ID is required")
