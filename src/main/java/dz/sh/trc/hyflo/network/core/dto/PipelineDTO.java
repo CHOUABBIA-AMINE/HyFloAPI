@@ -108,8 +108,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Structure is required")
-    private Long structureId;
+    @NotNull(message = "Owner structure is required")
+    private Long ownerId;
 
     @NotNull(message = "Nominal construction material ID is required")
     private Long nominalConstructionMaterialId;
@@ -131,13 +131,16 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Arrival facility ID is required")
     private Long arrivalTerminalId;
+
+    @NotNull(message = "Manager structure is required")
+    private Long managerId;
     
     @Builder.Default
     private Set<Long> locationIds = new HashSet<>();
     
     private OperationalStatusDTO operationalStatus;
     
-    private StructureDTO structure;
+    private StructureDTO owner;
     
     private AlloyDTO nominalConstructionMaterial;
     
@@ -152,6 +155,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private TerminalDTO departureTerminal;
     
     private TerminalDTO arrivalTerminal;
+    
+    private StructureDTO manager;
 
     @Override
     public Pipeline toEntity() {
@@ -179,10 +184,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
+        if (this.ownerId != null) {
         	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        	structure.setId(this.ownerId);
+        	entity.setOwner(structure);
         }
         
         if (this.nominalConstructionMaterialId != null) {
@@ -225,6 +230,12 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         	Terminal terminal = new Terminal();
             entity.setId(this.arrivalTerminalId);
             entity.setArrivalTerminal(terminal);
+        }
+        
+        if (this.managerId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.managerId);
+        	entity.setManager(structure);
         }
         
         return entity;
@@ -255,10 +266,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
+        if (this.ownerId != null) {
         	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        	structure.setId(this.ownerId);
+        	entity.setOwner(structure);
         }
         
         if (this.nominalConstructionMaterialId != null) {
@@ -302,6 +313,12 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
             entity.setId(this.arrivalTerminalId);
             entity.setArrivalTerminal(terminal);
         }
+        
+        if (this.managerId != null) {
+        	Structure structure = new Structure();
+        	structure.setId(this.managerId);
+        	entity.setManager(structure);
+        }
     }
 
     public static PipelineDTO fromEntity(Pipeline entity) {
@@ -330,7 +347,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .designCapacity(entity.getDesignCapacity())
                 .operationalCapacity(entity.getOperationalCapacity())
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
+                .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
                 .nominalConstructionMaterialId(entity.getNominalConstructionMaterial() != null ? entity.getNominalConstructionMaterial().getId() : null)
                 .nominalExteriorCoatingId(entity.getNominalExteriorCoating() != null ? entity.getNominalExteriorCoating().getId() : null)
                 .nominalInteriorCoatingId(entity.getNominalInteriorCoating() != null ? entity.getNominalInteriorCoating().getId() : null)
@@ -338,10 +355,11 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .pipelineSystemId(entity.getPipelineSystem() != null ? entity.getPipelineSystem().getId() : null)
                 .departureTerminalId(entity.getDepartureTerminal() != null ? entity.getDepartureTerminal().getId() : null)
                 .arrivalTerminalId(entity.getArrivalTerminal() != null ? entity.getArrivalTerminal().getId() : null)
+                .managerId(entity.getManager() != null ? entity.getManager().getId() : null)
                 .locationIds(locationIds)
 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
+                .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
                 .nominalConstructionMaterial(entity.getNominalConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getNominalConstructionMaterial()) : null)
                 .nominalExteriorCoating(entity.getNominalExteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalExteriorCoating()) : null)
                 .nominalInteriorCoating(entity.getNominalInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getNominalInteriorCoating()) : null)
@@ -349,6 +367,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .pipelineSystem(entity.getPipelineSystem() != null ? PipelineSystemDTO.fromEntity(entity.getPipelineSystem()) : null)
                 .departureTerminal(entity.getDepartureTerminal() != null ? TerminalDTO.fromEntity(entity.getDepartureTerminal()) : null)
                 .arrivalTerminal(entity.getArrivalTerminal() != null ? TerminalDTO.fromEntity(entity.getArrivalTerminal()) : null)
+                .manager(entity.getManager() != null ? StructureDTO.fromEntity(entity.getManager()) : null)
                 .build();
     }
 }

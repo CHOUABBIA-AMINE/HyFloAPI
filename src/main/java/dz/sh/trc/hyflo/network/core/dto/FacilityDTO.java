@@ -62,8 +62,8 @@ public class FacilityDTO extends GenericDTO<Facility> {
     @NotNull(message = "Operational status is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Structure is required")
-    private Long structureId;
+    @NotNull(message = "Owner structure is required")
+    private Long ownerId;
 
     @NotNull(message = "provider is required")
     private Long vendorId;
@@ -73,7 +73,7 @@ public class FacilityDTO extends GenericDTO<Facility> {
 
     private OperationalStatusDTO operationalStatus;
     
-    private StructureDTO structure;
+    private StructureDTO owner;
     
     private VendorDTO vendor;
     
@@ -95,10 +95,10 @@ public class FacilityDTO extends GenericDTO<Facility> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
-        	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        if (this.ownerId != null) {
+        	Structure owner = new Structure();
+        	owner.setId(this.ownerId);
+        	entity.setOwner(owner);
         }
         
         if (this.vendorId != null) {
@@ -130,10 +130,10 @@ public class FacilityDTO extends GenericDTO<Facility> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
-        	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        if (this.ownerId != null) {
+        	Structure owner = new Structure();
+        	owner.setId(this.ownerId);
+        	entity.setOwner(owner);
         }
         
         if (this.vendorId != null) {
@@ -161,12 +161,12 @@ public class FacilityDTO extends GenericDTO<Facility> {
                 .decommissioningDate(entity.getDecommissioningDate())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
+                .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .locationId(entity.getLocation() != null ? entity.getLocation().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
+                .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .location(entity.getLocation() != null ? LocationDTO.fromEntity(entity.getLocation()) : null)
                 .build();

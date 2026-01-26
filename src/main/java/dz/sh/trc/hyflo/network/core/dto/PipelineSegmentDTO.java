@@ -87,7 +87,7 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
     private Long operationalStatusId;
 
     @NotNull(message = "Structure is required")
-    private Long structureId;
+    private Long ownerId;
     
     @NotNull(message = "Construction material ID is required")
     private Long constructionMaterialId;
@@ -103,7 +103,7 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
     
     private OperationalStatusDTO operationalStatus;
     
-    private StructureDTO structure;
+    private StructureDTO owner;
     
     private AlloyDTO constructionMaterial;
     
@@ -135,10 +135,10 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
+        if (this.ownerId != null) {
         	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        	structure.setId(this.ownerId);
+        	entity.setOwner(structure);
         }
         
         if (this.constructionMaterialId != null) {
@@ -188,10 +188,10 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
+        if (this.ownerId != null) {
         	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        	structure.setId(this.ownerId);
+        	entity.setOwner(structure);
         }
         
         if (this.constructionMaterialId != null) {
@@ -235,14 +235,14 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
                 .roughness(entity.getRoughness())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
+                .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
                 .constructionMaterialId(entity.getConstructionMaterial() != null ? entity.getConstructionMaterial().getId() : null)
                 .exteriorCoatingId(entity.getExteriorCoating() != null ? entity.getExteriorCoating().getId() : null)
                 .interiorCoatingId(entity.getInteriorCoating() != null ? entity.getInteriorCoating().getId() : null)
                 .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
+                .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
                 .constructionMaterial(entity.getConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getConstructionMaterial()) : null)
                 .exteriorCoating(entity.getExteriorCoating() != null ? AlloyDTO.fromEntity(entity.getExteriorCoating()) : null)
                 .interiorCoating(entity.getInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getInteriorCoating()) : null)

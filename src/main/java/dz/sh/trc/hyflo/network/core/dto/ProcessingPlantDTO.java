@@ -70,8 +70,8 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Structure is required")
-    private Long structureId;
+    @NotNull(message = "Owner structure is required")
+    private Long ownerId;
 
     @NotNull(message = "provider is required")
     private Long vendorId;
@@ -84,7 +84,7 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
     
     private OperationalStatusDTO operationalStatus;
     
-    private StructureDTO structure;
+    private StructureDTO owner;
     
     private VendorDTO vendor;
     
@@ -118,10 +118,10 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
+        if (this.ownerId != null) {
         	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        	structure.setId(this.ownerId);
+        	entity.setOwner(structure);
         }
         
         if (this.vendorId != null) {
@@ -160,10 +160,10 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
+        if (this.ownerId != null) {
         	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        	structure.setId(this.ownerId);
+        	entity.setOwner(structure);
         }
         
         if (this.vendorId != null) {
@@ -213,7 +213,7 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
                 .capacity(entity.getCapacity())
 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
+                .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .locationId(entity.getLocation() != null ? entity.getLocation().getId() : null)
                 .processingPlantTypeId(entity.getProcessingPlantType() != null ? entity.getProcessingPlantType().getId() : null)
@@ -222,7 +222,7 @@ public class ProcessingPlantDTO extends GenericDTO<ProcessingPlant> {
                 .productIds(productIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
+                .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
                 .vendor(entity.getVendor() != null ? VendorDTO.fromEntity(entity.getVendor()) : null)
                 .location(entity.getLocation() != null ? LocationDTO.fromEntity(entity.getLocation()) : null)
                 .processingPlantType(entity.getProcessingPlantType() != null ? ProcessingPlantTypeDTO.fromEntity(entity.getProcessingPlantType()) : null)

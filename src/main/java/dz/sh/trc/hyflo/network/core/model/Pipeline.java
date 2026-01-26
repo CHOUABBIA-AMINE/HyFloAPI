@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import dz.sh.trc.hyflo.general.localization.model.Location;
+import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -224,6 +225,14 @@ public class Pipeline extends Infrastructure {
 	@ManyToOne
 	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_07"), nullable=false)
 	private Terminal arrivalTerminal;
+    
+	@Schema(
+		description = "Organizational structure responsible for managing this pipeline",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@ManyToOne
+	@JoinColumn(name = "F_25", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_02"), nullable = true)
+	private Structure manager;
     
 	@Schema(
 		description = "Collection of geographic locations through which the pipeline passes",

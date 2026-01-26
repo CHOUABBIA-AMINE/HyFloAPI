@@ -115,11 +115,11 @@ public class Infrastructure extends GenericModel {
 	protected OperationalStatus operationalStatus;
     
 	@Schema(
-		description = "Organizational structure responsible for managing this infrastructure",
+		description = "Organizational structure owning this infrastructure",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne
 	@JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_02"), nullable = true)
-	private Structure structure;
+	private Structure owner;
     
 }

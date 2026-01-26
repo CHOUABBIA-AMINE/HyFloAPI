@@ -58,12 +58,12 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Structure is required")
-    private Long structureId;
+    @NotNull(message = "Owner structure is required")
+    private Long ownerId;
     
     private OperationalStatusDTO operationalStatus;
     
-    private StructureDTO structure;
+    private StructureDTO owner;
 
     @Override
     public Infrastructure toEntity() {
@@ -81,10 +81,10 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
-        	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        if (this.ownerId != null) {
+        	Structure owner = new Structure();
+        	owner.setId(this.ownerId);
+        	entity.setOwner(owner);
         }
         
         return entity;
@@ -104,10 +104,10 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
             entity.setOperationalStatus(status);
         }
         
-        if (this.structureId != null) {
-        	Structure structure = new Structure();
-        	structure.setId(this.structureId);
-        	entity.setStructure(structure);
+        if (this.ownerId != null) {
+        	Structure owner = new Structure();
+        	owner.setId(this.ownerId);
+        	entity.setOwner(owner);
         }
     }
 
@@ -122,10 +122,10 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
                 .commissioningDate(entity.getCommissioningDate())
                 .decommissioningDate(entity.getDecommissioningDate())
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
-                .structureId(entity.getStructure() != null ? entity.getStructure().getId() : null)
+                .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
-                .structure(entity.getStructure() != null ? StructureDTO.fromEntity(entity.getStructure()) : null)
+                .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
                 .build();
     }
 }
