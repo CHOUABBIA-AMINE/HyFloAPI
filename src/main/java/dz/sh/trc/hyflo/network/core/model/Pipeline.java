@@ -196,7 +196,7 @@ public class Pipeline extends Infrastructure {
 	)
 	@NotNull(message = "Pipeline system is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_05"), nullable=false)
+	@JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_04"), nullable=false)
 	private PipelineSystem pipelineSystem;
 
 	@Schema(
@@ -205,7 +205,7 @@ public class Pipeline extends Infrastructure {
 	)
 	@NotNull(message = "Departure terminal is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_06"), nullable=false)
+	@JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_05"), nullable=false)
 	private Terminal departureTerminal;
 
 	@Schema(
@@ -214,7 +214,7 @@ public class Pipeline extends Infrastructure {
 	)
 	@NotNull(message = "Arrival terminal is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_07"), nullable=false)
+	@JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_06"), nullable=false)
 	private Terminal arrivalTerminal;
     
 	@Schema(
@@ -222,7 +222,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne
-	@JoinColumn(name = "F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_02"), nullable = true)
+	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_07"), nullable = true)
 	private Structure manager;
 
 	@Schema(

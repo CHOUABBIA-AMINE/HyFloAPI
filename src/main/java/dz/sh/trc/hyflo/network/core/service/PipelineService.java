@@ -113,4 +113,18 @@ public class PipelineService extends GenericService<Pipeline, PipelineDTO, Long>
                 .map(PipelineDTO::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    public List<PipelineDTO> findByOwner(Long ownerId) {
+        log.debug("Finding pipeline systems by owner structure id: {}", ownerId);
+        return pipelineRepository.findByOwnerId(ownerId).stream()
+                .map(PipelineDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<PipelineDTO> findByManager(Long managerId) {
+        log.debug("Finding pipeline systems by manager structure id: {}", managerId);
+        return pipelineRepository.findByManagerId(managerId).stream()
+                .map(PipelineDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

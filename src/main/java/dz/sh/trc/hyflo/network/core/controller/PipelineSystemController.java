@@ -123,18 +123,4 @@ public class PipelineSystemController extends GenericController<PipelineSystemDT
         log.info("REST request to get Pipeline System by operational status id: {}", operationalStatusId);
         return ResponseEntity.ok(pipelineSystemService.findByOperationalStatus(operationalStatusId));
     }
-
-    @GetMapping("/owner/{ownerId}")
-    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:READ')")
-    public ResponseEntity<List<PipelineSystemDTO>> getByOwner(@PathVariable Long ownerId) {
-        log.info("REST request to get Pipeline System by owner structure id: {}", ownerId);
-        return ResponseEntity.ok(pipelineSystemService.findByOwner(ownerId));
-    }
-
-    @GetMapping("/manager/{managerId}")
-    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:READ')")
-    public ResponseEntity<List<PipelineSystemDTO>> getByManager(@PathVariable Long managerId) {
-        log.info("REST request to get Pipeline System by manager structure id: {}", managerId);
-        return ResponseEntity.ok(pipelineSystemService.findByManager(managerId));
-    }
 }

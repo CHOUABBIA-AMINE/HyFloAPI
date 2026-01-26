@@ -38,10 +38,6 @@ public interface PipelineSystemRepository extends JpaRepository<PipelineSystem, 
 
     List<PipelineSystem> findByOperationalStatusId(Long operationalStatusId);
 
-    List<PipelineSystem> findByOwnerId(Long ownerId);
-    
-    List<PipelineSystem> findByManagerId(Long managerId);
-
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT s FROM PipelineSystem s WHERE "

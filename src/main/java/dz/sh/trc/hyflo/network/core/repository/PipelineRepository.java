@@ -36,6 +36,10 @@ public interface PipelineRepository extends JpaRepository<Pipeline, Long> {
     
     List<Pipeline> findByPipelineSystemId(Long pipelineSystemId);
 
+    List<Pipeline> findByOwnerId(Long ownerId);
+    
+    List<Pipeline> findByManagerId(Long managerId);
+
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT p FROM Pipeline p WHERE "
