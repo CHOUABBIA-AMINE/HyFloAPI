@@ -14,7 +14,6 @@
 
 package dz.sh.trc.hyflo.system.setting.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -42,12 +41,12 @@ public interface ParameterRepository extends JpaRepository<Parameter, Long> {
     /**
      * Find files by file type
      */
-    List<Parameter> findByType(String type);
+    Page<Parameter> findByType(String type, Pageable pageable);
 
     /**
      * Global search across all fields
      */
-    @Query("SELECT f FROM File f WHERE " +
+    @Query("SELECT f FROM Parameter f WHERE " +
            "LOWER(f.key) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(f.value) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(f.type) LIKE LOWER(CONCAT('%', :query, '%'))")
