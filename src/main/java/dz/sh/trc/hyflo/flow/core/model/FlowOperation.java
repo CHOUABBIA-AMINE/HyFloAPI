@@ -59,9 +59,9 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @Entity(name = "FlowOperation")
 @Table(name = "T_03_03_01",indexes = {@Index(name = "T_03_03_01_IX_01", columnList = "F_01"),
-									  @Index(name = "T_03_03_01_IX_02", columnList = "F_05"),
-									  @Index(name = "T_03_03_01_IX_03", columnList = "F_07")},
-						   uniqueConstraints = @UniqueConstraint(name = "T_03_03_01_UK_01", columnNames = {"F_01", "F_05", "F_06", "F_07"}))
+									  @Index(name = "T_03_03_01_IX_02", columnList = "F_06"),
+									  @Index(name = "T_03_03_01_IX_03", columnList = "F_08")},
+						   uniqueConstraints = @UniqueConstraint(name = "T_03_03_01_UK_01", columnNames = {"F_01", "F_06", "F_08", "F_09"}))
 public class FlowOperation extends GenericModel {
     
 	@Schema(
@@ -90,8 +90,17 @@ public class FlowOperation extends GenericModel {
 		example = "2026-01-22T08:30:00",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@PastOrPresent(message = "Validation time cannot be in the future")
+	@PastOrPresent(message = "Record time cannot be in the future")
 	@Column(name = "F_03")
+	private LocalDateTime recordedAt;
+    
+	@Schema(
+		description = "Timestamp when this operation was validated by supervisor",
+		example = "2026-01-22T08:30:00",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@PastOrPresent(message = "Validation time cannot be in the future")
+	@Column(name = "F_04")
 	private LocalDateTime validatedAt;
     
 	@Schema(
@@ -101,7 +110,7 @@ public class FlowOperation extends GenericModel {
 		maxLength = 500
 	)
 	@Size(max = 500, message = "Notes must not exceed 500 characters")
-	@Column(name = "F_04", length = 500)
+	@Column(name = "F_05", length = 500)
 	private String notes;
     
 	@Schema(
@@ -110,7 +119,7 @@ public class FlowOperation extends GenericModel {
 	)
 	@NotNull(message = "Infrastructure is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "F_05", foreignKey = @ForeignKey(name = "T_03_03_01_FK_01"), nullable = false)
+	@JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_03_01_FK_01"), nullable = false)
 	private Infrastructure infrastructure;
     
 	@Schema(
@@ -119,7 +128,7 @@ public class FlowOperation extends GenericModel {
 	)
 	@NotNull(message = "Product is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_03_01_FK_02"), nullable = false)
+	@JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_01_FK_02"), nullable = false)
 	private Product product;
     
 	@Schema(
@@ -128,7 +137,7 @@ public class FlowOperation extends GenericModel {
 	)
 	@NotNull(message = "Operation type is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_01_FK_03"), nullable = false)
+	@JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_01_FK_03"), nullable = false)
 	private OperationType type;
     
 	@Schema(
@@ -137,7 +146,7 @@ public class FlowOperation extends GenericModel {
 	)
 	@NotNull(message = "Recording employee is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_01_FK_04"), nullable = false)
+	@JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_01_FK_04"), nullable = false)
 	private Employee recordedBy;
     
 	@Schema(
@@ -145,7 +154,7 @@ public class FlowOperation extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_01_FK_05"))
+	@JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_01_FK_05"))
 	private Employee validatedBy;
     
 	@Schema(
@@ -154,6 +163,6 @@ public class FlowOperation extends GenericModel {
 	)
 	@NotNull(message = "Validation status is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_01_FK_06"), nullable = false)
+	@JoinColumn(name = "F_11", foreignKey = @ForeignKey(name = "T_03_03_01_FK_06"), nullable = false)
 	private ValidationStatus validationStatus;
 }

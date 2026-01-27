@@ -71,13 +71,13 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_READING:WRITE')")
+    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
     public ResponseEntity<FlowReadingDTO> create(@Valid @RequestBody FlowReadingDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_READING:WRITE')")
+    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
     public ResponseEntity<FlowReadingDTO> update(@PathVariable Long id, @Valid @RequestBody FlowReadingDTO dto) {
         return super.update(id, dto);
     }
