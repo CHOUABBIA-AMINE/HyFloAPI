@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowReadingService
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 01-27-2026 - Added validate and reject methods
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -26,9 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
+import dz.sh.trc.hyflo.exception.EntityNotFoundException;
+import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
+import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowReadingService extends GenericService<FlowReading, FlowReadingDTO, Long> {
 
     private final FlowReadingRepository flowReadingRepository;
+    private final ValidationStatusRepository validationStatusRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     protected JpaRepository<FlowReading, Long> getRepository() {
@@ -137,5 +144,101 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
     public Page<FlowReadingDTO> findLatestByPipeline(Long pipelineId, Pageable pageable) {
         log.debug("Finding latest flow readings for pipeline: {}", pipelineId);
         return executeQuery(p -> flowReadingRepository.findLatestByPipeline(pipelineId, p), pageable);
+    }
+
+    // ========== VALIDATION WORKFLOW METHODS ==========
+
+    /**
+     * Validate a flow reading
+     * Updates the reading status to VALIDATED and records validator information
+     * 
+     * @param id Reading ID
+     * @param validatedById Employee ID of the validator
+     * @return Updated reading DTO with VALIDATED status
+     * @throws EntityNotFoundException if reading, status, or employee not found
+     */
+    @Transactional
+    public FlowReadingDTO validate(Long id, Long validatedById) {
+        log.info("Validating flow reading {} by employee {}", id, validatedById);
+        
+        // Find the reading
+        FlowReading reading = flowReadingRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Flow reading with ID %d not found", id)));
+        
+        // Find VALIDATED status
+        ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "VALIDATED status not found in database. Please configure validation statuses."));
+        
+        // Find validator employee
+        Employee validator = employeeRepository.findById(validatedById)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Employee with ID %d not found", validatedById)));
+        
+        // Update reading
+        reading.setValidationStatus(validatedStatus);
+        reading.setValidatedBy(validator);
+        reading.setValidatedAt(LocalDateTime.now());
+        
+        FlowReading saved = flowReadingRepository.save(reading);
+        log.info("Successfully validated flow reading {} by employee {} ({})", 
+                 id, validator.getRegistrationNumber(), 
+                 validator.getFirstNameLt() + " " + validator.getLastNameLt());
+        
+        return FlowReadingDTO.fromEntity(saved);
+    }
+
+    /**
+     * Reject a flow reading
+     * Updates the reading status to REJECTED and records rejection information
+     * 
+     * @param id Reading ID
+     * @param rejectedById Employee ID of the rejector
+     * @param rejectionReason Reason for rejection
+     * @return Updated reading DTO with REJECTED status
+     * @throws EntityNotFoundException if reading, status, or employee not found
+     */
+    @Transactional
+    public FlowReadingDTO reject(Long id, Long rejectedById, String rejectionReason) {
+        log.info("Rejecting flow reading {} by employee {} with reason: {}", 
+                 id, rejectedById, rejectionReason);
+        
+        // Find the reading
+        FlowReading reading = flowReadingRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Flow reading with ID %d not found", id)));
+        
+        // Find REJECTED status
+        ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "REJECTED status not found in database. Please configure validation statuses."));
+        
+        // Find rejector employee
+        Employee rejector = employeeRepository.findById(rejectedById)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Employee with ID %d not found", rejectedById)));
+        
+        // Update reading
+        reading.setValidationStatus(rejectedStatus);
+        reading.setValidatedBy(rejector);
+        reading.setValidatedAt(LocalDateTime.now());
+        
+        // Append rejection reason to notes
+        String existingNotes = reading.getNotes();
+        String rejectionNote = String.format("\n\n=== REJECTION ===\nRejected by: %s %s (%s)\nDate: %s\nReason: %s",
+                rejector.getFirstNameLt(), 
+                rejector.getLastNameLt(),
+                rejector.getRegistrationNumber(),
+                LocalDateTime.now(),
+                rejectionReason);
+        reading.setNotes(existingNotes != null ? existingNotes + rejectionNote : rejectionNote.trim());
+        
+        FlowReading saved = flowReadingRepository.save(reading);
+        log.info("Successfully rejected flow reading {} by employee {} ({})", 
+                 id, rejector.getRegistrationNumber(), 
+                 rejector.getFirstNameLt() + " " + rejector.getLastNameLt());
+        
+        return FlowReadingDTO.fromEntity(saved);
     }
 }
