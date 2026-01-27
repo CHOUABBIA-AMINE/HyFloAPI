@@ -31,7 +31,7 @@ public interface ParameterRepository extends JpaRepository<Parameter, Long> {
     /**
      * Check if file exists by path
      */
-    boolean existsKey(String key);
+    boolean existsByKey(String key);
 
     /**
      * Find file by path

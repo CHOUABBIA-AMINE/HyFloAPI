@@ -110,9 +110,7 @@ public class ParameterController extends GenericController<ParameterDTO, Long> {
      */
     @GetMapping("/type/{type}")
     @PreAuthorize("hasAuthority('PARAMETER:READ')")
-    public ResponseEntity<Page<ParameterDTO>> getByType(
-            @PathVariable String type,
-            Pageable pageable) {
+    public ResponseEntity<Page<ParameterDTO>> getByType(@PathVariable String type, Pageable pageable) {
         log.info("REST request to get Parameters by type '{}'", type);
         Page<ParameterDTO> page = parameterService.findByType(type, pageable);
         return ResponseEntity.ok(page);

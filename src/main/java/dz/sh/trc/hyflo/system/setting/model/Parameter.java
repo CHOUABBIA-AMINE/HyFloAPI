@@ -39,7 +39,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="File")
+@Entity(name="Parameter")
 @Table(name="T_00_00_01")
 public class Parameter extends GenericModel {
 
