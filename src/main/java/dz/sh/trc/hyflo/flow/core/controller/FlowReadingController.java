@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowReadingController
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-27-2026 - Added validate and reject endpoints
+ * 	@UpdatedOn	: 01-27-2026 - Added validate and reject endpoints with @RequestParam
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -31,8 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.request.RejectRequest;
-import dz.sh.trc.hyflo.flow.core.request.ValidateRequest;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -173,17 +171,16 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
      * Updates validation status to VALIDATED and records validator information
      * 
      * @param id Reading ID
-     * @param request Validation request containing validator employee ID
+     * @param validatedById Employee ID of the validator
      * @return Updated reading with VALIDATED status
      */
     @PostMapping("/{id}/validate")
     @PreAuthorize("hasAuthority('FLOW_READING:WRITE')")
     public ResponseEntity<FlowReadingDTO> validate(
             @PathVariable Long id,
-            @Valid @RequestBody ValidateRequest request) {
-        log.info("POST /flow/core/reading/{}/validate - Validating reading by employee ID: {}", 
-                 id, request.getValidatedById());
-        FlowReadingDTO validated = flowReadingService.validate(id, request.getValidatedById());
+            @RequestParam Long validatedById) {
+        log.info("POST /flow/core/reading/{}/validate - Validating reading by employee ID: {}", id, validatedById);
+        FlowReadingDTO validated = flowReadingService.validate(id, validatedById);
         return ResponseEntity.ok(validated);
     }
 
@@ -192,20 +189,19 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
      * Updates validation status to REJECTED and records rejection information
      * 
      * @param id Reading ID
-     * @param request Rejection request containing rejector employee ID and reason
+     * @param rejectedById Employee ID of the rejector
+     * @param rejectionReason Reason for rejection
      * @return Updated reading with REJECTED status
      */
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasAuthority('FLOW_READING:WRITE')")
     public ResponseEntity<FlowReadingDTO> reject(
             @PathVariable Long id,
-            @Valid @RequestBody RejectRequest request) {
+            @RequestParam Long rejectedById,
+            @RequestParam String rejectionReason) {
         log.info("POST /flow/core/reading/{}/reject - Rejecting reading by employee ID: {} with reason: {}", 
-                 id, request.getRejectedById(), request.getRejectionReason());
-        FlowReadingDTO rejected = flowReadingService.reject(
-                id, 
-                request.getRejectedById(), 
-                request.getRejectionReason());
+                 id, rejectedById, rejectionReason);
+        FlowReadingDTO rejected = flowReadingService.reject(id, rejectedById, rejectionReason);
         return ResponseEntity.ok(rejected);
     }
 }
