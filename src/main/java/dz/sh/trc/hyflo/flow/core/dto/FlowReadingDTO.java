@@ -20,7 +20,9 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.flow.common.dto.ReadingSlotDTO;
 import dz.sh.trc.hyflo.flow.common.dto.ValidationStatusDTO;
+import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
@@ -83,19 +85,23 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
     // Foreign Key IDs
     @NotNull(message = "Recording employee is required")
-    @Schema(description = "Recorded by employee ID", required = true)
+    @Schema(description = "Recorded by employee ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long recordedById;
 
     @Schema(description = "Validated by employee ID")
     private Long validatedById;
 
     @NotNull(message = "Validation status is required")
-    @Schema(description = "Validation status ID", required = true)
+    @Schema(description = "Validation status ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long validationStatusId;
 
     @NotNull(message = "Pipeline is required")
-    @Schema(description = "Pipeline ID", required = true)
+    @Schema(description = "Pipeline ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long pipelineId;
+
+    @NotNull(message = "Reading slot is required")
+    @Schema(description = "Pipeline ID", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long readingSlotId;
 
     // Nested DTOs
     @Schema(description = "Recording employee details")
@@ -109,6 +115,9 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
     @Schema(description = "Pipeline details")
     private PipelineDTO pipeline;
+
+    @Schema(description = "ReadingSlot details")
+    private ReadingSlotDTO readingSlot;
 
     @Override
     public FlowReading toEntity() {
@@ -144,6 +153,12 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
             Pipeline pipeline = new Pipeline();
             pipeline.setId(this.pipelineId);
             entity.setPipeline(pipeline);
+        }
+
+        if (this.readingSlotId != null) {
+        	ReadingSlot readingSlot = new ReadingSlot();
+            readingSlot.setId(this.readingSlotId);
+            entity.setReadingSlot(readingSlot);
         }
 
         return entity;
@@ -182,6 +197,12 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
             pipeline.setId(this.pipelineId);
             entity.setPipeline(pipeline);
         }
+
+        if (this.readingSlotId != null) {
+        	ReadingSlot readingSlot = new ReadingSlot();
+            readingSlot.setId(this.readingSlotId);
+            entity.setReadingSlot(readingSlot);
+        }
     }
 
     public static FlowReadingDTO fromEntity(FlowReading entity) {
@@ -201,11 +222,13 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
                 .validatedById(entity.getValidatedBy() != null ? entity.getValidatedBy().getId() : null)
                 .validationStatusId(entity.getValidationStatus() != null ? entity.getValidationStatus().getId() : null)
                 .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
+                .readingSlotId(entity.getReadingSlot() != null ? entity.getReadingSlot().getId() : null)
 
                 .recordedBy(entity.getRecordedBy() != null ? EmployeeDTO.fromEntity(entity.getRecordedBy()) : null)
                 .validatedBy(entity.getValidatedBy() != null ? EmployeeDTO.fromEntity(entity.getValidatedBy()) : null)
                 .validationStatus(entity.getValidationStatus() != null ? ValidationStatusDTO.fromEntity(entity.getValidationStatus()) : null)
                 .pipeline(entity.getPipeline() != null ? PipelineDTO.fromEntity(entity.getPipeline()) : null)
+                .readingSlot(entity.getReadingSlot() != null ? ReadingSlotDTO.fromEntity(entity.getReadingSlot()) : null)
                 .build();
     }
 }

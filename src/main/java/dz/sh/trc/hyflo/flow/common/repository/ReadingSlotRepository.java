@@ -2,7 +2,7 @@
  *
  * 	@Author		: CHOUABBIA Amine
  *
- * 	@Name		: ValidationStatusRepository
+ * 	@Name		: ReadingSlotRepository
  * 	@CreatedOn	: 01-27-2026
  * 	@UpdatedOn	: 01-27-2026
  *
@@ -24,10 +24,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 
 @Repository
-public interface ValidationStatusRepository extends JpaRepository<ValidationStatus, Long> {
+public interface ReadingSlotRepository extends JpaRepository<ReadingSlot, Long> {
     
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
@@ -39,21 +39,18 @@ public interface ValidationStatusRepository extends JpaRepository<ValidationStat
     
     boolean existsByDesignationFrAndIdNot(String designationFr, Long id);
     
-    Optional<ValidationStatus> findByCode(String code);
+    Optional<ReadingSlot> findByCode(String code);
     
-    Optional<ValidationStatus> findByDesignationFr(String designationFr);
+    Optional<ReadingSlot> findByDesignationFr(String designationFr);
     
-    List<ValidationStatus> findAllByOrderByCodeAsc();
+    List<ReadingSlot> findAllByOrderByCodeAsc();
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
-    @Query("SELECT vs FROM ValidationStatus vs WHERE " +
+    @Query("SELECT vs FROM ReadingSlot vs WHERE " +
            "LOWER(vs.code) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(vs.designationAr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(vs.designationEn) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(vs.designationFr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(vs.descriptionAr) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(vs.descriptionEn) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(vs.descriptionFr) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Page<ValidationStatus> searchByAnyField(@Param("search") String search, Pageable pageable);
+           "LOWER(vs.designationFr) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<ReadingSlot> searchByAnyField(@Param("search") String search, Pageable pageable);
 }

@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
@@ -166,4 +167,13 @@ public class FlowReading extends GenericModel {
 	@ManyToOne
 	@JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
 	private Pipeline pipeline;
+	
+	@Schema(
+		description = "Scheduled reading slot",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+    @NotNull(message = "Reading slot is mandatory")
+    @ManyToOne
+    @JoinColumn(name = "F_12", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_05"), nullable = false)
+    private ReadingSlot readingSlot;
 }

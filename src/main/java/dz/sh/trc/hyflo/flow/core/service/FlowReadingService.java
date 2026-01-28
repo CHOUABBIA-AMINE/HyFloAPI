@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.exception.EntityNotFoundException;
+import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
@@ -34,6 +34,7 @@ import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -163,17 +164,17 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         
         // Find the reading
         FlowReading reading = flowReadingRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Flow reading with ID %d not found", id)));
         
         // Find VALIDATED status
         ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "VALIDATED status not found in database. Please configure validation statuses."));
         
         // Find validator employee
         Employee validator = employeeRepository.findById(validatedById)
-                .orElseThrow(() -> new EntityNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Employee with ID %d not found", validatedById)));
         
         // Update reading
