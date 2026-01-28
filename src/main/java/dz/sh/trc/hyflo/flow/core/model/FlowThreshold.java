@@ -17,7 +17,6 @@ package dz.sh.trc.hyflo.flow.core.model;
 import java.math.BigDecimal;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -141,13 +140,4 @@ public class FlowThreshold extends GenericModel {
 	@ManyToOne
 	@JoinColumn(name="F_09", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_01"), nullable=false)
 	private Pipeline pipeline;
-    
-	@Schema(
-		description = "Product type for which these thresholds are configured",
-		requiredMode = Schema.RequiredMode.REQUIRED
-	)
-	@NotNull(message = "Product is mandatory")
-	@ManyToOne
-	@JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_02"), nullable=false)
-	private Product product;
 }

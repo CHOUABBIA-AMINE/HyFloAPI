@@ -15,7 +15,6 @@
 package dz.sh.trc.hyflo.flow.core.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -119,13 +118,6 @@ public class FlowThresholdController extends GenericController<FlowThresholdDTO,
         return ResponseEntity.ok(flowThresholdService.findByPipeline(pipelineId));
     }
 
-    @GetMapping("/product/{productId}")
-    @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    public ResponseEntity<List<FlowThresholdDTO>> getByProduct(@PathVariable Long productId) {
-        log.info("GET /flow/core/threshold/product/{} - Getting thresholds by product", productId);
-        return ResponseEntity.ok(flowThresholdService.findByProduct(productId));
-    }
-
     @GetMapping("/active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
     public ResponseEntity<Page<FlowThresholdDTO>> getActive(
@@ -149,16 +141,5 @@ public class FlowThresholdController extends GenericController<FlowThresholdDTO,
         log.info("GET /flow/core/threshold/pipeline/{}/active - Getting active thresholds for pipeline", pipelineId);
         return ResponseEntity.ok(flowThresholdService.findActiveByPipeline(
                 pipelineId, buildPageable(page, size, sortBy, sortDir)));
-    }
-
-    @GetMapping("/pipeline/{pipelineId}/product/{productId}")
-    @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    public ResponseEntity<FlowThresholdDTO> getActiveByPipelineAndProduct(
-            @PathVariable Long pipelineId,
-            @PathVariable Long productId) {
-        log.info("GET /flow/core/threshold/pipeline/{}/product/{} - Getting active threshold", pipelineId, productId);
-        Optional<FlowThresholdDTO> threshold = flowThresholdService.findActiveByPipelineAndProduct(pipelineId, productId);
-        return threshold.map(ResponseEntity::ok)
-                       .orElse(ResponseEntity.notFound().build());
     }
 }

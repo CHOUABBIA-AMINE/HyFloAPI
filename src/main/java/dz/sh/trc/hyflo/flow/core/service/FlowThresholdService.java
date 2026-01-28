@@ -68,13 +68,11 @@ public class FlowThresholdService extends GenericService<FlowThreshold, FlowThre
     @Override
     @Transactional
     public FlowThresholdDTO create(FlowThresholdDTO dto) {
-        log.info("Creating flow threshold: pipelineId={}, productId={}", 
-                 dto.getPipelineId(), dto.getProductId());
+        log.info("Creating flow threshold: pipelineId={}", 
+                 dto.getPipelineId());
         
-        if (flowThresholdRepository.existsByPipelineIdAndProductId(
-                dto.getPipelineId(), dto.getProductId())) {
-            throw new BusinessValidationException(
-                "Flow threshold for this pipeline and product combination already exists");
+        if (flowThresholdRepository.existsByPipelineId(dto.getPipelineId())) {
+            throw new BusinessValidationException("Flow threshold for this pipeline and product combination already exists");
         }
         
         return super.create(dto);
@@ -85,10 +83,9 @@ public class FlowThresholdService extends GenericService<FlowThreshold, FlowThre
     public FlowThresholdDTO update(Long id, FlowThresholdDTO dto) {
         log.info("Updating flow threshold with ID: {}", id);
         
-        if (flowThresholdRepository.existsByPipelineIdAndProductIdAndIdNot(
-                dto.getPipelineId(), dto.getProductId(), id)) {
-            throw new BusinessValidationException(
-                "Flow threshold for this pipeline and product combination already exists");
+        if (flowThresholdRepository.existsByPipelineIdAndIdNot(
+                dto.getPipelineId(), id)) {
+            throw new BusinessValidationException("Flow threshold for this pipeline and product combination already exists");
         }
         
         return super.update(id, dto);
@@ -108,13 +105,6 @@ public class FlowThresholdService extends GenericService<FlowThreshold, FlowThre
                 .collect(Collectors.toList());
     }
 
-    public List<FlowThresholdDTO> findByProduct(Long productId) {
-        log.debug("Finding flow thresholds by product id: {}", productId);
-        return flowThresholdRepository.findByProductId(productId).stream()
-                .map(FlowThresholdDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
     public List<FlowThresholdDTO> findByActive(Boolean active) {
         log.debug("Finding flow thresholds by active status: {}", active);
         return flowThresholdRepository.findByActive(active).stream()
@@ -129,9 +119,9 @@ public class FlowThresholdService extends GenericService<FlowThreshold, FlowThre
                 .collect(Collectors.toList());
     }
 
-    public Optional<FlowThresholdDTO> findActiveByPipelineAndProduct(Long pipelineId, Long productId) {
-        log.debug("Finding active flow threshold by pipeline {} and product {}", pipelineId, productId);
-        return flowThresholdRepository.findActiveByPipelineAndProduct(pipelineId, productId)
+    public Optional<FlowThresholdDTO> findActiveByPipeline(Long pipelineId) {
+        log.debug("Finding active flow threshold by pipeline {}", pipelineId);
+        return flowThresholdRepository.findActiveByPipeline(pipelineId)
                 .map(FlowThresholdDTO::fromEntity);
     }
 

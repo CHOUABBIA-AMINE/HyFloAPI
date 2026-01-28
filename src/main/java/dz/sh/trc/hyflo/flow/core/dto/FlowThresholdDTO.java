@@ -20,8 +20,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowThreshold;
-import dz.sh.trc.hyflo.network.common.dto.ProductDTO;
-import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -89,16 +87,9 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
     @Schema(description = "Pipeline ID", required = true)
     private Long pipelineId;
 
-    @NotNull(message = "Product is required")
-    @Schema(description = "Product ID", required = true)
-    private Long productId;
-
     // Nested DTOs
     @Schema(description = "Pipeline details")
     private PipelineDTO pipeline;
-
-    @Schema(description = "Product details")
-    private ProductDTO product;
 
     @Override
     public FlowThreshold toEntity() {
@@ -117,12 +108,6 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
             Pipeline pipeline = new Pipeline();
             pipeline.setId(this.pipelineId);
             entity.setPipeline(pipeline);
-        }
-
-        if (this.productId != null) {
-            Product product = new Product();
-            product.setId(this.productId);
-            entity.setProduct(product);
         }
 
         return entity;
@@ -144,12 +129,6 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
             pipeline.setId(this.pipelineId);
             entity.setPipeline(pipeline);
         }
-
-        if (this.productId != null) {
-            Product product = new Product();
-            product.setId(this.productId);
-            entity.setProduct(product);
-        }
     }
 
     public static FlowThresholdDTO fromEntity(FlowThreshold entity) {
@@ -167,10 +146,8 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
                 .active(entity.getActive())
 
                 .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
-                .productId(entity.getProduct() != null ? entity.getProduct().getId() : null)
 
                 .pipeline(entity.getPipeline() != null ? PipelineDTO.fromEntity(entity.getPipeline()) : null)
-                .product(entity.getProduct() != null ? ProductDTO.fromEntity(entity.getProduct()) : null)
                 .build();
     }
 }

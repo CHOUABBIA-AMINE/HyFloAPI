@@ -32,28 +32,21 @@ public interface FlowThresholdRepository extends JpaRepository<FlowThreshold, Lo
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
     List<FlowThreshold> findByPipelineId(Long pipelineId);
-    
-    List<FlowThreshold> findByProductId(Long productId);
-    
+        
     List<FlowThreshold> findByActive(Boolean active);
     
     List<FlowThreshold> findByPipelineIdAndActive(Long pipelineId, Boolean active);
+        
+    boolean existsByPipelineId(Long pipelineId);
     
-    Optional<FlowThreshold> findByPipelineIdAndProductId(Long pipelineId, Long productId);
-    
-    boolean existsByPipelineIdAndProductId(Long pipelineId, Long productId);
-    
-    boolean existsByPipelineIdAndProductIdAndIdNot(Long pipelineId, Long productId, Long id);
+    boolean existsByPipelineIdAndIdNot(Long pipelineId, Long id);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT ft FROM FlowThreshold ft WHERE "
          + "ft.pipeline.id = :pipelineId AND "
-         + "ft.product.id = :productId AND "
          + "ft.active = true")
-    Optional<FlowThreshold> findActiveByPipelineAndProduct(
-        @Param("pipelineId") Long pipelineId,
-        @Param("productId") Long productId);
+    Optional<FlowThreshold> findActiveByPipeline(@Param("pipelineId") Long pipelineId);
     
     @Query("SELECT ft FROM FlowThreshold ft WHERE "
          + "ft.active = true")
@@ -63,6 +56,5 @@ public interface FlowThresholdRepository extends JpaRepository<FlowThreshold, Lo
          + "ft.pipeline.id = :pipelineId AND "
          + "ft.active = true")
     Page<FlowThreshold> findActiveByPipeline(
-        @Param("pipelineId") Long pipelineId,
-        Pageable pageable);
+        @Param("pipelineId") Long pipelineId,Pageable pageable);
 }
