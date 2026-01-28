@@ -112,6 +112,8 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
         entity.setTemperatureMax(this.temperatureMax);
         entity.setFlowRateMin(this.flowRateMin);
         entity.setFlowRateMax(this.flowRateMax);
+        entity.setContainedVolumeMin(this.containedVolumeMin);
+        entity.setContainedVolumeMax(this.containedVolumeMax);
         entity.setAlertTolerance(this.alertTolerance);
         entity.setActive(this.active);
 
@@ -132,6 +134,8 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
         if (this.temperatureMax != null) entity.setTemperatureMax(this.temperatureMax);
         if (this.flowRateMin != null) entity.setFlowRateMin(this.flowRateMin);
         if (this.flowRateMax != null) entity.setFlowRateMax(this.flowRateMax);
+        if (this.containedVolumeMin != null) entity.setContainedVolumeMin(this.containedVolumeMin);
+        if (this.containedVolumeMax != null) entity.setContainedVolumeMax(this.containedVolumeMax);
         if (this.alertTolerance != null) entity.setAlertTolerance(this.alertTolerance);
         if (this.active != null) entity.setActive(this.active);
 
@@ -153,6 +157,8 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
                 .temperatureMax(entity.getTemperatureMax())
                 .flowRateMin(entity.getFlowRateMin())
                 .flowRateMax(entity.getFlowRateMax())
+                .containedVolumeMin(entity.getContainedVolumeMin())
+                .containedVolumeMax(entity.getContainedVolumeMin())
                 .alertTolerance(entity.getAlertTolerance())
                 .active(entity.getActive())
 
