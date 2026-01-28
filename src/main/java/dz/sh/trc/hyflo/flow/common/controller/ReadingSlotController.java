@@ -76,21 +76,21 @@ public class ReadingSlotController extends GenericController<ReadingSlotDTO, Lon
 
     @Override
     @Operation(summary = "Create reading slot ", description = "Create a new reading slot  with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('READING_SLOT:ADMIN')")
+    @PreAuthorize("hasAuthority('READING_SLOT:MANAGE')")
     public ResponseEntity<ReadingSlotDTO> create(@Valid @RequestBody ReadingSlotDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update reading slot ", description = "Update an existing reading slot  by ID")
-    @PreAuthorize("hasAuthority('READING_SLOT:ADMIN')")
+    @PreAuthorize("hasAuthority('READING_SLOT:MANAGE')")
     public ResponseEntity<ReadingSlotDTO> update(@PathVariable Long id, @Valid @RequestBody ReadingSlotDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete reading slot ", description = "Delete a reading slot  by ID")
-    @PreAuthorize("hasAuthority('READING_SLOT:ADMIN')")
+    @PreAuthorize("hasAuthority('READING_SLOT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

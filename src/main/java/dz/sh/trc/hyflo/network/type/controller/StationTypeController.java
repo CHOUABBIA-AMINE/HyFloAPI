@@ -62,19 +62,19 @@ public class StationTypeController extends GenericController<StationTypeDTO, Lon
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATION_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('STATION_TYPE:MANAGE')")
     public ResponseEntity<StationTypeDTO> create(@Valid @RequestBody StationTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATION_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('STATION_TYPE:MANAGE')")
     public ResponseEntity<StationTypeDTO> update(@PathVariable Long id, @Valid @RequestBody StationTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATION_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('STATION_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

@@ -76,21 +76,21 @@ public class QualityFlagController extends GenericController<QualityFlagDTO, Lon
 
     @Override
     @Operation(summary = "Create quality flag", description = "Create a new quality flag with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('QUALITY_FLAG:ADMIN')")
+    @PreAuthorize("hasAuthority('QUALITY_FLAG:MANAGE')")
     public ResponseEntity<QualityFlagDTO> create(@Valid @RequestBody QualityFlagDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update quality flag", description = "Update an existing quality flag by ID")
-    @PreAuthorize("hasAuthority('QUALITY_FLAG:ADMIN')")
+    @PreAuthorize("hasAuthority('QUALITY_FLAG:MANAGE')")
     public ResponseEntity<QualityFlagDTO> update(@PathVariable Long id, @Valid @RequestBody QualityFlagDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete quality flag", description = "Delete a quality flag by ID")
-    @PreAuthorize("hasAuthority('QUALITY_FLAG:ADMIN')")
+    @PreAuthorize("hasAuthority('QUALITY_FLAG:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

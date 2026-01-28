@@ -62,19 +62,19 @@ public class ZoneController extends GenericController<ZoneDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ZONE:ADMIN')")
+    @PreAuthorize("hasAuthority('ZONE:MANAGE')")
     public ResponseEntity<ZoneDTO> create(@Valid @RequestBody ZoneDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ZONE:ADMIN')")
+    @PreAuthorize("hasAuthority('ZONE:MANAGE')")
     public ResponseEntity<ZoneDTO> update(@PathVariable Long id, @Valid @RequestBody ZoneDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ZONE:ADMIN')")
+    @PreAuthorize("hasAuthority('ZONE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

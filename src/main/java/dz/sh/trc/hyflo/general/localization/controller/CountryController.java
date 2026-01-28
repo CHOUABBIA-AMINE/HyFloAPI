@@ -64,19 +64,19 @@ public class CountryController extends GenericController<CountryDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('COUNTRY:ADMIN')")
+    @PreAuthorize("hasAuthority('COUNTRY:MANAGE')")
     public ResponseEntity<CountryDTO> create(@Valid @RequestBody CountryDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('COUNTRY:ADMIN')")
+    @PreAuthorize("hasAuthority('COUNTRY:MANAGE')")
     public ResponseEntity<CountryDTO> update(@PathVariable Long id, @Valid @RequestBody CountryDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('COUNTRY:ADMIN')")
+    @PreAuthorize("hasAuthority('COUNTRY:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

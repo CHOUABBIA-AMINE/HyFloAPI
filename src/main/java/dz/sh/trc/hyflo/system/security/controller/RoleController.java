@@ -73,19 +73,19 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ROLE:ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE:MANAGE')")
     public ResponseEntity<RoleDTO> create(@Valid @RequestBody RoleDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ROLE:ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE:MANAGE')")
     public ResponseEntity<RoleDTO> update(@PathVariable Long id, @Valid @RequestBody RoleDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ROLE:ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
@@ -116,7 +116,7 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     // ========== PERMISSION MANAGEMENT ==========
 
     @PostMapping("/{roleId}/permissions/{permissionId}")
-    @PreAuthorize("hasAuthority('ROLE:ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE:MANAGE')")
     public ResponseEntity<RoleDTO> assignPermission(
             @PathVariable Long roleId,
             @PathVariable Long permissionId) {
@@ -125,7 +125,7 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     }
 
     @DeleteMapping("/{roleId}/permissions/{permissionId}")
-    @PreAuthorize("hasAuthority('ROLE:ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE:MANAGE')")
     public ResponseEntity<RoleDTO> removePermission(
             @PathVariable Long roleId,
             @PathVariable Long permissionId) {

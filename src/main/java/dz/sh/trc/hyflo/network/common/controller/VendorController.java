@@ -62,19 +62,19 @@ public class VendorController extends GenericController<VendorDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('VENDOR:ADMIN')")
+    @PreAuthorize("hasAuthority('VENDOR:MANAGE')")
     public ResponseEntity<VendorDTO> create(@Valid @RequestBody VendorDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('VENDOR:ADMIN')")
+    @PreAuthorize("hasAuthority('VENDOR:MANAGE')")
     public ResponseEntity<VendorDTO> update(@PathVariable Long id, @Valid @RequestBody VendorDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('VENDOR:ADMIN')")
+    @PreAuthorize("hasAuthority('VENDOR:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

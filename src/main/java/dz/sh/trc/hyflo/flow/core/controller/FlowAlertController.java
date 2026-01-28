@@ -83,7 +83,7 @@ public class FlowAlertController extends GenericController<FlowAlertDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_ALERT:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_ALERT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

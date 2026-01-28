@@ -76,21 +76,21 @@ public class EventStatusController extends GenericController<EventStatusDTO, Lon
 
     @Override
     @Operation(summary = "Create event status", description = "Create a new event status with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('EVENT_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('EVENT_STATUS:MANAGE')")
     public ResponseEntity<EventStatusDTO> create(@Valid @RequestBody EventStatusDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update event status", description = "Update an existing event status by ID")
-    @PreAuthorize("hasAuthority('EVENT_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('EVENT_STATUS:MANAGE')")
     public ResponseEntity<EventStatusDTO> update(@PathVariable Long id, @Valid @RequestBody EventStatusDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete event status", description = "Delete an event status by ID")
-    @PreAuthorize("hasAuthority('EVENT_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('EVENT_STATUS:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

@@ -64,19 +64,19 @@ public class LocalityController extends GenericController<LocalityDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('LOCALITY:ADMIN')")
+    @PreAuthorize("hasAuthority('LOCALITY:MANAGE')")
     public ResponseEntity<LocalityDTO> create(@Valid @RequestBody LocalityDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('LOCALITY:ADMIN')")
+    @PreAuthorize("hasAuthority('LOCALITY:MANAGE')")
     public ResponseEntity<LocalityDTO> update(@PathVariable Long id, @Valid @RequestBody LocalityDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('LOCALITY:ADMIN')")
+    @PreAuthorize("hasAuthority('LOCALITY:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

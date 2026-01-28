@@ -70,19 +70,19 @@ public class StateController extends GenericController<StateDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATE:ADMIN')")
+    @PreAuthorize("hasAuthority('STATE:MANAGE')")
     public ResponseEntity<StateDTO> create(@Valid @RequestBody StateDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATE:ADMIN')")
+    @PreAuthorize("hasAuthority('STATE:MANAGE')")
     public ResponseEntity<StateDTO> update(@PathVariable Long id, @Valid @RequestBody StateDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATE:ADMIN')")
+    @PreAuthorize("hasAuthority('STATE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

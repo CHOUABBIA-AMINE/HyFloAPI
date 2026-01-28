@@ -69,19 +69,19 @@ public class FacilityTypeController extends GenericController<FacilityTypeDTO, L
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FACILITY_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('FACILITY_TYPE:MANAGE')")
     public ResponseEntity<FacilityTypeDTO> create(@Valid @RequestBody FacilityTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FACILITY_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('FACILITY_TYPE:MANAGE')")
     public ResponseEntity<FacilityTypeDTO> update(@PathVariable Long id, @Valid @RequestBody FacilityTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FACILITY_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('FACILITY_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

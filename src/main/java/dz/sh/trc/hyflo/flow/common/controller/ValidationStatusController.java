@@ -76,21 +76,21 @@ public class ValidationStatusController extends GenericController<ValidationStat
 
     @Override
     @Operation(summary = "Create validation status", description = "Create a new validation status with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('VALIDATION_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('VALIDATION_STATUS:MANAGE')")
     public ResponseEntity<ValidationStatusDTO> create(@Valid @RequestBody ValidationStatusDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update validation status", description = "Update an existing validation status by ID")
-    @PreAuthorize("hasAuthority('VALIDATION_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('VALIDATION_STATUS:MANAGE')")
     public ResponseEntity<ValidationStatusDTO> update(@PathVariable Long id, @Valid @RequestBody ValidationStatusDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete validation status", description = "Delete a validation status by ID")
-    @PreAuthorize("hasAuthority('VALIDATION_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('VALIDATION_STATUS:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

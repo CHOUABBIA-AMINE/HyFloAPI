@@ -75,19 +75,19 @@ public class AuditedController extends GenericController<AuditedDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('AUDIT:ADMIN')")
+    @PreAuthorize("hasAuthority('AUDIT:MANAGE')")
     public ResponseEntity<AuditedDTO> create(@Valid @org.springframework.web.bind.annotation.RequestBody AuditedDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('AUDIT:ADMIN')")
+    @PreAuthorize("hasAuthority('AUDIT:MANAGE')")
     public ResponseEntity<AuditedDTO> update(@PathVariable Long id, @Valid @org.springframework.web.bind.annotation.RequestBody AuditedDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('AUDIT:ADMIN')")
+    @PreAuthorize("hasAuthority('AUDIT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

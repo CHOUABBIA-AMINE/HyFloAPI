@@ -71,19 +71,19 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PERMISSION:ADMIN')")
+    @PreAuthorize("hasAuthority('PERMISSION:MANAGE')")
     public ResponseEntity<PermissionDTO> create(@Valid @RequestBody PermissionDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PERMISSION:ADMIN')")
+    @PreAuthorize("hasAuthority('PERMISSION:MANAGE')")
     public ResponseEntity<PermissionDTO> update(@PathVariable Long id, @Valid @RequestBody PermissionDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PERMISSION:ADMIN')")
+    @PreAuthorize("hasAuthority('PERMISSION:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

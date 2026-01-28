@@ -69,19 +69,19 @@ public class EquipmentTypeController extends GenericController<EquipmentTypeDTO,
     }
 
     @Override
-    @PreAuthorize("hasAuthority('EQUIPMENT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('EQUIPMENT_TYPE:MANAGE')")
     public ResponseEntity<EquipmentTypeDTO> create(@Valid @RequestBody EquipmentTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('EQUIPMENT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('EQUIPMENT_TYPE:MANAGE')")
     public ResponseEntity<EquipmentTypeDTO> update(@PathVariable Long id, @Valid @RequestBody EquipmentTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('EQUIPMENT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('EQUIPMENT_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

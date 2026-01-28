@@ -68,19 +68,19 @@ public class ProductController extends GenericController<ProductDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCT:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCT:MANAGE')")
     public ResponseEntity<ProductDTO> create(@Valid @RequestBody ProductDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCT:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCT:MANAGE')")
     public ResponseEntity<ProductDTO> update(@PathVariable Long id, @Valid @RequestBody ProductDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCT:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

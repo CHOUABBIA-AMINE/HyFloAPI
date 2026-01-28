@@ -83,7 +83,7 @@ public class FlowForecastController extends GenericController<FlowForecastDTO, L
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_FORECAST:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_FORECAST:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

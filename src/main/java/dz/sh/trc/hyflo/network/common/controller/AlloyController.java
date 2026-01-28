@@ -62,19 +62,19 @@ public class AlloyController extends GenericController<AlloyDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ALLOY:ADMIN')")
+    @PreAuthorize("hasAuthority('ALLOY:MANAGE')")
     public ResponseEntity<AlloyDTO> create(@Valid @RequestBody AlloyDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ALLOY:ADMIN')")
+    @PreAuthorize("hasAuthority('ALLOY:MANAGE')")
     public ResponseEntity<AlloyDTO> update(@PathVariable Long id, @Valid @RequestBody AlloyDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ALLOY:ADMIN')")
+    @PreAuthorize("hasAuthority('ALLOY:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

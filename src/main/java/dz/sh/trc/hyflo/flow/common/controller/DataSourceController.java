@@ -80,21 +80,21 @@ public class DataSourceController extends GenericController<DataSourceDTO, Long>
 
     @Override
     @Operation(summary = "Create data source", description = "Create a new data source with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('DATA_SOURCE:ADMIN')")
+    @PreAuthorize("hasAuthority('DATA_SOURCE:MANAGE')")
     public ResponseEntity<DataSourceDTO> create(@Valid @RequestBody DataSourceDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update data source", description = "Update an existing data source by ID")
-    @PreAuthorize("hasAuthority('DATA_SOURCE:ADMIN')")
+    @PreAuthorize("hasAuthority('DATA_SOURCE:MANAGE')")
     public ResponseEntity<DataSourceDTO> update(@PathVariable Long id, @Valid @RequestBody DataSourceDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete data source", description = "Delete a data source by ID")
-    @PreAuthorize("hasAuthority('DATA_SOURCE:ADMIN')")
+    @PreAuthorize("hasAuthority('DATA_SOURCE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

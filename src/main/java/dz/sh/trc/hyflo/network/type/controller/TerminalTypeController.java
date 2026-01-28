@@ -62,19 +62,19 @@ public class TerminalTypeController extends GenericController<TerminalTypeDTO, L
     }
 
     @Override
-    @PreAuthorize("hasAuthority('TERMINAL_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('TERMINAL_TYPE:MANAGE')")
     public ResponseEntity<TerminalTypeDTO> create(@Valid @RequestBody TerminalTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('TERMINAL_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('TERMINAL_TYPE:MANAGE')")
     public ResponseEntity<TerminalTypeDTO> update(@PathVariable Long id, @Valid @RequestBody TerminalTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('TERMINAL_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('TERMINAL_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

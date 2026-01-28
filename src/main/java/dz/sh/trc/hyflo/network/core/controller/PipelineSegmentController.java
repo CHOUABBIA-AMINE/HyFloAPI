@@ -63,19 +63,19 @@ public class PipelineSegmentController extends GenericController<PipelineSegment
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PIPELINE_SEGMENT:ADMIN')")
+    @PreAuthorize("hasAuthority('PIPELINE_SEGMENT:MANAGE')")
     public ResponseEntity<PipelineSegmentDTO> create(@Valid @RequestBody PipelineSegmentDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PIPELINE_SEGMENT:ADMIN')")
+    @PreAuthorize("hasAuthority('PIPELINE_SEGMENT:MANAGE')")
     public ResponseEntity<PipelineSegmentDTO> update(@PathVariable Long id, @Valid @RequestBody PipelineSegmentDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PIPELINE_SEGMENT:ADMIN')")
+    @PreAuthorize("hasAuthority('PIPELINE_SEGMENT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

@@ -81,7 +81,7 @@ public class FlowThresholdController extends GenericController<FlowThresholdDTO,
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_THRESHOLD:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_THRESHOLD:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

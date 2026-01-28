@@ -67,19 +67,19 @@ public class LocationController extends GenericController<LocationDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('LOCATION:ADMIN')")
+    @PreAuthorize("hasAuthority('LOCATION:MANAGE')")
     public ResponseEntity<LocationDTO> create(@Valid @RequestBody LocationDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('LOCATION:ADMIN')")
+    @PreAuthorize("hasAuthority('LOCATION:MANAGE')")
     public ResponseEntity<LocationDTO> update(@PathVariable Long id, @Valid @RequestBody LocationDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('LOCATION:ADMIN')")
+    @PreAuthorize("hasAuthority('LOCATION:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

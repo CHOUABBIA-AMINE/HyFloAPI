@@ -76,21 +76,21 @@ public class SeverityController extends GenericController<SeverityDTO, Long> {
 
     @Override
     @Operation(summary = "Create severity", description = "Create a new severity level with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('SEVERITY:ADMIN')")
+    @PreAuthorize("hasAuthority('SEVERITY:MANAGE')")
     public ResponseEntity<SeverityDTO> create(@Valid @RequestBody SeverityDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update severity", description = "Update an existing severity level by ID")
-    @PreAuthorize("hasAuthority('SEVERITY:ADMIN')")
+    @PreAuthorize("hasAuthority('SEVERITY:MANAGE')")
     public ResponseEntity<SeverityDTO> update(@PathVariable Long id, @Valid @RequestBody SeverityDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete severity", description = "Delete a severity level by ID")
-    @PreAuthorize("hasAuthority('SEVERITY:ADMIN')")
+    @PreAuthorize("hasAuthority('SEVERITY:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

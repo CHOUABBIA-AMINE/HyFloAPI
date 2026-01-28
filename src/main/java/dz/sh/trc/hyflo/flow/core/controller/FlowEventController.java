@@ -83,7 +83,7 @@ public class FlowEventController extends GenericController<FlowEventDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_EVENT:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_EVENT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

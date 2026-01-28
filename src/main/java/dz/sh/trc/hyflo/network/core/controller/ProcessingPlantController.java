@@ -64,19 +64,19 @@ public class ProcessingPlantController extends GenericController<ProcessingPlant
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PROCESSING_PLANT:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:MANAGE')")
     public ResponseEntity<ProcessingPlantDTO> create(@Valid @RequestBody ProcessingPlantDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PROCESSING_PLANT:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:MANAGE')")
     public ResponseEntity<ProcessingPlantDTO> update(@PathVariable Long id, @Valid @RequestBody ProcessingPlantDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PROCESSING_PLANT:ADMIN')")
+    @PreAuthorize("hasAuthority('PROCESSING_PLANT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

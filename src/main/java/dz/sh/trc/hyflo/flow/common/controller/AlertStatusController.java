@@ -76,21 +76,21 @@ public class AlertStatusController extends GenericController<AlertStatusDTO, Lon
 
     @Override
     @Operation(summary = "Create alert status", description = "Create a new alert status with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('ALERT_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('ALERT_STATUS:MANAGE')")
     public ResponseEntity<AlertStatusDTO> create(@Valid @RequestBody AlertStatusDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update alert status", description = "Update an existing alert status by ID")
-    @PreAuthorize("hasAuthority('ALERT_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('ALERT_STATUS:MANAGE')")
     public ResponseEntity<AlertStatusDTO> update(@PathVariable Long id, @Valid @RequestBody AlertStatusDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete alert status", description = "Delete an alert status by ID")
-    @PreAuthorize("hasAuthority('ALERT_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('ALERT_STATUS:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

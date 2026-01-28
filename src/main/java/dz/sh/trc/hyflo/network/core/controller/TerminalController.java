@@ -64,19 +64,19 @@ public class TerminalController extends GenericController<TerminalDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('TERMINAL:ADMIN')")
+    @PreAuthorize("hasAuthority('TERMINAL:MANAGE')")
     public ResponseEntity<TerminalDTO> create(@Valid @RequestBody TerminalDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('TERMINAL:ADMIN')")
+    @PreAuthorize("hasAuthority('TERMINAL:MANAGE')")
     public ResponseEntity<TerminalDTO> update(@PathVariable Long id, @Valid @RequestBody TerminalDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('TERMINAL:ADMIN')")
+    @PreAuthorize("hasAuthority('TERMINAL:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

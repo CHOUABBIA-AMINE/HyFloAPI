@@ -64,19 +64,19 @@ public class StationController extends GenericController<StationDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATION:ADMIN')")
+    @PreAuthorize("hasAuthority('STATION:MANAGE')")
     public ResponseEntity<StationDTO> create(@Valid @RequestBody StationDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATION:ADMIN')")
+    @PreAuthorize("hasAuthority('STATION:MANAGE')")
     public ResponseEntity<StationDTO> update(@PathVariable Long id, @Valid @RequestBody StationDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STATION:ADMIN')")
+    @PreAuthorize("hasAuthority('STATION:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

@@ -62,19 +62,19 @@ public class OperationalStatusController extends GenericController<OperationalSt
     }
 
     @Override
-    @PreAuthorize("hasAuthority('OPERATIONAL_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('OPERATIONAL_STATUS:MANAGE')")
     public ResponseEntity<OperationalStatusDTO> create(@Valid @RequestBody OperationalStatusDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('OPERATIONAL_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('OPERATIONAL_STATUS:MANAGE')")
     public ResponseEntity<OperationalStatusDTO> update(@PathVariable Long id, @Valid @RequestBody OperationalStatusDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('OPERATIONAL_STATUS:ADMIN')")
+    @PreAuthorize("hasAuthority('OPERATIONAL_STATUS:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

@@ -64,19 +64,19 @@ public class DistrictController extends GenericController<DistrictDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('DISTRICT:ADMIN')")
+    @PreAuthorize("hasAuthority('DISTRICT:MANAGE')")
     public ResponseEntity<DistrictDTO> create(@Valid @RequestBody DistrictDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('DISTRICT:ADMIN')")
+    @PreAuthorize("hasAuthority('DISTRICT:MANAGE')")
     public ResponseEntity<DistrictDTO> update(@PathVariable Long id, @Valid @RequestBody DistrictDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('DISTRICT:ADMIN')")
+    @PreAuthorize("hasAuthority('DISTRICT:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

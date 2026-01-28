@@ -73,19 +73,19 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    @PreAuthorize("hasAuthority('GROUP:MANAGE')")
     public ResponseEntity<GroupDTO> create(@Valid @RequestBody GroupDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    @PreAuthorize("hasAuthority('GROUP:MANAGE')")
     public ResponseEntity<GroupDTO> update(@PathVariable Long id, @Valid @RequestBody GroupDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    @PreAuthorize("hasAuthority('GROUP:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
@@ -116,7 +116,7 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     // ========== ROLE MANAGEMENT ==========
 
     @PostMapping("/{groupId}/roles/{roleId}")
-    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    @PreAuthorize("hasAuthority('GROUP:MANAGE')")
     public ResponseEntity<GroupDTO> assignRole(
             @PathVariable Long groupId,
             @PathVariable Long roleId) {
@@ -125,7 +125,7 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     }
 
     @DeleteMapping("/{groupId}/roles/{roleId}")
-    @PreAuthorize("hasAuthority('GROUP:ADMIN')")
+    @PreAuthorize("hasAuthority('GROUP:MANAGE')")
     public ResponseEntity<GroupDTO> removeRole(
             @PathVariable Long groupId,
             @PathVariable Long roleId) {

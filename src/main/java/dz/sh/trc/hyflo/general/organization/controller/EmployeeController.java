@@ -68,19 +68,19 @@ public class EmployeeController extends GenericController<EmployeeDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('EMPLOYEE:ADMIN')")
+    @PreAuthorize("hasAuthority('EMPLOYEE:MANAGE')")
     public ResponseEntity<EmployeeDTO> create(@Valid @RequestBody EmployeeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('EMPLOYEE:ADMIN')")
+    @PreAuthorize("hasAuthority('EMPLOYEE:MANAGE')")
     public ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @Valid @RequestBody EmployeeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('EMPLOYEE:ADMIN')")
+    @PreAuthorize("hasAuthority('EMPLOYEE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

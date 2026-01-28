@@ -62,19 +62,19 @@ public class ProductionFieldTypeController extends GenericController<ProductionF
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:MANAGE')")
     public ResponseEntity<ProductionFieldTypeDTO> create(@Valid @RequestBody ProductionFieldTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:MANAGE')")
     public ResponseEntity<ProductionFieldTypeDTO> update(@PathVariable Long id, @Valid @RequestBody ProductionFieldTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

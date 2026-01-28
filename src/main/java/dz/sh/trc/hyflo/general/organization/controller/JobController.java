@@ -74,19 +74,19 @@ public class JobController extends GenericController<JobDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('JOB:ADMIN')")
+    @PreAuthorize("hasAuthority('JOB:MANAGE')")
     public ResponseEntity<JobDTO> create(@Valid @RequestBody JobDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('JOB:ADMIN')")
+    @PreAuthorize("hasAuthority('JOB:MANAGE')")
     public ResponseEntity<JobDTO> update(@PathVariable Long id, @Valid @RequestBody JobDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('JOB:ADMIN')")
+    @PreAuthorize("hasAuthority('JOB:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

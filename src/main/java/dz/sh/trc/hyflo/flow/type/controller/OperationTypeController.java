@@ -80,21 +80,21 @@ public class OperationTypeController extends GenericController<OperationTypeDTO,
 
     @Override
     @Operation(summary = "Create operation type", description = "Create a new operation type with unique code validation")
-    @PreAuthorize("hasAuthority('OPERATION_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('OPERATION_TYPE:MANAGE')")
     public ResponseEntity<OperationTypeDTO> create(@Valid @RequestBody OperationTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update operation type", description = "Update an existing operation type by ID")
-    @PreAuthorize("hasAuthority('OPERATION_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('OPERATION_TYPE:MANAGE')")
     public ResponseEntity<OperationTypeDTO> update(@PathVariable Long id, @Valid @RequestBody OperationTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete operation type", description = "Delete an operation type by ID")
-    @PreAuthorize("hasAuthority('OPERATION_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('OPERATION_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

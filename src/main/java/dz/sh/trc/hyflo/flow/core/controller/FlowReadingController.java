@@ -73,19 +73,19 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
     public ResponseEntity<FlowReadingDTO> create(@Valid @RequestBody FlowReadingDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
     public ResponseEntity<FlowReadingDTO> update(@PathVariable Long id, @Valid @RequestBody FlowReadingDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
@@ -216,7 +216,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
      * @return Updated reading with VALIDATED status
      */
     @PostMapping("/{id}/validate")
-    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
     public ResponseEntity<FlowReadingDTO> validate(
             @PathVariable Long id,
             @RequestParam Long validatedById) {
@@ -235,7 +235,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
      * @return Updated reading with REJECTED status
      */
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasAuthority('FLOW_READING:ADMIN')")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
     public ResponseEntity<FlowReadingDTO> reject(
             @PathVariable Long id,
             @RequestParam Long rejectedById,

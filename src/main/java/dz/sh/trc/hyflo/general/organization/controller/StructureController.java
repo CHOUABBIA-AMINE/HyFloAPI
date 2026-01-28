@@ -68,19 +68,19 @@ public class StructureController extends GenericController<StructureDTO, Long> {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STRUCTURE:ADMIN')")
+    @PreAuthorize("hasAuthority('STRUCTURE:MANAGE')")
     public ResponseEntity<StructureDTO> create(@Valid @RequestBody StructureDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STRUCTURE:ADMIN')")
+    @PreAuthorize("hasAuthority('STRUCTURE:MANAGE')")
     public ResponseEntity<StructureDTO> update(@PathVariable Long id, @Valid @RequestBody StructureDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('STRUCTURE:ADMIN')")
+    @PreAuthorize("hasAuthority('STRUCTURE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

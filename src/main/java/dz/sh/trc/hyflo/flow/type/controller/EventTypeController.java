@@ -80,21 +80,21 @@ public class EventTypeController extends GenericController<EventTypeDTO, Long> {
 
     @Override
     @Operation(summary = "Create event type", description = "Create a new event type with unique code and French designation validation")
-    @PreAuthorize("hasAuthority('EVENT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('EVENT_TYPE:MANAGE')")
     public ResponseEntity<EventTypeDTO> create(@Valid @RequestBody EventTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
     @Operation(summary = "Update event type", description = "Update an existing event type by ID")
-    @PreAuthorize("hasAuthority('EVENT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('EVENT_TYPE:MANAGE')")
     public ResponseEntity<EventTypeDTO> update(@PathVariable Long id, @Valid @RequestBody EventTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @Operation(summary = "Delete event type", description = "Delete an event type by ID")
-    @PreAuthorize("hasAuthority('EVENT_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('EVENT_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

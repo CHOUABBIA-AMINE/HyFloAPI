@@ -70,19 +70,19 @@ public class PipelineSystemController extends GenericController<PipelineSystemDT
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:ADMIN')")
+    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:MANAGE')")
     public ResponseEntity<PipelineSystemDTO> create(@Valid @RequestBody PipelineSystemDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:ADMIN')")
+    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:MANAGE')")
     public ResponseEntity<PipelineSystemDTO> update(@PathVariable Long id, @Valid @RequestBody PipelineSystemDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:ADMIN')")
+    @PreAuthorize("hasAuthority('PIPELINE_SYSTEM:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

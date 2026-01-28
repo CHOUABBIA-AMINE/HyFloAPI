@@ -70,19 +70,19 @@ public class InfrastructureController extends GenericController<InfrastructureDT
     }
 
     @Override
-    @PreAuthorize("hasAuthority('INFRASTRUCTURE:ADMIN')")
+    @PreAuthorize("hasAuthority('INFRASTRUCTURE:MANAGE')")
     public ResponseEntity<InfrastructureDTO> create(@Valid @RequestBody InfrastructureDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('INFRASTRUCTURE:ADMIN')")
+    @PreAuthorize("hasAuthority('INFRASTRUCTURE:MANAGE')")
     public ResponseEntity<InfrastructureDTO> update(@PathVariable Long id, @Valid @RequestBody InfrastructureDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('INFRASTRUCTURE:ADMIN')")
+    @PreAuthorize("hasAuthority('INFRASTRUCTURE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

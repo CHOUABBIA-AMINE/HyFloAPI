@@ -62,19 +62,19 @@ public class PartnerTypeController extends GenericController<PartnerTypeDTO, Lon
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PARTNER_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PARTNER_TYPE:MANAGE')")
     public ResponseEntity<PartnerTypeDTO> create(@Valid @RequestBody PartnerTypeDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PARTNER_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PARTNER_TYPE:MANAGE')")
     public ResponseEntity<PartnerTypeDTO> update(@PathVariable Long id, @Valid @RequestBody PartnerTypeDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PARTNER_TYPE:ADMIN')")
+    @PreAuthorize("hasAuthority('PARTNER_TYPE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

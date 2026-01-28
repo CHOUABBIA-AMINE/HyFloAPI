@@ -67,19 +67,19 @@ public class CoordinateController extends GenericController<CoordinateDTO, Long>
     }
 
     @Override
-    @PreAuthorize("hasAuthority('COORDINATE:ADMIN')")
+    @PreAuthorize("hasAuthority('COORDINATE:MANAGE')")
     public ResponseEntity<CoordinateDTO> create(@Valid @RequestBody CoordinateDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('COORDINATE:ADMIN')")
+    @PreAuthorize("hasAuthority('COORDINATE:MANAGE')")
     public ResponseEntity<CoordinateDTO> update(@PathVariable Long id, @Valid @RequestBody CoordinateDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('COORDINATE:ADMIN')")
+    @PreAuthorize("hasAuthority('COORDINATE:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }

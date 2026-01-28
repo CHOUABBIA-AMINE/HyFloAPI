@@ -70,19 +70,19 @@ public class ProductionFieldController extends GenericController<ProductionField
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCTION_FIELD:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD:MANAGE')")
     public ResponseEntity<ProductionFieldDTO> create(@Valid @RequestBody ProductionFieldDTO dto) {
         return super.create(dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCTION_FIELD:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD:MANAGE')")
     public ResponseEntity<ProductionFieldDTO> update(@PathVariable Long id, @Valid @RequestBody ProductionFieldDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('PRODUCTION_FIELD:ADMIN')")
+    @PreAuthorize("hasAuthority('PRODUCTION_FIELD:MANAGE')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
     }
