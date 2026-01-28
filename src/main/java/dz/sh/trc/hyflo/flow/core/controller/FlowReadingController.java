@@ -121,6 +121,13 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         return ResponseEntity.ok(flowReadingService.findByPipeline(pipelineId));
     }
 
+    @GetMapping("/slot/{readingSlotId}")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    public ResponseEntity<List<FlowReadingDTO>> getByReadingSlot(@PathVariable Long readingSlotId) {
+        log.info("GET /flow/core/reading/readingSlot/{} - Getting readings by reading slot", readingSlotId);
+        return ResponseEntity.ok(flowReadingService.findByReadingSlot(readingSlotId));
+    }
+
     @GetMapping("/pipeline/{pipelineId}/latest")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
     public ResponseEntity<Page<FlowReadingDTO>> getLatestByPipeline(

@@ -40,6 +40,8 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     List<FlowReading> findByValidationStatusId(Long validationStatusId);
     
+    List<FlowReading> findByReadingSlotId(Long readingSlotId);
+    
     List<FlowReading> findByPipelineIdAndRecordedAtBetween(Long pipelineId, LocalDateTime startTime, LocalDateTime endTime);
     
     Optional<FlowReading> findByPipelineIdAndRecordedAt(Long pipelineId, LocalDateTime recordedAt);

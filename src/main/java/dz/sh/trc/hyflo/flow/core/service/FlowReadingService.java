@@ -102,6 +102,13 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    public List<FlowReadingDTO> findByReadingSlot(Long readingSlotId) {
+        log.debug("Finding flow readings by slot id: {}", readingSlotId);
+        return flowReadingRepository.findByReadingSlotId(readingSlotId).stream()
+                .map(FlowReadingDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     public List<FlowReadingDTO> findByTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
         log.debug("Finding flow readings by time range: {} to {}", startTime, endTime);
         return flowReadingRepository.findByRecordedAtBetween(startTime, endTime).stream()
