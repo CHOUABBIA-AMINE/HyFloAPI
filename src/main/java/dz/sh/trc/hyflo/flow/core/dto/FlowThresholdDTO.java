@@ -158,7 +158,7 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
                 .flowRateMin(entity.getFlowRateMin())
                 .flowRateMax(entity.getFlowRateMax())
                 .containedVolumeMin(entity.getContainedVolumeMin())
-                .containedVolumeMax(entity.getContainedVolumeMin())
+                .containedVolumeMax(entity.getContainedVolumeMax())
                 .alertTolerance(entity.getAlertTolerance())
                 .active(entity.getActive())
 
