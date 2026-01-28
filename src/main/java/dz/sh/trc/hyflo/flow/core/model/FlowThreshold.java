@@ -119,7 +119,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum contained volume is mandatory")
 	@PositiveOrZero(message = "Minimum contained volume must be zero or positive")
-	@Column(name="F_05", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_07", precision = 12, scale = 2, nullable = false)
 	private BigDecimal containedVolumeMin;
     
 	@Schema(
@@ -129,7 +129,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum contained volume is mandatory")
 	@PositiveOrZero(message = "Maximum contained volume must be positive")
-	@Column(name="F_06", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_08", precision = 12, scale = 2, nullable = false)
 	private BigDecimal containedVolumeMax;
     
 	@Schema(
@@ -140,7 +140,7 @@ public class FlowThreshold extends GenericModel {
 	@NotNull(message = "Alert tolerance is mandatory")
 	@DecimalMin(value = "0.0", message = "Alert tolerance cannot be negative")
 	@DecimalMax(value = "50.0", message = "Alert tolerance cannot exceed 50%")
-	@Column(name="F_07", precision = 5, scale = 2, nullable = false)
+	@Column(name="F_09", precision = 5, scale = 2, nullable = false)
 	private BigDecimal alertTolerance;
     
 	@Schema(
@@ -149,7 +149,7 @@ public class FlowThreshold extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Active status is mandatory")
-	@Column(name="F_08", nullable = false)
+	@Column(name="F_10", nullable = false)
 	private Boolean active;
     
 	@Schema(
@@ -158,6 +158,6 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Pipeline is mandatory")
 	@ManyToOne
-	@JoinColumn(name="F_09", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_01"), nullable=false)
+	@JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_01"), nullable=false)
 	private Pipeline pipeline;
 }

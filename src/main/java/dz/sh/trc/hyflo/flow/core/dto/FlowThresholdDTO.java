@@ -23,6 +23,7 @@ import dz.sh.trc.hyflo.flow.core.model.FlowThreshold;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -44,47 +45,57 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
 
     @NotNull(message = "Minimum pressure is required")
     @PositiveOrZero(message = "Minimum pressure must be zero or positive")
-    @Schema(description = "Minimum safe pressure (bar)", example = "50.0", required = true)
+    @Schema(description = "Minimum safe pressure (bar)", example = "50.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal pressureMin;
 
     @NotNull(message = "Maximum pressure is required")
     @DecimalMax(value = "500.0", message = "Maximum pressure exceeds absolute limit")
-    @Schema(description = "Maximum safe pressure (bar)", example = "120.0", required = true, maximum = "500.0")
+    @Schema(description = "Maximum safe pressure (bar)", example = "120.0", requiredMode = RequiredMode.REQUIRED, maximum = "500.0")
     private BigDecimal pressureMax;
 
     @NotNull(message = "Minimum temperature is required")
     @DecimalMin(value = "-50.0", message = "Minimum temperature below absolute limit")
-    @Schema(description = "Minimum safe temperature (°C)", example = "5.0", required = true, minimum = "-50.0")
+    @Schema(description = "Minimum safe temperature (°C)", example = "5.0", requiredMode = RequiredMode.REQUIRED, minimum = "-50.0")
     private BigDecimal temperatureMin;
 
     @NotNull(message = "Maximum temperature is required")
     @DecimalMax(value = "200.0", message = "Maximum temperature exceeds absolute limit")
-    @Schema(description = "Maximum safe temperature (°C)", example = "85.0", required = true, maximum = "200.0")
+    @Schema(description = "Maximum safe temperature (°C)", example = "85.0", requiredMode = RequiredMode.REQUIRED, maximum = "200.0")
     private BigDecimal temperatureMax;
 
     @NotNull(message = "Minimum flow rate is required")
     @PositiveOrZero(message = "Minimum flow rate must be zero or positive")
-    @Schema(description = "Minimum acceptable flow rate (m³/h)", example = "500.0", required = true)
+    @Schema(description = "Minimum acceptable flow rate (m³/h)", example = "500.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal flowRateMin;
 
     @NotNull(message = "Maximum flow rate is required")
     @PositiveOrZero(message = "Maximum flow rate must be positive")
-    @Schema(description = "Maximum acceptable flow rate (m³/h)", example = "2000.0", required = true)
+    @Schema(description = "Maximum acceptable flow rate (m³/h)", example = "2000.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal flowRateMax;
+
+    @NotNull(message = "Minimum contained volume is required")
+    @PositiveOrZero(message = "Minimum contained volume must be zero or positive")
+    @Schema(description = "Minimum acceptable contained volume (m³)", example = "500.0", requiredMode = RequiredMode.REQUIRED)
+    private BigDecimal containedVolumeMin;
+
+    @NotNull(message = "Maximum contained volume is required")
+    @PositiveOrZero(message = "Maximum contained volume must be positive")
+    @Schema(description = "Maximum acceptable contained volume (m³)", example = "40000.0", requiredMode = RequiredMode.REQUIRED)
+    private BigDecimal containedVolumeMax;
 
     @NotNull(message = "Alert tolerance is required")
     @DecimalMin(value = "0.0", message = "Alert tolerance cannot be negative")
     @DecimalMax(value = "50.0", message = "Alert tolerance cannot exceed 50%")
-    @Schema(description = "Alert tolerance percentage (±5%)", example = "5.0", required = true, minimum = "0.0", maximum = "50.0")
+    @Schema(description = "Alert tolerance percentage (±5%)", example = "5.0", requiredMode = RequiredMode.REQUIRED, minimum = "0.0", maximum = "50.0")
     private BigDecimal alertTolerance;
 
     @NotNull(message = "Active status is required")
-    @Schema(description = "Is this threshold active", example = "true", required = true)
+    @Schema(description = "Is this threshold active", example = "true", requiredMode = RequiredMode.REQUIRED)
     private Boolean active;
 
     // Foreign Key IDs
     @NotNull(message = "Pipeline is required")
-    @Schema(description = "Pipeline ID", required = true)
+    @Schema(description = "Pipeline ID", requiredMode = RequiredMode.REQUIRED)
     private Long pipelineId;
 
     // Nested DTOs
