@@ -15,6 +15,7 @@
 package dz.sh.trc.hyflo.flow.core.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
@@ -62,15 +63,17 @@ import lombok.ToString;
 public class FlowReading extends GenericModel {
     
 	@Schema(
-		description = "Timestamp when this reading was recorded",
-		example = "2026-01-22T00:15:00",
-		requiredMode = Schema.RequiredMode.REQUIRED
+		description = "Reading date is required",
+		example = "2026-01-27",
+		requiredMode = Schema.RequiredMode.REQUIRED,
+		minimum = "0.0",
+		maximum = "500.0"
 	)
-	@NotNull(message = "Recording timestamp is mandatory")
-	@PastOrPresent(message = "Recording time cannot be in the future")
+	@NotNull(message = "Reading date is required")
+	@PastOrPresent(message = "Reading date cannot be in the future")
 	@Column(name = "F_01", nullable = false)
-	private LocalDateTime recordedAt;
-    
+	private LocalDate readingDate;
+	
 	@Schema(
 		description = "Pressure measurement in bar",
 		example = "85.50",
@@ -115,12 +118,22 @@ public class FlowReading extends GenericModel {
 	private BigDecimal containedVolume;
     
 	@Schema(
+		description = "Timestamp when this reading was recorded",
+		example = "2026-01-22T00:15:00",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Recording timestamp is mandatory")
+	@PastOrPresent(message = "Recording time cannot be in the future")
+	@Column(name = "F_06", nullable = false)
+	private LocalDateTime recordedAt;
+	
+	@Schema(
 		description = "Timestamp when this reading was validated by supervisor",
 		example = "2026-01-22T08:30:00",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@PastOrPresent(message = "Validation time cannot be in the future")
-	@Column(name = "F_06")
+	@Column(name = "F_07")
 	private LocalDateTime validatedAt;
     
 	@Schema(
@@ -130,7 +143,7 @@ public class FlowReading extends GenericModel {
 		maxLength = 500
 	)
 	@Size(max = 500, message = "Notes must not exceed 500 characters")
-	@Column(name = "F_07", length = 500)
+	@Column(name = "F_08", length = 500)
 	private String notes;
     
 	@Schema(
@@ -139,7 +152,7 @@ public class FlowReading extends GenericModel {
 	)
 	@NotNull(message = "Recording employee is mandatory")
 	@ManyToOne
-	@JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
+	@JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
 	private Employee recordedBy;
     
 	@Schema(
@@ -147,7 +160,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne
-	@JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
+	@JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
 	private Employee validatedBy;
     
 	@Schema(
@@ -156,7 +169,7 @@ public class FlowReading extends GenericModel {
 	)
 	@NotNull(message = "Validation status is mandatory")
 	@ManyToOne
-	@JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
+	@JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
 	private ValidationStatus validationStatus;
     
 	@Schema(
@@ -165,7 +178,7 @@ public class FlowReading extends GenericModel {
 	)
 	@NotNull(message = "Pipeline reference is mandatory")
 	@ManyToOne
-	@JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
+	@JoinColumn(name = "F_12", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
 	private Pipeline pipeline;
 	
 	@Schema(
@@ -174,6 +187,6 @@ public class FlowReading extends GenericModel {
 	)
     @NotNull(message = "Reading slot is mandatory")
     @ManyToOne
-    @JoinColumn(name = "F_12", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_05"), nullable = false)
+    @JoinColumn(name = "F_13", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_05"), nullable = false)
     private ReadingSlot readingSlot;
 }

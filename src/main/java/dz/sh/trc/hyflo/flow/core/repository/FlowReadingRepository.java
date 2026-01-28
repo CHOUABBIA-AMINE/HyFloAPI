@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.core.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +43,10 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     List<FlowReading> findByReadingSlotId(Long readingSlotId);
     
+    List<FlowReading> findByPipelineIdAndReadingDateBetween(Long pipelineId, LocalDate startDate, LocalDate endDate);
+    
+    List<FlowReading> findByPipelineIdAndReadingSlotIdAndReadingDateBetween(Long pipelineId, Long readingSlotId, LocalDate startDate, LocalDate endDate);
+    
     List<FlowReading> findByPipelineIdAndRecordedAtBetween(Long pipelineId, LocalDateTime startTime, LocalDateTime endTime);
     
     Optional<FlowReading> findByPipelineIdAndRecordedAt(Long pipelineId, LocalDateTime recordedAt);
@@ -51,6 +56,28 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     List<FlowReading> findByRecordedAtBetween(LocalDateTime startTime, LocalDateTime endTime);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
+    
+    @Query("SELECT fr FROM FlowReading fr WHERE "
+         + "fr.pipeline.id = :pipelineId AND "
+         + "fr.readingDate BETWEEN :startDate AND :endDate "
+         + "ORDER BY fr.readingDate DESC")
+    Page<FlowReading> findByPipelineAndReadingDateRange(
+        @Param("pipelineId") Long pipelineId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate,
+        Pageable pageable);
+    
+    @Query("SELECT fr FROM FlowReading fr WHERE "
+         + "fr.pipeline.id = :pipelineId AND "
+         + "fr.readingSlot.id = :readingSlotId AND "
+         + "fr.readingDate BETWEEN :startDate AND :endDate "
+         + "ORDER BY fr.readingDate DESC")
+    Page<FlowReading> findByPipelineAndReadingSlotAndReadingDateRange(
+        @Param("pipelineId") Long pipelineId,
+        @Param("readingSlotId") Long readingSlotId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate,
+        Pageable pageable);
     
     @Query("SELECT fr FROM FlowReading fr WHERE "
          + "fr.pipeline.id = :pipelineId AND "

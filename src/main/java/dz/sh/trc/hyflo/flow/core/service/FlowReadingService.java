@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.core.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -116,6 +117,24 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    public List<FlowReadingDTO> findByPipelineAndReadingDateRange(
+            Long pipelineId, LocalDate startDate, LocalDate endDate) {
+        log.debug("Finding flow readings by pipeline {} and date range: {} to {}", 
+                  pipelineId, startDate, endDate);
+        return flowReadingRepository.findByPipelineIdAndReadingDateBetween(pipelineId, startDate, endDate).stream()
+                					.map(FlowReadingDTO::fromEntity)
+                					.collect(Collectors.toList());
+    }
+
+    public List<FlowReadingDTO> findByPipelineAndReadingSlotAndReadingDateRange(
+            Long pipelineId, Long readingSlotId, LocalDate startDate, LocalDate endDate) {
+        log.debug("Finding flow readings by pipeline {} and slot {} and date range: {} to {}", 
+                  pipelineId, readingSlotId, startDate, endDate);
+        return flowReadingRepository.findByPipelineIdAndReadingSlotIdAndReadingDateBetween(pipelineId, readingSlotId, startDate, endDate).stream()
+                					.map(FlowReadingDTO::fromEntity)
+                					.collect(Collectors.toList());
+    }
+
     public List<FlowReadingDTO> findByPipelineAndTimeRange(
             Long pipelineId, LocalDateTime startTime, LocalDateTime endTime) {
         log.debug("Finding flow readings by pipeline {} and time range: {} to {}", 
@@ -139,6 +158,22 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                   pipelineId, startTime, endTime);
         return executeQuery(p -> flowReadingRepository.findByPipelineAndTimeRange(
                 pipelineId, startTime, endTime, p), pageable);
+    }
+
+    public Page<FlowReadingDTO> findByPipelineAndReadingDateRangePaginated(
+            Long pipelineId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        log.debug("Finding flow readings (paginated) by pipeline {} and date range: {} to {}", 
+                  pipelineId, startDate, endDate);
+        return executeQuery(p -> flowReadingRepository.findByPipelineAndReadingDateRange(
+                pipelineId, startDate, endDate, p), pageable);
+    }
+
+    public Page<FlowReadingDTO> findByPipelineAndReadingSlotAndReadingDateRangePaginated(
+            Long pipelineId, Long readingSlotId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        log.debug("Finding flow readings (paginated) by pipeline {} and and reading slot {} and date range: {} to {}", 
+                  pipelineId, readingSlotId, startDate, endDate);
+        return executeQuery(p -> flowReadingRepository.findByPipelineAndReadingSlotAndReadingDateRange(
+                pipelineId, readingSlotId, startDate, endDate, p), pageable);
     }
 
     public Page<FlowReadingDTO> findByPipelineAndValidationStatus(

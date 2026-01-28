@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.core.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -162,6 +163,39 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
                  pipelineId, startTime, endTime);
         return ResponseEntity.ok(flowReadingService.findByPipelineAndTimeRangePaginated(
                 pipelineId, startTime, endTime, buildPageable(page, size, sortBy, sortDir)));
+    }
+
+    @GetMapping("/pipeline/{pipelineId}/date-range")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    public ResponseEntity<Page<FlowReadingDTO>> getByPipelineAndReadingDateRange(
+            @PathVariable Long pipelineId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "recordedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        log.info("GET /flow/core/reading/pipeline/{}/date-range - Getting readings from {} to {}", 
+                 pipelineId, startDate, endDate);
+        return ResponseEntity.ok(flowReadingService.findByPipelineAndReadingDateRangePaginated(
+                pipelineId, startDate, endDate, buildPageable(page, size, sortBy, sortDir)));
+    }
+
+    @GetMapping("/pipeline/{pipelineId}/slot/{readingSlotId}date-range")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    public ResponseEntity<Page<FlowReadingDTO>> getByPipelineAndReadingSlotAndReadingDateRange(
+            @PathVariable Long pipelineId,
+            @PathVariable Long readingSlotId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "recordedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        log.info("GET /flow/core/reading/pipeline/{}/slot/{}/date-range - Getting readings from {} to {}", 
+                 pipelineId, readingSlotId, startDate, endDate);
+        return ResponseEntity.ok(flowReadingService.findByPipelineAndReadingSlotAndReadingDateRangePaginated(
+                pipelineId, readingSlotId, startDate, endDate, buildPageable(page, size, sortBy, sortDir)));
     }
 
     @GetMapping("/validationStatus/{statusId}")

@@ -15,6 +15,7 @@
 package dz.sh.trc.hyflo.flow.core.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -51,12 +52,12 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "Flow measurement reading DTO capturing pipeline operational parameters")
 public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
-    @NotNull(message = "Recording timestamp is required")
-    @PastOrPresent(message = "Recording time cannot be in the future")
-    @Schema(description = "Timestamp when recorded", example = "2026-01-22T00:15:00", required = true)
-    private LocalDateTime recordedAt;
-
-    @PositiveOrZero(message = "Pressure must be zero or positive")
+	@NotNull(message = "Reading date is required")
+    @PastOrPresent(message = "Reading date cannot be in the future")
+	@Schema(example = "2026-01-27")
+    private LocalDate readingDate;
+	
+	@PositiveOrZero(message = "Pressure must be zero or positive")
     @DecimalMin(value = "0.0", message = "Pressure cannot be negative")
     @DecimalMax(value = "500.0", message = "Pressure exceeds maximum (500 bar)")
     @Schema(description = "Pressure in bar", example = "85.50", minimum = "0.0", maximum = "500.0")
@@ -74,6 +75,11 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
     @PositiveOrZero(message = "Contained volume must be zero or positive")
     @Schema(description = "Contained volume in m³", example = "5000.00")
     private BigDecimal containedVolume;
+
+    @NotNull(message = "Recording timestamp is required")
+    @PastOrPresent(message = "Recording time cannot be in the future")
+    @Schema(description = "Timestamp when recorded", example = "2026-01-22T00:15:00", required = true)
+    private LocalDateTime recordedAt;
 
     @PastOrPresent(message = "Validation time cannot be in the future")
     @Schema(description = "Timestamp when validated", example = "2026-01-22T08:30:00")
@@ -123,11 +129,12 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
     public FlowReading toEntity() {
         FlowReading entity = new FlowReading();
         entity.setId(getId());
-        entity.setRecordedAt(this.recordedAt);
+        entity.setReadingDate(this.readingDate);
         entity.setPressure(this.pressure);
         entity.setTemperature(this.temperature);
         entity.setFlowRate(this.flowRate);
         entity.setContainedVolume(this.containedVolume);
+        entity.setRecordedAt(this.recordedAt);
         entity.setValidatedAt(this.validatedAt);
         entity.setNotes(this.notes);
 
@@ -166,11 +173,12 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
     @Override
     public void updateEntity(FlowReading entity) {
-        if (this.recordedAt != null) entity.setRecordedAt(this.recordedAt);
+    	if (this.readingDate != null) entity.setReadingDate(this.readingDate);
         if (this.pressure != null) entity.setPressure(this.pressure);
         if (this.temperature != null) entity.setTemperature(this.temperature);
         if (this.flowRate != null) entity.setFlowRate(this.flowRate);
         if (this.containedVolume != null) entity.setContainedVolume(this.containedVolume);
+        if (this.recordedAt != null) entity.setRecordedAt(this.recordedAt);
         if (this.validatedAt != null) entity.setValidatedAt(this.validatedAt);
         if (this.notes != null) entity.setNotes(this.notes);
 
@@ -210,11 +218,12 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
         return FlowReadingDTO.builder()
                 .id(entity.getId())
-                .recordedAt(entity.getRecordedAt())
+                .readingDate(entity.getReadingDate())
                 .pressure(entity.getPressure())
                 .temperature(entity.getTemperature())
                 .flowRate(entity.getFlowRate())
                 .containedVolume(entity.getContainedVolume())
+                .recordedAt(entity.getRecordedAt())
                 .validatedAt(entity.getValidatedAt())
                 .notes(entity.getNotes())
 
