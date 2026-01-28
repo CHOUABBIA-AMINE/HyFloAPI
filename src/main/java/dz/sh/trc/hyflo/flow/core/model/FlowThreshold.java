@@ -113,6 +113,26 @@ public class FlowThreshold extends GenericModel {
 	private BigDecimal flowRateMax;
     
 	@Schema(
+		description = "Minimum acceptable contained volume (m³)",
+		example = "500.0",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Minimum contained volume is mandatory")
+	@PositiveOrZero(message = "Minimum contained volume must be zero or positive")
+	@Column(name="F_05", precision = 12, scale = 2, nullable = false)
+	private BigDecimal containedVolumeMin;
+    
+	@Schema(
+		description = "Maximum acceptable contained volume (m³)",
+		example = "40000.0",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Maximum contained volume is mandatory")
+	@PositiveOrZero(message = "Maximum contained volume must be positive")
+	@Column(name="F_06", precision = 12, scale = 2, nullable = false)
+	private BigDecimal containedVolumeMax;
+    
+	@Schema(
 		description = "Alert tolerance percentage for threshold breaches (e.g., 5.0 for ±5%)",
 		example = "5.0",
 		requiredMode = Schema.RequiredMode.REQUIRED
