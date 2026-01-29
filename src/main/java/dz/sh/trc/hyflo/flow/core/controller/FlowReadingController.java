@@ -198,11 +198,23 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
                 pipelineId, readingSlotId, startDate, endDate, buildPageable(page, size, sortBy, sortDir)));
     }
 
-    @GetMapping("/validationStatus/{statusId}")
+    @GetMapping("/status/{statusId}")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
     public ResponseEntity<List<FlowReadingDTO>> getByValidationStatus(@PathVariable Long statusId) {
         log.info("GET /flow/core/reading/validationStatus/{} - Getting readings by validation status", statusId);
         return ResponseEntity.ok(flowReadingService.findByValidationStatus(statusId));
+    }
+
+    @GetMapping("/validationStatus/{statusId}")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    public ResponseEntity<Page<FlowReadingDTO>> getByValidationStatus(
+					@PathVariable Long statusId,
+					@RequestParam(defaultValue = "0") int page,
+		            @RequestParam(defaultValue = "20") int size,
+		            @RequestParam(defaultValue = "recordedAt") String sortBy,
+		            @RequestParam(defaultValue = "desc") String sortDir) {
+        log.info("GET /flow/core/reading/validationStatus/{} - Getting readings by validation status", statusId);
+        return ResponseEntity.ok(flowReadingService.findByValidationStatus(statusId, buildPageable(page, size, sortBy, sortDir)));
     }
 
     // ========== VALIDATION WORKFLOW ENDPOINTS ==========

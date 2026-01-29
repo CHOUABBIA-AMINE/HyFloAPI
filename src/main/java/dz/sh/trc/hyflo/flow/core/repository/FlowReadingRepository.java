@@ -93,15 +93,15 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
          + "fr.pipeline.id = :pipelineId AND "
          + "fr.validationStatus.id = :statusId "
          + "ORDER BY fr.recordedAt DESC")
-    Page<FlowReading> findByPipelineAndValidationStatus(
-        @Param("pipelineId") Long pipelineId,
-        @Param("statusId") Long statusId,
-        Pageable pageable);
+    Page<FlowReading> findByPipelineAndValidationStatus(@Param("pipelineId") Long pipelineId, @Param("statusId") Long statusId, Pageable pageable);
+    
+    @Query("SELECT fr FROM FlowReading fr WHERE "
+         + "fr.validationStatus.id = :statusId "
+         + "ORDER BY fr.recordedAt DESC")
+    Page<FlowReading> findByValidationStatus(@Param("statusId") Long statusId, Pageable pageable);
     
     @Query("SELECT fr FROM FlowReading fr WHERE "
          + "fr.pipeline.id = :pipelineId "
          + "ORDER BY fr.recordedAt DESC")
-    Page<FlowReading> findLatestByPipeline(
-        @Param("pipelineId") Long pipelineId,
-        Pageable pageable);
+    Page<FlowReading> findLatestByPipeline(@Param("pipelineId") Long pipelineId, Pageable pageable);
 }

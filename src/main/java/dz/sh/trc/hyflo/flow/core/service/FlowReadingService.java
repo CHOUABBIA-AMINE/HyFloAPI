@@ -184,6 +184,11 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 pipelineId, statusId, p), pageable);
     }
 
+    public Page<FlowReadingDTO> findByValidationStatus(Long statusId, Pageable pageable) {
+        log.debug("Finding flow readings by validation status {}", statusId);
+        return executeQuery(p -> flowReadingRepository.findByValidationStatus(statusId, p), pageable);
+    }
+
     public Page<FlowReadingDTO> findLatestByPipeline(Long pipelineId, Pageable pageable) {
         log.debug("Finding latest flow readings for pipeline: {}", pipelineId);
         return executeQuery(p -> flowReadingRepository.findLatestByPipeline(pipelineId, p), pageable);
