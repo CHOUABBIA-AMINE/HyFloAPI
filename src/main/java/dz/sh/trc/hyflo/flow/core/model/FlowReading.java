@@ -58,8 +58,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="FlowReading")
 @Table(name="T_03_03_03", indexes = {@Index(name="T_03_03_03_IX_01", columnList="F_01"),
-									 @Index(name="T_03_03_03_IX_02", columnList="F_11,F_01")},
-						  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_11", "F_01"})})
+									 @Index(name="T_03_03_03_IX_02", columnList="F_01, F_13")},
+						  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_01", "F_12", "F_13"})})
 public class FlowReading extends GenericModel {
     
 	@Schema(
