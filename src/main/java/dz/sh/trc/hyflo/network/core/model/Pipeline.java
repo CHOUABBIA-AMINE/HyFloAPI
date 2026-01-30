@@ -167,7 +167,7 @@ public class Pipeline extends Infrastructure {
 		description = "Alloy or material used for pipeline construction",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_01"), nullable=true)
 	private Alloy nominalConstructionMaterial;
 
@@ -175,7 +175,7 @@ public class Pipeline extends Infrastructure {
 		description = "Alloy or material used for exterior coating/protection",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_02"), nullable=true)
 	private Alloy nominalExteriorCoating;
 
@@ -183,7 +183,7 @@ public class Pipeline extends Infrastructure {
 		description = "Alloy or material used for interior coating/lining",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=true)
 	private Alloy nominalInteriorCoating;
 	
@@ -192,7 +192,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Pipeline system is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_21", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_04"), nullable=false)
 	private PipelineSystem pipelineSystem;
 
@@ -201,7 +201,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Departure terminal is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_22", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_05"), nullable=false)
 	private Terminal departureTerminal;
 
@@ -210,7 +210,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Arrival terminal is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_23", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_06"), nullable=false)
 	private Terminal arrivalTerminal;
     
@@ -218,7 +218,7 @@ public class Pipeline extends Infrastructure {
 		description = "Organizational structure responsible for managing this pipeline",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_07"), nullable = false)
 	private Structure manager;
 

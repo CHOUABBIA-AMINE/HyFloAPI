@@ -21,6 +21,7 @@ import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -157,7 +158,7 @@ public class FlowThreshold extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Pipeline is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_03_03_06_FK_01"), nullable=false)
 	private Pipeline pipeline;
 }

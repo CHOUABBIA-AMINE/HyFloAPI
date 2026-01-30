@@ -24,6 +24,7 @@ import dz.sh.trc.hyflo.network.core.model.Infrastructure;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -92,7 +93,7 @@ public class FlowEvent extends GenericModel {
 		description = "Severity level of this event",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_04", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_04_FK_01"))
 	private Severity severity;
     
@@ -101,7 +102,7 @@ public class FlowEvent extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Infrastructure reference is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_06", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_04_FK_03"), nullable = false)
 	private Infrastructure infrastructure;
     
@@ -110,7 +111,7 @@ public class FlowEvent extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Reporter is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_04_FK_04"), nullable = false)
 	private Employee reportedBy;
     
@@ -118,7 +119,7 @@ public class FlowEvent extends GenericModel {
 		description = "Related flow reading if this event was triggered by a measurement",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_04_FK_05"))
 	private FlowReading relatedReading;
     

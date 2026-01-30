@@ -21,6 +21,7 @@ import dz.sh.trc.hyflo.network.type.model.PartnerType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -77,7 +78,7 @@ public class Partner extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Partner type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_02_04_FK_01"), nullable = false)
 	private PartnerType partnerType;
 	
@@ -86,7 +87,7 @@ public class Partner extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Country is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_02_04_FK_02"), nullable = false)
 	private Country country;
 }

@@ -18,6 +18,7 @@ import dz.sh.trc.hyflo.network.common.model.Alloy;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -112,7 +113,7 @@ public class PipelineSegment extends Infrastructure {
 		description = "Alloy or material used for constructing this specific segment (may differ from nominal pipeline material)",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_14", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_01"), nullable=true)
 	private Alloy constructionMaterial;
 
@@ -120,7 +121,7 @@ public class PipelineSegment extends Infrastructure {
 		description = "Alloy or material used for exterior coating of this specific segment",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_15", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_02"), nullable=true)
 	private Alloy exteriorCoating;
 
@@ -128,7 +129,7 @@ public class PipelineSegment extends Infrastructure {
 		description = "Alloy or material used for interior coating of this specific segment",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_16", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_03"), nullable=true)
 	private Alloy interiorCoating;
 
@@ -137,7 +138,7 @@ public class PipelineSegment extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Pipeline is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_17", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_04"), nullable=false)
 	private Pipeline pipeline;
     

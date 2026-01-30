@@ -33,6 +33,7 @@ import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.dto.InfrastructureDTO;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
@@ -55,13 +56,13 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
 
     @NotNull(message = "Operation date is required")
     @PastOrPresent(message = "Operation date cannot be in the future")
-    @Schema(description = "Date of the flow operation", example = "2026-01-22", required = true)
+    @Schema(description = "Date of the flow operation", example = "2026-01-22", requiredMode = RequiredMode.REQUIRED)
     private LocalDate operationDate;
 
     @NotNull(message = "Volume is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Volume cannot be negative")
     @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-    @Schema(description = "Volume of product moved", example = "25000.50", required = true)
+    @Schema(description = "Volume of product moved", example = "25000.50", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal volume;
 
     @PastOrPresent(message = "Validation time cannot be in the future")
@@ -74,26 +75,26 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
 
     // Foreign Key IDs
     @NotNull(message = "Infrastructure is required")
-    @Schema(description = "Infrastructure ID", required = true)
+    @Schema(description = "Infrastructure ID", requiredMode = RequiredMode.REQUIRED)
     private Long infrastructureId;
 
     @NotNull(message = "Product is required")
-    @Schema(description = "Product ID", required = true)
+    @Schema(description = "Product ID", requiredMode = RequiredMode.REQUIRED)
     private Long productId;
 
     @NotNull(message = "Operation type is required")
-    @Schema(description = "Operation type ID", required = true)
+    @Schema(description = "Operation type ID", requiredMode = RequiredMode.REQUIRED)
     private Long typeId;
 
     @NotNull(message = "Recording employee is required")
-    @Schema(description = "Recorded by employee ID", required = true)
+    @Schema(description = "Recorded by employee ID", requiredMode = RequiredMode.REQUIRED)
     private Long recordedById;
 
     @Schema(description = "Validated by employee ID")
     private Long validatedById;
 
     @NotNull(message = "Validation status is required")
-    @Schema(description = "Validation status ID", required = true)
+    @Schema(description = "Validation status ID", requiredMode = RequiredMode.REQUIRED)
     private Long validationStatusId;
 
     // Nested DTOs (for read operations)

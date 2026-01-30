@@ -31,9 +31,9 @@ public interface FlowOperationRepository extends JpaRepository<FlowOperation, Lo
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
-    List<FlowOperation> findByDate(LocalDate date);
+    List<FlowOperation> findByOperationDate(LocalDate operationDate);
     
-    List<FlowOperation> findByDateBetween(LocalDate startDate, LocalDate endDate);
+    List<FlowOperation> findByOperationDateBetween(LocalDate startDate, LocalDate endDate);
     
     List<FlowOperation> findByInfrastructureId(Long infrastructureId);
     
@@ -47,17 +47,17 @@ public interface FlowOperationRepository extends JpaRepository<FlowOperation, Lo
     
     List<FlowOperation> findByValidatedById(Long employeeId);
     
-    List<FlowOperation> findByInfrastructureIdAndDate(Long infrastructureId, LocalDate date);
+    List<FlowOperation> findByInfrastructureIdAndOperationDate(Long infrastructureId, LocalDate operationDate);
     
     List<FlowOperation> findByInfrastructureIdAndProductIdAndTypeId(Long infrastructureId, Long productId, Long typeId);
     
-    boolean existsByDateAndInfrastructureIdAndProductIdAndTypeId(LocalDate date, Long infrastructureId, Long productId, Long typeId);
+    boolean existsByOperationDateAndInfrastructureIdAndProductIdAndTypeId(LocalDate operationDate, Long infrastructureId, Long productId, Long typeId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT fo FROM FlowOperation fo WHERE "
          + "fo.infrastructure.id = :infrastructureId AND "
-         + "fo.date BETWEEN :startDate AND :endDate")
+         + "fo.operationDate BETWEEN :startDate AND :endDate")
     Page<FlowOperation> findByInfrastructureAndDateRange(
         @Param("infrastructureId") Long infrastructureId,
         @Param("startDate") LocalDate startDate,
@@ -67,7 +67,7 @@ public interface FlowOperationRepository extends JpaRepository<FlowOperation, Lo
     @Query("SELECT fo FROM FlowOperation fo WHERE "
          + "fo.product.id = :productId AND "
          + "fo.type.id = :typeId AND "
-         + "fo.date BETWEEN :startDate AND :endDate")
+         + "fo.operationDate BETWEEN :startDate AND :endDate")
     Page<FlowOperation> findByProductAndTypeAndDateRange(
         @Param("productId") Long productId,
         @Param("typeId") Long typeId,
@@ -77,7 +77,7 @@ public interface FlowOperationRepository extends JpaRepository<FlowOperation, Lo
     
     @Query("SELECT fo FROM FlowOperation fo WHERE "
          + "fo.validationStatus.id = :statusId AND "
-         + "fo.date BETWEEN :startDate AND :endDate")
+         + "fo.operationDate BETWEEN :startDate AND :endDate")
     Page<FlowOperation> findByValidationStatusAndDateRange(
         @Param("statusId") Long statusId,
         @Param("startDate") LocalDate startDate,

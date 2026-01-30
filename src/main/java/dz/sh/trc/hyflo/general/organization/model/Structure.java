@@ -19,6 +19,7 @@ import dz.sh.trc.hyflo.general.type.model.StructureType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -97,7 +98,7 @@ public class Structure extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Structure type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_05", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_01_FK_01"), nullable=false)
 	private StructureType structureType;
 	
@@ -105,7 +106,7 @@ public class Structure extends GenericModel {
 		description = "Parent structure in the organizational hierarchy",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_06", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_01_FK_02"), nullable=true)
 	private Structure parentStructure;
 }

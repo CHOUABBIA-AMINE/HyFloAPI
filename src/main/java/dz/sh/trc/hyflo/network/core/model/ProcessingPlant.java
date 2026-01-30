@@ -71,7 +71,7 @@ public class ProcessingPlant extends Facility {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Processing plant type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_05_FK_01"), nullable=false)
 	private ProcessingPlantType processingPlantType;
 	

@@ -71,7 +71,7 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
         log.info("Creating flow operation: date={}, infrastructureId={}, productId={}, typeId={}", 
                  dto.getOperationDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId());
         
-        if (flowOperationRepository.existsByDateAndInfrastructureIdAndProductIdAndTypeId(
+        if (flowOperationRepository.existsByOperationDateAndInfrastructureIdAndProductIdAndTypeId(
                 dto.getOperationDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId())) {
             throw new BusinessValidationException(
                 "Flow operation for this date, infrastructure, product, and type combination already exists");
@@ -89,14 +89,14 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
 
     public List<FlowOperationDTO> findByDate(LocalDate date) {
         log.debug("Finding flow operations by date: {}", date);
-        return flowOperationRepository.findByDate(date).stream()
+        return flowOperationRepository.findByOperationDate(date).stream()
                 .map(FlowOperationDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public List<FlowOperationDTO> findByDateRange(LocalDate startDate, LocalDate endDate) {
         log.debug("Finding flow operations by date range: {} to {}", startDate, endDate);
-        return flowOperationRepository.findByDateBetween(startDate, endDate).stream()
+        return flowOperationRepository.findByOperationDateBetween(startDate, endDate).stream()
                 .map(FlowOperationDTO::fromEntity)
                 .collect(Collectors.toList());
     }

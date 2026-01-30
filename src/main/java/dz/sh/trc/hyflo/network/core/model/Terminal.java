@@ -58,7 +58,7 @@ public class Terminal extends Facility {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Terminal type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_04_FK_01"), nullable=false)
 	private TerminalType terminalType;
     

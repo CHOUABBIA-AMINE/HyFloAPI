@@ -71,7 +71,7 @@ public class ProductionField extends Facility {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Production field type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_01"), nullable=false)
 	private ProductionFieldType productionFieldType;
     
@@ -79,7 +79,7 @@ public class ProductionField extends Facility {
 		description = "Processing plant where field output is processed, if applicable",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_12", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_06_FK_02"), nullable=true)
 	private ProcessingPlant processingPlant;
 	

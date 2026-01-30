@@ -22,6 +22,7 @@ import dz.sh.trc.hyflo.network.common.model.Vendor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -62,7 +63,7 @@ public class Facility extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Vendor is mandatory for facilities")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_02_FK_01"), nullable = false)
 	protected Vendor vendor;
 
@@ -71,7 +72,7 @@ public class Facility extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Location is mandatory for facilities")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_02_FK_02"), nullable = false)
 	private Location location;
     

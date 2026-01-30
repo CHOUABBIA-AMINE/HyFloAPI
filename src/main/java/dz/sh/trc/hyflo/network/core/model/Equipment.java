@@ -23,6 +23,7 @@ import dz.sh.trc.hyflo.network.type.model.EquipmentType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -145,7 +146,7 @@ public class Equipment extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Operational status is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_01"), nullable=false)
 	private OperationalStatus operationalStatus;
 
@@ -154,7 +155,7 @@ public class Equipment extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Equipment type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_02"), nullable=false)
 	private EquipmentType equipmentType;
 
@@ -163,7 +164,7 @@ public class Equipment extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Facility is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_12", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_03"), nullable=false)
 	private Facility facility;
 
@@ -172,7 +173,7 @@ public class Equipment extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Manufacturer is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_13", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_10_FK_04"), nullable=false)
 	private Vendor manufacturer;
 }

@@ -26,6 +26,7 @@ import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -151,7 +152,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Recording employee is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
 	private Employee recordedBy;
     
@@ -159,7 +160,7 @@ public class FlowReading extends GenericModel {
 		description = "Supervisor who validated this reading",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
 	private Employee validatedBy;
     
@@ -168,7 +169,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Validation status is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"), nullable = false)
 	private ValidationStatus validationStatus;
     
@@ -177,7 +178,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Pipeline reference is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_12", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"), nullable = false)
 	private Pipeline pipeline;
 	
@@ -186,7 +187,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
     @NotNull(message = "Reading slot is mandatory")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_05"), nullable = false)
     private ReadingSlot readingSlot;
 }

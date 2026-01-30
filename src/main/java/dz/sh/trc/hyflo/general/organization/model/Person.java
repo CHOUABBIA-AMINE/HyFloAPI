@@ -23,6 +23,7 @@ import dz.sh.trc.hyflo.system.utility.model.File;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -151,7 +152,7 @@ public class Person extends GenericModel {
 		description = "Locality where the person was born",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_10", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_01"), nullable=true)
 	private Locality birthLocality;
 	
@@ -159,7 +160,7 @@ public class Person extends GenericModel {
 		description = "Locality of current residential address",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_11", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_02"), nullable=true)
 	private Locality addressLocality;
 
@@ -167,7 +168,7 @@ public class Person extends GenericModel {
 		description = "Country of citizenship or nationality",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_12", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_03"), nullable=true)
 	private Country country;
 	
@@ -175,7 +176,7 @@ public class Person extends GenericModel {
 		description = "Profile picture or photo identification",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_13", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_03_FK_04"), nullable=true)
 	private File picture;
 

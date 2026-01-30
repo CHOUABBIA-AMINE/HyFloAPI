@@ -58,7 +58,7 @@ public class Station extends Facility {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Station type is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_01"), nullable=false)
 	private StationType stationType;
 
@@ -66,7 +66,7 @@ public class Station extends Facility {
 		description = "Pipeline system this station belongs to, if applicable",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_11", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_03_FK_02"), nullable=true)
 	private PipelineSystem pipelineSystem;
 

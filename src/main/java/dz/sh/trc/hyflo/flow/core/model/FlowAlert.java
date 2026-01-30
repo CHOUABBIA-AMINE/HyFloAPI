@@ -23,6 +23,7 @@ import dz.sh.trc.hyflo.general.organization.model.Employee;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -142,7 +143,7 @@ public class FlowAlert extends GenericModel {
 		description = "Employee who resolved this alert",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_05_FK_04"))
 	private Employee resolvedBy;
     
@@ -151,7 +152,7 @@ public class FlowAlert extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Threshold reference is mandatory")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_05_FK_01"), nullable = false)
 	private FlowThreshold threshold;
     
@@ -159,7 +160,7 @@ public class FlowAlert extends GenericModel {
 		description = "Flow reading that triggered this alert",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_12", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_05_FK_02"))
 	private FlowReading flowReading;
     
@@ -167,7 +168,7 @@ public class FlowAlert extends GenericModel {
 		description = "Current status of this alert (active, acknowledged, resolved)",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_13", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_05_FK_03"))
 	private AlertStatus status;
     
@@ -175,7 +176,7 @@ public class FlowAlert extends GenericModel {
 		description = "Employee who acknowledged this alert",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "F_14", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_05_FK_05"))
 	private Employee acknowledgedBy;
 }
