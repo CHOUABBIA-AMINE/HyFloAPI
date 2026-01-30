@@ -69,10 +69,10 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
     @Transactional
     public FlowOperationDTO create(FlowOperationDTO dto) {
         log.info("Creating flow operation: date={}, infrastructureId={}, productId={}, typeId={}", 
-                 dto.getDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId());
+                 dto.getOperationDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId());
         
         if (flowOperationRepository.existsByDateAndInfrastructureIdAndProductIdAndTypeId(
-                dto.getDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId())) {
+                dto.getOperationDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId())) {
             throw new BusinessValidationException(
                 "Flow operation for this date, infrastructure, product, and type combination already exists");
         }

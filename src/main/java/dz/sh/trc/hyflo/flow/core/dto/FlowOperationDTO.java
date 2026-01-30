@@ -56,7 +56,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
     @NotNull(message = "Operation date is required")
     @PastOrPresent(message = "Operation date cannot be in the future")
     @Schema(description = "Date of the flow operation", example = "2026-01-22", required = true)
-    private LocalDate date;
+    private LocalDate operationDate;
 
     @NotNull(message = "Volume is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Volume cannot be negative")
@@ -119,7 +119,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
     public FlowOperation toEntity() {
         FlowOperation entity = new FlowOperation();
         entity.setId(getId());
-        entity.setDate(this.date);
+        entity.setOperationDate(this.operationDate);
         entity.setVolume(this.volume);
         entity.setValidatedAt(this.validatedAt);
         entity.setNotes(this.notes);
@@ -165,7 +165,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
 
     @Override
     public void updateEntity(FlowOperation entity) {
-        if (this.date != null) entity.setDate(this.date);
+        if (this.operationDate != null) entity.setOperationDate(this.operationDate);
         if (this.volume != null) entity.setVolume(this.volume);
         if (this.validatedAt != null) entity.setValidatedAt(this.validatedAt);
         if (this.notes != null) entity.setNotes(this.notes);
@@ -212,7 +212,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
 
         return FlowOperationDTO.builder()
                 .id(entity.getId())
-                .date(entity.getDate())
+                .operationDate(entity.getOperationDate())
                 .volume(entity.getVolume())
                 .validatedAt(entity.getValidatedAt())
                 .notes(entity.getNotes())

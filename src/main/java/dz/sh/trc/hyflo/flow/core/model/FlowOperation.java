@@ -72,7 +72,7 @@ public class FlowOperation extends GenericModel {
 	@NotNull(message = "Operation date is mandatory")
 	@PastOrPresent(message = "Operation date cannot be in the future")
 	@Column(name = "F_01", nullable = false)
-	private LocalDate date;
+	private LocalDate operationDate;
     
 	@Schema(
 		description = "Volume of product moved (in cubic meters or barrels)",
