@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowOperationService
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 01-31-2026 - Added validate and reject methods
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -15,6 +15,7 @@
 package dz.sh.trc.hyflo.flow.core.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,9 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
+import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
+import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
+import dz.sh.trc.hyflo.security.service.SecurityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowOperationService extends GenericService<FlowOperation, FlowOperationDTO, Long> {
 
     private final FlowOperationRepository flowOperationRepository;
+    private final ValidationStatusRepository validationStatusRepository;
+    private final EmployeeRepository employeeRepository;
+    private final SecurityService securityService;
 
     @Override
     protected JpaRepository<FlowOperation, Long> getRepository() {
@@ -151,5 +161,104 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
                   statusId, startDate, endDate);
         return executeQuery(p -> flowOperationRepository.findByValidationStatusAndDateRange(
                 statusId, startDate, endDate, p), pageable);
+    }
+
+    /**
+     * Validates a PENDING flow operation.
+     * Changes status from PENDING to VALIDATED.
+     * 
+     * @param id Flow operation ID to validate
+     * @param validatorId Employee ID performing the validation
+     * @return Updated flow operation DTO
+     * @throws ResourceNotFoundException if operation or validator not found
+     * @throws BusinessValidationException if operation is not in PENDING status
+     */
+    @Transactional
+    public FlowOperationDTO validate(Long id, Long validatorId) {
+        log.info("Validating flow operation: id={}, validatorId={}", id, validatorId);
+        
+        // Fetch operation
+        FlowOperation operation = flowOperationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", "id", id));
+        
+        // Check if operation is in PENDING status
+        if (!"PENDING".equalsIgnoreCase(operation.getValidationStatus().getCode())) {
+            throw new BusinessValidationException(
+                String.format("Cannot validate operation in %s status. Only PENDING operations can be validated.",
+                        operation.getValidationStatus().getCode()));
+        }
+        
+        // Fetch validator employee
+        Employee validator = employeeRepository.findById(validatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", validatorId));
+        
+        // Fetch VALIDATED status
+        ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
+                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "code", "VALIDATED"));
+        
+        // Update operation
+        operation.setValidationStatus(validatedStatus);
+        operation.setValidatedBy(validator);
+        operation.setValidatedAt(LocalDateTime.now());
+        
+        // Save and return
+        FlowOperation saved = flowOperationRepository.save(operation);
+        log.info("Flow operation validated successfully: id={}", id);
+        return FlowOperationDTO.fromEntity(saved);
+    }
+
+    /**
+     * Rejects a PENDING flow operation.
+     * Changes status from PENDING to REJECTED and adds rejection reason to notes.
+     * 
+     * @param id Flow operation ID to reject
+     * @param validatorId Employee ID performing the rejection
+     * @param rejectionReason Reason for rejection
+     * @return Updated flow operation DTO
+     * @throws ResourceNotFoundException if operation or validator not found
+     * @throws BusinessValidationException if operation is not in PENDING status or reason is empty
+     */
+    @Transactional
+    public FlowOperationDTO reject(Long id, Long validatorId, String rejectionReason) {
+        log.info("Rejecting flow operation: id={}, validatorId={}", id, validatorId);
+        
+        // Validate rejection reason
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            throw new BusinessValidationException("Rejection reason is mandatory");
+        }
+        
+        // Fetch operation
+        FlowOperation operation = flowOperationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", "id", id));
+        
+        // Check if operation is in PENDING status
+        if (!"PENDING".equalsIgnoreCase(operation.getValidationStatus().getCode())) {
+            throw new BusinessValidationException(
+                String.format("Cannot reject operation in %s status. Only PENDING operations can be rejected.",
+                        operation.getValidationStatus().getCode()));
+        }
+        
+        // Fetch validator employee
+        Employee validator = employeeRepository.findById(validatorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", validatorId));
+        
+        // Fetch REJECTED status
+        ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
+                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "code", "REJECTED"));
+        
+        // Update operation with rejection details
+        operation.setValidationStatus(rejectedStatus);
+        operation.setValidatedBy(validator);
+        operation.setValidatedAt(LocalDateTime.now());
+        
+        // Append rejection reason to notes
+        String updatedNotes = (operation.getNotes() != null ? operation.getNotes() + "\n\n" : "") +
+                              "[REJECTED] " + rejectionReason;
+        operation.setNotes(updatedNotes.length() > 500 ? updatedNotes.substring(0, 500) : updatedNotes);
+        
+        // Save and return
+        FlowOperation saved = flowOperationRepository.save(operation);
+        log.info("Flow operation rejected successfully: id={}", id);
+        return FlowOperationDTO.fromEntity(saved);
     }
 }
