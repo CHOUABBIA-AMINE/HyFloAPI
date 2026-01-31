@@ -195,7 +195,7 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
     // ========== VALIDATION ENDPOINTS ==========
 
     @PostMapping("/{id}/validate")
-    @PreAuthorize("hasAuthority('FLOW_OPERATION:VALIDATE')")
+    @PreAuthorize("hasAuthority('FLOW_OPERATION:MANAGE')")
     @Operation(
         summary = "Validate a flow operation",
         description = "Approve a PENDING flow operation, changing its status to VALIDATED. " +
@@ -226,7 +226,7 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
             @Parameter(description = "Request body containing validator employee ID", required = true)
             @RequestBody Map<String, Long> request) {
         
-        Long validatorId = request.get("validatorId");
+        Long validatorId = request.get("validatedById");
         if (validatorId == null) {
             throw new IllegalArgumentException("validatorId is required in request body");
         }

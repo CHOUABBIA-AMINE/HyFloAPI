@@ -35,7 +35,6 @@ import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
-import dz.sh.trc.hyflo.security.service.SecurityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,7 +47,6 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
     private final FlowOperationRepository flowOperationRepository;
     private final ValidationStatusRepository validationStatusRepository;
     private final EmployeeRepository employeeRepository;
-    private final SecurityService securityService;
 
     @Override
     protected JpaRepository<FlowOperation, Long> getRepository() {
@@ -179,7 +177,7 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
         
         // Fetch operation
         FlowOperation operation = flowOperationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", id));
         
         // Check if operation is in PENDING status
         if (!"PENDING".equalsIgnoreCase(operation.getValidationStatus().getCode())) {
@@ -190,11 +188,11 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
         
         // Fetch validator employee
         Employee validator = employeeRepository.findById(validatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", validatorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", validatorId));
         
         // Fetch VALIDATED status
         ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
-                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "code", "VALIDATED"));
+                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "VALIDATED"));
         
         // Update operation
         operation.setValidationStatus(validatedStatus);
@@ -229,7 +227,7 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
         
         // Fetch operation
         FlowOperation operation = flowOperationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", id));
         
         // Check if operation is in PENDING status
         if (!"PENDING".equalsIgnoreCase(operation.getValidationStatus().getCode())) {
@@ -240,11 +238,11 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
         
         // Fetch validator employee
         Employee validator = employeeRepository.findById(validatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", validatorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", validatorId));
         
         // Fetch REJECTED status
         ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
-                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "code", "REJECTED"));
+                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "REJECTED"));
         
         // Update operation with rejection details
         operation.setValidationStatus(rejectedStatus);
