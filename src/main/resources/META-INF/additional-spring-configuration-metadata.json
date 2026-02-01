@@ -188,5 +188,30 @@
     "name": "hyflo.openapi.prod-url",
     "type": "java.lang.String",
     "description": "A description for 'hyflo.openapi.prod-url'"
+  },
+  {
+    "name": "notification.websocket.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'notification.websocket.enabled'"
+  },
+  {
+    "name": "notification.websocket.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'notification.websocket.allowed-origins'"
+  },
+  {
+    "name": "notification.cleanup.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'notification.cleanup.enabled'"
+  },
+  {
+    "name": "notification.cleanup.cron",
+    "type": "java.lang.String",
+    "description": "A description for 'notification.cleanup.cron'"
+  },
+  {
+    "name": "notification.cleanup.retention-days",
+    "type": "java.lang.String",
+    "description": "A description for 'notification.cleanup.retention-days'"
   }
 ]}
