@@ -4,7 +4,6 @@
  *
  * 	@Name		: FlowReadingService
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 02-01-2026 - Implemented event publishing using GenericService lifecycle hooks
  * 	@UpdatedOn	: 01-27-2026 - Added validate and reject methods
  *
  * 	@Type		: Class
@@ -17,7 +16,6 @@ package dz.sh.trc.hyflo.flow.core.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,9 +25,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.configuration.event.ReadingRejectedEvent;
-import dz.sh.trc.hyflo.configuration.event.ReadingSubmittedEvent;
-import dz.sh.trc.hyflo.configuration.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
@@ -53,8 +48,6 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
     private final FlowReadingRepository flowReadingRepository;
     private final ValidationStatusRepository validationStatusRepository;
     private final EmployeeRepository employeeRepository;
-
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected JpaRepository<FlowReading, Long> getRepository() {
@@ -81,27 +74,6 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         dto.updateEntity(entity);
     }
 
-    /**
-     * Lifecycle hook: Called after a reading is created
-     * Publishes ReadingSubmittedEvent to notify all validators
-     */
-    @Override
-    protected void afterCreate(FlowReading reading) {
-        String readingIdentifier = buildReadingIdentifier(reading);
-        String submittedBy = reading.getSubmittedBy() != null 
-            ? reading.getSubmittedBy().getUsername() 
-            : "Unknown";
-        
-        ReadingSubmittedEvent event = ReadingSubmittedEvent.builder()
-                .readingId(reading.getId())
-                .submittedBy(submittedBy)
-                .readingIdentifier(readingIdentifier)
-                .submittedAt(LocalDateTime.now().format(DATETIME_FORMATTER))
-                .build();
-        
-        publishEvent(event);
-    }
-
     @Override
     @Transactional
     public FlowReadingDTO create(FlowReadingDTO dto) {
@@ -114,7 +86,6 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 "Flow reading for this pipeline and timestamp already exists");
         }
         
-        // Parent class will call afterCreate() hook automatically
         return super.create(dto);
     }
 
@@ -228,7 +199,6 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
     /**
      * Validate a flow reading
      * Updates the reading status to VALIDATED and records validator information
-     * Publishes ReadingValidatedEvent using generic event publishing
      * 
      * @param id Reading ID
      * @param validatedById Employee ID of the validator
@@ -239,22 +209,22 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
     public FlowReadingDTO validate(Long id, Long validatedById) {
         log.info("Validating flow reading {} by employee {}", id, validatedById);
         
+        // Find the reading
         FlowReading reading = flowReadingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Flow reading with ID %d not found", id)));
         
-        String originalSubmitter = reading.getSubmittedBy() != null 
-            ? reading.getSubmittedBy().getUsername() 
-            : "Unknown";
-        
+        // Find VALIDATED status
         ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "VALIDATED status not found in database. Please configure validation statuses."));
         
+        // Find validator employee
         Employee validator = employeeRepository.findById(validatedById)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Employee with ID %d not found", validatedById)));
         
+        // Update reading
         reading.setValidationStatus(validatedStatus);
         reading.setValidatedBy(validator);
         reading.setValidatedAt(LocalDateTime.now());
@@ -264,30 +234,12 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                  id, validator.getRegistrationNumber(), 
                  validator.getFirstNameLt() + " " + validator.getLastNameLt());
         
-        // Publish event using generic publishEvent method
-        String readingIdentifier = buildReadingIdentifier(saved);
-        String validatorUsername = validator.getUser() != null 
-            ? validator.getUser().getUsername() 
-            : validator.getRegistrationNumber();
-        
-        ReadingValidatedEvent event = ReadingValidatedEvent.builder()
-                .readingId(saved.getId())
-                .validatedBy(validatorUsername)
-                .originalSubmitter(originalSubmitter)
-                .readingIdentifier(readingIdentifier)
-                .comment(null)
-                .validatedAt(LocalDateTime.now().format(DATETIME_FORMATTER))
-                .build();
-        
-        publishEvent(event);
-        
         return FlowReadingDTO.fromEntity(saved);
     }
 
     /**
      * Reject a flow reading
      * Updates the reading status to REJECTED and records rejection information
-     * Publishes ReadingRejectedEvent using generic event publishing
      * 
      * @param id Reading ID
      * @param rejectedById Employee ID of the rejector
@@ -300,26 +252,27 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         log.info("Rejecting flow reading {} by employee {} with reason: {}", 
                  id, rejectedById, rejectionReason);
         
+        // Find the reading
         FlowReading reading = flowReadingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Flow reading with ID %d not found", id)));
         
-        String originalSubmitter = reading.getSubmittedBy() != null 
-            ? reading.getSubmittedBy().getUsername() 
-            : "Unknown";
-        
+        // Find REJECTED status
         ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
                 .orElseThrow(() -> new EntityNotFoundException(
                         "REJECTED status not found in database. Please configure validation statuses."));
         
+        // Find rejector employee
         Employee rejector = employeeRepository.findById(rejectedById)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Employee with ID %d not found", rejectedById)));
         
+        // Update reading
         reading.setValidationStatus(rejectedStatus);
         reading.setValidatedBy(rejector);
         reading.setValidatedAt(LocalDateTime.now());
         
+        // Append rejection reason to notes
         String existingNotes = reading.getNotes();
         String rejectionNote = String.format("\n\n=== REJECTION ===\nRejected by: %s %s (%s)\nDate: %s\nReason: %s",
                 rejector.getFirstNameLt(), 
@@ -334,57 +287,6 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                  id, rejector.getRegistrationNumber(), 
                  rejector.getFirstNameLt() + " " + rejector.getLastNameLt());
         
-        // Publish event using generic publishEvent method
-        String readingIdentifier = buildReadingIdentifier(saved);
-        String rejectorUsername = rejector.getUser() != null 
-            ? rejector.getUser().getUsername() 
-            : rejector.getRegistrationNumber();
-        
-        ReadingRejectedEvent event = ReadingRejectedEvent.builder()
-                .readingId(saved.getId())
-                .rejectedBy(rejectorUsername)
-                .originalSubmitter(originalSubmitter)
-                .readingIdentifier(readingIdentifier)
-                .rejectionReason(rejectionReason)
-                .rejectedAt(LocalDateTime.now().format(DATETIME_FORMATTER))
-                .build();
-        
-        publishEvent(event);
-        
         return FlowReadingDTO.fromEntity(saved);
-    }
-
-    // ========== HELPER METHODS ==========
-
-    /**
-     * Build a human-readable identifier for a reading
-     * Used in notifications to help users identify which reading is referenced
-     * 
-     * @param reading FlowReading entity
-     * @return Formatted identifier string
-     */
-    private String buildReadingIdentifier(FlowReading reading) {
-        StringBuilder identifier = new StringBuilder();
-        
-        if (reading.getPipeline() != null && reading.getPipeline().getName() != null) {
-            identifier.append(reading.getPipeline().getName());
-        } else {
-            identifier.append("Pipeline #").append(reading.getPipeline().getId());
-        }
-        
-        if (reading.getRecordedAt() != null) {
-            identifier.append(" at ")
-                     .append(reading.getRecordedAt().format(DATETIME_FORMATTER));
-        }
-        
-        if (reading.getReadingSlot() != null) {
-            if (reading.getReadingSlot().getNameEn() != null) {
-                identifier.append(" (").append(reading.getReadingSlot().getNameEn()).append(")");
-            } else if (reading.getReadingSlot().getNameFr() != null) {
-                identifier.append(" (").append(reading.getReadingSlot().getNameFr()).append(")");
-            }
-        }
-        
-        return identifier.toString();
     }
 }
