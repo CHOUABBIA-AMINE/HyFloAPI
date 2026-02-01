@@ -83,7 +83,7 @@ public class Parameter extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
 		maxLength = 250
 	)
-	@Size(max = 250, message = "File type must not exceed 20 characters")
+	@Size(max = 250, message = "File type must not exceed 250 characters")
 	@Column(name="F_04", length=250, nullable=true)
 	private String description;
 }
