@@ -4,6 +4,7 @@
  *
  *	@Name		: GenericService
  *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 02-01-2026 - Added ApplicationEventPublisher for generic event publishing
  *	@UpdatedOn	: 12-10-2025
  *
  *	@Type		: Abstract Class
@@ -16,6 +17,8 @@ package dz.sh.trc.hyflo.configuration.template;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,6 +32,7 @@ import java.util.stream.Collectors;
 /**
  * Generic Service Base Class
  * Provides common CRUD operations to reduce code duplication across services
+ * Now includes ApplicationEventPublisher for generic event publishing
  * 
  * Usage Example:
  * <pre>
@@ -63,6 +67,12 @@ import java.util.stream.Collectors;
  *     protected void updateEntityFromDTO(Currency entity, CurrencyDTO dto) {
  *         dto.updateEntity(entity);
  *     }
+ *     
+ *     // Optional: Override to publish custom events
+ *     @Override
+ *     protected void afterCreate(Currency entity) {
+ *         publishEvent(new CurrencyCreatedEvent(entity.getId()));
+ *     }
  * }
  * }
  * </pre>
@@ -74,6 +84,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public abstract class GenericService<E, D, ID> {
+
+    /**
+     * ApplicationEventPublisher for publishing domain events
+     * Injected automatically by Spring
+     * Available to all subclasses via publishEvent() method
+     */
+    @Autowired(required = false)
+    private ApplicationEventPublisher eventPublisher;
 
     // ========== ABSTRACT METHODS (Must be implemented by subclasses) ==========
 
@@ -117,11 +135,71 @@ public abstract class GenericService<E, D, ID> {
      */
     protected abstract void updateEntityFromDTO(E entity, D dto);
 
+    // ========== LIFECYCLE HOOK METHODS (Optional overrides) ==========
+
+    /**
+     * Hook called after entity is created and saved
+     * Override in subclass to publish domain events or perform additional actions
+     * 
+     * Example:
+     * <pre>
+     * {@code
+     * @Override
+     * protected void afterCreate(FlowReading entity) {
+     *     publishEvent(ReadingSubmittedEvent.builder()
+     *         .readingId(entity.getId())
+     *         .submittedBy(entity.getSubmittedBy().getUsername())
+     *         .build());
+     * }
+     * }
+     * </pre>
+     * 
+     * @param entity The created entity
+     */
+    protected void afterCreate(E entity) {
+        // Default: no action
+        // Subclasses can override to publish events
+    }
+
+    /**
+     * Hook called after entity is updated and saved
+     * Override in subclass to publish domain events or perform additional actions
+     * 
+     * @param entity The updated entity
+     */
+    protected void afterUpdate(E entity) {
+        // Default: no action
+        // Subclasses can override to publish events
+    }
+
+    /**
+     * Hook called before entity is deleted
+     * Override in subclass to publish domain events or perform additional actions
+     * 
+     * @param entity The entity about to be deleted
+     */
+    protected void beforeDelete(E entity) {
+        // Default: no action
+        // Subclasses can override to publish events
+    }
+
+    /**
+     * Hook called after entity is deleted
+     * Override in subclass to publish domain events or perform additional actions
+     * 
+     * @param id The ID of the deleted entity
+     */
+    protected void afterDelete(ID id) {
+        // Default: no action
+        // Subclasses can override to publish events
+    }
+
     // ========== CREATE OPERATIONS ==========
 
     /**
      * Create new entity
      * Override this method in subclass to add validation
+     * Calls afterCreate() hook for event publishing
      * 
      * @param dto DTO with entity data
      * @return Created entity as DTO
@@ -134,6 +212,16 @@ public abstract class GenericService<E, D, ID> {
         E savedEntity = getRepository().save(entity);
         
         log.info("Successfully created {} with ID: {}", getEntityName(), getEntityId(savedEntity));
+        
+        // Call lifecycle hook for event publishing
+        try {
+            afterCreate(savedEntity);
+        } catch (Exception e) {
+            log.error("Error in afterCreate hook for {} with ID: {}", 
+                    getEntityName(), getEntityId(savedEntity), e);
+            // Don't fail the transaction if post-processing fails
+        }
+        
         return toDTO(savedEntity);
     }
 
@@ -212,6 +300,7 @@ public abstract class GenericService<E, D, ID> {
     /**
      * Update entity
      * Override this method in subclass to add validation
+     * Calls afterUpdate() hook for event publishing
      * 
      * @param id Entity ID
      * @param dto DTO with updated values
@@ -228,6 +317,15 @@ public abstract class GenericService<E, D, ID> {
         E updatedEntity = getRepository().save(existingEntity);
         log.info("Successfully updated {} with ID: {}", getEntityName(), id);
         
+        // Call lifecycle hook for event publishing
+        try {
+            afterUpdate(updatedEntity);
+        } catch (Exception e) {
+            log.error("Error in afterUpdate hook for {} with ID: {}", 
+                    getEntityName(), id, e);
+            // Don't fail the transaction if post-processing fails
+        }
+        
         return toDTO(updatedEntity);
     }
 
@@ -235,6 +333,7 @@ public abstract class GenericService<E, D, ID> {
 
     /**
      * Delete entity by ID
+     * Calls beforeDelete() and afterDelete() hooks for event publishing
      * 
      * @param id Entity ID
      * @throws ResourceNotFoundException if entity not found
@@ -244,14 +343,32 @@ public abstract class GenericService<E, D, ID> {
         log.info("Deleting {} with ID: {}", getEntityName(), id);
         
         E entity = getEntityById(id);
+        
+        // Call lifecycle hook before deletion
+        try {
+            beforeDelete(entity);
+        } catch (Exception e) {
+            log.error("Error in beforeDelete hook for {} with ID: {}", 
+                    getEntityName(), id, e);
+        }
+        
         getRepository().delete(entity);
         
         log.info("Successfully deleted {} with ID: {}", getEntityName(), id);
+        
+        // Call lifecycle hook after deletion
+        try {
+            afterDelete(id);
+        } catch (Exception e) {
+            log.error("Error in afterDelete hook for {} with ID: {}", 
+                    getEntityName(), id, e);
+        }
     }
 
     /**
      * Delete entity by ID (direct)
      * Slightly more efficient as it doesn't fetch the entity first
+     * Calls afterDelete() hook for event publishing
      * 
      * @param id Entity ID
      * @throws ResourceNotFoundException if entity not found
@@ -266,6 +383,56 @@ public abstract class GenericService<E, D, ID> {
         
         getRepository().deleteById(id);
         log.info("Successfully deleted {} with ID: {}", getEntityName(), id);
+        
+        // Call lifecycle hook after deletion
+        try {
+            afterDelete(id);
+        } catch (Exception e) {
+            log.error("Error in afterDelete hook for {} with ID: {}", 
+                    getEntityName(), id, e);
+        }
+    }
+
+    // ========== EVENT PUBLISHING METHODS ==========
+
+    /**
+     * Publish a domain event
+     * Can be called from subclasses to publish custom events
+     * 
+     * Example usage in subclass:
+     * <pre>
+     * {@code
+     * publishEvent(ReadingSubmittedEvent.builder()
+     *     .readingId(entity.getId())
+     *     .submittedBy(entity.getSubmittedBy().getUsername())
+     *     .build());
+     * }
+     * </pre>
+     * 
+     * @param event The event object to publish
+     */
+    protected void publishEvent(Object event) {
+        if (eventPublisher != null) {
+            try {
+                eventPublisher.publishEvent(event);
+                log.debug("Published event: {}", event.getClass().getSimpleName());
+            } catch (Exception e) {
+                log.error("Failed to publish event: {}", event.getClass().getSimpleName(), e);
+                // Don't propagate exception - event publishing should not break main flow
+            }
+        } else {
+            log.warn("ApplicationEventPublisher not available. Event not published: {}", 
+                    event.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Check if event publisher is available
+     * 
+     * @return true if event publisher is injected and available
+     */
+    protected boolean canPublishEvents() {
+        return eventPublisher != null;
     }
 
     // ========== UTILITY METHODS ==========
