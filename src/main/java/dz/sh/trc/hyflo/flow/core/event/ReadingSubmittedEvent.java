@@ -12,8 +12,9 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.event;
+package dz.sh.trc.hyflo.flow.core.event;
 
+import dz.sh.trc.hyflo.configuration.event.BaseNotificationEvent;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;

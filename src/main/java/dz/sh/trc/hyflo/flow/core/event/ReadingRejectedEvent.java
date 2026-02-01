@@ -12,13 +12,14 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.event;
+package dz.sh.trc.hyflo.flow.core.event;
 
+import java.util.List;
+
+import dz.sh.trc.hyflo.configuration.event.BaseNotificationEvent;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-
-import java.util.List;
 
 /**
  * Event published when a Validator rejects a reading
