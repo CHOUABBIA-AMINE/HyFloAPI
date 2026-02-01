@@ -14,6 +14,7 @@
 
 package dz.sh.trc.hyflo.system.security.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -40,4 +41,50 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<User> searchByAnyField(@Param("search") String search, Pageable pageable);
+    
+// ========== NEW METHODS FOR NOTIFICATION SYSTEM ==========
+    
+    /**
+     * Find all enabled users who have a specific role (by role name)
+     * This query joins User -> roles -> name to find users with the given role
+     * Only returns enabled users
+     * 
+     * @param roleName Role name (e.g., "ROLE_VALIDATOR", "ROLE_READER")
+     * @return List of users with the specified role
+     */
+    @Query("SELECT DISTINCT u FROM User u "
+            + "JOIN u.roles r "
+            + "WHERE r.name = :roleName "
+            + "AND u.enabled = true")
+    List<User> findEnabledUsersByRoleName(@Param("roleName") String roleName);
+    
+    /**
+     * Find all enabled users who have a specific role through groups
+     * This query joins User -> groups -> roles -> name
+     * Only returns enabled users
+     * 
+     * @param roleName Role name
+     * @return List of users with the specified role (via groups)
+     */
+    @Query("SELECT DISTINCT u FROM User u "
+            + "JOIN u.groups g "
+            + "JOIN g.roles r "
+            + "WHERE r.name = :roleName "
+            + "AND u.enabled = true")
+    List<User> findEnabledUsersByRoleNameViaGroups(@Param("roleName") String roleName);
+    
+    /**
+     * Find all enabled users who have a specific role either directly or through groups
+     * Combines both direct role assignments and group-based role assignments
+     * 
+     * @param roleName Role name (e.g., "ROLE_VALIDATOR")
+     * @return List of users with the specified role (direct or via groups)
+     */
+    @Query("SELECT DISTINCT u FROM User u "
+            + "LEFT JOIN u.roles r "
+            + "LEFT JOIN u.groups g "
+            + "LEFT JOIN g.roles gr "
+            + "WHERE (r.name = :roleName OR gr.name = :roleName) "
+            + "AND u.enabled = true")
+    List<User> findAllEnabledUsersByRoleName(@Param("roleName") String roleName);
 }

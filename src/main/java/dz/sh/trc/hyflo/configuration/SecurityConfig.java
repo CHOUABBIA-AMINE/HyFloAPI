@@ -111,7 +111,7 @@ public class SecurityConfig {
             	.requestMatchers("/auth/logout").authenticated()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-
+                .requestMatchers("/ws/**").permitAll()
                 // Protected endpoints
                 /*.requestMatchers("/api/users/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers("/api/roles/**").hasRole("ADMIN")

@@ -16,8 +16,10 @@ package dz.sh.trc.hyflo.network.type.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -38,6 +40,7 @@ import lombok.ToString;
 @Entity(name="ProductionFieldType")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name="T_02_01_07")
+@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_01_07_FK_00"))
 public class ProductionFieldType extends FacilityType {
 
 }

@@ -21,6 +21,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -44,6 +45,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="Employee")
 @Table(name="T_01_03_04")
+@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_01_03_04_FK_00"))
 public class Employee extends Person {
 
 	@Schema(
