@@ -165,7 +165,7 @@ public class Pipeline extends Infrastructure {
 
 	@Schema(
 		description = "Alloy or material used for pipeline construction",
-		requiredMode = Schema.RequiredMode.REQUIRED
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_01"), nullable=true)
@@ -173,7 +173,7 @@ public class Pipeline extends Infrastructure {
 
 	@Schema(
 		description = "Alloy or material used for exterior coating/protection",
-		requiredMode = Schema.RequiredMode.REQUIRED
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_02"), nullable=true)
@@ -181,7 +181,7 @@ public class Pipeline extends Infrastructure {
 
 	@Schema(
 		description = "Alloy or material used for interior coating/lining",
-		requiredMode = Schema.RequiredMode.REQUIRED
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_20", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_03"), nullable=true)
