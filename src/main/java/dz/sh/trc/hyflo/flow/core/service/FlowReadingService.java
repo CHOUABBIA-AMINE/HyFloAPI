@@ -27,15 +27,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.configuration.event.ReadingRejectedEvent;
-import dz.sh.trc.hyflo.configuration.event.ReadingSubmittedEvent;
-import dz.sh.trc.hyflo.configuration.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.event.ReadingRejectedEvent;
+import dz.sh.trc.hyflo.flow.core.event.ReadingSubmittedEvent;
+import dz.sh.trc.hyflo.flow.core.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
@@ -89,14 +89,14 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
     @Override
     protected void afterCreate(FlowReading reading) {
         String readingIdentifier = buildReadingIdentifier(reading);
-        String submittedBy = reading.getSubmittedBy() != null 
-            ? reading.getSubmittedBy().getUsername() 
+        String recordedBy = reading.getRecordedBy() != null 
+            ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
             : "Unknown";
         
         // Use factory method to create properly configured event
         ReadingSubmittedEvent event = ReadingSubmittedEvent.create(
                 reading.getId(),
-                submittedBy,
+                recordedBy,
                 readingIdentifier,
                 LocalDateTime.now().format(DATETIME_FORMATTER)
         );
@@ -247,9 +247,9 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .orElseThrow(() -> new ResourceNotFoundException(
                         String.format("Flow reading with ID %d not found", id)));
         
-        String originalSubmitter = reading.getSubmittedBy() != null 
-            ? reading.getSubmittedBy().getUsername() 
-            : "Unknown";
+        String originalRecorder = reading.getRecordedBy() != null 
+                ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
+                : "Unknown";
         
         ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -267,18 +267,18 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         FlowReading saved = flowReadingRepository.save(reading);
         log.info("Successfully validated flow reading {} by employee {} ({})", 
                  id, validator.getRegistrationNumber(), 
-                 validator.getFirstNameLt() + " " + validator.getLastNameLt());
+                 validator.getLastNameLt() + " " + validator.getFirstNameLt());
         
         // Publish validation event using generic notification system
         String readingIdentifier = buildReadingIdentifier(saved);
-        String validatorUsername = validator.getUser() != null 
-            ? validator.getUser().getUsername() 
+        String validatorUsername = validator != null 
+            ? validator.getLastNameLt() + " " + validator.getFirstNameLt() 
             : validator.getRegistrationNumber();
         
         ReadingValidatedEvent event = ReadingValidatedEvent.create(
                 saved.getId(),
                 validatorUsername,
-                originalSubmitter,
+                originalRecorder,
                 readingIdentifier,
                 null, // Optional comment - can be extended
                 LocalDateTime.now().format(DATETIME_FORMATTER)
@@ -310,9 +310,9 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Flow reading with ID %d not found", id)));
         
-        String originalSubmitter = reading.getSubmittedBy() != null 
-            ? reading.getSubmittedBy().getUsername() 
-            : "Unknown";
+        String originalRecorder = reading.getRecordedBy() != null 
+                ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
+                : "Unknown";
         
         ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -344,14 +344,14 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         
         // Publish rejection event using generic notification system
         String readingIdentifier = buildReadingIdentifier(saved);
-        String rejectorUsername = rejector.getUser() != null 
-            ? rejector.getUser().getUsername() 
+        String rejectorUsername = rejector != null 
+            ? rejector.getLastNameLt() + " " + rejector.getFirstNameLt()
             : rejector.getRegistrationNumber();
         
         ReadingRejectedEvent event = ReadingRejectedEvent.create(
                 saved.getId(),
                 rejectorUsername,
-                originalSubmitter,
+                originalRecorder,
                 readingIdentifier,
                 rejectionReason,
                 LocalDateTime.now().format(DATETIME_FORMATTER)
@@ -389,10 +389,10 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         }
         
         if (reading.getReadingSlot() != null) {
-            if (reading.getReadingSlot().getNameEn() != null) {
-                identifier.append(" (").append(reading.getReadingSlot().getNameEn()).append(")");
-            } else if (reading.getReadingSlot().getNameFr() != null) {
-                identifier.append(" (").append(reading.getReadingSlot().getNameFr()).append(")");
+            if (reading.getReadingSlot().getDesignationEn() != null) {
+                identifier.append(" (").append(reading.getReadingSlot().getDesignationEn()).append(")");
+            } else if (reading.getReadingSlot().getDesignationFr() != null) {
+                identifier.append(" (").append(reading.getReadingSlot().getDesignationFr()).append(")");
             }
         }
         
