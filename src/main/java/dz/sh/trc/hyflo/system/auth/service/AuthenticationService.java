@@ -22,11 +22,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.jwt.JwtUtil;
+import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.system.auth.dto.LoginRequest;
 import dz.sh.trc.hyflo.system.auth.dto.LoginResponse;
 import dz.sh.trc.hyflo.system.auth.dto.RegisterRequest;
 import dz.sh.trc.hyflo.system.auth.dto.TokenRefreshRequest;
 import dz.sh.trc.hyflo.system.auth.dto.TokenRefreshResponse;
+import dz.sh.trc.hyflo.system.auth.dto.UserProfileDTO;
 import dz.sh.trc.hyflo.system.auth.model.RefreshToken;
 import dz.sh.trc.hyflo.system.security.model.User;
 import dz.sh.trc.hyflo.system.security.repository.UserRepository;
@@ -51,12 +53,15 @@ public class AuthenticationService {
         User user = (User) authentication.getPrincipal();
         String accessToken = jwtUtil.generateAccessToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        
+        UserProfileDTO profile = UserProfileDTO.fromEntity(user);
 
         return LoginResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken.getToken())
             .tokenType("Bearer")
             .expiresIn(900L)
+            .user(profile)
             .build();
     }
 
@@ -114,5 +119,12 @@ public class AuthenticationService {
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
         refreshTokenService.deleteByUser(user);
+    }
+    
+    public UserProfileDTO getCurrentUserProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        
+        return UserProfileDTO.fromEntity(user);
     }
 }

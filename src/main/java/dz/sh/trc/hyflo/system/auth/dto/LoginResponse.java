@@ -24,4 +24,6 @@ public class LoginResponse {
     private String refreshToken;
     private String tokenType;
     private Long expiresIn;
+    
+    private UserProfileDTO user;
 }

@@ -16,6 +16,7 @@ package dz.sh.trc.hyflo.system.auth.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ import dz.sh.trc.hyflo.system.auth.dto.LoginResponse;
 import dz.sh.trc.hyflo.system.auth.dto.RegisterRequest;
 import dz.sh.trc.hyflo.system.auth.dto.TokenRefreshRequest;
 import dz.sh.trc.hyflo.system.auth.dto.TokenRefreshResponse;
+import dz.sh.trc.hyflo.system.auth.dto.UserProfileDTO;
 import dz.sh.trc.hyflo.system.auth.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +59,11 @@ public class AuthController {
     public ResponseEntity<Void> logout(Authentication authentication) {
         authenticationService.logout(authentication.getName());
         return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileDTO> getCurrentUser(Authentication authentication) {
+        UserProfileDTO profile = authenticationService.getCurrentUserProfile(authentication.getName());
+        return ResponseEntity.ok(profile);
     }
 }
