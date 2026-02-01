@@ -7,7 +7,7 @@
  *  @UpdatedOn  : 02-01-2026
  *
  *  @Type       : Class
- *  @Layer      : Event Listener
+ *  @Layer      : Event
  *  @Package    : Configuration / Event
  *
  **/

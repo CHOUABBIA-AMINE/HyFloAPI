@@ -8,7 +8,7 @@
  *
  *  @Type       : Class
  *  @Layer      : Service
- *  @Package    : System / Notification / Core
+ *  @Package    : System / Notification
  *
  **/
 

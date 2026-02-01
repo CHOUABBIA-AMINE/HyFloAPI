@@ -7,8 +7,8 @@
  *  @UpdatedOn  : 02-01-2026
  *
  *  @Type       : Class
- *  @Layer      : Service
- *  @Package    : System / Notification / WebSocket
+ *  @Layer      : WebSocket
+ *  @Package    : Configuration / Notification
  *
  **/
 

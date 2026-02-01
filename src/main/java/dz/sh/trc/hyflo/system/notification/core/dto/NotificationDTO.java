@@ -8,7 +8,7 @@
  *
  *  @Type       : Class
  *  @Layer      : DTO
- *  @Package    : System / Notification / Core
+ *  @Package    : System / Notification
  *
  **/
 

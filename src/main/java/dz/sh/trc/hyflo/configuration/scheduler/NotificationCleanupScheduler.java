@@ -8,7 +8,7 @@
  *
  *  @Type       : Class
  *  @Layer      : Scheduler
- *  @Package    : System / Notification / Scheduler
+ *  @Package    : System / Notification
  *
  **/
 

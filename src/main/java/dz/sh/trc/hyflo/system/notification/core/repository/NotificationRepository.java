@@ -8,7 +8,7 @@
  *
  *  @Type       : Interface
  *  @Layer      : Repository
- *  @Package    : System / Notification / Core
+ *  @Package    : System / Notification
  *
  **/
 
