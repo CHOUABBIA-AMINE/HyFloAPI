@@ -21,6 +21,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Configuration for audit functionality
@@ -42,17 +45,31 @@ public class AuditConfig {
      * Implementation of AuditorAware to get current user
      */
     public static class AuditorAwareImpl implements AuditorAware<String> {
-        @Override
+    	@Override
         public Optional<String> getCurrentAuditor() {
-            // TODO: Implement based on your security setup
-            // Example with Spring Security:
-            // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            // if (authentication == null || !authentication.isAuthenticated()) {
-            //     return Optional.of("system");
-            // }
-            // return Optional.of(authentication.getName());
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             
-            return Optional.of("system"); // Placeholder
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return Optional.of("anonymous");
+            }
+            
+            // If authentication is anonymous
+            if (authentication.getPrincipal() instanceof String) {
+                String principal = (String) authentication.getPrincipal();
+                if ("anonymousUser".equals(principal)) {
+                    return Optional.of("anonymous");
+                }
+                return Optional.of(principal);
+            }
+            
+            // If using UserDetails
+            if (authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                return Optional.of(userDetails.getUsername());
+            }
+            
+            // Fallback
+            return Optional.of(authentication.getName());
         }
     }
 }

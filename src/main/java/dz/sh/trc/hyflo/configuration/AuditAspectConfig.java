@@ -21,6 +21,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -150,11 +153,27 @@ public class AuditAspectConfig {
      * Implement this based on your security setup (Spring Security, JWT, etc.)
      */
     private String getCurrentUsername() {
-        // TODO: Implement based on your authentication mechanism
-        // Example with Spring Security:
-        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // return authentication != null ? authentication.getName() : "anonymous";
-        return "system"; // Placeholder
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return "anonymous";
+            }
+            
+            if (authentication.getPrincipal() instanceof UserDetails) {
+                return ((UserDetails) authentication.getPrincipal()).getUsername();
+            }
+            
+            if (authentication.getPrincipal() instanceof String) {
+                String principal = (String) authentication.getPrincipal();
+                return "anonymousUser".equals(principal) ? "anonymous" : principal;
+            }
+            
+            return authentication.getName();
+        } catch (Exception e) {
+            log.warn("Failed to get current username", e);
+            return "system";
+        }
     }
 
     /**
