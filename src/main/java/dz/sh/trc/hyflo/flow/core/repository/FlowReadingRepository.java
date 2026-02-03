@@ -22,11 +22,13 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> {
@@ -104,4 +106,120 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
          + "fr.pipeline.id = :pipelineId "
          + "ORDER BY fr.recordedAt DESC")
     Page<FlowReading> findLatestByPipeline(@Param("pipelineId") Long pipelineId, Pageable pageable);
+    
+    /**
+     * Slot coverage query - shows all pipelines with LEFT JOIN to readings
+     */
+    @Query("""
+        SELECT 
+            p.id as pipelineId,
+            p.code as pipelineCode,
+            p.name as pipelineName,
+            fr.id as readingId,
+            COALESCE(vs.code, 'NOT_RECORDED') as validationStatusCode,
+            fr.recordedAt as recordedAt,
+            fr.validatedAt as validatedAt,
+            CONCAT(rec.firstName, ' ', rec.lastName) as recordedByName,
+            CONCAT(val.firstName, ' ', val.lastName) as validatedByName,
+            CASE WHEN fr.id IS NOT NULL THEN true ELSE false END as hasReading
+        FROM Pipeline p
+        LEFT JOIN FlowReading fr 
+            ON fr.pipeline = p
+           AND fr.readingDate = :readingDate
+           AND fr.readingSlot.id = :slotId
+        LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
+        LEFT JOIN Employee rec ON fr.recordedBy = rec
+        LEFT JOIN Employee val ON fr.validatedBy = val
+        WHERE p.manager.id = :structureId
+        ORDER BY p.code ASC
+    """)
+    List<SlotCoverageProjection> findSlotCoverage(
+        @Param("readingDate") LocalDate readingDate,
+        @Param("slotId") Long slotId,
+        @Param("structureId") Long structureId
+    );
+    
+    /**
+     * Check if slot is complete
+     */
+    @Query("""
+        SELECT COUNT(DISTINCT p.id) = 
+               COUNT(DISTINCT CASE 
+                   WHEN vs.code IN ('SUBMITTED', 'APPROVED') 
+                   THEN fr.id 
+               END)
+        FROM Pipeline p
+        LEFT JOIN FlowReading fr 
+               ON fr.pipeline = p
+              AND fr.readingDate = :readingDate
+              AND fr.readingSlot.id = :slotId
+        LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
+        WHERE p.manager.id = :structureId
+    """)
+    Boolean isSlotComplete(
+        @Param("readingDate") LocalDate readingDate,
+        @Param("slotId") Long slotId,
+        @Param("structureId") Long structureId
+    );
+    
+    /**
+     * Find readings pending validation
+     */
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        WHERE fr.pipeline.manager.id = :structureId
+            AND fr.readingDate = :readingDate
+            AND fr.readingSlot.id = :slotId
+            AND fr.validationStatus.code = 'SUBMITTED'
+        ORDER BY fr.recordedAt ASC
+    """)
+    List<FlowReading> findPendingValidations(
+        @Param("readingDate") LocalDate readingDate,
+        @Param("slotId") Long slotId,
+        @Param("structureId") Long structureId
+    );
+    
+    /**
+     * Find reading with pessimistic lock for workflow transitions
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT fr FROM FlowReading fr WHERE fr.id = :id")
+    Optional<FlowReading> findByIdForUpdate(@Param("id") Long id);
+    
+    /**
+     * Find existing reading by pipeline, date, slot
+     */
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        WHERE fr.pipeline.id = :pipelineId
+            AND fr.readingDate = :readingDate
+            AND fr.readingSlot.id = :slotId
+    """)
+    Optional<FlowReading> findByPipelineAndDateAndSlot(
+        @Param("pipelineId") Long pipelineId,
+        @Param("readingDate") LocalDate readingDate,
+        @Param("slotId") Long slotId
+    );
+    
+    /**
+     * Slot statistics aggregation
+     */
+    @Query("""
+        SELECT 
+            COALESCE(vs.code, 'NOT_RECORDED') as statusCode,
+            COUNT(p.id) as count
+        FROM Pipeline p
+        LEFT JOIN FlowReading fr 
+               ON fr.pipeline = p
+              AND fr.readingDate = :readingDate
+              AND fr.readingSlot.id = :slotId
+        LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
+        WHERE p.manager.id = :structureId
+        GROUP BY vs.code
+    """)
+    List<Object[]> getSlotStatistics(
+        @Param("readingDate") LocalDate readingDate,
+        @Param("slotId") Long slotId,
+        @Param("structureId") Long structureId
+    );
 }
