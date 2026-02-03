@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowReadingRepository
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-03-2026
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -109,6 +109,7 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     /**
      * Slot coverage query - shows all pipelines with LEFT JOIN to readings
+     * FIX #4: Added slot timing for deadline calculation
      */
     @Query("""
         SELECT 
@@ -121,12 +122,16 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
             fr.validatedAt as validatedAt,
             CONCAT(rec.firstName, ' ', rec.lastName) as recordedByName,
             CONCAT(val.firstName, ' ', val.lastName) as validatedByName,
-            CASE WHEN fr.id IS NOT NULL THEN true ELSE false END as hasReading
+            CASE WHEN fr.id IS NOT NULL THEN true ELSE false END as hasReading,
+            :readingDate as readingDate,
+            slot.startTime as slotStartTime,
+            slot.endTime as slotEndTime
         FROM Pipeline p
         LEFT JOIN FlowReading fr 
             ON fr.pipeline = p
            AND fr.readingDate = :readingDate
            AND fr.readingSlot.id = :slotId
+        LEFT JOIN ReadingSlot slot ON slot.id = :slotId
         LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
         LEFT JOIN Employee rec ON fr.recordedBy = rec
         LEFT JOIN Employee val ON fr.validatedBy = val
@@ -138,16 +143,20 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
         @Param("slotId") Long slotId,
         @Param("structureId") Long structureId
     );
+
     
     /**
-     * Check if slot is complete
+     * Check if slot is complete (all pipelines have APPROVED readings)
      */
     @Query("""
-        SELECT COUNT(DISTINCT p.id) = 
-               COUNT(DISTINCT CASE 
-                   WHEN vs.code IN ('SUBMITTED', 'APPROVED') 
-                   THEN fr.id 
-               END)
+        SELECT 
+            COUNT(DISTINCT p.id) = 
+            COUNT(DISTINCT CASE 
+                WHEN vs.code = 'APPROVED' 
+                THEN fr.id 
+                ELSE NULL 
+            END)
+            AND COUNT(DISTINCT p.id) > 0
         FROM Pipeline p
         LEFT JOIN FlowReading fr 
                ON fr.pipeline = p
@@ -155,6 +164,7 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
               AND fr.readingSlot.id = :slotId
         LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
         WHERE p.manager.id = :structureId
+            AND p.isActive = true
     """)
     Boolean isSlotComplete(
         @Param("readingDate") LocalDate readingDate,
@@ -181,13 +191,14 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     /**
      * Find reading with pessimistic lock for workflow transitions
+     * Used to prevent concurrent modifications during state changes
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT fr FROM FlowReading fr WHERE fr.id = :id")
     Optional<FlowReading> findByIdForUpdate(@Param("id") Long id);
     
     /**
-     * Find existing reading by pipeline, date, slot
+     * Find existing reading by pipeline, date, slot (NO LOCK)
      */
     @Query("""
         SELECT fr FROM FlowReading fr
@@ -196,6 +207,23 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
             AND fr.readingSlot.id = :slotId
     """)
     Optional<FlowReading> findByPipelineAndDateAndSlot(
+        @Param("pipelineId") Long pipelineId,
+        @Param("readingDate") LocalDate readingDate,
+        @Param("slotId") Long slotId
+    );
+    
+    /**
+     * FIX #1: Find existing reading WITH PESSIMISTIC LOCK
+     * Prevents race condition during concurrent submissions
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        WHERE fr.pipeline.id = :pipelineId
+            AND fr.readingDate = :readingDate
+            AND fr.readingSlot.id = :slotId
+    """)
+    Optional<FlowReading> findByPipelineAndDateAndSlotForUpdate(
         @Param("pipelineId") Long pipelineId,
         @Param("readingDate") LocalDate readingDate,
         @Param("slotId") Long slotId

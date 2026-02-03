@@ -1,9 +1,24 @@
+/**
+ *
+ * 	@Author		: MEDJERAB Abir
+ *
+ * 	@Name		: ValidationStatusHelper
+ * 	@CreatedOn	: 01-28-2026
+ * 	@UpdatedOn	: 02-03-2026
+ *
+ * 	@Type		: Helper
+ * 	@Layer		: Helper
+ * 	@Package	: Flow / Core
+ *
+ **/
+
 package dz.sh.trc.hyflo.flow.core.helper;
 
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 
 /**
  * Helper to work with ValidationStatus-based workflow
+ * FIX #2: Enhanced with immutability checks for APPROVED readings
  */
 public class ValidationStatusHelper {
     
@@ -28,11 +43,14 @@ public class ValidationStatusHelper {
     }
     
     /**
-     * Check if reading is editable
+     * FIX #2: Check if reading is editable (APPROVED and SUBMITTED are immutable)
+     * Only DRAFT, REJECTED, or NOT_RECORDED can be modified
      */
     public static boolean isEditable(FlowReading reading) {
         String code = getStatusCode(reading);
-        return NOT_RECORDED.equals(code) || DRAFT.equals(code) || REJECTED.equals(code);
+        return NOT_RECORDED.equals(code) || 
+               DRAFT.equals(code) || 
+               REJECTED.equals(code);
     }
     
     /**
@@ -72,7 +90,7 @@ public class ValidationStatusHelper {
                 SUBMITTED.equals(toCode) && "OPERATOR".equals(userRole);
             
             case APPROVED -> 
-                false; // Terminal state
+                false; // FIX #2: Terminal state - no transitions allowed
             
             default -> false;
         };
@@ -100,9 +118,16 @@ public class ValidationStatusHelper {
     }
     
     /**
-     * Check if status is terminal (no more transitions allowed)
+     * FIX #2: Check if status is terminal (no more transitions allowed)
      */
     public static boolean isTerminal(String code) {
         return APPROVED.equals(code);
+    }
+    
+    /**
+     * Check if status is immutable
+     */
+    public static boolean isImmutable(String code) {
+        return APPROVED.equals(code) || SUBMITTED.equals(code);
     }
 }

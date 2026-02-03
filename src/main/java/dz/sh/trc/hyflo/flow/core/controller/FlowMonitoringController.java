@@ -1,3 +1,17 @@
+/**
+ *
+ * 	@Author		: MEDJERAB Abir
+ *
+ * 	@Name		: FlowMonitoringController
+ * 	@CreatedOn	: 01-28-2026
+ * 	@UpdatedOn	: 02-03-2026
+ *
+ * 	@Type		: Controller
+ * 	@Layer		: Controller
+ * 	@Package	: Flow / Core
+ *
+ **/
+
 package dz.sh.trc.hyflo.flow.core.controller;
 
 import dz.sh.trc.hyflo.flow.core.dto.*;
@@ -18,6 +32,9 @@ public class FlowMonitoringController {
     
     private final FlowReadingWorkflowService workflowService;
     
+    /**
+     * Get slot coverage for date + slot + structure
+     */
     @PostMapping("/slot-coverage")
     @Operation(summary = "Get slot coverage for date + slot + structure")
     public ResponseEntity<SlotCoverageResponseDTO> getSlotCoverage(
@@ -27,6 +44,9 @@ public class FlowMonitoringController {
         return ResponseEntity.ok(response);
     }
     
+    /**
+     * Submit or update a reading
+     */
     @PostMapping("/readings/submit")
     @Operation(summary = "Submit or update a reading")
     public ResponseEntity<Void> submitReading(
@@ -36,6 +56,9 @@ public class FlowMonitoringController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     
+    /**
+     * Validate a reading (approve or reject)
+     */
     @PostMapping("/readings/validate")
     @Operation(summary = "Validate a reading (approve or reject)")
     public ResponseEntity<Void> validateReading(
