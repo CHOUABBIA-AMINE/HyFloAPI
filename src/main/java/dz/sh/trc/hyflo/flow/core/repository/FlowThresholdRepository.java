@@ -220,7 +220,6 @@ public interface FlowThresholdRepository extends JpaRepository<FlowThreshold, Lo
         WHERE p.id NOT IN (
             SELECT ft.pipeline.id FROM FlowThreshold ft
         )
-        AND p.isActive = true
         ORDER BY p.code ASC
     """)
     List<Long> findPipelinesWithoutThresholds();
@@ -237,7 +236,6 @@ public interface FlowThresholdRepository extends JpaRepository<FlowThreshold, Lo
             SELECT ft.pipeline.id FROM FlowThreshold ft
             WHERE ft.active = true
         )
-        AND p.isActive = true
         ORDER BY p.code ASC
     """)
     List<Long> findPipelinesWithoutActiveThresholds();
@@ -252,7 +250,6 @@ public interface FlowThresholdRepository extends JpaRepository<FlowThreshold, Lo
         WHERE p.id NOT IN (
             SELECT ft.pipeline.id FROM FlowThreshold ft
         )
-        AND p.isActive = true
     """)
     long countPipelinesWithoutThresholds();
     

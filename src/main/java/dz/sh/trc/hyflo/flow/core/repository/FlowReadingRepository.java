@@ -120,8 +120,8 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
             COALESCE(vs.code, 'NOT_RECORDED') as validationStatusCode,
             fr.recordedAt as recordedAt,
             fr.validatedAt as validatedAt,
-            CONCAT(rec.firstName, ' ', rec.lastName) as recordedByName,
-            CONCAT(val.firstName, ' ', val.lastName) as validatedByName,
+            CONCAT(rec.firstNameLt, ' ', rec.lastNameLt) as recordedByName,
+            CONCAT(val.firstNameLt, ' ', val.lastNameLt) as validatedByName,
             CASE WHEN fr.id IS NOT NULL THEN true ELSE false END as hasReading,
             :readingDate as readingDate,
             slot.startTime as slotStartTime,
@@ -164,7 +164,6 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
               AND fr.readingSlot.id = :slotId
         LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
         WHERE p.manager.id = :structureId
-            AND p.isActive = true
     """)
     Boolean isSlotComplete(
         @Param("readingDate") LocalDate readingDate,
