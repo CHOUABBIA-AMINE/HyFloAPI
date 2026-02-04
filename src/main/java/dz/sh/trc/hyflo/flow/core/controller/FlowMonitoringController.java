@@ -25,7 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/hyflo/api/flow/monitoring")
+@RequestMapping("/flow/core/monitoring")
 @Tag(name = "Flow Monitoring", description = "Slot-centric flow monitoring and validation")
 @RequiredArgsConstructor
 public class FlowMonitoringController {

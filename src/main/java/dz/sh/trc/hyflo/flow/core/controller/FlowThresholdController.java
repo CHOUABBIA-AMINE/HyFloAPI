@@ -45,7 +45,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/hyflo/api/flow/thresholds")
+@RequestMapping("/flow/core/threshold")
 @Tag(name = "Flow Thresholds", description = "Pipeline operating threshold management")
 @RequiredArgsConstructor
 public class FlowThresholdController {
