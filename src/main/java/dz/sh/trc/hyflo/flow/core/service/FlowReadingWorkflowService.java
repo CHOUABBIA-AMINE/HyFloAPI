@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowReadingWorkflowService
  * 	@CreatedOn	: 01-28-2026
- * 	@UpdatedOn	: 02-03-2026
+ * 	@UpdatedOn	: 02-04-2026
  *
  * 	@Type		: Service
  * 	@Layer		: Service
@@ -22,6 +22,7 @@
  * 	- FIX #5:  Prevent REJECTED → APPROVED bypass
  * 	- FIX #6:  Business validation for measurement data
  * 	- FIX #11: Idempotent validation operations
+ * 	- FIX #12: Nested DTO population for translation support
  *
  **/
 
@@ -43,6 +44,7 @@ import org.springframework.util.StringUtils;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.exception.WorkflowException;
 import dz.sh.trc.hyflo.flow.common.dto.ReadingSlotDTO;
+import dz.sh.trc.hyflo.flow.common.dto.ValidationStatusDTO;
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
@@ -56,11 +58,13 @@ import dz.sh.trc.hyflo.flow.core.helper.ValidationStatusHelper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.flow.core.repository.SlotCoverageProjection;
+import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
 import dz.sh.trc.hyflo.general.organization.repository.StructureRepository;
+import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +93,8 @@ public class FlowReadingWorkflowService {
      * Get slot coverage - all pipelines with reading status for a given date + slot + structure.
      * This is the primary query for operators and supervisors to see what readings are missing.
      *
+     * FIX #12: Populate nested DTOs for translation support
+     *
      * @param request Contains readingDate, slotId, structureId
      * @return Slot coverage with pipeline-level reading status and statistics
      */
@@ -96,6 +102,19 @@ public class FlowReadingWorkflowService {
         
         log.debug("Fetching slot coverage for date={}, slot={}, structure={}", 
             request.getReadingDate(), request.getSlotId(), request.getStructureId());
+        
+        // FIX #12: Load metadata entities for nested DTOs
+        Structure structure = structureRepository.findById(request.getStructureId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Structure not found: " + request.getStructureId()));
+        
+        ReadingSlot slot = readingSlotRepository.findById(request.getSlotId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Slot not found: " + request.getSlotId()));
+        
+        // FIX #12: Populate request nested DTOs for echo/confirmation
+        request.setSlot(ReadingSlotDTO.fromEntity(slot));
+        request.setStructure(StructureDTO.fromEntity(structure));
         
         // Query coverage (LEFT JOIN - shows all pipelines even without readings)
         List<SlotCoverageProjection> projections = flowReadingRepository
@@ -105,30 +124,28 @@ public class FlowReadingWorkflowService {
                 request.getStructureId()
             );
         
-        // Load metadata
-        Structure structure = structureRepository.findById(request.getStructureId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Structure not found: " + request.getStructureId()));
-        
-        ReadingSlot slot = readingSlotRepository.findById(request.getSlotId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Slot not found: " + request.getSlotId()));
-        
-        // Build pipeline coverage list
+        // FIX #12: Build pipeline coverage list with nested DTOs
         List<PipelineCoverageDTO> pipelines = projections.stream()
-            .map(this::buildPipelineCoverage)
+            .map(proj -> buildPipelineCoverage(proj, request.getReadingDate(), slot))
             .collect(Collectors.toList());
         
         // Calculate statistics by status code
         Map<String, Long> statusCounts = pipelines.stream()
             .collect(Collectors.groupingBy(
-                PipelineCoverageDTO::getWorkflowStatus,
+                p -> p.getValidationStatus() != null ? 
+                    p.getValidationStatus().getCode() : ValidationStatusHelper.NOT_RECORDED,
                 Collectors.counting()
             ));
         
         int totalPipelines = pipelines.size();
         int missingCount = statusCounts.getOrDefault(ValidationStatusHelper.NOT_RECORDED, 0L).intValue();
         int recordedCount = totalPipelines - missingCount;
+        int approvedCount = statusCounts.getOrDefault(ValidationStatusHelper.APPROVED, 0L).intValue();
+        int rejectedCount = statusCounts.getOrDefault(ValidationStatusHelper.REJECTED, 0L).intValue();
+        
+        // FIX #12: Split completion metrics
+        double recordingCompletion = calculateCompletion(recordedCount, totalPipelines);
+        double validationCompletion = calculateCompletion(approvedCount + rejectedCount, totalPipelines);
         
         // Check if slot is complete (all pipelines APPROVED)
         Boolean isComplete = flowReadingRepository.isSlotComplete(
@@ -137,17 +154,24 @@ public class FlowReadingWorkflowService {
             request.getStructureId()
         );
         
+        // FIX #12: Calculate metadata
+        LocalDateTime generatedAt = LocalDateTime.now();
+        LocalDateTime slotDeadline = LocalDateTime.of(request.getReadingDate(), slot.getEndTime());
+        
         return SlotCoverageResponseDTO.builder()
             .readingDate(request.getReadingDate())
-            .slot(mapSlotToDTO(slot))
-            .structure(mapStructureToDTO(structure))
+            .slot(ReadingSlotDTO.fromEntity(slot))
+            .structure(StructureDTO.fromEntity(structure))
+            .generatedAt(generatedAt)
+            .slotDeadline(slotDeadline)
             .totalPipelines(totalPipelines)
             .recordedCount(recordedCount)
             .submittedCount(statusCounts.getOrDefault(ValidationStatusHelper.SUBMITTED, 0L).intValue())
-            .approvedCount(statusCounts.getOrDefault(ValidationStatusHelper.APPROVED, 0L).intValue())
-            .rejectedCount(statusCounts.getOrDefault(ValidationStatusHelper.REJECTED, 0L).intValue())
+            .approvedCount(approvedCount)
+            .rejectedCount(rejectedCount)
             .missingCount(missingCount)
-            .completionPercentage(calculateCompletion(recordedCount, totalPipelines))
+            .recordingCompletionPercentage(recordingCompletion)
+            .validationCompletionPercentage(validationCompletion)
             .isSlotComplete(Boolean.TRUE.equals(isComplete))
             .pipelines(pipelines)
             .build();
@@ -169,9 +193,10 @@ public class FlowReadingWorkflowService {
      * - APPROVED → * (immutable)
      * - SUBMITTED → DRAFT/SUBMITTED (locked until validated)
      *
-     * FIX #1: Race condition prevention with pessimistic locking
-     * FIX #2: Lock approved readings (cannot edit)
-     * FIX #6: Business validation for measurement data
+     * FIX #1:  Race condition prevention with pessimistic locking
+     * FIX #2:  Lock approved readings (cannot edit)
+     * FIX #6:  Business validation for measurement data
+     * FIX #12: Populate nested DTOs in request for display
      *
      * @param request Contains pipelineId, date, slotId, measurements, employeeId
      * @throws WorkflowException if reading is in non-editable state
@@ -182,10 +207,21 @@ public class FlowReadingWorkflowService {
             request.getReadingId(), request.getPipelineId(), 
             request.getReadingDate(), request.getSlotId());
         
-        // Validate employee exists
+        // FIX #12: Validate and populate nested DTOs
         Employee employee = employeeRepository.findById(request.getEmployeeId())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Employee not found: " + request.getEmployeeId()));
+        request.setEmployee(EmployeeDTO.fromEntity(employee));
+        
+        Pipeline pipeline = pipelineRepository.findById(request.getPipelineId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Pipeline not found: " + request.getPipelineId()));
+        request.setPipeline(PipelineDTO.fromEntity(pipeline));
+        
+        ReadingSlot slot = readingSlotRepository.findById(request.getSlotId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Slot not found: " + request.getSlotId()));
+        request.setSlot(ReadingSlotDTO.fromEntity(slot));
         
         FlowReading reading;
         String previousStatus = null;
@@ -279,20 +315,11 @@ public class FlowReadingWorkflowService {
         flowReadingRepository.save(reading);
         
         // FIX #3: Publish event for SUBMITTED transition
-        // Only publish if transitioning TO SUBMITTED (not if already SUBMITTED)
         if (ValidationStatusHelper.SUBMITTED.equals(targetStatusCode) && 
             !ValidationStatusHelper.SUBMITTED.equals(previousStatus)) {
             
             log.debug("Publishing ReadingSubmittedEvent for reading {}", reading.getId());
-            
-            /*applicationEventPublisher.publishEvent(new ReadingSubmittedEvent(
-                this,
-                reading.getId(),
-                reading.getPipeline().getId(),
-                reading.getReadingDate(),
-                reading.getReadingSlot().getId(),
-                employee.getId()
-            ));*/
+            // Event publishing commented out - implement when event system is ready
         }
         
         log.info("Reading {} transitioned from {} to {} by employee {} ({})", 
@@ -319,6 +346,7 @@ public class FlowReadingWorkflowService {
      *
      * FIX #5:  Prevent REJECTED → APPROVED bypass
      * FIX #11: Idempotent validation (multiple calls with same action = success)
+     * FIX #12: Populate nested DTOs in request for display
      *
      * @param request Contains readingId, action (APPROVE/REJECT), comments, employeeId
      * @throws WorkflowException if reading is not in SUBMITTED state
@@ -328,16 +356,21 @@ public class FlowReadingWorkflowService {
         log.debug("Processing validation: readingId={}, action={}, validator={}", 
             request.getReadingId(), request.getAction(), request.getEmployeeId());
         
-        // Validate employee exists
+        // FIX #12: Validate and populate employee nested DTO
         Employee employee = employeeRepository.findById(request.getEmployeeId())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Employee not found: " + request.getEmployeeId()));
+        request.setEmployee(EmployeeDTO.fromEntity(employee));
         
         // Lock reading for update
         FlowReading reading = flowReadingRepository
             .findByIdForUpdate(request.getReadingId())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Reading not found: " + request.getReadingId()));
+        
+        // FIX #12: Populate reading nested DTO for confirmation
+        // Note: Use lightweight DTO without deep nesting to avoid N+1 queries
+        // request.setReading(FlowReadingDTO.fromEntity(reading));
         
         String currentStatusCode = ValidationStatusHelper.getStatusCode(reading);
         
@@ -368,7 +401,6 @@ public class FlowReadingWorkflowService {
         }
         
         // FIX #5: ENFORCE - Only SUBMITTED can be validated
-        // This prevents REJECTED → APPROVED bypass
         if (!ValidationStatusHelper.SUBMITTED.equals(currentStatusCode)) {
             throw new WorkflowException(
                 "Only SUBMITTED readings can be validated. Current status: " + currentStatusCode + ". " +
@@ -402,18 +434,6 @@ public class FlowReadingWorkflowService {
             
             log.debug("Publishing ReadingRejectedEvent for reading {}", reading.getId());
             
-            // FIX #3: Publish rejection event
-            /*applicationEventPublisher.publishEvent(new ReadingRejectedEvent(
-                this,
-                reading.getId(),
-                reading.getPipeline().getId(),
-                reading.getReadingDate(),
-                reading.getReadingSlot().getId(),
-                reading.getRecordedBy().getId(),
-                employee.getId(),
-                request.getComments()
-            ));*/
-            
         } else {
             // Approval - optional comments
             if (StringUtils.hasText(request.getComments())) {
@@ -424,18 +444,6 @@ public class FlowReadingWorkflowService {
             }
             
             log.debug("Publishing ReadingValidatedEvent for reading {}", reading.getId());
-            
-            // FIX #3: Publish approval event
-            /*applicationEventPublisher.publishEvent(new ReadingValidatedEvent(
-                this,
-                reading.getId(),
-                reading.getPipeline().getId(),
-                reading.getReadingDate(),
-                reading.getReadingSlot().getId(),
-                reading.getRecordedBy().getId(),
-                employee.getId(),
-                true // isApproved
-            ));*/
         }
         
         flowReadingRepository.save(reading);
@@ -453,19 +461,6 @@ public class FlowReadingWorkflowService {
     /**
      * FIX #1: Find or create reading WITH PESSIMISTIC LOCK.
      * Prevents duplicate readings from concurrent submissions.
-     *
-     * ALGORITHM:
-     * 1. Try to find existing reading with PESSIMISTIC_WRITE lock
-     * 2. If found, return it (thread-safe)
-     * 3. If not found, create new reading
-     * 4. If DataIntegrityViolationException (race condition), retry fetch with lock
-     *
-     * @param pipelineId Pipeline identifier
-     * @param date Reading date
-     * @param slotId Slot identifier
-     * @param employee Employee recording the reading
-     * @return Existing or newly created reading
-     * @throws WorkflowException if creation fails after retry
      */
     private FlowReading findOrCreateReadingWithLock(
         Long pipelineId, 
@@ -500,7 +495,6 @@ public class FlowReadingWorkflowService {
             newReading.setReadingSlot(slot);
             newReading.setRecordedBy(employee);
             
-            // Set initial status to DRAFT
             ValidationStatus draftStatus = validationStatusRepository
                 .findByCode(ValidationStatusHelper.DRAFT)
                 .orElseThrow(() -> new IllegalStateException(
@@ -516,104 +510,120 @@ public class FlowReadingWorkflowService {
             return saved;
             
         } catch (DataIntegrityViolationException e) {
-            // Another thread created it between our check and insert - retry once
             log.warn("Duplicate reading detected (race condition), retrying fetch for pipeline={}, date={}, slot={}", 
                 pipelineId, date, slotId);
             
-            // Step 3: Retry with lock
             return flowReadingRepository
                 .findByPipelineAndDateAndSlotForUpdate(pipelineId, date, slotId)
                 .orElseThrow(() -> new WorkflowException(
-                    "Reading creation failed after retry - concurrency conflict unresolved. " +
-                    "This should not happen. Contact system administrator."));
+                    "Reading creation failed after retry - concurrency conflict unresolved."));
         }
     }
     
     /**
-     * Build pipeline coverage DTO with deadline calculation.
-     * FIX #4: Calculate isOverdue based on slot deadline
+     * Build pipeline coverage DTO with nested DTOs.
+     * FIX #4:  Calculate isOverdue based on slot deadline
+     * FIX #12: Use nested DTOs instead of denormalized fields
      *
      * @param proj Projection from database query
-     * @return Pipeline coverage DTO for API response
+     * @param readingDate Date for deadline calculation
+     * @param slot Slot for deadline calculation
+     * @return Pipeline coverage DTO with nested objects
      */
-    private PipelineCoverageDTO buildPipelineCoverage(SlotCoverageProjection proj) {
+    private PipelineCoverageDTO buildPipelineCoverage(
+        SlotCoverageProjection proj, 
+        LocalDate readingDate,
+        ReadingSlot slot
+    ) {
         
         String statusCode = proj.getValidationStatusCode();
         if (statusCode == null) {
             statusCode = ValidationStatusHelper.NOT_RECORDED;
         }
         
+        // FIX #12: Build PipelineDTO from projection data
+        PipelineDTO pipelineDTO = PipelineDTO.builder()
+            .id(proj.getPipelineId())
+            .code(proj.getPipelineCode())
+            .name(proj.getPipelineName())
+            // Add other fields if available in projection
+            .build();
+        
+        // FIX #12: Build ValidationStatusDTO
+        ValidationStatusDTO validationStatusDTO = null;
+        if (!ValidationStatusHelper.NOT_RECORDED.equals(statusCode)) {
+            // Fetch validation status for translations
+            Optional<ValidationStatus> statusEntity = validationStatusRepository.findByCode(statusCode);
+            if (statusEntity.isPresent()) {
+                validationStatusDTO = ValidationStatusDTO.fromEntity(statusEntity.get());
+            }
+        } else {
+            // Create synthetic NOT_RECORDED status
+            validationStatusDTO = ValidationStatusDTO.builder()
+                .code("NOT_RECORDED")
+                .designationFr("Non enregistré")
+                .designationEn("Not Recorded")
+                .designationAr("غير مسجل")
+                .build();
+        }
+        
+        // FIX #12: Build EmployeeDTOs for recordedBy and validatedBy
+        EmployeeDTO recordedByDTO = null;
+        if (proj.getRecordedByName() != null) {
+            recordedByDTO = EmployeeDTO.builder()
+                .fullName(proj.getRecordedByName())
+                // Additional fields would require separate query or join
+                .build();
+        }
+        
+        EmployeeDTO validatedByDTO = null;
+        if (proj.getValidatedByName() != null) {
+            validatedByDTO = EmployeeDTO.builder()
+                .fullName(proj.getValidatedByName())
+                .build();
+        }
+        
         // FIX #4: CALCULATE OVERDUE STATUS
-        // Reading is overdue if:
-        // - Status is NOT_RECORDED or DRAFT (not submitted yet)
-        // - Current time is past slot deadline (readingDate + slotEndTime)
         boolean isOverdue = false;
         if (ValidationStatusHelper.NOT_RECORDED.equals(statusCode) || 
             ValidationStatusHelper.DRAFT.equals(statusCode)) {
             
-            // Slot deadline is readingDate + slotEndTime
-            LocalDateTime slotDeadline = LocalDateTime.of(
-                proj.getReadingDate(), 
-                proj.getSlotEndTime()
-            );
-            
-            // Reading is overdue if current time is past slot deadline
+            LocalDateTime slotDeadline = LocalDateTime.of(readingDate, slot.getEndTime());
             isOverdue = LocalDateTime.now().isAfter(slotDeadline);
             
             if (isOverdue) {
                 log.debug("Pipeline {} reading is OVERDUE for date={}, slot ends at {}", 
-                    proj.getPipelineCode(), proj.getReadingDate(), slotDeadline);
+                    proj.getPipelineCode(), readingDate, slotDeadline);
             }
         }
         
-        // Available actions are determined by frontend based on user role
-        // Backend enforces permissions via exceptions in submit/validate methods
+        // Available actions determined by frontend based on user role
         List<String> actions = new ArrayList<>();
         
         return PipelineCoverageDTO.builder()
             .pipelineId(proj.getPipelineId())
-            .pipelineCode(proj.getPipelineCode())
-            .pipelineName(proj.getPipelineName())
+            .pipeline(pipelineDTO)
             .readingId(proj.getReadingId())
-            .workflowStatus(statusCode)
-            .workflowStatusDisplay(ValidationStatusHelper.getDisplayName(statusCode))
+            .validationStatus(validationStatusDTO)
             .recordedAt(proj.getRecordedAt())
             .validatedAt(proj.getValidatedAt())
-            .recordedByName(proj.getRecordedByName())
-            .validatedByName(proj.getValidatedByName())
+            .recordedBy(recordedByDTO)
+            .validatedBy(validatedByDTO)
             .availableActions(actions)
-            .canEdit(null) // Frontend determines based on user role
+            .canEdit(null)
             .canSubmit(null)
             .canValidate(null)
-            .isOverdue(isOverdue) // FIX #4: Real calculation
+            .isOverdue(isOverdue)
             .build();
     }
     
     /**
      * Calculate completion percentage.
-     *
-     * @param recorded Number of recorded readings
-     * @param total Total number of pipelines
-     * @return Completion percentage (0-100)
      */
-    private double calculateCompletion(int recorded, int total) {
+    private double calculateCompletion(int completed, int total) {
         if (total == 0) {
             return 0.0;
         }
-        return (recorded * 100.0) / total;
-    }
-    
-    /**
-     * Map ReadingSlot entity to DTO
-     */
-    private ReadingSlotDTO mapSlotToDTO(ReadingSlot slot) {
-        return ReadingSlotDTO.fromEntity(slot);
-    }
-    
-    /**
-     * Map Structure entity to DTO
-     */
-    private StructureDTO mapStructureToDTO(Structure structure) {
-        return StructureDTO.fromEntity(structure);
+        return Math.round((completed * 100.0) / total * 100.0) / 100.0;
     }
 }
