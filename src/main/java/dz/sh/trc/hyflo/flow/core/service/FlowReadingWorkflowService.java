@@ -568,18 +568,22 @@ public class FlowReadingWorkflowService {
         }
         
         // FIX #12: Build EmployeeDTOs for recordedBy and validatedBy
+        // Parse name (format: "FirstName LastName") into separate fields
         EmployeeDTO recordedByDTO = null;
         if (proj.getRecordedByName() != null) {
+            String[] nameParts = proj.getRecordedByName().split(" ", 2);
             recordedByDTO = EmployeeDTO.builder()
-                .fullName(proj.getRecordedByName())
-                // Additional fields would require separate query or join
+                .firstNameLt(nameParts.length > 0 ? nameParts[0] : proj.getRecordedByName())
+                .lastNameLt(nameParts.length > 1 ? nameParts[1] : "")
                 .build();
         }
         
         EmployeeDTO validatedByDTO = null;
         if (proj.getValidatedByName() != null) {
+            String[] nameParts = proj.getValidatedByName().split(" ", 2);
             validatedByDTO = EmployeeDTO.builder()
-                .fullName(proj.getValidatedByName())
+                .firstNameLt(nameParts.length > 0 ? nameParts[0] : proj.getValidatedByName())
+                .lastNameLt(nameParts.length > 1 ? nameParts[1] : "")
                 .build();
         }
         
