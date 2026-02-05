@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowReadingController
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-27-2026 - Added validate and reject endpoints with @RequestParam
+ * 	@UpdatedOn	: 02-05-2026 - Merged FlowMonitoringController endpoints
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,20 +33,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.ReadingSubmitRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.ReadingValidationRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.SlotCoverageRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.SlotCoverageResponseDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingService;
+import dz.sh.trc.hyflo.flow.core.service.FlowReadingWorkflowService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/flow/core/reading")
+@Tag(name = "Flow Reading", description = "Flow reading management with CRUD operations, queries, and workflow monitoring")
 @Slf4j
 public class FlowReadingController extends GenericController<FlowReadingDTO, Long> {
 
     private final FlowReadingService flowReadingService;
+    private final FlowReadingWorkflowService workflowService;
     
-    public FlowReadingController(FlowReadingService flowReadingService) {
+    public FlowReadingController(
+            FlowReadingService flowReadingService,
+            FlowReadingWorkflowService workflowService) {
         super(flowReadingService, "FlowReading");
         this.flowReadingService = flowReadingService;
+        this.workflowService = workflowService;
     }
 
     // ========== SECURED CRUD OPERATIONS ==========
@@ -113,7 +126,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         return super.count();
     }
 
-    // ========== CUSTOM ENDPOINTS ==========
+    // ========== CUSTOM QUERY ENDPOINTS ==========
 
     @GetMapping("/pipeline/{pipelineId}")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
@@ -208,19 +221,19 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     @GetMapping("/validationStatus/{statusId}")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
     public ResponseEntity<Page<FlowReadingDTO>> getByValidationStatus(
-					@PathVariable Long statusId,
-					@RequestParam(defaultValue = "0") int page,
-		            @RequestParam(defaultValue = "20") int size,
-		            @RequestParam(defaultValue = "recordedAt") String sortBy,
-		            @RequestParam(defaultValue = "desc") String sortDir) {
+				@PathVariable Long statusId,
+				@RequestParam(defaultValue = "0") int page,
+	            @RequestParam(defaultValue = "20") int size,
+	            @RequestParam(defaultValue = "recordedAt") String sortBy,
+	            @RequestParam(defaultValue = "desc") String sortDir) {
         log.info("GET /flow/core/reading/validationStatus/{} - Getting readings by validation status", statusId);
         return ResponseEntity.ok(flowReadingService.findByValidationStatus(statusId, buildPageable(page, size, sortBy, sortDir)));
     }
 
-    // ========== VALIDATION WORKFLOW ENDPOINTS ==========
+    // ========== VALIDATION WORKFLOW ENDPOINTS (ID-BASED) ==========
 
     /**
-     * Validate a flow reading
+     * Validate a flow reading (ID-based approach)
      * Updates validation status to VALIDATED and records validator information
      * 
      * @param id Reading ID
@@ -229,6 +242,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
      */
     @PostMapping("/{id}/validate")
     @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
+    @Operation(summary = "Validate a reading by ID", description = "Updates validation status to VALIDATED")
     public ResponseEntity<FlowReadingDTO> validate(
             @PathVariable Long id,
             @RequestParam Long validatedById) {
@@ -238,7 +252,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     }
 
     /**
-     * Reject a flow reading
+     * Reject a flow reading (ID-based approach)
      * Updates validation status to REJECTED and records rejection information
      * 
      * @param id Reading ID
@@ -248,6 +262,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
      */
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
+    @Operation(summary = "Reject a reading by ID", description = "Updates validation status to REJECTED")
     public ResponseEntity<FlowReadingDTO> reject(
             @PathVariable Long id,
             @RequestParam Long rejectedById,
@@ -256,5 +271,82 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
                  id, rejectedById, rejectionReason);
         FlowReadingDTO rejected = flowReadingService.reject(id, rejectedById, rejectionReason);
         return ResponseEntity.ok(rejected);
+    }
+
+    // ========== WORKFLOW MONITORING ENDPOINTS (MERGED FROM FlowMonitoringController) ==========
+
+    /**
+     * Get slot coverage for date + slot + structure
+     * Provides monitoring view of reading coverage across pipelines within a structure
+     * Shows which pipelines have submitted/validated readings for a specific date and slot
+     * 
+     * Migrated from: POST /flow/core/monitoring/slot-coverage
+     * 
+     * @param request Slot coverage request with date, slot, and structure filters
+     * @return Coverage summary with pipeline-level reading status
+     */
+    @PostMapping("/slot-coverage")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get slot coverage for date + slot + structure",
+        description = "Returns coverage summary showing which pipelines have readings for the specified slot and date"
+    )
+    public ResponseEntity<SlotCoverageResponseDTO> getSlotCoverage(
+        @Valid @RequestBody SlotCoverageRequestDTO request
+    ) {
+        log.info("POST /flow/core/reading/slot-coverage - Getting slot coverage for slot: {}, date: {}, structure: {}", 
+                 request.getReadingSlotId(), request.getReadingDate(), request.getStructureId());
+        SlotCoverageResponseDTO response = workflowService.getSlotCoverage(request);
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Submit or update a reading (workflow approach)
+     * Alternative to standard create/update for workflow-based submission
+     * Handles business logic for reading submission including validation checks
+     * 
+     * Migrated from: POST /flow/core/monitoring/readings/submit
+     * 
+     * @param request Reading submission request with all required data
+     * @return 201 Created on success
+     */
+    @PostMapping("/submit")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
+    @Operation(
+        summary = "Submit or update a reading via workflow",
+        description = "Workflow-based reading submission with business validation"
+    )
+    public ResponseEntity<Void> submitReading(
+        @Valid @RequestBody ReadingSubmitRequestDTO request
+    ) {
+        log.info("POST /flow/core/reading/submit - Submitting reading for pipeline: {}, slot: {}, date: {}", 
+                 request.getPipelineId(), request.getReadingSlotId(), request.getReadingDate());
+        workflowService.submitReading(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+    
+    /**
+     * Validate a reading (workflow approach with approve/reject)
+     * Consolidates validation logic in workflow service
+     * Supports both approval and rejection with appropriate status updates
+     * 
+     * Migrated from: POST /flow/core/monitoring/readings/validate
+     * 
+     * @param request Validation request with reading ID, action (approve/reject), and validator info
+     * @return 200 OK on success
+     */
+    @PostMapping("/validate")
+    @PreAuthorize("hasAuthority('FLOW_READING:MANAGE')")
+    @Operation(
+        summary = "Validate a reading (approve or reject)",
+        description = "Workflow-based validation supporting both approval and rejection actions"
+    )
+    public ResponseEntity<Void> validateReading(
+        @Valid @RequestBody ReadingValidationRequestDTO request
+    ) {
+        log.info("POST /flow/core/reading/validate - Validating reading ID: {} with action: {} by employee: {}", 
+                 request.getReadingId(), request.getAction(), request.getValidatedById());
+        workflowService.validateReading(request);
+        return ResponseEntity.ok().build();
     }
 }
