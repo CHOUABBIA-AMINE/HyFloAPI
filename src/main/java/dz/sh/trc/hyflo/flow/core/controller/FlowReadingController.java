@@ -294,8 +294,6 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     public ResponseEntity<SlotCoverageResponseDTO> getSlotCoverage(
         @Valid @RequestBody SlotCoverageRequestDTO request
     ) {
-        log.info("POST /flow/core/reading/slot-coverage - Getting slot coverage for slot: {}, date: {}, structure: {}", 
-                 request.getReadingSlotId(), request.getReadingDate(), request.getStructureId());
         SlotCoverageResponseDTO response = workflowService.getSlotCoverage(request);
         return ResponseEntity.ok(response);
     }
@@ -319,8 +317,6 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     public ResponseEntity<Void> submitReading(
         @Valid @RequestBody ReadingSubmitRequestDTO request
     ) {
-        log.info("POST /flow/core/reading/submit - Submitting reading for pipeline: {}, slot: {}, date: {}", 
-                 request.getPipelineId(), request.getReadingSlotId(), request.getReadingDate());
         workflowService.submitReading(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -344,8 +340,6 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     public ResponseEntity<Void> validateReading(
         @Valid @RequestBody ReadingValidationRequestDTO request
     ) {
-        log.info("POST /flow/core/reading/validate - Validating reading ID: {} with action: {} by employee: {}", 
-                 request.getReadingId(), request.getAction(), request.getValidatedById());
         workflowService.validateReading(request);
         return ResponseEntity.ok().build();
     }
