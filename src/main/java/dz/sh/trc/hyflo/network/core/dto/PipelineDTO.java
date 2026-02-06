@@ -64,7 +64,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private LocalDate decommissioningDate;
 
     @NotNull(message = "Nominal diameter is required")
-    @PositiveOrZero(message = "Nominal diameter must be positive")
+    @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String nominalDiameter;
 
     @NotNull(message = "Length is required")
@@ -72,7 +72,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private Double length;
 
     @NotNull(message = "Nominal thickness is required")
-    @PositiveOrZero(message = "Nominal thickness must be positive")
+    @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
     private String nominalThickness;
 
     @NotNull(message = "Nominal roughness is required")
