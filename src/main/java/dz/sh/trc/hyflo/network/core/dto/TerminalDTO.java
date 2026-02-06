@@ -90,7 +90,10 @@ public class TerminalDTO extends GenericDTO<Terminal> {
     private TerminalTypeDTO terminalType;
 
     @Builder.Default
-    private Set<Long> pipelineIds = new HashSet<>();
+    private Set<Long> depatingPipelineIds = new HashSet<>();
+
+    @Builder.Default
+    private Set<Long> arrivingPipelineIds = new HashSet<>();
 
     @Builder.Default
     private Set<Long> facilityIds = new HashSet<>();
@@ -180,9 +183,14 @@ public class TerminalDTO extends GenericDTO<Terminal> {
     public static TerminalDTO fromEntity(Terminal entity) {
         if (entity == null) return null;
         
-        Set<Long> pipelineIds = new HashSet<>();
-        if (entity.getPipelines() != null) {
-            entity.getPipelines().forEach(p -> pipelineIds.add(p.getId()));
+        Set<Long> depatingPipelineIds = new HashSet<>();
+        if (entity.getDepartingPipelines() != null) {
+            entity.getDepartingPipelines().forEach(p -> depatingPipelineIds.add(p.getId()));
+        }
+        
+        Set<Long> arrivingPipelineIds = new HashSet<>();
+        if (entity.getArrivingPipelines() != null) {
+            entity.getArrivingPipelines().forEach(p -> arrivingPipelineIds.add(p.getId()));
         }
         
         Set<Long> facilityIds = new HashSet<>();
@@ -203,7 +211,8 @@ public class TerminalDTO extends GenericDTO<Terminal> {
                 .vendorId(entity.getVendor() != null ? entity.getVendor().getId() : null)
                 .locationId(entity.getLocation() != null ? entity.getLocation().getId() : null)
                 .terminalTypeId(entity.getTerminalType() != null ? entity.getTerminalType().getId() : null)
-                .pipelineIds(pipelineIds)
+                .depatingPipelineIds(depatingPipelineIds)
+                .arrivingPipelineIds(arrivingPipelineIds)
                 .facilityIds(facilityIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)

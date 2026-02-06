@@ -14,7 +14,9 @@
 
 package dz.sh.trc.hyflo.network.core.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import dz.sh.trc.hyflo.network.type.model.TerminalType;
@@ -26,6 +28,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -61,6 +64,20 @@ public class Terminal extends Facility {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_10", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_04_FK_01"), nullable=false)
 	private TerminalType terminalType;
+
+	@Schema(
+		description = "Collection of pipelines connected to this terminal as Departure Terminal",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@OneToMany(mappedBy = "departureTerminal", fetch = FetchType.LAZY)
+	private List<Pipeline> departingPipelines = new ArrayList<>();
+
+	@Schema(
+		description = "Collection of pipelines connected to this terminal as Arrival Terminal",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@OneToMany(mappedBy = "arrivalTerminal", fetch = FetchType.LAZY)
+	private List<Pipeline> arrivingPipelines = new ArrayList<>();
     
 	@Schema(
 		description = "Collection of facilities connected to this terminal",
@@ -75,17 +92,5 @@ public class Terminal extends Facility {
 	)
 	private Set<Facility> facilities = new HashSet<>();
 
-	@Schema(
-		description = "Collection of pipelines connected to this terminal",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED
-	)
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(
-		name = "R_T020304_T020308",
-		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020304_T020308_FK_01")),
-		inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020304_T020308_FK_02")),
-		uniqueConstraints = @UniqueConstraint(name = "R_T020304_T020308_UK_01", columnNames = {"F_01", "F_02"})
-	)
-	private Set<Pipeline> pipelines = new HashSet<>();
     
 }

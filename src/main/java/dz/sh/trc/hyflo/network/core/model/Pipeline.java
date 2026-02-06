@@ -14,9 +14,12 @@
 
 package dz.sh.trc.hyflo.network.core.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.localization.model.Location;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
@@ -30,6 +33,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -69,7 +73,7 @@ public class Pipeline extends Infrastructure {
 	@NotBlank(message = "Nominal diameter is mandatory")
 	@Size(max = 255, message = "Nominal diameter must not exceed 255 characters")
 	@Column(name="F_08", nullable=false)
-	private String nominalDiameter;
+	private int nominalDiameter;
 
 	@Schema(
 		description = "Total length of the pipeline in kilometers",
@@ -90,7 +94,7 @@ public class Pipeline extends Infrastructure {
 	@NotBlank(message = "Nominal thickness is mandatory")
 	@Size(max = 255, message = "Nominal thickness must not exceed 255 characters")
 	@Column(name="F_10", nullable=false)
-	private String nominalThickness;
+	private Double nominalThickness;
 
 	@Schema(
 		description = "Internal surface roughness of the pipeline material",
@@ -101,7 +105,7 @@ public class Pipeline extends Infrastructure {
 	@NotBlank(message = "Nominal roughness is mandatory")
 	@Size(max = 255, message = "Nominal roughness must not exceed 255 characters")
 	@Column(name="F_11", nullable=false)
-	private String nominalRoughness;
+	private Double nominalRoughness;
 
 	@Schema(
 		description = "Maximum design service pressure in bar",
@@ -247,5 +251,12 @@ public class Pipeline extends Infrastructure {
 		uniqueConstraints = @UniqueConstraint(name = "R_T020308_T010206_UK_01", columnNames = {"F_01", "F_02"})
 	)
 	private Set<Location> locations = new HashSet<>();
+
+	@Schema(
+		description = "Collection of coordinates setting the path of pipeline",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
+	private List<Coordinate> coordinates = new ArrayList<>();
     
 }
