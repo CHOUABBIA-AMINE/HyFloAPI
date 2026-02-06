@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import dz.sh.trc.hyflo.general.localization.model.Coordinate;
-import dz.sh.trc.hyflo.general.localization.model.Location;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
@@ -102,7 +101,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.REQUIRED,
 		maxLength = 255
 	)
-	@NotBlank(message = "Nominal roughness is mandatory")
+	@NotNull(message = "Nominal roughness is mandatory")
 	@Size(max = 255, message = "Nominal roughness must not exceed 255 characters")
 	@Column(name="F_11", nullable=false)
 	private Double nominalRoughness;
@@ -227,8 +226,15 @@ public class Pipeline extends Infrastructure {
 	private Structure manager;
 
 	@Schema(
+		description = "Collection of coordinates setting the path of pipeline",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
+	private List<Coordinate> coordinates = new ArrayList<>();
+
+	@Schema(
 		description = "Vendor who supplied or constructed the pipeline",
-		requiredMode = Schema.RequiredMode.REQUIRED
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
@@ -238,25 +244,5 @@ public class Pipeline extends Infrastructure {
 		uniqueConstraints = @UniqueConstraint(name = "R_T020308_T020205_UK_01", columnNames = {"F_01", "F_02"})
 	)
 	private Set<Vendor> vendors = new HashSet<>();
-    
-	@Schema(
-		description = "Collection of geographic locations through which the pipeline passes",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED
-	)
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(
-		name = "R_T020308_T010206",
-		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020308_T010206_FK_01")),
-		inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T020308_T010206_FK_02")),
-		uniqueConstraints = @UniqueConstraint(name = "R_T020308_T010206_UK_01", columnNames = {"F_01", "F_02"})
-	)
-	private Set<Location> locations = new HashSet<>();
-
-	@Schema(
-		description = "Collection of coordinates setting the path of pipeline",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED
-	)
-	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
-	private List<Coordinate> coordinates = new ArrayList<>();
     
 }

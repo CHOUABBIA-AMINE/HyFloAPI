@@ -25,7 +25,6 @@ import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
-import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
@@ -116,9 +115,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     private Long nominalInteriorCoatingId;
 
-    @NotNull(message = "Vendor ID is required")
-    private Long vendorId;
-
     @NotNull(message = "Pipeline system ID is required")
     private Long pipelineSystemId;
 
@@ -132,7 +128,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private Long managerId;
     
     @Builder.Default
-    private Set<Long> locationIds = new HashSet<>();
+    private Set<Long> coordinateIds = new HashSet<>();
+
+    @Builder.Default
+    private Set<Long> vendorIds = new HashSet<>();
     
     private OperationalStatusDTO operationalStatus;
     
@@ -143,8 +142,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private AlloyDTO nominalExteriorCoating;
     
     private AlloyDTO nominalInteriorCoating;
-    
-    private VendorDTO vendor;
     
     private PipelineSystemDTO pipelineSystem;
     
@@ -308,9 +305,14 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     public static PipelineDTO fromEntity(Pipeline entity) {
         if (entity == null) return null;
         
-        Set<Long> locationIds = new HashSet<>();
-        if (entity.getLocations() != null) {
-            entity.getLocations().forEach(l -> locationIds.add(l.getId()));
+        Set<Long> coordinateIds = new HashSet<>();
+        if (entity.getCoordinates() != null) {
+            entity.getCoordinates().forEach(l -> coordinateIds.add(l.getId()));
+        }
+        
+        Set<Long> vendorIds = new HashSet<>();
+        if (entity.getVendors() != null) {
+            entity.getVendors().forEach(l -> vendorIds.add(l.getId()));
         }
         
         return PipelineDTO.builder()
@@ -339,7 +341,8 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .departureTerminalId(entity.getDepartureTerminal() != null ? entity.getDepartureTerminal().getId() : null)
                 .arrivalTerminalId(entity.getArrivalTerminal() != null ? entity.getArrivalTerminal().getId() : null)
                 .managerId(entity.getManager() != null ? entity.getManager().getId() : null)
-                .locationIds(locationIds)
+                .vendorIds(vendorIds)
+                .coordinateIds(coordinateIds)
 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
