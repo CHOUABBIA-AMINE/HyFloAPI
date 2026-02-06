@@ -73,7 +73,7 @@ public class Pipeline extends Infrastructure {
 	@NotBlank(message = "Nominal diameter is mandatory")
 	@Size(max = 255, message = "Nominal diameter must not exceed 255 characters")
 	@Column(name="F_08", nullable=false)
-	private int nominalDiameter;
+	private String nominalDiameter;
 
 	@Schema(
 		description = "Total length of the pipeline in kilometers",
@@ -94,7 +94,7 @@ public class Pipeline extends Infrastructure {
 	@NotBlank(message = "Nominal thickness is mandatory")
 	@Size(max = 255, message = "Nominal thickness must not exceed 255 characters")
 	@Column(name="F_10", nullable=false)
-	private Double nominalThickness;
+	private String nominalThickness;
 
 	@Schema(
 		description = "Internal surface roughness of the pipeline material",

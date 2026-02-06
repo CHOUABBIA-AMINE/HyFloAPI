@@ -66,7 +66,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Nominal diameter is required")
     @PositiveOrZero(message = "Nominal diameter must be positive")
-    private int nominalDiameter;
+    private String nominalDiameter;
 
     @NotNull(message = "Length is required")
     @PositiveOrZero(message = "Length must be positive")
@@ -74,7 +74,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Nominal thickness is required")
     @PositiveOrZero(message = "Nominal thickness must be positive")
-    private Double nominalThickness;
+    private String nominalThickness;
 
     @NotNull(message = "Nominal roughness is required")
     @PositiveOrZero(message = "Nominal roughness must be positive")
@@ -239,7 +239,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     	if (this.installationDate != null) entity.setInstallationDate(this.installationDate);
     	if (this.commissioningDate != null) entity.setCommissioningDate(this.commissioningDate);
     	if (this.decommissioningDate != null) entity.setDecommissioningDate(this.decommissioningDate);
-        if (this.nominalDiameter != 0) entity.setNominalDiameter(this.nominalDiameter);
+        if (this.nominalDiameter != null) entity.setNominalDiameter(this.nominalDiameter);
         if (this.length != null) entity.setLength(this.length);
         if (this.nominalThickness != null) entity.setNominalThickness(this.nominalThickness);
         if (this.nominalRoughness != null) entity.setNominalRoughness(this.nominalRoughness);
