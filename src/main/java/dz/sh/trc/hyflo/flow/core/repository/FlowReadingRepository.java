@@ -6,6 +6,7 @@
  * 	@CreatedOn	: 01-23-2026
  * 	@UpdatedOn	: 02-03-2026
  * 	@UpdatedOn	: 02-07-2026 - Added 6 operational monitoring queries
+ * 	@UpdatedOn	: 02-07-2026 - Added intelligence service queries
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -57,6 +58,27 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     boolean existsByPipelineIdAndRecordedAt(Long pipelineId, LocalDateTime recordedAt);
     
     List<FlowReading> findByRecordedAtBetween(LocalDateTime startTime, LocalDateTime endTime);
+    
+    // ========== INTELLIGENCE SERVICE QUERIES ==========
+    
+    /**
+     * Find latest reading for a specific pipeline
+     * Used for current measurement display in overview
+     */
+    Optional<FlowReading> findTopByPipelineIdOrderByRecordedAtDesc(Long pipelineId);
+    
+    /**
+     * Find all readings for a specific pipeline and date
+     * Used for slot coverage calculation
+     */
+    List<FlowReading> findByPipelineIdAndReadingDate(Long pipelineId, LocalDate readingDate);
+    
+    /**
+     * Find readings within date range ordered chronologically
+     * Used for time-series analysis
+     */
+    List<FlowReading> findByPipelineIdAndReadingDateBetweenOrderByReadingDateAscRecordedAtAsc(
+        Long pipelineId, LocalDate startDate, LocalDate endDate);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
