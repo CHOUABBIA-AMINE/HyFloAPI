@@ -14,9 +14,7 @@
 
 package dz.sh.trc.hyflo.network.core.model;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import dz.sh.trc.hyflo.general.localization.model.Coordinate;
@@ -230,7 +228,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
-	private List<Coordinate> coordinates = new ArrayList<>();
+	private Set<Coordinate> coordinates = new HashSet<>();
 
 	@Schema(
 		description = "Vendor who supplied or constructed the pipeline",

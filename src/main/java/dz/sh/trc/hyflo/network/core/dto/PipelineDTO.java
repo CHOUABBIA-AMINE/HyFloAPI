@@ -17,16 +17,21 @@ package dz.sh.trc.hyflo.network.core.dto;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.CoordinateDTO;
+import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
+import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
+import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.model.Terminal;
@@ -64,7 +69,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private LocalDate decommissioningDate;
 
     @NotNull(message = "Nominal diameter is required")
-    @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
+    @Size(min = 1, max = 255, message = "Name must be between 3 and 255 characters")
     private String nominalDiameter;
 
     @NotNull(message = "Length is required")
@@ -151,6 +156,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     
     private StructureDTO manager;
 
+    private Set<VendorDTO> vendors;
+
+    private Set<CoordinateDTO> coordinates;
+
     @Override
     public Pipeline toEntity() {
         Pipeline entity = new Pipeline();
@@ -209,13 +218,13 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         
         if (this.departureTerminalId != null) {
         	Terminal terminal = new Terminal();
-            entity.setId(this.departureTerminalId);
+        	terminal.setId(this.departureTerminalId);
             entity.setDepartureTerminal(terminal);
         }
         
         if (this.arrivalTerminalId != null) {
         	Terminal terminal = new Terminal();
-            entity.setId(this.arrivalTerminalId);
+        	terminal.setId(this.arrivalTerminalId);
             entity.setArrivalTerminal(terminal);
         }
         
@@ -223,6 +232,20 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         	Structure structure = new Structure();
         	structure.setId(this.managerId);
         	entity.setManager(structure);
+        }
+        
+        if (this.vendors != null && !this.vendors.isEmpty()) {
+            Set<Vendor> vendors = this.vendors.stream()
+                    						  .map(VendorDTO::toEntity)
+                    						  .collect(Collectors.toSet());
+            entity.setVendors(vendors);
+        }
+        
+        if (this.coordinates != null && !this.coordinates.isEmpty()) {
+            Set<Coordinate> coordinates = this.coordinates.stream()
+                    						  		  .map(CoordinateDTO::toEntity)
+                    						  		  .collect(Collectors.toSet());
+            entity.setCoordinates(coordinates);
         }
         
         return entity;
@@ -285,13 +308,13 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         
         if (this.departureTerminalId != null) {
         	Terminal terminal = new Terminal();
-            entity.setId(this.departureTerminalId);
+        	terminal.setId(this.departureTerminalId);
             entity.setDepartureTerminal(terminal);
         }
         
         if (this.arrivalTerminalId != null) {
         	Terminal terminal = new Terminal();
-            entity.setId(this.arrivalTerminalId);
+        	terminal.setId(this.arrivalTerminalId);
             entity.setArrivalTerminal(terminal);
         }
         
@@ -299,6 +322,20 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         	Structure structure = new Structure();
         	structure.setId(this.managerId);
         	entity.setManager(structure);
+        }
+        
+        if (this.vendors != null && !this.vendors.isEmpty()) {
+            Set<Vendor> vendors = this.vendors.stream()
+                    						  .map(VendorDTO::toEntity)
+                    						  .collect(Collectors.toSet());
+            entity.setVendors(vendors);
+        }
+        
+        if (this.coordinates != null && !this.coordinates.isEmpty()) {
+            Set<Coordinate> coordinates = this.coordinates.stream()
+                    						  		  .map(CoordinateDTO::toEntity)
+                    						  		  .collect(Collectors.toSet());
+            entity.setCoordinates(coordinates);
         }
     }
 

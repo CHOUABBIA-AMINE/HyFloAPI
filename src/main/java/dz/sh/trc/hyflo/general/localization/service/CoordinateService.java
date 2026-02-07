@@ -91,4 +91,11 @@ public class CoordinateService extends GenericService<Coordinate, CoordinateDTO,
                 .collect(Collectors.toList());
     }
 
+	/*
+	 * public List<CoordinateDTO> findByLocality(Long localityId) {
+	 * log.debug("Finding coordinates by locality id: {}", localityId); return
+	 * coordinateRepository.findByLocalityId(localityId).stream()
+	 * .map(CoordinateDTO::fromEntity) .collect(Collectors.toList()); }
+	 */
+
 }

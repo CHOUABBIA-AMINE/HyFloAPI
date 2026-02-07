@@ -107,10 +107,21 @@ public class CoordinateController extends GenericController<CoordinateDTO, Long>
         return super.count();
     }
 
-    @GetMapping("/locality/{localityId}")
+    @GetMapping("/infrastructure/{infrastructureId}")
     @PreAuthorize("hasAuthority('COORDINATE:READ')")
-    public ResponseEntity<List<CoordinateDTO>> getByLocality(@PathVariable Long localityId) {
-        log.info("GET /network/coordinate/locality/{} - Getting coordinates by locality", localityId);
-        return ResponseEntity.ok(coordinateService.findByInfrastructure(localityId));
+    public ResponseEntity<List<CoordinateDTO>> getByInfrastructure(@PathVariable Long infrastructureId) {
+        log.info("GET /network/coordinate/infrastructure/{} - Getting coordinates by infrastructure", infrastructureId);
+        return ResponseEntity.ok(coordinateService.findByInfrastructure(infrastructureId));
     }
+
+	/*
+	 * @GetMapping("/locality/{localityId}")
+	 * 
+	 * @PreAuthorize("hasAuthority('COORDINATE:READ')") public
+	 * ResponseEntity<List<CoordinateDTO>> getByLocality(@PathVariable Long
+	 * localityId) { log.
+	 * info("GET /network/coordinate/locality/{} - Getting coordinates by locality",
+	 * localityId); return
+	 * ResponseEntity.ok(coordinateService.findByLocality(localityId)); }
+	 */
 }

@@ -26,6 +26,8 @@ public interface CoordinateRepository extends JpaRepository<Coordinate, Long> {
 	
 	// ========== SPRING DERIVED QUERIES (Optimized) ==========
     
-    List<Coordinate> findByInfrastructureId(Long InfrastructureId);
+    List<Coordinate> findByInfrastructureId(Long infrastructureId);
+    
+    //List<Coordinate> findByLocalityId(Long localityId);
 
 }
