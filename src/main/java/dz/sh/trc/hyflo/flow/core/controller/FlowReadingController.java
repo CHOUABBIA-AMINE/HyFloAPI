@@ -6,6 +6,7 @@
  * 	@CreatedOn	: 01-23-2026
  * 	@UpdatedOn	: 02-05-2026 - Merged FlowMonitoringController endpoints
  * 	@UpdatedOn	: 02-07-2026 - Added 6 new operational monitoring endpoints
+ * 	@UpdatedOn	: 02-07-2026 - Updated to use proper DTOs instead of Map<String, Object>
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -18,7 +19,6 @@ package dz.sh.trc.hyflo.flow.core.controller;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,11 +34,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.flow.core.dto.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.PipelineCoverageDetailDTO;
 import dz.sh.trc.hyflo.flow.core.dto.ReadingSubmitRequestDTO;
 import dz.sh.trc.hyflo.flow.core.dto.ReadingValidationRequestDTO;
 import dz.sh.trc.hyflo.flow.core.dto.SlotCoverageRequestDTO;
 import dz.sh.trc.hyflo.flow.core.dto.SlotCoverageResponseDTO;
+import dz.sh.trc.hyflo.flow.core.dto.SubmissionTrendDTO;
+import dz.sh.trc.hyflo.flow.core.dto.ValidatorWorkloadDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingService;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -419,7 +423,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         summary = "Get daily completion statistics",
         description = "Returns aggregated statistics for reading completion by date"
     )
-    public ResponseEntity<List<Map<String, Object>>> getDailyStatistics(
+    public ResponseEntity<List<DailyCompletionStatisticsDTO>> getDailyStatistics(
             @RequestParam Long structureId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -445,7 +449,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         summary = "Get validator workload",
         description = "Returns validation distribution across validators"
     )
-    public ResponseEntity<List<Map<String, Object>>> getValidatorWorkload(
+    public ResponseEntity<List<ValidatorWorkloadDTO>> getValidatorWorkload(
             @RequestParam Long structureId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -472,7 +476,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         summary = "Get reading submission trends",
         description = "Returns time-series data showing submission patterns"
     )
-    public ResponseEntity<List<Map<String, Object>>> getSubmissionTrends(
+    public ResponseEntity<List<SubmissionTrendDTO>> getSubmissionTrends(
             @RequestParam Long structureId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -500,7 +504,7 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
         summary = "Get pipeline coverage by date range",
         description = "Returns coverage percentage for each pipeline over a date range"
     )
-    public ResponseEntity<List<Map<String, Object>>> getPipelineCoverageByDateRange(
+    public ResponseEntity<List<PipelineCoverageDetailDTO>> getPipelineCoverageByDateRange(
             @RequestParam Long structureId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {

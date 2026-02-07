@@ -7,6 +7,7 @@
  * 	@UpdatedOn	: 02-01-2026 - Integrated generic notification system
  * 	@UpdatedOn	: 01-27-2026 - Added validate and reject methods
  * 	@UpdatedOn	: 02-07-2026 - Added 6 operational monitoring methods
+ * 	@UpdatedOn	: 02-07-2026 - Refactored to use proper DTOs instead of Map<String, Object>
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -19,9 +20,7 @@ package dz.sh.trc.hyflo.flow.core.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -35,7 +34,11 @@ import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
+import dz.sh.trc.hyflo.flow.core.dto.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.PipelineCoverageDetailDTO;
+import dz.sh.trc.hyflo.flow.core.dto.SubmissionTrendDTO;
+import dz.sh.trc.hyflo.flow.core.dto.ValidatorWorkloadDTO;
 import dz.sh.trc.hyflo.flow.core.event.ReadingRejectedEvent;
 import dz.sh.trc.hyflo.flow.core.event.ReadingSubmittedEvent;
 import dz.sh.trc.hyflo.flow.core.event.ReadingValidatedEvent;
@@ -415,7 +418,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
      * @param endDate End of date range
      * @return List of daily statistics with completion percentages
      */
-    public List<Map<String, Object>> getDailyCompletionStatistics(
+    public List<DailyCompletionStatisticsDTO> getDailyCompletionStatistics(
             Long structureId, LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating daily completion statistics for structure: {} from {} to {}", 
                   structureId, startDate, endDate);
@@ -423,18 +426,17 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         List<Object[]> results = flowReadingRepository.getDailyCompletionStatistics(
                 structureId, startDate, endDate);
         
-        return results.stream().map(row -> {
-            Map<String, Object> stat = new HashMap<>();
-            stat.put("date", row[0]);
-            stat.put("totalPipelines", row[1]);
-            stat.put("recordedCount", row[2]);
-            stat.put("submittedCount", row[3]);
-            stat.put("approvedCount", row[4]);
-            stat.put("rejectedCount", row[5]);
-            stat.put("recordingCompletionPercentage", row[6]);
-            stat.put("validationCompletionPercentage", row[7]);
-            return stat;
-        }).collect(Collectors.toList());
+        return results.stream().map(row -> DailyCompletionStatisticsDTO.builder()
+                .date((LocalDate) row[0])
+                .totalPipelines((Long) row[1])
+                .recordedCount((Long) row[2])
+                .submittedCount((Long) row[3])
+                .approvedCount((Long) row[4])
+                .rejectedCount((Long) row[5])
+                .recordingCompletionPercentage((Double) row[6])
+                .validationCompletionPercentage((Double) row[7])
+                .build()
+        ).collect(Collectors.toList());
     }
 
     /**
@@ -446,7 +448,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
      * @param endDate End of date range
      * @return List of validators with their validation counts
      */
-    public List<Map<String, Object>> getValidatorWorkloadDistribution(
+    public List<ValidatorWorkloadDTO> getValidatorWorkloadDistribution(
             Long structureId, LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating validator workload for structure: {} from {} to {}", 
                   structureId, startDate, endDate);
@@ -454,16 +456,15 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         List<Object[]> results = flowReadingRepository.getValidatorWorkloadDistribution(
                 structureId, startDate, endDate);
         
-        return results.stream().map(row -> {
-            Map<String, Object> workload = new HashMap<>();
-            workload.put("validatorId", row[0]);
-            workload.put("validatorName", row[1]);
-            workload.put("approvedCount", row[2]);
-            workload.put("rejectedCount", row[3]);
-            workload.put("totalValidations", row[4]);
-            workload.put("approvalRate", row[5]);
-            return workload;
-        }).collect(Collectors.toList());
+        return results.stream().map(row -> ValidatorWorkloadDTO.builder()
+                .validatorId((Long) row[0])
+                .validatorName((String) row[1])
+                .approvedCount((Long) row[2])
+                .rejectedCount((Long) row[3])
+                .totalValidations((Long) row[4])
+                .approvalRate((Double) row[5])
+                .build()
+        ).collect(Collectors.toList());
     }
 
     /**
@@ -476,7 +477,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
      * @param groupBy Grouping interval: HOUR, DAY, WEEK, MONTH
      * @return List of submission counts grouped by time interval
      */
-    public List<Map<String, Object>> getSubmissionTrends(
+    public List<SubmissionTrendDTO> getSubmissionTrends(
             Long structureId, LocalDate startDate, LocalDate endDate, String groupBy) {
         log.debug("Calculating submission trends for structure: {} from {} to {} grouped by {}", 
                   structureId, startDate, endDate, groupBy);
@@ -484,14 +485,13 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         List<Object[]> results = flowReadingRepository.getSubmissionTrends(
                 structureId, startDate, endDate, groupBy);
         
-        return results.stream().map(row -> {
-            Map<String, Object> trend = new HashMap<>();
-            trend.put("period", row[0]);
-            trend.put("submissionCount", row[1]);
-            trend.put("uniquePipelines", row[2]);
-            trend.put("averageSubmissionsPerPipeline", row[3]);
-            return trend;
-        }).collect(Collectors.toList());
+        return results.stream().map(row -> SubmissionTrendDTO.builder()
+                .period((String) row[0])
+                .submissionCount((Long) row[1])
+                .uniquePipelines((Long) row[2])
+                .averageSubmissionsPerPipeline((Double) row[3])
+                .build()
+        ).collect(Collectors.toList());
     }
 
     /**
@@ -503,7 +503,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
      * @param endDate End of date range
      * @return List of pipelines with their coverage percentages
      */
-    public List<Map<String, Object>> getPipelineCoverageByDateRange(
+    public List<PipelineCoverageDetailDTO> getPipelineCoverageByDateRange(
             Long structureId, LocalDate startDate, LocalDate endDate) {
         log.debug("Calculating pipeline coverage for structure: {} from {} to {}", 
                   structureId, startDate, endDate);
@@ -511,17 +511,16 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         List<Object[]> results = flowReadingRepository.getPipelineCoverageByDateRange(
                 structureId, startDate, endDate);
         
-        return results.stream().map(row -> {
-            Map<String, Object> coverage = new HashMap<>();
-            coverage.put("pipelineId", row[0]);
-            coverage.put("pipelineCode", row[1]);
-            coverage.put("pipelineName", row[2]);
-            coverage.put("expectedReadings", row[3]);
-            coverage.put("actualReadings", row[4]);
-            coverage.put("coveragePercentage", row[5]);
-            coverage.put("missingDates", row[6]);
-            return coverage;
-        }).collect(Collectors.toList());
+        return results.stream().map(row -> PipelineCoverageDetailDTO.builder()
+                .pipelineId((Long) row[0])
+                .pipelineCode((String) row[1])
+                .pipelineName((String) row[2])
+                .expectedReadings((Long) row[3])
+                .actualReadings((Long) row[4])
+                .coveragePercentage((Double) row[5])
+                .missingDates((String) row[6])
+                .build()
+        ).collect(Collectors.toList());
     }
 
     // ========== HELPER METHODS ==========
