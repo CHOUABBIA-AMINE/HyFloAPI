@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
-import dz.sh.trc.hyflo.flow.core.repository.ReadingSlotRepository;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineAssetDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
