@@ -22,27 +22,27 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO containing statistical summary for a dataset
+ * Statistical summary of a dataset
  */
-@Schema(description = "Statistical summary of measurement values")
+@Schema(description = "Statistical analysis of time-series data")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class StatisticalSummaryDTO {
     
-    @Schema(description = "Minimum value", example = "75.2")
+    @Schema(description = "Minimum value in dataset", example = "68.5")
     private BigDecimal min;
     
-    @Schema(description = "Maximum value", example = "92.8")
+    @Schema(description = "Maximum value in dataset", example = "82.3")
     private BigDecimal max;
     
-    @Schema(description = "Average (mean) value", example = "85.5")
+    @Schema(description = "Average (mean) value", example = "75.4")
     private BigDecimal avg;
     
-    @Schema(description = "Median value", example = "84.7")
+    @Schema(description = "Median value", example = "75.0")
     private BigDecimal median;
     
-    @Schema(description = "Standard deviation", example = "4.3")
+    @Schema(description = "Standard deviation", example = "3.2")
     private BigDecimal stdDev;
 }
