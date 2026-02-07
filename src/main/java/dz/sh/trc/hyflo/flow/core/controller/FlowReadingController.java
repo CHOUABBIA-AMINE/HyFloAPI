@@ -5,6 +5,7 @@
  * 	@Name		: FlowReadingController
  * 	@CreatedOn	: 01-23-2026
  * 	@UpdatedOn	: 02-05-2026 - Merged FlowMonitoringController endpoints
+ * 	@UpdatedOn	: 02-07-2026 - Added 6 new operational monitoring endpoints
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -221,11 +222,11 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     @GetMapping("/validationStatus/{statusId}")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
     public ResponseEntity<Page<FlowReadingDTO>> getByValidationStatus(
-				@PathVariable Long statusId,
-				@RequestParam(defaultValue = "0") int page,
-	            @RequestParam(defaultValue = "20") int size,
-	            @RequestParam(defaultValue = "recordedAt") String sortBy,
-	            @RequestParam(defaultValue = "desc") String sortDir) {
+			@PathVariable Long statusId,
+			@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "recordedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
         log.info("GET /flow/core/reading/validationStatus/{} - Getting readings by validation status", statusId);
         return ResponseEntity.ok(flowReadingService.findByValidationStatus(statusId, buildPageable(page, size, sortBy, sortDir)));
     }
@@ -342,5 +343,169 @@ public class FlowReadingController extends GenericController<FlowReadingDTO, Lon
     ) {
         workflowService.validateReading(request);
         return ResponseEntity.ok().build();
+    }
+
+    // ========== NEW OPERATIONAL MONITORING ENDPOINTS ==========
+
+    /**
+     * Get pending validations by structure
+     * Returns all readings in SUBMITTED status awaiting validation
+     * Useful for supervisors to see their validation workload
+     * 
+     * @param structureId Structure ID to filter by
+     * @param page Page number for pagination
+     * @param size Number of items per page
+     * @return Paginated list of readings awaiting validation
+     */
+    @GetMapping("/monitoring/pending-validations")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get pending validations by structure",
+        description = "Returns readings awaiting validation filtered by structure"
+    )
+    public ResponseEntity<Page<FlowReadingDTO>> getPendingValidations(
+            @RequestParam Long structureId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("GET /flow/core/reading/monitoring/pending-validations - Structure: {}", structureId);
+        return ResponseEntity.ok(flowReadingService.findPendingValidationsByStructure(
+                structureId, buildPageable(page, size, "recordedAt", "asc")));
+    }
+
+    /**
+     * Get overdue readings by structure
+     * Returns readings that are past their slot deadline and not yet validated
+     * Critical for operational awareness of delayed data
+     * 
+     * @param structureId Structure ID to filter by
+     * @param asOfDate Date to check for overdue readings (defaults to today)
+     * @param page Page number for pagination
+     * @param size Number of items per page
+     * @return Paginated list of overdue readings
+     */
+    @GetMapping("/monitoring/overdue-readings")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get overdue readings by structure",
+        description = "Returns readings past their deadline that are not yet validated"
+    )
+    public ResponseEntity<Page<FlowReadingDTO>> getOverdueReadings(
+            @RequestParam Long structureId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOfDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        LocalDate targetDate = asOfDate != null ? asOfDate : LocalDate.now();
+        log.info("GET /flow/core/reading/monitoring/overdue-readings - Structure: {}, Date: {}", 
+                 structureId, targetDate);
+        return ResponseEntity.ok(flowReadingService.findOverdueReadingsByStructure(
+                structureId, targetDate, buildPageable(page, size, "readingDate", "desc")));
+    }
+
+    /**
+     * Get daily completion statistics
+     * Returns aggregated statistics for reading completion by date
+     * Shows submission rates, validation rates, and completion percentage
+     * Useful for KPI dashboards and performance monitoring
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of daily statistics
+     */
+    @GetMapping("/monitoring/daily-statistics")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get daily completion statistics",
+        description = "Returns aggregated statistics for reading completion by date"
+    )
+    public ResponseEntity<List<Map<String, Object>>> getDailyStatistics(
+            @RequestParam Long structureId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        log.info("GET /flow/core/reading/monitoring/daily-statistics - Structure: {}, Range: {} to {}", 
+                 structureId, startDate, endDate);
+        return ResponseEntity.ok(flowReadingService.getDailyCompletionStatistics(
+                structureId, startDate, endDate));
+    }
+
+    /**
+     * Get validator workload
+     * Returns workload distribution showing number of validations by validator
+     * Helps identify bottlenecks and balance workload distribution
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of validators with their validation counts
+     */
+    @GetMapping("/monitoring/validator-workload")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get validator workload",
+        description = "Returns validation distribution across validators"
+    )
+    public ResponseEntity<List<Map<String, Object>>> getValidatorWorkload(
+            @RequestParam Long structureId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        log.info("GET /flow/core/reading/monitoring/validator-workload - Structure: {}, Range: {} to {}", 
+                 structureId, startDate, endDate);
+        return ResponseEntity.ok(flowReadingService.getValidatorWorkloadDistribution(
+                structureId, startDate, endDate));
+    }
+
+    /**
+     * Get reading submission trends
+     * Returns time-series data showing submission patterns over time
+     * Useful for identifying peak submission times and operational patterns
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @param groupBy Grouping interval: HOUR, DAY, WEEK, MONTH
+     * @return List of submission counts grouped by time interval
+     */
+    @GetMapping("/monitoring/submission-trends")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get reading submission trends",
+        description = "Returns time-series data showing submission patterns"
+    )
+    public ResponseEntity<List<Map<String, Object>>> getSubmissionTrends(
+            @RequestParam Long structureId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "DAY") String groupBy) {
+        log.info("GET /flow/core/reading/monitoring/submission-trends - Structure: {}, Range: {} to {}, GroupBy: {}", 
+                 structureId, startDate, endDate, groupBy);
+        return ResponseEntity.ok(flowReadingService.getSubmissionTrends(
+                structureId, startDate, endDate, groupBy));
+    }
+
+    /**
+     * Get pipeline coverage by date range
+     * Returns coverage percentage for each pipeline over a date range
+     * Shows which pipelines consistently submit readings vs those with gaps
+     * Critical for identifying data quality issues
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of pipelines with their coverage percentages
+     */
+    @GetMapping("/monitoring/pipeline-coverage")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @Operation(
+        summary = "Get pipeline coverage by date range",
+        description = "Returns coverage percentage for each pipeline over a date range"
+    )
+    public ResponseEntity<List<Map<String, Object>>> getPipelineCoverageByDateRange(
+            @RequestParam Long structureId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        log.info("GET /flow/core/reading/monitoring/pipeline-coverage - Structure: {}, Range: {} to {}", 
+                 structureId, startDate, endDate);
+        return ResponseEntity.ok(flowReadingService.getPipelineCoverageByDateRange(
+                structureId, startDate, endDate));
     }
 }
