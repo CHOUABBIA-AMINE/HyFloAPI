@@ -5,6 +5,7 @@
  * 	@Name		: ReadingSlotRepository
  * 	@CreatedOn	: 01-27-2026
  * 	@UpdatedOn	: 01-27-2026
+ * 	@UpdatedOn	: 02-07-2026 - Added displayOrder query for intelligence service
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -44,6 +45,12 @@ public interface ReadingSlotRepository extends JpaRepository<ReadingSlot, Long> 
     Optional<ReadingSlot> findByDesignationFr(String designationFr);
     
     List<ReadingSlot> findAllByOrderByCodeAsc();
+    
+    /**
+     * Find all slots ordered by display order
+     * Used for intelligence service chronological display
+     */
+    List<ReadingSlot> findAllByOrderByDisplayOrder();
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
