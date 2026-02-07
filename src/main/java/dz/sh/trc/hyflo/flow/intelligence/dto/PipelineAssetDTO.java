@@ -13,6 +13,8 @@
 
 package dz.sh.trc.hyflo.flow.intelligence.dto;
 
+import java.math.BigDecimal;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,142 +22,151 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO containing static asset specifications for a pipeline
+ * Complete pipeline asset specification with technical parameters
  */
-@Schema(description = "Static asset specifications and technical details for a pipeline")
+@Schema(description = "Pipeline asset specifications and configuration details")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PipelineAssetDTO {
     
-    @Schema(description = "Pipeline unique identifier", example = "1")
+    // Basic Identification
+    @Schema(description = "Pipeline identifier", example = "15")
     private Long id;
     
-    @Schema(description = "Pipeline code", example = "PL-001")
+    @Schema(description = "Pipeline code", example = "TRC-DP-01")
     private String code;
     
-    @Schema(description = "Pipeline name", example = "Hassi Messaoud - Arzew Pipeline")
+    @Schema(description = "Pipeline name", example = "Canalisation TRC-DP vers TRC-HMD")
     private String name;
     
-    @Schema(description = "Total length in kilometers", example = "850.5")
-    private Double length;
+    // Physical Characteristics
+    @Schema(description = "Length in kilometers", example = "42.5")
+    private BigDecimal length;
     
-    @Schema(description = "Nominal internal diameter", example = "48 inches")
-    private String nominalDiameter;
+    @Schema(description = "Nominal diameter in millimeters", example = "508.0")
+    private BigDecimal nominalDiameter;
     
-    @Schema(description = "Nominal wall thickness", example = "12.7 mm")
-    private String nominalThickness;
+    @Schema(description = "Nominal thickness in millimeters", example = "12.7")
+    private BigDecimal nominalThickness;
     
-    @Schema(description = "Design maximum service pressure in bar", example = "120.5")
-    private Double designMaxServicePressure;
+    // Pressure Specifications
+    @Schema(description = "Design maximum service pressure in bar", example = "85.0")
+    private BigDecimal designMaxServicePressure;
     
-    @Schema(description = "Operational maximum service pressure in bar", example = "100.0")
-    private Double operationalMaxServicePressure;
+    @Schema(description = "Operational maximum service pressure in bar", example = "80.0")
+    private BigDecimal operationalMaxServicePressure;
     
     @Schema(description = "Design minimum service pressure in bar", example = "10.0")
-    private Double designMinServicePressure;
+    private BigDecimal designMinServicePressure;
     
     @Schema(description = "Operational minimum service pressure in bar", example = "15.0")
-    private Double operationalMinServicePressure;
+    private BigDecimal operationalMinServicePressure;
     
-    @Schema(description = "Design capacity in cubic meters per day", example = "50000.0")
-    private Double designCapacity;
+    // Capacity Specifications
+    @Schema(description = "Design capacity in m³/h", example = "2500.0")
+    private BigDecimal designCapacity;
     
-    @Schema(description = "Operational capacity in cubic meters per day", example = "45000.0")
-    private Double operationalCapacity;
+    @Schema(description = "Operational capacity in m³/h", example = "2300.0")
+    private BigDecimal operationalCapacity;
     
+    // Network Connections
     @Schema(description = "Departure terminal information")
     private TerminalInfoDTO departureTerminal;
     
     @Schema(description = "Arrival terminal information")
     private TerminalInfoDTO arrivalTerminal;
     
-    @Schema(description = "Construction material information")
+    // Material Information
+    @Schema(description = "Construction material specification")
     private AlloyInfoDTO constructionMaterial;
     
-    @Schema(description = "Pipeline system information")
+    // Organization References
+    @Schema(description = "Pipeline system this pipeline belongs to")
     private PipelineSystemInfoDTO pipelineSystem;
     
-    @Schema(description = "Managing structure information")
+    @Schema(description = "Managing organization structure")
     private StructureInfoDTO manager;
     
+    // ========== NESTED DTOs ==========
+    
     /**
-     * Nested DTO for terminal basic info
+     * Terminal reference information
      */
-    @Schema(description = "Terminal basic information")
+    @Schema(description = "Terminal connection point information")
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TerminalInfoDTO {
-        @Schema(description = "Terminal ID", example = "1")
+        @Schema(description = "Terminal ID", example = "5")
         private Long id;
         
-        @Schema(description = "Terminal code", example = "TRM-001")
+        @Schema(description = "Terminal code", example = "TRC-DP")
         private String code;
         
-        @Schema(description = "Terminal name", example = "Hassi Messaoud Terminal")
+        @Schema(description = "Terminal name", example = "Terminal Départ TRC")
         private String name;
         
-        @Schema(description = "Terminal type", example = "Production")
+        @Schema(description = "Terminal type", example = "Station de Tête")
         private String type;
     }
     
     /**
-     * Nested DTO for alloy/material info
+     * Material/Alloy information
      */
-    @Schema(description = "Alloy/Material basic information")
+    @Schema(description = "Construction material specification")
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AlloyInfoDTO {
-        @Schema(description = "Alloy ID", example = "1")
+        @Schema(description = "Material ID", example = "12")
         private Long id;
         
-        @Schema(description = "Alloy code", example = "API-5L-X65")
+        @Schema(description = "Material code", example = "API-5L-X65")
         private String code;
         
-        @Schema(description = "Alloy designation", example = "API 5L Grade X65")
+        @Schema(description = "Material designation", example = "Acier API 5L Grade X65")
         private String designation;
     }
     
     /**
-     * Nested DTO for pipeline system info
+     * Pipeline system reference
      */
-    @Schema(description = "Pipeline system basic information")
+    @Schema(description = "Pipeline system grouping")
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PipelineSystemInfoDTO {
-        @Schema(description = "Pipeline system ID", example = "1")
+        @Schema(description = "System ID", example = "3")
         private Long id;
         
-        @Schema(description = "Pipeline system code", example = "SYS-001")
+        @Schema(description = "System code", example = "SYS-TRC")
         private String code;
         
-        @Schema(description = "Pipeline system designation", example = "Crude Oil Transport System")
+        @Schema(description = "System designation", example = "Système TRC")
         private String designation;
     }
     
     /**
-     * Nested DTO for structure info
+     * Organization structure reference
      */
-    @Schema(description = "Organizational structure basic information")
+    @Schema(description = "Organizational structure information")
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class StructureInfoDTO {
-        @Schema(description = "Structure ID", example = "1")
+        @Schema(description = "Structure ID", example = "8")
         private Long id;
         
-        @Schema(description = "Structure code", example = "OP-SUD")
+        @Schema(description = "Structure code", example = "DP-TRC")
         private String code;
         
-        @Schema(description = "Structure designation", example = "Operations Sud")
+        @Schema(description = "Structure designation", example = "Département Transport")
         private String designation;
     }
 }
