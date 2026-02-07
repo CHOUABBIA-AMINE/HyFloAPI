@@ -23,27 +23,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO representing a single data point in a time-series chart
+ * Individual data point in a time series
  */
-@Schema(description = "Single data point in a time-series of readings")
+@Schema(description = "Single data point with timestamp and value")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TimeSeriesDataPointDTO {
     
-    @Schema(description = "Timestamp of the reading", example = "2026-02-07T08:00:00")
+    @Schema(description = "Timestamp of the reading", example = "2026-02-07T08:30:00")
     private LocalDateTime timestamp;
     
-    @Schema(description = "Measured value", example = "85.5")
+    @Schema(description = "Measured value", example = "75.5")
     private BigDecimal value;
     
-    @Schema(description = "Slot code for this reading", example = "SLOT-05")
+    @Schema(description = "Reading slot code", example = "SLOT_02")
     private String slotCode;
     
-    @Schema(description = "Validation status of this reading", example = "APPROVED")
+    @Schema(description = "Validation status", example = "APPROVED",
+            allowableValues = {"DRAFT", "SUBMITTED", "APPROVED", "REJECTED"})
     private String validationStatus;
     
-    @Schema(description = "Whether this reading has business warnings", example = "false")
+    @Schema(description = "Indicates if this reading has warnings or notes", example = "false")
     private Boolean hasWarning;
 }
