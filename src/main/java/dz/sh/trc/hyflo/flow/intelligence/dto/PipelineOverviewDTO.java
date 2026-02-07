@@ -23,66 +23,67 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO containing comprehensive overview of pipeline operational intelligence
- * Combines static asset specifications with dynamic operational status and KPIs
+ * Comprehensive overview combining asset information, current readings, and operational KPIs
  */
-@Schema(description = "Comprehensive pipeline overview with asset specifications and operational KPIs")
+@Schema(description = "Complete operational dashboard for a pipeline")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PipelineOverviewDTO {
     
-    // Static asset information
-    @Schema(description = "Static asset specifications")
+    // Asset Information
+    @Schema(description = "Pipeline asset specifications and configuration")
     private PipelineAssetDTO asset;
     
-    // Current operational status
-    @Schema(description = "Current operational status", example = "ACTIVE", 
-            allowableValues = {"ACTIVE", "MAINTENANCE", "SHUTDOWN"})
+    // Operational Status
+    @Schema(description = "Current operational status", example = "ACTIVE",
+            allowableValues = {"ACTIVE", "STANDBY", "MAINTENANCE", "SHUTDOWN"})
     private String operationalStatus;
     
-    @Schema(description = "Current pressure reading in bar", example = "85.5")
+    // Current Measurements (Latest Reading)
+    @Schema(description = "Current pressure reading in bar", example = "75.8")
     private BigDecimal currentPressure;
     
-    @Schema(description = "Current temperature reading in Celsius", example = "45.2")
+    @Schema(description = "Current temperature reading in °C", example = "22.5")
     private BigDecimal currentTemperature;
     
-    @Schema(description = "Current flow rate in cubic meters per hour", example = "1875.0")
+    @Schema(description = "Current flow rate in m³/h", example = "1875.20")
     private BigDecimal currentFlowRate;
     
-    @Schema(description = "Timestamp of last recorded reading", example = "2026-02-07T14:30:00")
+    @Schema(description = "Timestamp of last recorded reading", example = "2026-02-07T15:45:00")
     private LocalDateTime lastReadingTime;
     
-    // Today's slot monitoring KPIs
-    @Schema(description = "Total slots expected today (always 12)", example = "12")
+    // Slot Coverage KPIs (Today)
+    @Schema(description = "Total number of slots in a day", example = "12")
     private Integer totalSlotsToday;
     
-    @Schema(description = "Number of slots with recorded readings", example = "10")
+    @Schema(description = "Number of slots with recordings", example = "9")
     private Integer recordedSlots;
     
-    @Schema(description = "Number of slots with approved readings", example = "8")
+    @Schema(description = "Number of approved slots", example = "7")
     private Integer approvedSlots;
     
     @Schema(description = "Number of slots pending validation", example = "2")
     private Integer pendingValidationSlots;
     
-    @Schema(description = "Number of slots past deadline without validation", example = "1")
+    @Schema(description = "Number of overdue slots", example = "1")
     private Integer overdueSlots;
     
-    @Schema(description = "Daily completion rate (approved/total) as percentage", example = "83.33")
+    @Schema(description = "Completion rate (approved/total)", example = "58.33")
     private Double completionRate;
     
-    // Weekly summary
-    @Schema(description = "Weekly average completion rate as percentage", example = "87.5")
+    @Schema(description = "Average weekly completion rate (last 7 days)", example = "87.50")
     private Double weeklyCompletionRate;
     
-    @Schema(description = "Number of active alerts requiring attention", example = "2")
+    // Alert Summary
+    @Schema(description = "Number of active alerts", example = "0")
     private Integer activeAlertsCount;
     
-    @Schema(description = "Volume transported today in cubic meters", example = "42500.0")
+    // Volume Statistics
+    @Schema(description = "Total volume transported today in m³", example = "45000.75")
     private BigDecimal volumeTransportedToday;
     
-    @Schema(description = "Volume transported this week in cubic meters", example = "285000.0")
+    @Schema(description = "Total volume transported this week in m³", example = "315000.50")
     private BigDecimal volumeTransportedWeek;
 }
