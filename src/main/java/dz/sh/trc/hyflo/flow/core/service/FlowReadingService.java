@@ -6,6 +6,7 @@
  * 	@CreatedOn	: 01-23-2026
  * 	@UpdatedOn	: 02-01-2026 - Integrated generic notification system
  * 	@UpdatedOn	: 01-27-2026 - Added validate and reject methods
+ * 	@UpdatedOn	: 02-07-2026 - Added 6 operational monitoring methods
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -18,7 +19,9 @@ package dz.sh.trc.hyflo.flow.core.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -361,6 +364,164 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         log.debug("Published ReadingRejectedEvent for reading ID: {}", saved.getId());
         
         return FlowReadingDTO.fromEntity(saved);
+    }
+
+    // ========== OPERATIONAL MONITORING METHODS ==========
+
+    /**
+     * Find pending validations by structure
+     * Returns readings in SUBMITTED status awaiting validation
+     * 
+     * @param structureId Structure ID to filter by
+     * @param pageable Pagination parameters
+     * @return Paginated list of readings awaiting validation
+     */
+    public Page<FlowReadingDTO> findPendingValidationsByStructure(
+            Long structureId, Pageable pageable) {
+        log.debug("Finding pending validations for structure: {}", structureId);
+        
+        ValidationStatus submittedStatus = validationStatusRepository.findByCode("SUBMITTED")
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "SUBMITTED status not found in database"));
+        
+        return executeQuery(p -> flowReadingRepository.findByStructureAndValidationStatus(
+                structureId, submittedStatus.getId(), p), pageable);
+    }
+
+    /**
+     * Find overdue readings by structure
+     * Returns readings past their slot deadline and not yet validated
+     * 
+     * @param structureId Structure ID to filter by
+     * @param asOfDate Date to check for overdue readings
+     * @param pageable Pagination parameters
+     * @return Paginated list of overdue readings
+     */
+    public Page<FlowReadingDTO> findOverdueReadingsByStructure(
+            Long structureId, LocalDate asOfDate, Pageable pageable) {
+        log.debug("Finding overdue readings for structure: {} as of date: {}", 
+                  structureId, asOfDate);
+        
+        return executeQuery(p -> flowReadingRepository.findOverdueReadingsByStructure(
+                structureId, asOfDate, LocalDateTime.now(), p), pageable);
+    }
+
+    /**
+     * Get daily completion statistics
+     * Returns aggregated statistics for reading completion by date
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of daily statistics with completion percentages
+     */
+    public List<Map<String, Object>> getDailyCompletionStatistics(
+            Long structureId, LocalDate startDate, LocalDate endDate) {
+        log.debug("Calculating daily completion statistics for structure: {} from {} to {}", 
+                  structureId, startDate, endDate);
+        
+        List<Object[]> results = flowReadingRepository.getDailyCompletionStatistics(
+                structureId, startDate, endDate);
+        
+        return results.stream().map(row -> {
+            Map<String, Object> stat = new HashMap<>();
+            stat.put("date", row[0]);
+            stat.put("totalPipelines", row[1]);
+            stat.put("recordedCount", row[2]);
+            stat.put("submittedCount", row[3]);
+            stat.put("approvedCount", row[4]);
+            stat.put("rejectedCount", row[5]);
+            stat.put("recordingCompletionPercentage", row[6]);
+            stat.put("validationCompletionPercentage", row[7]);
+            return stat;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Get validator workload distribution
+     * Returns workload showing number of validations by validator
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of validators with their validation counts
+     */
+    public List<Map<String, Object>> getValidatorWorkloadDistribution(
+            Long structureId, LocalDate startDate, LocalDate endDate) {
+        log.debug("Calculating validator workload for structure: {} from {} to {}", 
+                  structureId, startDate, endDate);
+        
+        List<Object[]> results = flowReadingRepository.getValidatorWorkloadDistribution(
+                structureId, startDate, endDate);
+        
+        return results.stream().map(row -> {
+            Map<String, Object> workload = new HashMap<>();
+            workload.put("validatorId", row[0]);
+            workload.put("validatorName", row[1]);
+            workload.put("approvedCount", row[2]);
+            workload.put("rejectedCount", row[3]);
+            workload.put("totalValidations", row[4]);
+            workload.put("approvalRate", row[5]);
+            return workload;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Get reading submission trends
+     * Returns time-series data showing submission patterns over time
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @param groupBy Grouping interval: HOUR, DAY, WEEK, MONTH
+     * @return List of submission counts grouped by time interval
+     */
+    public List<Map<String, Object>> getSubmissionTrends(
+            Long structureId, LocalDate startDate, LocalDate endDate, String groupBy) {
+        log.debug("Calculating submission trends for structure: {} from {} to {} grouped by {}", 
+                  structureId, startDate, endDate, groupBy);
+        
+        List<Object[]> results = flowReadingRepository.getSubmissionTrends(
+                structureId, startDate, endDate, groupBy);
+        
+        return results.stream().map(row -> {
+            Map<String, Object> trend = new HashMap<>();
+            trend.put("period", row[0]);
+            trend.put("submissionCount", row[1]);
+            trend.put("uniquePipelines", row[2]);
+            trend.put("averageSubmissionsPerPipeline", row[3]);
+            return trend;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Get pipeline coverage by date range
+     * Returns coverage percentage for each pipeline over a date range
+     * 
+     * @param structureId Structure ID to filter by
+     * @param startDate Start of date range
+     * @param endDate End of date range
+     * @return List of pipelines with their coverage percentages
+     */
+    public List<Map<String, Object>> getPipelineCoverageByDateRange(
+            Long structureId, LocalDate startDate, LocalDate endDate) {
+        log.debug("Calculating pipeline coverage for structure: {} from {} to {}", 
+                  structureId, startDate, endDate);
+        
+        List<Object[]> results = flowReadingRepository.getPipelineCoverageByDateRange(
+                structureId, startDate, endDate);
+        
+        return results.stream().map(row -> {
+            Map<String, Object> coverage = new HashMap<>();
+            coverage.put("pipelineId", row[0]);
+            coverage.put("pipelineCode", row[1]);
+            coverage.put("pipelineName", row[2]);
+            coverage.put("expectedReadings", row[3]);
+            coverage.put("actualReadings", row[4]);
+            coverage.put("coveragePercentage", row[5]);
+            coverage.put("missingDates", row[6]);
+            return coverage;
+        }).collect(Collectors.toList());
     }
 
     // ========== HELPER METHODS ==========
