@@ -24,73 +24,75 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO containing status and measurements for a specific reading slot
+ * Detailed status of a single reading slot
  */
-@Schema(description = "Status and measurements for a specific reading slot")
+@Schema(description = "Status and data for a specific 2-hour reading slot")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SlotStatusDTO {
     
-    @Schema(description = "Reading slot ID", example = "1")
+    // Slot metadata
+    @Schema(description = "Slot identifier", example = "1")
     private Long slotId;
     
-    @Schema(description = "Slot code", example = "SLOT-01")
+    @Schema(description = "Slot code", example = "SLOT_02")
     private String slotCode;
     
-    @Schema(description = "Slot start time", example = "00:00")
+    @Schema(description = "Slot start time", example = "02:00:00")
     private LocalTime startTime;
     
-    @Schema(description = "Slot end time", example = "02:00")
+    @Schema(description = "Slot end time", example = "04:00:00")
     private LocalTime endTime;
     
-    @Schema(description = "Slot designation (multilingual)", example = "00:00 - 02:00")
+    @Schema(description = "Slot designation in French", example = "02h00 - 04h00")
     private String designation;
     
-    @Schema(description = "Display order for UI sorting", example = "1")
+    @Schema(description = "Display order (1-12)", example = "2")
     private Integer displayOrder;
     
-    // Reading information
-    @Schema(description = "Flow reading ID if recorded", example = "123")
+    // Recording status
+    @Schema(description = "Reading record ID if exists", example = "1523")
     private Long readingId;
     
-    @Schema(description = "Validation status", example = "APPROVED", 
+    @Schema(description = "Validation status", example = "APPROVED",
             allowableValues = {"NOT_RECORDED", "DRAFT", "SUBMITTED", "APPROVED", "REJECTED"})
     private String validationStatus;
     
-    @Schema(description = "Timestamp when reading was recorded", example = "2026-02-07T08:30:00")
+    @Schema(description = "Timestamp when reading was recorded", example = "2026-02-07T03:45:00")
     private LocalDateTime recordedAt;
     
     @Schema(description = "Timestamp when reading was validated", example = "2026-02-07T09:15:00")
     private LocalDateTime validatedAt;
     
-    @Schema(description = "Name of employee who recorded the reading", example = "John Doe")
+    // Operator information
+    @Schema(description = "Name of operator who recorded reading", example = "Mohammed BENALI")
     private String recorderName;
     
-    @Schema(description = "Name of employee who validated the reading", example = "Jane Smith")
+    @Schema(description = "Name of validator who approved reading", example = "Fatima KHELIF")
     private String validatorName;
     
-    // Measurements
-    @Schema(description = "Pressure measurement in bar", example = "85.5")
+    // Measurement data
+    @Schema(description = "Pressure reading in bar", example = "75.5")
     private BigDecimal pressure;
     
-    @Schema(description = "Temperature measurement in Celsius", example = "45.2")
+    @Schema(description = "Temperature reading in °C", example = "22.3")
     private BigDecimal temperature;
     
-    @Schema(description = "Flow rate in cubic meters per hour", example = "1875.0")
+    @Schema(description = "Flow rate in m³/h", example = "1850.75")
     private BigDecimal flowRate;
     
-    @Schema(description = "Contained volume in cubic meters", example = "3750.0")
+    @Schema(description = "Contained volume in m³", example = "3700.50")
     private BigDecimal containedVolume;
     
     // Status flags
-    @Schema(description = "Whether this slot is past deadline", example = "false")
+    @Schema(description = "Indicates if slot is past deadline without approved reading", example = "false")
     private Boolean isOverdue;
     
-    @Schema(description = "Whether reading has business warnings", example = "false")
+    @Schema(description = "Indicates if reading has warnings or notes", example = "false")
     private Boolean hasWarnings;
     
-    @Schema(description = "Additional notes or warnings", example = "Pressure slightly above threshold")
+    @Schema(description = "Optional notes or observations", example = "Slight pressure fluctuation observed")
     private String notes;
 }
