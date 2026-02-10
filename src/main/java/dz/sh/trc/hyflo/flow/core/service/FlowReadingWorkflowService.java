@@ -1,633 +1,314 @@
 /**
  *
- * 	@Author		: MEDJERAB Abir
+ * 	@Author		: CHOUABBIA Amine
  *
  * 	@Name		: FlowReadingWorkflowService
- * 	@CreatedOn	: 01-28-2026
- * 	@UpdatedOn	: 02-04-2026
+ * 	@CreatedOn	: 02-10-2026
+ * 	@UpdatedOn	: 02-10-2026 - Extracted from FlowReadingService (SRP refactoring)
  *
- * 	@Type		: Service
+ * 	@Type		: Class
  * 	@Layer		: Service
  * 	@Package	: Flow / Core
  *
- * 	@Description:
- * 	Slot-centric workflow service for hydrocarbon transportation monitoring.
- * 	Implements process-oriented reading management with state machine enforcement.
+ * 	@Description: Service handling flow reading workflow state transitions.
+ * 	              Extracted from FlowReadingService to follow Single Responsibility Principle.
  *
- * 	FIXES APPLIED:
- * 	- FIX #1:  Race condition prevention with pessimistic locking
- * 	- FIX #2:  Lock approved readings (immutable after validation)
- * 	- FIX #3:  Event publishing for notifications
- * 	- FIX #4:  Slot deadline enforcement
- * 	- FIX #5:  Prevent REJECTED → APPROVED bypass
- * 	- FIX #6:  Business validation for measurement data
- * 	- FIX #11: Idempotent validation operations
- * 	- FIX #12: Nested DTO population for translation support
+ * 	@Refactoring: Extracted from FlowReadingService
+ * 	              
+ * 	              Rationale (SRP - Single Responsibility Principle):
+ * 	              - FlowReadingService: CRUD operations (create, read, update, delete, queries)
+ * 	              - FlowReadingWorkflowService: Workflow transitions (validate, reject, submit)
+ * 	              
+ * 	              Benefits:
+ * 	              - Clear separation of concerns
+ * 	              - Easier testing (mock workflow dependencies separately)
+ * 	              - Better maintainability (workflow logic isolated)
+ * 	              - Future-proof (room for additional workflow states like PENDING, REVIEWING)
  *
  **/
 
 package dz.sh.trc.hyflo.flow.core.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.exception.WorkflowException;
-import dz.sh.trc.hyflo.flow.common.dto.ReadingSlotDTO;
-import dz.sh.trc.hyflo.flow.common.dto.ValidationStatusDTO;
-import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
-import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.command.ReadingSubmitRequestDTO;
-import dz.sh.trc.hyflo.flow.core.dto.command.ReadingValidationRequestDTO;
-import dz.sh.trc.hyflo.flow.core.helper.ValidationStatusHelper;
+import dz.sh.trc.hyflo.flow.common.util.FlowReadingIdentifierBuilder;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.event.ReadingRejectedEvent;
+import dz.sh.trc.hyflo.flow.core.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
-import dz.sh.trc.hyflo.flow.core.repository.SlotCoverageProjection;
-import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDTO;
-import dz.sh.trc.hyflo.flow.intelligence.dto.monitoring.SlotCoverageRequestDTO;
-import dz.sh.trc.hyflo.flow.intelligence.dto.monitoring.SlotCoverageResponseDTO;
-import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
-import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
-import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
-import dz.sh.trc.hyflo.general.organization.repository.StructureRepository;
-import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
-import dz.sh.trc.hyflo.network.core.model.Pipeline;
-import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service handling flow reading workflow state transitions.
+ * 
+ * This service manages:
+ * - Validation workflow (validate readings)
+ * - Rejection workflow (reject invalid readings)
+ * - Event publishing for workflow transitions
+ * 
+ * Separated from FlowReadingService to follow Single Responsibility Principle:
+ * - FlowReadingService: CRUD operations
+ * - FlowReadingWorkflowService: Workflow state transitions
+ * 
+ * Future enhancements:
+ * - Add PENDING → REVIEWING transition
+ * - Add resubmission workflow (REJECTED → SUBMITTED)
+ * - Add bulk validation operations
+ */
 @Service
-@Transactional
-@Slf4j
 @RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
 public class FlowReadingWorkflowService {
-    
-    // ========== DEPENDENCIES ==========
-    
+
     private final FlowReadingRepository flowReadingRepository;
     private final ValidationStatusRepository validationStatusRepository;
-    private final PipelineRepository pipelineRepository;
-    private final ReadingSlotRepository readingSlotRepository;
-    private final StructureRepository structureRepository;
     private final EmployeeRepository employeeRepository;
-    //private final ApplicationEventPublisher applicationEventPublisher;
-    private final ReadingBusinessValidator businessValidator; // FIX #6
-    
-    // ========== PUBLIC API METHODS ==========
-    
+    private final ApplicationEventPublisher eventPublisher;
+
+    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    // ========== VALIDATION WORKFLOW METHODS ==========
+
     /**
-     * Get slot coverage - all pipelines with reading status for a given date + slot + structure.
-     * This is the primary query for operators and supervisors to see what readings are missing.
-     *
-     * FIX #12: Populate nested DTOs for translation support
-     *
-     * @param request Contains readingDate, slotId, structureId
-     * @return Slot coverage with pipeline-level reading status and statistics
+     * Validate a flow reading
+     * 
+     * Updates the reading status to VALIDATED and records validator information.
+     * Publishes ReadingValidatedEvent via generic notification system.
+     * 
+     * Workflow transition: SUBMITTED → VALIDATED
+     * 
+     * @param id Reading ID
+     * @param validatedById Employee ID of the validator
+     * @return Updated reading DTO with VALIDATED status
+     * @throws ResourceNotFoundException if reading, status, or employee not found
      */
-    public SlotCoverageResponseDTO getSlotCoverage(SlotCoverageRequestDTO request) {
+    @Transactional
+    public FlowReadingDTO validate(Long id, Long validatedById) {
+        log.info("Validating flow reading {} by employee {}", id, validatedById);
         
-        log.debug("Fetching slot coverage for date={}, slot={}, structure={}", 
-            request.getReadingDate(), request.getSlotId(), request.getStructureId());
-        
-        // FIX #12: Load metadata entities for nested DTOs
-        Structure structure = structureRepository.findById(request.getStructureId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Structure not found: " + request.getStructureId()));
-        
-        ReadingSlot slot = readingSlotRepository.findById(request.getSlotId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Slot not found: " + request.getSlotId()));
-        
-        // FIX #12: Populate request nested DTOs for echo/confirmation
-        request.setSlot(ReadingSlotDTO.fromEntity(slot));
-        request.setStructure(StructureDTO.fromEntity(structure));
-        
-        // Query coverage (LEFT JOIN - shows all pipelines even without readings)
-        List<SlotCoverageProjection> projections = flowReadingRepository
-            .findSlotCoverage(
-                request.getReadingDate(),
-                request.getSlotId(),
-                request.getStructureId()
-            );
-        
-        // FIX #12: Build pipeline coverage list with nested DTOs
-        List<PipelineCoverageDTO> pipelines = projections.stream()
-            .map(proj -> buildPipelineCoverage(proj, request.getReadingDate(), slot))
-            .collect(Collectors.toList());
-        
-        // Calculate statistics by status code
-        Map<String, Long> statusCounts = pipelines.stream()
-            .collect(Collectors.groupingBy(
-                p -> p.getValidationStatus() != null ? 
-                    p.getValidationStatus().getCode() : ValidationStatusHelper.NOT_RECORDED,
-                Collectors.counting()
-            ));
-        
-        int totalPipelines = pipelines.size();
-        int missingCount = statusCounts.getOrDefault(ValidationStatusHelper.NOT_RECORDED, 0L).intValue();
-        int recordedCount = totalPipelines - missingCount;
-        int approvedCount = statusCounts.getOrDefault(ValidationStatusHelper.APPROVED, 0L).intValue();
-        int rejectedCount = statusCounts.getOrDefault(ValidationStatusHelper.REJECTED, 0L).intValue();
-        
-        // FIX #12: Split completion metrics
-        double recordingCompletion = calculateCompletion(recordedCount, totalPipelines);
-        double validationCompletion = calculateCompletion(approvedCount + rejectedCount, totalPipelines);
-        
-        // Check if slot is complete (all pipelines APPROVED)
-        Boolean isComplete = flowReadingRepository.isSlotComplete(
-            request.getReadingDate(), 
-            request.getSlotId(), 
-            request.getStructureId()
-        );
-        
-        // FIX #12: Calculate metadata
-        LocalDateTime generatedAt = LocalDateTime.now();
-        LocalDateTime slotDeadline = LocalDateTime.of(request.getReadingDate(), slot.getEndTime());
-        
-        return SlotCoverageResponseDTO.builder()
-            .readingDate(request.getReadingDate())
-            .slot(ReadingSlotDTO.fromEntity(slot))
-            .structure(StructureDTO.fromEntity(structure))
-            .generatedAt(generatedAt)
-            .slotDeadline(slotDeadline)
-            .totalPipelines(totalPipelines)
-            .recordedCount(recordedCount)
-            .submittedCount(statusCounts.getOrDefault(ValidationStatusHelper.SUBMITTED, 0L).intValue())
-            .approvedCount(approvedCount)
-            .rejectedCount(rejectedCount)
-            .missingCount(missingCount)
-            .recordingCompletionPercentage(recordingCompletion)
-            .validationCompletionPercentage(validationCompletion)
-            .isSlotComplete(Boolean.TRUE.equals(isComplete))
-            .pipelines(pipelines)
-            .build();
-    }
-    
-    /**
-     * Submit or update a reading.
-     * Operators use this to record measurements and optionally submit them for validation.
-     *
-     * STATE TRANSITIONS ALLOWED:
-     * - NOT_RECORDED → DRAFT (save without submitting)
-     * - NOT_RECORDED → SUBMITTED (save and submit)
-     * - DRAFT → DRAFT (update measurements)
-     * - DRAFT → SUBMITTED (submit after editing)
-     * - REJECTED → DRAFT (correct rejected reading)
-     * - REJECTED → SUBMITTED (correct and submit rejected reading)
-     *
-     * BLOCKED TRANSITIONS:
-     * - APPROVED → * (immutable)
-     * - SUBMITTED → DRAFT/SUBMITTED (locked until validated)
-     *
-     * FIX #1:  Race condition prevention with pessimistic locking
-     * FIX #2:  Lock approved readings (cannot edit)
-     * FIX #6:  Business validation for measurement data
-     * FIX #12: Populate nested DTOs in request for display
-     *
-     * @param request Contains pipelineId, date, slotId, measurements, employeeId
-     * @throws WorkflowException if reading is in non-editable state
-     */
-    public void submitReading(ReadingSubmitRequestDTO request) {
-        
-        log.debug("Processing reading submission: readingId={}, pipeline={}, date={}, slot={}", 
-            request.getReadingId(), request.getPipelineId(), 
-            request.getReadingDate(), request.getSlotId());
-        
-        // FIX #12: Validate and populate nested DTOs
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Employee not found: " + request.getEmployeeId()));
-        request.setEmployee(EmployeeDTO.fromEntity(employee));
-        
-        Pipeline pipeline = pipelineRepository.findById(request.getPipelineId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Pipeline not found: " + request.getPipelineId()));
-        request.setPipeline(PipelineDTO.fromEntity(pipeline));
-        
-        ReadingSlot slot = readingSlotRepository.findById(request.getSlotId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Slot not found: " + request.getSlotId()));
-        request.setSlot(ReadingSlotDTO.fromEntity(slot));
-        
-        FlowReading reading;
-        String previousStatus = null;
-        
-        if (request.getReadingId() != null) {
-            // ========== UPDATE EXISTING READING ==========
-            
-            // FIX #2: Lock reading and check if editable
-            reading = flowReadingRepository
-                .findByIdForUpdate(request.getReadingId())
+        FlowReading reading = flowReadingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                    "Reading not found: " + request.getReadingId()));
-            
-            previousStatus = ValidationStatusHelper.getStatusCode(reading);
-            
-            // FIX #2: ENFORCE - Only DRAFT, REJECTED, or NOT_RECORDED can be edited
-            if (!ValidationStatusHelper.isEditable(reading)) {
-                throw new WorkflowException(
-                    "Reading in status '" + previousStatus + "' cannot be modified. " +
-                    "Only DRAFT or REJECTED readings can be edited. " +
-                    "APPROVED readings are immutable (legal documents). " +
-                    "SUBMITTED readings are locked until validated.");
-            }
-            
-            // FIX #2: ENFORCE - Pipeline/Date/Slot cannot change on update
-            if (!reading.getPipeline().getId().equals(request.getPipelineId()) ||
-                !reading.getReadingDate().equals(request.getReadingDate()) ||
-                !reading.getReadingSlot().getId().equals(request.getSlotId())) {
-                throw new WorkflowException(
-                    "Cannot change pipeline, date, or slot of existing reading. " +
-                    "Delete and recreate if different context is needed.");
-            }
-            
-            log.debug("Updating existing reading {} from status {}", reading.getId(), previousStatus);
-            
-        } else {
-            // ========== CREATE NEW READING ==========
-            
-            // FIX #1: Use pessimistic locking to prevent race condition
-            reading = findOrCreateReadingWithLock(
-                request.getPipelineId(),
-                request.getReadingDate(),
-                request.getSlotId(),
-                employee
-            );
-            
-            previousStatus = ValidationStatusHelper.getStatusCode(reading);
-            log.debug("Created/found reading {} with status {}", reading.getId(), previousStatus);
-        }
+                        String.format("Flow reading with ID %d not found", id)));
         
-        // FIX #6: VALIDATE BUSINESS RULES BEFORE SAVING
-        List<String> warnings = businessValidator.validateReading(
-            request.getPipelineId(),
-            request.getPressure(),
-            request.getTemperature(),
-            request.getFlowRate(),
-            request.getContainedVolume()
-        );
+        String originalRecorder = reading.getRecordedBy() != null 
+                ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
+                : "Unknown";
         
-        if (!warnings.isEmpty()) {
-            log.warn("Reading validation warnings for pipeline {}: {}", 
-                request.getPipelineId(), warnings);
-            
-            // Append warnings to notes
-            String warningText = "\n\n[SYSTEM WARNINGS - " + LocalDateTime.now() + "]\n" + 
-                String.join("\n", warnings);
-            String existingNotes = request.getNotes() != null ? request.getNotes() : "";
-            request.setNotes(existingNotes + warningText);
-        }
+        ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "VALIDATED status not found in database. Please configure validation statuses."));
         
-        // Update measurement data
-        reading.setPressure(request.getPressure());
-        reading.setTemperature(request.getTemperature());
-        reading.setFlowRate(request.getFlowRate());
-        reading.setContainedVolume(request.getContainedVolume());
-        reading.setNotes(request.getNotes());
-        reading.setRecordedAt(LocalDateTime.now());
-        reading.setRecordedBy(employee);
+        Employee validator = employeeRepository.findById(validatedById)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Employee with ID %d not found", validatedById)));
         
-        // Determine target status
-        String targetStatusCode = Boolean.TRUE.equals(request.getSubmitImmediately()) ?
-            ValidationStatusHelper.SUBMITTED : ValidationStatusHelper.DRAFT;
-        
-        ValidationStatus status = validationStatusRepository
-            .findByCode(targetStatusCode)
-            .orElseThrow(() -> new IllegalStateException(
-                "ValidationStatus '" + targetStatusCode + "' not configured in database"));
-        
-        reading.setValidationStatus(status);
-        
-        flowReadingRepository.save(reading);
-        
-        // FIX #3: Publish event for SUBMITTED transition
-        if (ValidationStatusHelper.SUBMITTED.equals(targetStatusCode) && 
-            !ValidationStatusHelper.SUBMITTED.equals(previousStatus)) {
-            
-            log.debug("Publishing ReadingSubmittedEvent for reading {}", reading.getId());
-            // Event publishing commented out - implement when event system is ready
-        }
-        
-        log.info("Reading {} transitioned from {} to {} by employee {} ({})", 
-            reading.getId(), 
-            previousStatus, 
-            targetStatusCode, 
-            employee.getRegistrationNumber(),
-            employee.getFirstNameLt() + " " + employee.getLastNameLt());
-    }
-    
-    /**
-     * Validate reading (approve or reject).
-     * Supervisors and managers use this to approve or reject submitted readings.
-     *
-     * STATE TRANSITIONS ALLOWED:
-     * - SUBMITTED → APPROVED (supervisor validates data)
-     * - SUBMITTED → REJECTED (supervisor rejects data, operator must correct)
-     *
-     * BLOCKED TRANSITIONS:
-     * - NOT_RECORDED → * (must record first)
-     * - DRAFT → * (must submit first)
-     * - REJECTED → APPROVED (must be re-submitted by operator first)
-     * - APPROVED → * (immutable)
-     *
-     * FIX #5:  Prevent REJECTED → APPROVED bypass
-     * FIX #11: Idempotent validation (multiple calls with same action = success)
-     * FIX #12: Populate nested DTOs in request for display
-     *
-     * @param request Contains readingId, action (APPROVE/REJECT), comments, employeeId
-     * @throws WorkflowException if reading is not in SUBMITTED state
-     */
-    public void validateReading(ReadingValidationRequestDTO request) {
-        
-        log.debug("Processing validation: readingId={}, action={}, validator={}", 
-            request.getReadingId(), request.getAction(), request.getEmployeeId());
-        
-        // FIX #12: Validate and populate employee nested DTO
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Employee not found: " + request.getEmployeeId()));
-        request.setEmployee(EmployeeDTO.fromEntity(employee));
-        
-        // Lock reading for update
-        FlowReading reading = flowReadingRepository
-            .findByIdForUpdate(request.getReadingId())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Reading not found: " + request.getReadingId()));
-        
-        // FIX #12: Populate reading nested DTO for confirmation
-        // Note: Use lightweight DTO without deep nesting to avoid N+1 queries
-        // request.setReading(FlowReadingDTO.fromEntity(reading));
-        
-        String currentStatusCode = ValidationStatusHelper.getStatusCode(reading);
-        
-        // Determine target status
-        String targetStatusCode;
-        if ("APPROVE".equalsIgnoreCase(request.getAction())) {
-            targetStatusCode = ValidationStatusHelper.APPROVED;
-            
-            // FIX #11: Idempotency - if already approved, return success
-            if (ValidationStatusHelper.APPROVED.equals(currentStatusCode)) {
-                log.info("Reading {} already approved, returning success (idempotent)", reading.getId());
-                return;
-            }
-            
-        } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
-            targetStatusCode = ValidationStatusHelper.REJECTED;
-            
-            // FIX #11: Idempotency - if already rejected, return success
-            if (ValidationStatusHelper.REJECTED.equals(currentStatusCode)) {
-                log.info("Reading {} already rejected, returning success (idempotent)", reading.getId());
-                return;
-            }
-            
-        } else {
-            throw new WorkflowException(
-                "Invalid action: " + request.getAction() + 
-                ". Allowed values: APPROVE, REJECT");
-        }
-        
-        // FIX #5: ENFORCE - Only SUBMITTED can be validated
-        if (!ValidationStatusHelper.SUBMITTED.equals(currentStatusCode)) {
-            throw new WorkflowException(
-                "Only SUBMITTED readings can be validated. Current status: " + currentStatusCode + ". " +
-                "Rejected readings must be corrected and re-submitted by operator before re-validation. " +
-                "Draft readings must be submitted first.");
-        }
-        
-        // Update validation status
-        ValidationStatus status = validationStatusRepository
-            .findByCode(targetStatusCode)
-            .orElseThrow(() -> new IllegalStateException(
-                "ValidationStatus '" + targetStatusCode + "' not configured in database"));
-        
-        reading.setValidationStatus(status);
+        // Update reading
+        reading.setValidationStatus(validatedStatus);
+        reading.setValidatedBy(validator);
         reading.setValidatedAt(LocalDateTime.now());
-        reading.setValidatedBy(employee);
         
-        if (ValidationStatusHelper.REJECTED.equals(targetStatusCode)) {
-            
-            // Rejection reason is mandatory
-            if (!StringUtils.hasText(request.getComments())) {
-                throw new WorkflowException(
-                    "Rejection reason is required. Provide detailed comments explaining why the reading is rejected.");
-            }
-            
-            // Append rejection reason to notes (audit trail)
-            String existingNotes = reading.getNotes() != null ? reading.getNotes() : "";
-            reading.setNotes(existingNotes + "\n\n[REJECTED by " + 
-                employee.getFirstNameLt() + " " + employee.getLastNameLt() + 
-                " on " + LocalDateTime.now() + "]\n" + request.getComments());
-            
-            log.debug("Publishing ReadingRejectedEvent for reading {}", reading.getId());
-            
-        } else {
-            // Approval - optional comments
-            if (StringUtils.hasText(request.getComments())) {
-                String existingNotes = reading.getNotes() != null ? reading.getNotes() : "";
-                reading.setNotes(existingNotes + "\n\n[APPROVED by " + 
-                    employee.getFirstNameLt() + " " + employee.getLastNameLt() + 
-                    " on " + LocalDateTime.now() + "]\n" + request.getComments());
-            }
-            
-            log.debug("Publishing ReadingValidatedEvent for reading {}", reading.getId());
-        }
+        FlowReading saved = flowReadingRepository.save(reading);
+        log.info("Successfully validated flow reading {} by employee {} ({})", 
+                 id, validator.getRegistrationNumber(), 
+                 validator.getLastNameLt() + " " + validator.getFirstNameLt());
         
-        flowReadingRepository.save(reading);
+        // Publish validation event using generic notification system
+        String readingIdentifier = buildReadingIdentifier(saved);
+        String validatorUsername = validator != null 
+            ? validator.getLastNameLt() + " " + validator.getFirstNameLt() 
+            : validator.getRegistrationNumber();
         
-        log.info("Reading {} validated: {} → {} by employee {} ({})", 
-            reading.getId(), 
-            currentStatusCode,
-            targetStatusCode, 
-            employee.getRegistrationNumber(),
-            employee.getFirstNameLt() + " " + employee.getLastNameLt());
+        ReadingValidatedEvent event = ReadingValidatedEvent.create(
+                saved.getId(),
+                validatorUsername,
+                originalRecorder,
+                readingIdentifier,
+                null, // Optional comment - can be extended
+                LocalDateTime.now().format(DATETIME_FORMATTER)
+        );
+        
+        eventPublisher.publishEvent(event);
+        log.debug("Published ReadingValidatedEvent for reading ID: {}", saved.getId());
+        
+        return FlowReadingDTO.fromEntity(saved);
     }
-    
+
+    /**
+     * Reject a flow reading
+     * 
+     * Updates the reading status to REJECTED and records rejection information.
+     * Appends rejection reason to reading notes for audit trail.
+     * Publishes ReadingRejectedEvent via generic notification system.
+     * 
+     * Workflow transition: SUBMITTED → REJECTED
+     * 
+     * @param id Reading ID
+     * @param rejectedById Employee ID of the rejector
+     * @param rejectionReason Reason for rejection
+     * @return Updated reading DTO with REJECTED status
+     * @throws EntityNotFoundException if reading, status, or employee not found
+     */
+    @Transactional
+    public FlowReadingDTO reject(Long id, Long rejectedById, String rejectionReason) {
+        log.info("Rejecting flow reading {} by employee {} with reason: {}", 
+                 id, rejectedById, rejectionReason);
+        
+        FlowReading reading = flowReadingRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Flow reading with ID %d not found", id)));
+        
+        String originalRecorder = reading.getRecordedBy() != null 
+                ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
+                : "Unknown";
+        
+        ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "REJECTED status not found in database. Please configure validation statuses."));
+        
+        Employee rejector = employeeRepository.findById(rejectedById)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Employee with ID %d not found", rejectedById)));
+        
+        // Update reading
+        reading.setValidationStatus(rejectedStatus);
+        reading.setValidatedBy(rejector);
+        reading.setValidatedAt(LocalDateTime.now());
+        
+        // Append rejection reason to notes for audit trail
+        String existingNotes = reading.getNotes();
+        String rejectionNote = String.format("\n\n=== REJECTION ===\nRejected by: %s %s (%s)\nDate: %s\nReason: %s",
+                rejector.getFirstNameLt(), 
+                rejector.getLastNameLt(),
+                rejector.getRegistrationNumber(),
+                LocalDateTime.now(),
+                rejectionReason);
+        reading.setNotes(existingNotes != null ? existingNotes + rejectionNote : rejectionNote.trim());
+        
+        FlowReading saved = flowReadingRepository.save(reading);
+        log.info("Successfully rejected flow reading {} by employee {} ({})", 
+                 id, rejector.getRegistrationNumber(), 
+                 rejector.getFirstNameLt() + " " + rejector.getLastNameLt());
+        
+        // Publish rejection event using generic notification system
+        String readingIdentifier = buildReadingIdentifier(saved);
+        String rejectorUsername = rejector != null 
+            ? rejector.getLastNameLt() + " " + rejector.getFirstNameLt()
+            : rejector.getRegistrationNumber();
+        
+        ReadingRejectedEvent event = ReadingRejectedEvent.create(
+                saved.getId(),
+                rejectorUsername,
+                originalRecorder,
+                readingIdentifier,
+                rejectionReason,
+                LocalDateTime.now().format(DATETIME_FORMATTER)
+        );
+        
+        eventPublisher.publishEvent(event);
+        log.debug("Published ReadingRejectedEvent for reading ID: {}", saved.getId());
+        
+        return FlowReadingDTO.fromEntity(saved);
+    }
+
     // ========== HELPER METHODS ==========
-    
+
     /**
-     * FIX #1: Find or create reading WITH PESSIMISTIC LOCK.
-     * Prevents duplicate readings from concurrent submissions.
+     * Build a human-readable identifier for a reading
+     * 
+     * Uses FlowReadingIdentifierBuilder utility for standardized format.
+     * Falls back to legacy format if utility fails.
+     * 
+     * @param reading FlowReading entity
+     * @return Formatted identifier string (e.g., "PL-001-20260210-S01")
      */
-    private FlowReading findOrCreateReadingWithLock(
-        Long pipelineId, 
-        LocalDate date, 
-        Long slotId,
-        Employee employee
-    ) {
-        
-        // Step 1: Try to acquire lock on existing reading
-        Optional<FlowReading> existing = flowReadingRepository
-            .findByPipelineAndDateAndSlotForUpdate(pipelineId, date, slotId);
-        
-        if (existing.isPresent()) {
-            log.debug("Found existing reading {} for pipeline={}, date={}, slot={}", 
-                existing.get().getId(), pipelineId, date, slotId);
-            return existing.get();
+    private String buildReadingIdentifier(FlowReading reading) {
+        if (reading == null) {
+            return "Unknown Reading";
         }
         
-        // Step 2: Create new reading with exception handling for race condition
         try {
-            Pipeline pipeline = pipelineRepository.findById(pipelineId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                    "Pipeline not found: " + pipelineId));
+            // Use utility for standardized identifier format
+            return FlowReadingIdentifierBuilder.buildIdentifier(
+                reading.getPipeline(),
+                reading.getReadingDate(),
+                reading.getReadingSlot()
+            );
+        } catch (Exception e) {
+            // Fallback to legacy format if utility fails
+            log.warn("Failed to build identifier using utility, falling back to legacy format", e);
             
-            ReadingSlot slot = readingSlotRepository.findById(slotId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                    "Slot not found: " + slotId));
+            StringBuilder identifier = new StringBuilder();
             
-            FlowReading newReading = new FlowReading();
-            newReading.setPipeline(pipeline);
-            newReading.setReadingDate(date);
-            newReading.setReadingSlot(slot);
-            newReading.setRecordedBy(employee);
-            
-            ValidationStatus draftStatus = validationStatusRepository
-                .findByCode(ValidationStatusHelper.DRAFT)
-                .orElseThrow(() -> new IllegalStateException(
-                    "DRAFT status not configured in database. Run migrations."));
-            
-            newReading.setValidationStatus(draftStatus);
-            newReading.setRecordedAt(LocalDateTime.now());
-            
-            FlowReading saved = flowReadingRepository.save(newReading);
-            log.info("Created new reading {} for pipeline={}, date={}, slot={}", 
-                saved.getId(), pipelineId, date, slotId);
-            
-            return saved;
-            
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Duplicate reading detected (race condition), retrying fetch for pipeline={}, date={}, slot={}", 
-                pipelineId, date, slotId);
-            
-            return flowReadingRepository
-                .findByPipelineAndDateAndSlotForUpdate(pipelineId, date, slotId)
-                .orElseThrow(() -> new WorkflowException(
-                    "Reading creation failed after retry - concurrency conflict unresolved."));
-        }
-    }
-    
-    /**
-     * Build pipeline coverage DTO with nested DTOs.
-     * FIX #4:  Calculate isOverdue based on slot deadline
-     * FIX #12: Use nested DTOs instead of denormalized fields
-     *
-     * @param proj Projection from database query
-     * @param readingDate Date for deadline calculation
-     * @param slot Slot for deadline calculation
-     * @return Pipeline coverage DTO with nested objects
-     */
-    private PipelineCoverageDTO buildPipelineCoverage(
-        SlotCoverageProjection proj, 
-        LocalDate readingDate,
-        ReadingSlot slot
-    ) {
-        
-        String statusCode = proj.getValidationStatusCode();
-        if (statusCode == null) {
-            statusCode = ValidationStatusHelper.NOT_RECORDED;
-        }
-        
-        // FIX #12: Build PipelineDTO from projection data
-        PipelineDTO pipelineDTO = PipelineDTO.builder()
-            .id(proj.getPipelineId())
-            .code(proj.getPipelineCode())
-            .name(proj.getPipelineName())
-            // Add other fields if available in projection
-            .build();
-        
-        // FIX #12: Build ValidationStatusDTO
-        ValidationStatusDTO validationStatusDTO = null;
-        if (!ValidationStatusHelper.NOT_RECORDED.equals(statusCode)) {
-            // Fetch validation status for translations
-            Optional<ValidationStatus> statusEntity = validationStatusRepository.findByCode(statusCode);
-            if (statusEntity.isPresent()) {
-                validationStatusDTO = ValidationStatusDTO.fromEntity(statusEntity.get());
+            if (reading.getPipeline() != null && reading.getPipeline().getName() != null) {
+                identifier.append(reading.getPipeline().getName());
+            } else if (reading.getPipeline() != null) {
+                identifier.append("Pipeline #").append(reading.getPipeline().getId());
+            } else {
+                identifier.append("Reading");
             }
-        } else {
-            // Create synthetic NOT_RECORDED status
-            validationStatusDTO = ValidationStatusDTO.builder()
-                .code("NOT_RECORDED")
-                .designationFr("Non enregistré")
-                .designationEn("Not Recorded")
-                .designationAr("غير مسجل")
-                .build();
-        }
-        
-        // FIX #12: Build EmployeeDTOs for recordedBy and validatedBy
-        // Parse name (format: "FirstName LastName") into separate fields
-        EmployeeDTO recordedByDTO = null;
-        if (proj.getRecordedByName() != null) {
-            String[] nameParts = proj.getRecordedByName().split(" ", 2);
-            recordedByDTO = EmployeeDTO.builder()
-                .firstNameLt(nameParts.length > 0 ? nameParts[0] : proj.getRecordedByName())
-                .lastNameLt(nameParts.length > 1 ? nameParts[1] : "")
-                .build();
-        }
-        
-        EmployeeDTO validatedByDTO = null;
-        if (proj.getValidatedByName() != null) {
-            String[] nameParts = proj.getValidatedByName().split(" ", 2);
-            validatedByDTO = EmployeeDTO.builder()
-                .firstNameLt(nameParts.length > 0 ? nameParts[0] : proj.getValidatedByName())
-                .lastNameLt(nameParts.length > 1 ? nameParts[1] : "")
-                .build();
-        }
-        
-        // FIX #4: CALCULATE OVERDUE STATUS
-        boolean isOverdue = false;
-        if (ValidationStatusHelper.NOT_RECORDED.equals(statusCode) || 
-            ValidationStatusHelper.DRAFT.equals(statusCode)) {
             
-            LocalDateTime slotDeadline = LocalDateTime.of(readingDate, slot.getEndTime());
-            isOverdue = LocalDateTime.now().isAfter(slotDeadline);
-            
-            if (isOverdue) {
-                log.debug("Pipeline {} reading is OVERDUE for date={}, slot ends at {}", 
-                    proj.getPipelineCode(), readingDate, slotDeadline);
+            if (reading.getRecordedAt() != null) {
+                identifier.append(" at ")
+                         .append(reading.getRecordedAt().format(DATETIME_FORMATTER));
             }
+            
+            if (reading.getReadingSlot() != null) {
+                if (reading.getReadingSlot().getDesignationEn() != null) {
+                    identifier.append(" (").append(reading.getReadingSlot().getDesignationEn()).append(")");
+                } else if (reading.getReadingSlot().getDesignationFr() != null) {
+                    identifier.append(" (").append(reading.getReadingSlot().getDesignationFr()).append(")");
+                }
+            }
+            
+            return identifier.toString();
         }
-        
-        // Available actions determined by frontend based on user role
-        List<String> actions = new ArrayList<>();
-        
-        return PipelineCoverageDTO.builder()
-            .pipelineId(proj.getPipelineId())
-            .pipeline(pipelineDTO)
-            .readingId(proj.getReadingId())
-            .validationStatus(validationStatusDTO)
-            .recordedAt(proj.getRecordedAt())
-            .validatedAt(proj.getValidatedAt())
-            .recordedBy(recordedByDTO)
-            .validatedBy(validatedByDTO)
-            .availableActions(actions)
-            .canEdit(null)
-            .canSubmit(null)
-            .canValidate(null)
-            .isOverdue(isOverdue)
-            .build();
     }
-    
+
+    // ========== FUTURE ENHANCEMENTS ==========
+
     /**
-     * Calculate completion percentage.
+     * TODO: Add resubmission workflow
+     * 
+     * Allow rejected readings to be resubmitted after corrections:
+     * - Transition: REJECTED → SUBMITTED
+     * - Reset validation fields (validatedBy, validatedAt)
+     * - Append resubmission note with corrections made
+     * - Publish ReadingResubmittedEvent
+     * 
+     * @param id Reading ID
+     * @param resubmittedById Employee ID resubmitting
+     * @param corrections Description of corrections made
+     * @return Updated reading DTO with SUBMITTED status
      */
-    private double calculateCompletion(int completed, int total) {
-        if (total == 0) {
-            return 0.0;
-        }
-        return Math.round((completed * 100.0) / total * 100.0) / 100.0;
-    }
+    // @Transactional
+    // public FlowReadingDTO resubmit(Long id, Long resubmittedById, String corrections) { ... }
+
+    /**
+     * TODO: Add bulk validation
+     * 
+     * Validate multiple readings in one transaction:
+     * - Useful for validators approving a batch
+     * - Single database transaction for atomicity
+     * - Publish single event with list of validated readings
+     * 
+     * @param readingIds List of reading IDs
+     * @param validatedById Validator employee ID
+     * @return List of validated reading DTOs
+     */
+    // @Transactional
+    // public List<FlowReadingDTO> validateBatch(List<Long> readingIds, Long validatedById) { ... }
 }

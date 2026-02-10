@@ -10,10 +10,25 @@
  * 	@UpdatedOn	: 02-07-2026 - Refactored to use proper DTOs instead of Map<String, Object>
  * 	@UpdatedOn	: 02-10-2026 - Extracted monitoring methods to FlowMonitoringService
  * 	@UpdatedOn	: 02-10-2026 - Refactored to use FlowReadingIdentifierBuilder utility
+ * 	@UpdatedOn	: 02-10-2026 - Extracted workflow methods to FlowReadingWorkflowService (SRP)
  *
  * 	@Type		: Class
  * 	@Layer		: Service
  * 	@Package	: Flow / Core
+ *
+ * 	@Description: Service for flow reading CRUD operations.
+ * 	              Now focused exclusively on data management (no workflow logic).
+ *
+ * 	@Refactoring: Workflow methods extracted to FlowReadingWorkflowService
+ * 	              
+ * 	              Single Responsibility Principle (SRP) applied:
+ * 	              - FlowReadingService: CRUD operations (create, read, update, delete, queries)
+ * 	              - FlowReadingWorkflowService: Workflow transitions (validate, reject)
+ * 	              
+ * 	              Benefits:
+ * 	              - Clear separation of concerns
+ * 	              - Easier testing (mock workflow dependencies separately)
+ * 	              - Better maintainability (CRUD logic isolated)
  *
  **/
 
@@ -33,22 +48,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
-import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.common.util.FlowReadingIdentifierBuilder;
 import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.event.ReadingRejectedEvent;
 import dz.sh.trc.hyflo.flow.core.event.ReadingSubmittedEvent;
-import dz.sh.trc.hyflo.flow.core.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
-import dz.sh.trc.hyflo.general.organization.model.Employee;
-import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Service for flow reading CRUD operations.
+ * 
+ * This service handles:
+ * - Create, Read, Update, Delete operations
+ * - Query operations (by pipeline, slot, date range, status)
+ * - Paginated queries
+ * - Business validation (duplicate detection)
+ * - Event publishing for creation (ReadingSubmittedEvent)
+ * 
+ * Workflow operations (validate, reject) are in FlowReadingWorkflowService.
+ * Monitoring/analytics operations are in intelligence module.
+ * 
+ * Follows Single Responsibility Principle:
+ * - This service: Data management (CRUD + queries)
+ * - FlowReadingWorkflowService: State transitions (validate, reject)
+ * - FlowMonitoringService: Analytics (pending, overdue, statistics)
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -56,8 +81,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowReadingService extends GenericService<FlowReading, FlowReadingDTO, Long> {
 
     private final FlowReadingRepository flowReadingRepository;
-    private final ValidationStatusRepository validationStatusRepository;
-    private final EmployeeRepository employeeRepository;
 
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -88,8 +111,9 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
 
     /**
      * Lifecycle hook: Called after a reading is created
-     * Publishes ReadingSubmittedEvent to notify all validators
-     * Uses the generic notification system
+     * 
+     * Publishes ReadingSubmittedEvent to notify all validators.
+     * Uses the generic notification system.
      */
     @Override
     protected void afterCreate(FlowReading reading) {
@@ -111,12 +135,15 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         log.debug("Published ReadingSubmittedEvent for reading ID: {}", reading.getId());
     }
 
+    // ========== CRUD OPERATIONS ==========
+
     @Override
     @Transactional
     public FlowReadingDTO create(FlowReadingDTO dto) {
         log.info("Creating flow reading: pipelineId={}, recordedAt={}", 
                  dto.getPipelineId(), dto.getRecordedAt());
         
+        // Business validation: Prevent duplicate readings
         if (flowReadingRepository.existsByPipelineIdAndRecordedAt(
                 dto.getPipelineId(), dto.getRecordedAt())) {
             throw new BusinessValidationException(
@@ -127,6 +154,13 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         return super.create(dto);
     }
 
+    // ========== QUERY OPERATIONS ==========
+
+    /**
+     * Get all flow readings without pagination
+     * 
+     * @return List of all flow reading DTOs
+     */
     public List<FlowReadingDTO> getAll() {
         log.debug("Getting all flow readings without pagination");
         return flowReadingRepository.findAll().stream()
@@ -134,6 +168,12 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by pipeline
+     * 
+     * @param pipelineId Pipeline ID
+     * @return List of reading DTOs for the pipeline
+     */
     public List<FlowReadingDTO> findByPipeline(Long pipelineId) {
         log.debug("Finding flow readings by pipeline id: {}", pipelineId);
         return flowReadingRepository.findByPipelineId(pipelineId).stream()
@@ -141,6 +181,12 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by reading slot
+     * 
+     * @param readingSlotId Slot ID
+     * @return List of reading DTOs for the slot
+     */
     public List<FlowReadingDTO> findByReadingSlot(Long readingSlotId) {
         log.debug("Finding flow readings by slot id: {}", readingSlotId);
         return flowReadingRepository.findByReadingSlotId(readingSlotId).stream()
@@ -148,6 +194,13 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by time range
+     * 
+     * @param startTime Start timestamp
+     * @param endTime End timestamp
+     * @return List of reading DTOs in time range
+     */
     public List<FlowReadingDTO> findByTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
         log.debug("Finding flow readings by time range: {} to {}", startTime, endTime);
         return flowReadingRepository.findByRecordedAtBetween(startTime, endTime).stream()
@@ -155,6 +208,14 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by pipeline and reading date range
+     * 
+     * @param pipelineId Pipeline ID
+     * @param startDate Start date
+     * @param endDate End date
+     * @return List of reading DTOs
+     */
     public List<FlowReadingDTO> findByPipelineAndReadingDateRange(
             Long pipelineId, LocalDate startDate, LocalDate endDate) {
         log.debug("Finding flow readings by pipeline {} and date range: {} to {}", 
@@ -164,6 +225,15 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 					.collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by pipeline, slot, and date range
+     * 
+     * @param pipelineId Pipeline ID
+     * @param readingSlotId Slot ID
+     * @param startDate Start date
+     * @param endDate End date
+     * @return List of reading DTOs
+     */
     public List<FlowReadingDTO> findByPipelineAndReadingSlotAndReadingDateRange(
             Long pipelineId, Long readingSlotId, LocalDate startDate, LocalDate endDate) {
         log.debug("Finding flow readings by pipeline {} and slot {} and date range: {} to {}", 
@@ -173,6 +243,14 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 					.collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by pipeline and time range
+     * 
+     * @param pipelineId Pipeline ID
+     * @param startTime Start timestamp
+     * @param endTime End timestamp
+     * @return List of reading DTOs
+     */
     public List<FlowReadingDTO> findByPipelineAndTimeRange(
             Long pipelineId, LocalDateTime startTime, LocalDateTime endTime) {
         log.debug("Finding flow readings by pipeline {} and time range: {} to {}", 
@@ -183,6 +261,12 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Find readings by validation status
+     * 
+     * @param validationStatusId Status ID
+     * @return List of reading DTOs with the status
+     */
     public List<FlowReadingDTO> findByValidationStatus(Long validationStatusId) {
         log.debug("Finding flow readings by validation status id: {}", validationStatusId);
         return flowReadingRepository.findByValidationStatusId(validationStatusId).stream()
@@ -190,6 +274,17 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 .collect(Collectors.toList());
     }
 
+    // ========== PAGINATED QUERY OPERATIONS ==========
+
+    /**
+     * Find readings by pipeline and time range (paginated)
+     * 
+     * @param pipelineId Pipeline ID
+     * @param startTime Start timestamp
+     * @param endTime End timestamp
+     * @param pageable Pagination parameters
+     * @return Page of reading DTOs
+     */
     public Page<FlowReadingDTO> findByPipelineAndTimeRangePaginated(
             Long pipelineId, LocalDateTime startTime, LocalDateTime endTime, Pageable pageable) {
         log.debug("Finding flow readings (paginated) by pipeline {} and time range: {} to {}", 
@@ -198,6 +293,15 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 pipelineId, startTime, endTime, p), pageable);
     }
 
+    /**
+     * Find readings by pipeline and reading date range (paginated)
+     * 
+     * @param pipelineId Pipeline ID
+     * @param startDate Start date
+     * @param endDate End date
+     * @param pageable Pagination parameters
+     * @return Page of reading DTOs
+     */
     public Page<FlowReadingDTO> findByPipelineAndReadingDateRangePaginated(
             Long pipelineId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.debug("Finding flow readings (paginated) by pipeline {} and date range: {} to {}", 
@@ -206,6 +310,16 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 pipelineId, startDate, endDate, p), pageable);
     }
 
+    /**
+     * Find readings by pipeline, slot, and date range (paginated)
+     * 
+     * @param pipelineId Pipeline ID
+     * @param readingSlotId Slot ID
+     * @param startDate Start date
+     * @param endDate End date
+     * @param pageable Pagination parameters
+     * @return Page of reading DTOs
+     */
     public Page<FlowReadingDTO> findByPipelineAndReadingSlotAndReadingDateRangePaginated(
             Long pipelineId, Long readingSlotId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.debug("Finding flow readings (paginated) by pipeline {} and and reading slot {} and date range: {} to {}", 
@@ -214,6 +328,14 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 pipelineId, readingSlotId, startDate, endDate, p), pageable);
     }
 
+    /**
+     * Find readings by pipeline and validation status (paginated)
+     * 
+     * @param pipelineId Pipeline ID
+     * @param statusId Status ID
+     * @param pageable Pagination parameters
+     * @return Page of reading DTOs
+     */
     public Page<FlowReadingDTO> findByPipelineAndValidationStatus(
             Long pipelineId, Long statusId, Pageable pageable) {
         log.debug("Finding flow readings by pipeline {} and validation status {}", 
@@ -222,157 +344,37 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
                 pipelineId, statusId, p), pageable);
     }
 
+    /**
+     * Find readings by validation status (paginated)
+     * 
+     * @param statusId Status ID
+     * @param pageable Pagination parameters
+     * @return Page of reading DTOs
+     */
     public Page<FlowReadingDTO> findByValidationStatus(Long statusId, Pageable pageable) {
         log.debug("Finding flow readings by validation status {}", statusId);
         return executeQuery(p -> flowReadingRepository.findByValidationStatus(statusId, p), pageable);
     }
 
+    /**
+     * Find latest readings by pipeline (paginated)
+     * 
+     * @param pipelineId Pipeline ID
+     * @param pageable Pagination parameters
+     * @return Page of latest reading DTOs
+     */
     public Page<FlowReadingDTO> findLatestByPipeline(Long pipelineId, Pageable pageable) {
         log.debug("Finding latest flow readings for pipeline: {}", pipelineId);
         return executeQuery(p -> flowReadingRepository.findLatestByPipeline(pipelineId, p), pageable);
-    }
-
-    // ========== VALIDATION WORKFLOW METHODS ==========
-
-    /**
-     * Validate a flow reading
-     * Updates the reading status to VALIDATED and records validator information
-     * Publishes ReadingValidatedEvent via generic notification system
-     * 
-     * @param id Reading ID
-     * @param validatedById Employee ID of the validator
-     * @return Updated reading DTO with VALIDATED status
-     * @throws EntityNotFoundException if reading, status, or employee not found
-     */
-    @Transactional
-    public FlowReadingDTO validate(Long id, Long validatedById) {
-        log.info("Validating flow reading {} by employee {}", id, validatedById);
-        
-        FlowReading reading = flowReadingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Flow reading with ID %d not found", id)));
-        
-        String originalRecorder = reading.getRecordedBy() != null 
-                ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
-                : "Unknown";
-        
-        ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "VALIDATED status not found in database. Please configure validation statuses."));
-        
-        Employee validator = employeeRepository.findById(validatedById)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Employee with ID %d not found", validatedById)));
-        
-        // Update reading
-        reading.setValidationStatus(validatedStatus);
-        reading.setValidatedBy(validator);
-        reading.setValidatedAt(LocalDateTime.now());
-        
-        FlowReading saved = flowReadingRepository.save(reading);
-        log.info("Successfully validated flow reading {} by employee {} ({})", 
-                 id, validator.getRegistrationNumber(), 
-                 validator.getLastNameLt() + " " + validator.getFirstNameLt());
-        
-        // Publish validation event using generic notification system
-        String readingIdentifier = buildReadingIdentifier(saved);
-        String validatorUsername = validator != null 
-            ? validator.getLastNameLt() + " " + validator.getFirstNameLt() 
-            : validator.getRegistrationNumber();
-        
-        ReadingValidatedEvent event = ReadingValidatedEvent.create(
-                saved.getId(),
-                validatorUsername,
-                originalRecorder,
-                readingIdentifier,
-                null, // Optional comment - can be extended
-                LocalDateTime.now().format(DATETIME_FORMATTER)
-        );
-        
-        publishEvent(event);
-        log.debug("Published ReadingValidatedEvent for reading ID: {}", saved.getId());
-        
-        return FlowReadingDTO.fromEntity(saved);
-    }
-
-    /**
-     * Reject a flow reading
-     * Updates the reading status to REJECTED and records rejection information
-     * Publishes ReadingRejectedEvent via generic notification system
-     * 
-     * @param id Reading ID
-     * @param rejectedById Employee ID of the rejector
-     * @param rejectionReason Reason for rejection
-     * @return Updated reading DTO with REJECTED status
-     * @throws EntityNotFoundException if reading, status, or employee not found
-     */
-    @Transactional
-    public FlowReadingDTO reject(Long id, Long rejectedById, String rejectionReason) {
-        log.info("Rejecting flow reading {} by employee {} with reason: {}", 
-                 id, rejectedById, rejectionReason);
-        
-        FlowReading reading = flowReadingRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Flow reading with ID %d not found", id)));
-        
-        String originalRecorder = reading.getRecordedBy() != null 
-                ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
-                : "Unknown";
-        
-        ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "REJECTED status not found in database. Please configure validation statuses."));
-        
-        Employee rejector = employeeRepository.findById(rejectedById)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Employee with ID %d not found", rejectedById)));
-        
-        // Update reading
-        reading.setValidationStatus(rejectedStatus);
-        reading.setValidatedBy(rejector);
-        reading.setValidatedAt(LocalDateTime.now());
-        
-        // Append rejection reason to notes
-        String existingNotes = reading.getNotes();
-        String rejectionNote = String.format("\n\n=== REJECTION ===\nRejected by: %s %s (%s)\nDate: %s\nReason: %s",
-                rejector.getFirstNameLt(), 
-                rejector.getLastNameLt(),
-                rejector.getRegistrationNumber(),
-                LocalDateTime.now(),
-                rejectionReason);
-        reading.setNotes(existingNotes != null ? existingNotes + rejectionNote : rejectionNote.trim());
-        
-        FlowReading saved = flowReadingRepository.save(reading);
-        log.info("Successfully rejected flow reading {} by employee {} ({})", 
-                 id, rejector.getRegistrationNumber(), 
-                 rejector.getFirstNameLt() + " " + rejector.getLastNameLt());
-        
-        // Publish rejection event using generic notification system
-        String readingIdentifier = buildReadingIdentifier(saved);
-        String rejectorUsername = rejector != null 
-            ? rejector.getLastNameLt() + " " + rejector.getFirstNameLt()
-            : rejector.getRegistrationNumber();
-        
-        ReadingRejectedEvent event = ReadingRejectedEvent.create(
-                saved.getId(),
-                rejectorUsername,
-                originalRecorder,
-                readingIdentifier,
-                rejectionReason,
-                LocalDateTime.now().format(DATETIME_FORMATTER)
-        );
-        
-        publishEvent(event);
-        log.debug("Published ReadingRejectedEvent for reading ID: {}", saved.getId());
-        
-        return FlowReadingDTO.fromEntity(saved);
     }
 
     // ========== HELPER METHODS ==========
 
     /**
      * Build a human-readable identifier for a reading
-     * Uses FlowReadingIdentifierBuilder utility for standardized format
+     * 
+     * Uses FlowReadingIdentifierBuilder utility for standardized format.
+     * Falls back to legacy format if utility fails.
      * 
      * @param reading FlowReading entity
      * @return Formatted identifier string (e.g., "PL-001-20260210-S01")
@@ -419,4 +421,21 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
             return identifier.toString();
         }
     }
+
+    // ========== MIGRATION NOTES ==========
+
+    /**
+     * ⚠️ WORKFLOW METHODS MOVED
+     * 
+     * The following methods were moved to FlowReadingWorkflowService:
+     * - validate(Long id, Long validatedById)
+     * - reject(Long id, Long rejectedById, String rejectionReason)
+     * 
+     * Use FlowReadingWorkflowService for workflow operations.
+     * This service is now focused exclusively on CRUD operations.
+     * 
+     * Example migration:
+     * OLD: flowReadingService.validate(readingId, validatorId)
+     * NEW: flowReadingWorkflowService.validate(readingId, validatorId)
+     */
 }
