@@ -4,6 +4,7 @@
  *
  * 	@Name		: FlowMonitoringService
  * 	@CreatedOn	: 02-10-2026
+ * 	@UpdatedOn	: 02-10-2026 - Refactored to use DateTimeUtils utility
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
+import dz.sh.trc.hyflo.flow.common.util.DateTimeUtils;
 import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
@@ -93,7 +95,7 @@ public class FlowMonitoringService {
                   structureId, asOfDate);
         
         return flowReadingRepository.findOverdueReadingsByStructure(
-                structureId, asOfDate, java.time.LocalDateTime.now(), pageable)
+                structureId, asOfDate, DateTimeUtils.now(), pageable)
                 .map(FlowReadingDTO::fromEntity);
     }
 
