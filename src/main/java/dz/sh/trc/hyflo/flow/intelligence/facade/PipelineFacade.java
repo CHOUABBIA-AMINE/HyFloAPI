@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
+import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,12 @@ import lombok.extern.slf4j.Slf4j;
  * - All methods now return DTOs instead of entities
  * - Entity-to-DTO conversion happens within facade
  * - Intelligence services work exclusively with DTOs
+ * 
+ * Note on Entity Import:
+ * - This facade imports Pipeline entity (network.core.model.Pipeline)
+ * - This is acceptable: facade is the BOUNDARY layer between entity and DTO worlds
+ * - Entity never leaves facade scope (immediately converted to DTO)
+ * - Intelligence services never see or import entities
  * 
  * Future enhancements:
  * - Add caching layer (@Cacheable) for frequently accessed pipelines
@@ -136,13 +143,19 @@ public class PipelineFacade {
                 .collect(Collectors.toList());
     }
 
-    // ========== FUTURE ENHANCEMENTS ==========
+    // ========== COMPLETED ENHANCEMENTS ==========
 
     /**
      * ✅ COMPLETED: Facade now returns DTOs instead of entities
      * 
      * Previously planned enhancement is now implemented.
      * All methods convert entities to DTOs before returning.
+     * 
+     * Architecture Note:
+     * - This facade imports Pipeline entity (necessary for conversion)
+     * - Entity is used ONLY within facade scope
+     * - All public methods return DTOs
+     * - Intelligence services remain entity-free
      */
 
     /**
