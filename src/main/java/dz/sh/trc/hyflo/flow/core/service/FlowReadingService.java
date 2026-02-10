@@ -9,6 +9,7 @@
  * 	@UpdatedOn	: 02-07-2026 - Added 6 operational monitoring methods
  * 	@UpdatedOn	: 02-07-2026 - Refactored to use proper DTOs instead of Map<String, Object>
  * 	@UpdatedOn	: 02-10-2026 - Extracted monitoring methods to FlowMonitoringService
+ * 	@UpdatedOn	: 02-10-2026 - Refactored to use FlowReadingIdentifierBuilder utility
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -35,6 +36,7 @@ import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
+import dz.sh.trc.hyflo.flow.common.util.FlowReadingIdentifierBuilder;
 import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.event.ReadingRejectedEvent;
 import dz.sh.trc.hyflo.flow.core.event.ReadingSubmittedEvent;
@@ -370,35 +372,51 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
 
     /**
      * Build a human-readable identifier for a reading
-     * Used in notifications to help users identify which reading is referenced
+     * Uses FlowReadingIdentifierBuilder utility for standardized format
      * 
      * @param reading FlowReading entity
-     * @return Formatted identifier string
+     * @return Formatted identifier string (e.g., "PL-001-20260210-S01")
      */
     private String buildReadingIdentifier(FlowReading reading) {
-        StringBuilder identifier = new StringBuilder();
-        
-        if (reading.getPipeline() != null && reading.getPipeline().getName() != null) {
-            identifier.append(reading.getPipeline().getName());
-        } else if (reading.getPipeline() != null) {
-            identifier.append("Pipeline #").append(reading.getPipeline().getId());
-        } else {
-            identifier.append("Reading");
+        if (reading == null) {
+            return "Unknown Reading";
         }
         
-        if (reading.getRecordedAt() != null) {
-            identifier.append(" at ")
-                     .append(reading.getRecordedAt().format(DATETIME_FORMATTER));
-        }
-        
-        if (reading.getReadingSlot() != null) {
-            if (reading.getReadingSlot().getDesignationEn() != null) {
-                identifier.append(" (").append(reading.getReadingSlot().getDesignationEn()).append(")");
-            } else if (reading.getReadingSlot().getDesignationFr() != null) {
-                identifier.append(" (").append(reading.getReadingSlot().getDesignationFr()).append(")");
+        try {
+            // Use utility for standardized identifier format
+            return FlowReadingIdentifierBuilder.buildIdentifier(
+                reading.getPipeline(),
+                reading.getReadingDate(),
+                reading.getReadingSlot()
+            );
+        } catch (Exception e) {
+            // Fallback to legacy format if utility fails
+            log.warn("Failed to build identifier using utility, falling back to legacy format", e);
+            
+            StringBuilder identifier = new StringBuilder();
+            
+            if (reading.getPipeline() != null && reading.getPipeline().getName() != null) {
+                identifier.append(reading.getPipeline().getName());
+            } else if (reading.getPipeline() != null) {
+                identifier.append("Pipeline #").append(reading.getPipeline().getId());
+            } else {
+                identifier.append("Reading");
             }
+            
+            if (reading.getRecordedAt() != null) {
+                identifier.append(" at ")
+                         .append(reading.getRecordedAt().format(DATETIME_FORMATTER));
+            }
+            
+            if (reading.getReadingSlot() != null) {
+                if (reading.getReadingSlot().getDesignationEn() != null) {
+                    identifier.append(" (").append(reading.getReadingSlot().getDesignationEn()).append(")");
+                } else if (reading.getReadingSlot().getDesignationFr() != null) {
+                    identifier.append(" (").append(reading.getReadingSlot().getDesignationFr()).append(")");
+                }
+            }
+            
+            return identifier.toString();
         }
-        
-        return identifier.toString();
     }
 }
