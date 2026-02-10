@@ -49,7 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.flow.common.util.FlowReadingIdentifierBuilder;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.event.ReadingSubmittedEvent;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;

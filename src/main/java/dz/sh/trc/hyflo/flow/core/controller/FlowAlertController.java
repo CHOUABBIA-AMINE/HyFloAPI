@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowAlertDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAlertDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowAlertService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;

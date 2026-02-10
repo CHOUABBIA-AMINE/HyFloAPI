@@ -50,7 +50,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

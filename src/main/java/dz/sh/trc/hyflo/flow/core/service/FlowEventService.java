@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowEventDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowEventDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowEvent;
 import dz.sh.trc.hyflo.flow.core.repository.FlowEventRepository;
 import lombok.RequiredArgsConstructor;

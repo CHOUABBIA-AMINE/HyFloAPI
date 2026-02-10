@@ -57,7 +57,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.util.SlotStatisticsCalculator;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;

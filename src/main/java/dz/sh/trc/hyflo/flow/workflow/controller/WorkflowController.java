@@ -27,7 +27,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.controller;
+package dz.sh.trc.hyflo.flow.workflow.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,8 +36,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.service.FlowReadingWorkflowService;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.workflow.service.WorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -70,9 +70,9 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Flow Workflow", description = "Flow reading workflow state transition operations")
 @RequiredArgsConstructor
 @Slf4j
-public class FlowWorkflowController {
+public class WorkflowController {
     
-    private final FlowReadingWorkflowService workflowService;
+    private final WorkflowService workflowService;
     
     /**
      * Validate a flow reading

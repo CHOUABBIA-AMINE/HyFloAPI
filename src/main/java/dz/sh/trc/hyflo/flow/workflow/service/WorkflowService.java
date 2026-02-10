@@ -27,7 +27,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.service;
+package dz.sh.trc.hyflo.flow.workflow.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,7 +40,7 @@ import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.common.util.FlowReadingIdentifierBuilder;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.event.ReadingRejectedEvent;
 import dz.sh.trc.hyflo.flow.core.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
@@ -72,7 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class FlowReadingWorkflowService {
+public class WorkflowService {
 
     private final FlowReadingRepository flowReadingRepository;
     private final ValidationStatusRepository validationStatusRepository;

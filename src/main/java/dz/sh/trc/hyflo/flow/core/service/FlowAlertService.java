@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowAlertDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAlertDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowAlert;
 import dz.sh.trc.hyflo.flow.core.repository.FlowAlertRepository;
 import lombok.RequiredArgsConstructor;

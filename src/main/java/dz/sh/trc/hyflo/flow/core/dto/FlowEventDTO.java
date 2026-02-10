@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.dto.entity;
+package dz.sh.trc.hyflo.flow.core.dto;
 
 import java.time.LocalDateTime;
 

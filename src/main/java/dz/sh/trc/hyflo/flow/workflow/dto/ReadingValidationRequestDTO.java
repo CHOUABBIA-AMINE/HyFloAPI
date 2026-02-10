@@ -1,8 +1,8 @@
-package dz.sh.trc.hyflo.flow.core.dto.command;
+package dz.sh.trc.hyflo.flow.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
