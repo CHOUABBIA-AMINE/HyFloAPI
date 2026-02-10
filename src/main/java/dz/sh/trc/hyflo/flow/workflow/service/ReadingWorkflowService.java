@@ -72,7 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class WorkflowService {
+public class ReadingWorkflowService {
 
     private final FlowReadingRepository flowReadingRepository;
     private final ValidationStatusRepository validationStatusRepository;

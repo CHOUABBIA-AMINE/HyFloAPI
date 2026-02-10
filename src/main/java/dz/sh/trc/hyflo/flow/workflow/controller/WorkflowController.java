@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.workflow.service.WorkflowService;
+import dz.sh.trc.hyflo.flow.workflow.service.ReadingWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -72,7 +72,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkflowController {
     
-    private final WorkflowService workflowService;
+    private final ReadingWorkflowService readingWorkflowService;
     
     /**
      * Validate a flow reading
@@ -119,7 +119,7 @@ public class WorkflowController {
         @RequestParam @NotNull(message = "Validator ID is required") Long validatedById
     ) {
         log.info("REST: Validating reading {} by employee {}", id, validatedById);
-        FlowReadingDTO result = workflowService.validate(id, validatedById);
+        FlowReadingDTO result = readingWorkflowService.validate(id, validatedById);
         return ResponseEntity.ok(result);
     }
     
@@ -174,7 +174,7 @@ public class WorkflowController {
     ) {
         log.info("REST: Rejecting reading {} by employee {} with reason: {}", 
                  id, rejectedById, rejectionReason);
-        FlowReadingDTO result = workflowService.reject(id, rejectedById, rejectionReason);
+        FlowReadingDTO result = readingWorkflowService.reject(id, rejectedById, rejectionReason);
         return ResponseEntity.ok(result);
     }
 
