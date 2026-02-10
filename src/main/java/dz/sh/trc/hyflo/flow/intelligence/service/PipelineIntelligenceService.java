@@ -24,15 +24,14 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
-import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineAssetDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.StatisticalSummaryDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.TimeSeriesDataPointDTO;
+import dz.sh.trc.hyflo.flow.intelligence.facade.FlowReadingFacade;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
@@ -50,8 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineIntelligenceService {
     
     private final PipelineRepository pipelineRepository;
-    private final FlowReadingRepository flowReadingRepository;
-    private final ReadingSlotRepository readingSlotRepository;
+    private final FlowReadingFacade flowReadingFacade;
     
     /**
      * Get comprehensive overview with asset specs and operational KPIs
@@ -69,7 +67,7 @@ public class PipelineIntelligenceService {
         SlotStatistics slotStats = getSlotStatistics(pipelineId, referenceDate);
         
         // Get latest reading for current measurements
-        var latestReading = flowReadingRepository.findTopByPipelineIdOrderByRecordedAtDesc(pipelineId);
+        var latestReading = flowReadingFacade.findLatestByPipeline(pipelineId);
         
         // Calculate weekly completion rate
         LocalDate weekStart = referenceDate.minusDays(6);
@@ -107,10 +105,10 @@ public class PipelineIntelligenceService {
         }
         
         // Get all 12 slots
-        var allSlots = readingSlotRepository.findAllByOrderByDisplayOrder();
+        var allSlots = flowReadingFacade.findAllSlotsOrdered();
         
         // Get readings for this date
-        var readings = flowReadingRepository.findByPipelineIdAndReadingDate(pipelineId, date);
+        var readings = flowReadingFacade.findByPipelineAndDate(pipelineId, date);
         var readingsBySlot = readings.stream()
             .collect(Collectors.toMap(
                 reading -> reading.getReadingSlot().getId(),
@@ -178,7 +176,7 @@ public class PipelineIntelligenceService {
         }
         
         // Get readings in date range
-        var readings = flowReadingRepository.findByPipelineIdAndReadingDateBetweenOrderByReadingDateAscRecordedAtAsc(
+        var readings = flowReadingFacade.findByPipelineAndDateRangeOrdered(
             pipelineId, startDate, endDate);
         
         List<TimeSeriesDataPointDTO> dataPoints = new ArrayList<>();
@@ -268,7 +266,7 @@ public class PipelineIntelligenceService {
      * Get slot statistics for a specific date
      */
     private SlotStatistics getSlotStatistics(Long pipelineId, LocalDate date) {
-        var readings = flowReadingRepository.findByPipelineIdAndReadingDate(pipelineId, date);
+        var readings = flowReadingFacade.findByPipelineAndDate(pipelineId, date);
         
         int recordedCount = 0;
         int approvedCount = 0;
@@ -276,7 +274,7 @@ public class PipelineIntelligenceService {
         int overdueCount = 0;
         LocalDateTime now = LocalDateTime.now();
         
-        var allSlots = readingSlotRepository.findAllByOrderByDisplayOrder();
+        var allSlots = flowReadingFacade.findAllSlotsOrdered();
         var readingsBySlot = readings.stream()
             .collect(Collectors.toMap(
                 reading -> reading.getReadingSlot().getId(),
