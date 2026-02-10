@@ -5,6 +5,7 @@
  * 	@Name		: PipelineFacade
  * 	@CreatedOn	: 02-10-2026
  * 	@UpdatedOn	: 02-10-2026 - Created during Phase 2 refactoring
+ * 	@UpdatedOn	: 02-10-2026 - Phase 2: Return DTOs instead of entities
  *
  * 	@Type		: Class
  * 	@Layer		: Facade
@@ -19,17 +20,27 @@
  * 	@Refactoring: Phase 2 - Created to eliminate direct PipelineRepository
  * 	              access from PipelineIntelligenceService.
  *
+ * 	@Refactoring: Phase 2 (Enhancement) - Changed return types from entities
+ * 	              to DTOs to fully decouple intelligence layer from entity structure.
+ * 	              
+ * 	              Benefits:
+ * 	              - Prevents lazy loading exceptions (all data pre-loaded)
+ * 	              - Removes entity dependency from intelligence services
+ * 	              - Clear contract via DTO interface
+ * 	              - Enables future caching at DTO level
+ *
  **/
 
 package dz.sh.trc.hyflo.flow.intelligence.facade;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.network.core.model.Pipeline;
+import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +48,22 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Facade providing intelligence module with controlled access to pipeline data.
  * 
- * This facade serves two purposes:
+ * This facade serves three purposes:
  * 1. Keeps repository access logic centralized (single point of access)
  * 2. Enforces module boundaries (intelligence → facade → network/core repositories)
+ * 3. Converts entities to DTOs to decouple intelligence layer from entity structure
  * 
  * All methods are read-only (@Transactional(readOnly = true)) since
  * intelligence module only queries data, never modifies it.
  * 
+ * Phase 2 Enhancement:
+ * - All methods now return DTOs instead of entities
+ * - Entity-to-DTO conversion happens within facade
+ * - Intelligence services work exclusively with DTOs
+ * 
  * Future enhancements:
  * - Add caching layer (@Cacheable) for frequently accessed pipelines
- * - Return DTOs instead of entities to fully decouple from network module
- * - Add projection support for optimized queries
+ * - Add projection support for optimized queries (select only needed fields)
  */
 @Service
 @RequiredArgsConstructor
@@ -60,27 +76,38 @@ public class PipelineFacade {
     // ========== BASIC QUERY METHODS ==========
 
     /**
-     * Find pipeline by ID with all details
+     * Find pipeline by ID with all details as DTO.
      * 
      * Used by: PipelineIntelligenceService.getOverview()
      * Purpose: Get pipeline specifications for asset DTO construction
+     * 
+     * REFACTORED (Phase 2): Now returns PipelineDTO instead of Pipeline entity.
+     * All entity-to-DTO conversion happens within facade, not in service layer.
+     * 
+     * Benefits:
+     * - Intelligence service no longer depends on Pipeline entity
+     * - Prevents lazy loading issues (DTO has all data pre-loaded)
+     * - Clear contract: facade provides data transfer objects
      * 
      * Future Enhancement: Add @Cacheable("pipelines")
      * Rationale: Pipeline specs rarely change, safe to cache for hours
      * 
      * @param pipelineId Pipeline ID
-     * @return Pipeline entity with full details or empty if not found
+     * @return PipelineDTO with full details or empty if not found
      */
-    public Optional<Pipeline> findById(Long pipelineId) {
+    public Optional<PipelineDTO> findById(Long pipelineId) {
         log.debug("Finding pipeline by ID: {}", pipelineId);
-        return pipelineRepository.findById(pipelineId);
+        return pipelineRepository.findById(pipelineId)
+                .map(PipelineDTO::fromEntity);
     }
 
     /**
-     * Check if pipeline exists
+     * Check if pipeline exists.
      * 
      * Used by: PipelineIntelligenceService.getSlotCoverage(), getReadingsTimeSeries()
      * Purpose: Validate pipeline existence before processing requests
+     * 
+     * Note: This method still returns boolean (no DTO conversion needed)
      * 
      * @param pipelineId Pipeline ID
      * @return true if pipeline exists, false otherwise
@@ -91,37 +118,31 @@ public class PipelineFacade {
     }
 
     /**
-     * Find all pipelines by manager/structure ID
+     * Find all pipelines by manager/structure ID as DTOs.
      * 
      * Used by: Future monitoring aggregations
      * Purpose: Get all pipelines managed by a structure for bulk operations
      * 
+     * REFACTORED (Phase 2): Now returns List<PipelineDTO> instead of List<Pipeline>.
+     * 
      * @param managerId Structure (organization unit) ID
-     * @return List of pipelines managed by the structure
+     * @return List of pipeline DTOs managed by the structure
      */
-    public List<Pipeline> findByManagerId(Long managerId) {
+    public List<PipelineDTO> findByManagerId(Long managerId) {
         log.debug("Finding pipelines by manager ID: {}", managerId);
-        return pipelineRepository.findByManagerId(managerId);
+        return pipelineRepository.findByManagerId(managerId)
+                .stream()
+                .map(PipelineDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // ========== FUTURE ENHANCEMENTS ==========
 
     /**
-     * TODO: Add DTO conversion methods
+     * ✅ COMPLETED: Facade now returns DTOs instead of entities
      * 
-     * Future improvement: Have facade return DTOs instead of entities
-     * to fully decouple intelligence services from network entity structure.
-     * 
-     * Example:
-     * public Optional<PipelineDTO> findByIdAsDTO(Long pipelineId) {
-     *     return findById(pipelineId).map(PipelineDTO::fromEntity);
-     * }
-     * 
-     * Benefits:
-     * - Prevents lazy loading issues (all data pre-loaded in DTO)
-     * - Removes entity dependency from intelligence layer
-     * - Clear contract via DTO interface
-     * - Can optimize with projections (only select needed fields)
+     * Previously planned enhancement is now implemented.
+     * All methods convert entities to DTOs before returning.
      */
 
     /**
@@ -131,7 +152,7 @@ public class PipelineFacade {
      * 
      * Example:
      * @Cacheable(value = "pipelines", key = "#pipelineId")
-     * public Optional<Pipeline> findById(Long pipelineId) { ... }
+     * public Optional<PipelineDTO> findById(Long pipelineId) { ... }
      * 
      * Configuration:
      * - Cache expiration: 24 hours (pipeline specs rarely change)
@@ -142,5 +163,6 @@ public class PipelineFacade {
      * - Reduces database load for frequently accessed pipelines
      * - Improves response time for overview requests
      * - Especially valuable for dashboard queries
+     * - DTO caching is safer than entity caching (no lazy loading issues)
      */
 }
