@@ -70,7 +70,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Flow Workflow", description = "Flow reading workflow state transition operations")
 @RequiredArgsConstructor
 @Slf4j
-public class WorkflowController {
+public class ReadingWorkflowController {
     
     private final ReadingWorkflowService readingWorkflowService;
     
