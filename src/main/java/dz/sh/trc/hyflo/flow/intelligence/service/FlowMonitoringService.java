@@ -7,6 +7,7 @@
  * 	@UpdatedOn	: 02-10-2026 - Refactored to use DateTimeUtils utility
  * 	@UpdatedOn	: 02-10-2026 - Phase 1 refactoring: Eliminated direct repository access
  * 	@UpdatedOn	: 02-10-2026 - Phase 4 refactoring: Added date range validation
+ * 	@UpdatedOn	: 02-10-2026 - Phase 2: Facades return DTOs, no conversion needed
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -27,6 +28,11 @@
  * 	              - Added date range validation (max 90 days)
  * 	              - Prevents performance issues with large result sets
  * 	              - Validates input parameters before executing expensive queries
+ *
+ * 	@Refactoring: Phase 2 - Facades now return DTOs directly:
+ * 	              - Removed .map(FlowReadingDTO::fromEntity) calls
+ * 	              - Facades handle entity→DTO conversion
+ * 	              - Service works exclusively with DTOs
  *
  **/
 
@@ -69,6 +75,7 @@ import lombok.extern.slf4j.Slf4j;
  * - Uses FlowReadingFacade for simple queries (enforces module boundary)
  * - Uses IntelligenceQueryRepository for complex analytics (native SQL)
  * - NO direct access to FlowReadingRepository (core module)
+ * - NO entity dependencies (works exclusively with DTOs)
  * 
  * Performance:
  * - Date range validation enforced (max 90 days for analytics)
@@ -84,7 +91,8 @@ public class FlowMonitoringService {
     
     /**
      * Facade for accessing core flow reading queries
-     * REFACTORED: Now using facade instead of direct FlowReadingRepository access
+     * REFACTORED (Phase 1): Now using facade instead of direct FlowReadingRepository access
+     * REFACTORED (Phase 2): Facade now returns DTOs instead of entities
      */
     private final FlowReadingFacade flowReadingFacade;
     
@@ -116,19 +124,20 @@ public class FlowMonitoringService {
      * Returns readings in SUBMITTED status awaiting validation.
      * Used for "Pending Validations" dashboard view.
      * 
-     * REFACTORED: Now uses facade instead of direct repository access
+     * REFACTORED (Phase 1): Now uses facade instead of direct repository access
+     * REFACTORED (Phase 2): Facade returns DTOs directly, no conversion needed
      * 
      * @param structureId Structure ID to filter by
      * @param pageable Pagination parameters
-     * @return Paginated list of readings awaiting validation
+     * @return Paginated list of reading DTOs awaiting validation
      */
     public Page<FlowReadingDTO> findPendingValidationsByStructure(
             Long structureId, Pageable pageable) {
         log.debug("Finding pending validations for structure: {}", structureId);
         
-        // ✅ REFACTORED: Access via facade (enforces module boundary)
-        return flowReadingFacade.findPendingValidationsByStructure(structureId, pageable)
-                .map(FlowReadingDTO::fromEntity);
+        // ✅ REFACTORED (Phase 2): Facade returns Page<FlowReadingDTO> directly
+        // No .map() needed - already DTOs
+        return flowReadingFacade.findPendingValidationsByStructure(structureId, pageable);
     }
 
     /**
@@ -137,22 +146,23 @@ public class FlowMonitoringService {
      * Returns readings past their slot deadline and not yet validated.
      * A reading is overdue if: current_time > (reading_date + slot_end_time)
      * 
-     * REFACTORED: Now uses facade instead of direct repository access
+     * REFACTORED (Phase 1): Now uses facade instead of direct repository access
+     * REFACTORED (Phase 2): Facade returns DTOs directly, no conversion needed
      * 
      * @param structureId Structure ID to filter by
      * @param asOfDate Date to check for overdue readings (usually today)
      * @param pageable Pagination parameters
-     * @return Paginated list of overdue readings
+     * @return Paginated list of overdue reading DTOs
      */
     public Page<FlowReadingDTO> findOverdueReadingsByStructure(
             Long structureId, LocalDate asOfDate, Pageable pageable) {
         log.debug("Finding overdue readings for structure: {} as of date: {}", 
                   structureId, asOfDate);
         
-        // ✅ REFACTORED: Access via facade with DateTimeUtils for consistency
+        // ✅ REFACTORED (Phase 2): Facade returns Page<FlowReadingDTO> directly
+        // No .map() needed - already DTOs
         return flowReadingFacade.findOverdueReadingsByStructure(
-                structureId, asOfDate, DateTimeUtils.now(), pageable)
-                .map(FlowReadingDTO::fromEntity);
+                structureId, asOfDate, DateTimeUtils.now(), pageable);
     }
 
     // ========== ANALYTICS METHODS ==========
