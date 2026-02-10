@@ -52,6 +52,7 @@ import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,12 @@ import lombok.extern.slf4j.Slf4j;
  * - All methods now return DTOs instead of entities
  * - Entity-to-DTO conversion happens within facade
  * - Intelligence services work exclusively with DTOs
+ * 
+ * Note on Entity Import:
+ * - This facade imports FlowReading entity (core.model.FlowReading)
+ * - This is acceptable: facade is the BOUNDARY layer between entity and DTO worlds
+ * - Entity never leaves facade scope (immediately converted to DTO)
+ * - Intelligence services never see or import entities
  */
 @Service
 @RequiredArgsConstructor
@@ -195,9 +202,8 @@ public class FlowReadingFacade {
                         "Please ensure reference data is properly initialized."));
         
         // Delegate to repository and convert to DTOs
-        Page<dz.sh.trc.hyflo.flow.core.model.FlowReading> entityPage = 
-                flowReadingRepository.findByStructureAndValidationStatus(
-                        structureId, submittedStatus.getId(), pageable);
+        Page<FlowReading> entityPage = flowReadingRepository.findByStructureAndValidationStatus(
+                structureId, submittedStatus.getId(), pageable);
         
         List<FlowReadingDTO> dtoList = entityPage.getContent()
                 .stream()
@@ -235,9 +241,8 @@ public class FlowReadingFacade {
         
         // Delegate to repository and convert to DTOs
         // Repository uses JPQL FUNCTION('TIMESTAMP', ...) to combine date + time
-        Page<dz.sh.trc.hyflo.flow.core.model.FlowReading> entityPage = 
-                flowReadingRepository.findOverdueReadingsByStructure(
-                        structureId, asOfDate, currentDateTime, pageable);
+        Page<FlowReading> entityPage = flowReadingRepository.findOverdueReadingsByStructure(
+                structureId, asOfDate, currentDateTime, pageable);
         
         List<FlowReadingDTO> dtoList = entityPage.getContent()
                 .stream()
@@ -260,5 +265,11 @@ public class FlowReadingFacade {
      * - Prevents lazy loading issues (DTOs have all data pre-loaded)
      * - Clear contract via DTO interface
      * - Enables future caching at DTO level
+     * 
+     * Architecture Note:
+     * - This facade imports FlowReading entity (necessary for conversion)
+     * - Entity is used ONLY within facade scope
+     * - All public methods return DTOs
+     * - Intelligence services remain entity-free
      */
 }
