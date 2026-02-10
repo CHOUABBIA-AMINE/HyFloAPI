@@ -31,11 +31,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.flow.core.dto.DailyCompletionStatisticsDTO;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.dto.PipelineCoverageDetailDTO;
-import dz.sh.trc.hyflo.flow.core.dto.SubmissionTrendDTO;
-import dz.sh.trc.hyflo.flow.core.dto.ValidatorWorkloadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.ValidatorWorkloadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.service.FlowMonitoringService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -30,7 +30,7 @@ import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowOperationDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
 import dz.sh.trc.hyflo.general.organization.model.Employee;

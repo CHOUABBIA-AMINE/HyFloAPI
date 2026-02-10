@@ -2,19 +2,19 @@
  *
  * 	@Author		: CHOUABBIA Amine
  *
- * 	@Name		: PendingValidationDTO
+ * 	@Name		: OverdueReadingDTO
  * 	@CreatedOn	: 02-07-2026
  *
  * 	@Type		: Class (DTO)
  * 	@Layer		: DTO
  * 	@Package	: Flow / Core
  *
- * 	@Description: DTO for pending validation tracking in operational monitoring
- *                 Provides queue position and waiting time information
+ * 	@Description: DTO for overdue reading tracking in operational monitoring
+ *                 Extends FlowReadingDTO with overdue-specific information
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.dto;
+package dz.sh.trc.hyflo.flow.intelligence.dto.monitoring;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -34,8 +34,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Schema(description = "Pending validation with queue information")
-public class PendingValidationDTO implements Serializable {
+@Schema(description = "Overdue reading with deadline information")
+public class OverdueReadingDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -55,24 +55,25 @@ public class PendingValidationDTO implements Serializable {
     @Schema(description = "Reading slot designation", example = "Morning Shift")
     private String readingSlot;
 
-    @JsonProperty("submittedAt")
+    @JsonProperty("recordedAt")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "Submission timestamp", example = "2026-02-07 08:30:00")
-    private LocalDateTime submittedAt;
+    @Schema(description = "Recording timestamp", example = "2026-02-05 08:30:00")
+    private LocalDateTime recordedAt;
 
-    @JsonProperty("waitingHours")
-    @Schema(description = "Hours waiting for validation", example = "2.5")
-    private Double waitingHours;
+    @JsonProperty("deadline")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Validation deadline (slot end time)", example = "2026-02-05 12:00:00")
+    private LocalDateTime deadline;
 
-    @JsonProperty("priority")
-    @Schema(description = "Validation priority (HIGH, MEDIUM, LOW)", example = "HIGH")
-    private String priority;
+    @JsonProperty("hoursOverdue")
+    @Schema(description = "Hours past deadline", example = "48.5")
+    private Double hoursOverdue;
+
+    @JsonProperty("validationStatus")
+    @Schema(description = "Current validation status", example = "SUBMITTED")
+    private String validationStatus;
 
     @JsonProperty("recordedBy")
     @Schema(description = "Employee who recorded the reading", example = "AHMED Mohamed")
     private String recordedBy;
-
-    @JsonProperty("flowValue")
-    @Schema(description = "Flow measurement value", example = "125.50")
-    private Double flowValue;
 }

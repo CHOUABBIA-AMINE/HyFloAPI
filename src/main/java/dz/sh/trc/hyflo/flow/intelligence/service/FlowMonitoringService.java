@@ -28,12 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.DailyCompletionStatisticsDTO;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.dto.PipelineCoverageDetailDTO;
-import dz.sh.trc.hyflo.flow.core.dto.SubmissionTrendDTO;
-import dz.sh.trc.hyflo.flow.core.dto.ValidatorWorkloadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.ValidatorWorkloadDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

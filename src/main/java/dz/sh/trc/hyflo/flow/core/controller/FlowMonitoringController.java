@@ -14,15 +14,22 @@
 
 package dz.sh.trc.hyflo.flow.core.controller;
 
-import dz.sh.trc.hyflo.flow.core.dto.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import dz.sh.trc.hyflo.flow.core.dto.command.ReadingSubmitRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.ReadingValidationRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.SlotCoverageRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.SlotCoverageResponseDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/flow/core/monitoring")

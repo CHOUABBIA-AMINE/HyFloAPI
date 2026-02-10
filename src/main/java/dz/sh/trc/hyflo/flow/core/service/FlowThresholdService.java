@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.core.dto.FlowThresholdDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowThresholdDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowThreshold;
 import dz.sh.trc.hyflo.flow.core.repository.FlowThresholdRepository;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;

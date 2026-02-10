@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowOperationDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowOperationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.flow.core.dto.FlowForecastDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowForecastDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowForecast;
 import dz.sh.trc.hyflo.flow.core.repository.FlowForecastRepository;
 import lombok.RequiredArgsConstructor;

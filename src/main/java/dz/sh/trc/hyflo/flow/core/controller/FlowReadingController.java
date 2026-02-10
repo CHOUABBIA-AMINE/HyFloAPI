@@ -35,11 +35,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.dto.ReadingSubmitRequestDTO;
-import dz.sh.trc.hyflo.flow.core.dto.ReadingValidationRequestDTO;
-import dz.sh.trc.hyflo.flow.core.dto.SlotCoverageRequestDTO;
-import dz.sh.trc.hyflo.flow.core.dto.SlotCoverageResponseDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.ReadingSubmitRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.ReadingValidationRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.SlotCoverageRequestDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.SlotCoverageResponseDTO;
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingService;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;

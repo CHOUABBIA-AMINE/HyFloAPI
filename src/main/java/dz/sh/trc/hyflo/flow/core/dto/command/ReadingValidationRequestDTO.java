@@ -1,15 +1,16 @@
-package dz.sh.trc.hyflo.flow.core.dto;
+package dz.sh.trc.hyflo.flow.core.dto.command;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import dz.sh.trc.hyflo.flow.core.dto.entity.FlowReadingDTO;
+import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
-
-import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
 
 /**
  * Workflow command DTO for validating (approving/rejecting) flow readings.

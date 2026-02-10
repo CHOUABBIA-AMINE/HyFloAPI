@@ -13,7 +13,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.dto;
+package dz.sh.trc.hyflo.flow.intelligence.dto.analytics;
 
 import java.io.Serializable;
 

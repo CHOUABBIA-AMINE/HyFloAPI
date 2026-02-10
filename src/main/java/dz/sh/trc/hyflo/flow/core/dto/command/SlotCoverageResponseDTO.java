@@ -1,14 +1,15 @@
-package dz.sh.trc.hyflo.flow.core.dto;
+package dz.sh.trc.hyflo.flow.core.dto.command;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import dz.sh.trc.hyflo.flow.common.dto.ReadingSlotDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDTO;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

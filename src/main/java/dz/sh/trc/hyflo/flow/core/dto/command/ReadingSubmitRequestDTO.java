@@ -1,4 +1,4 @@
-package dz.sh.trc.hyflo.flow.core.dto;
+package dz.sh.trc.hyflo.flow.core.dto.command;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
