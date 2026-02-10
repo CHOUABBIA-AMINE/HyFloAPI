@@ -5,10 +5,19 @@
  * 	@Name		: PipelineIntelligenceService
  * 	@CreatedOn	: 02-07-2026
  * 	@UpdatedOn	: 02-10-2026 - Refactored to use SlotStatisticsCalculator utility
+ * 	@UpdatedOn	: 02-10-2026 - Phase 2: Eliminated direct PipelineRepository access
  *
  * 	@Type		: Class
  * 	@Layer		: Service
  * 	@Package	: Flow / Intelligence
+ *
+ * 	@Refactoring: Phase 2 - Removed direct PipelineRepository dependency.
+ * 	              Now uses PipelineFacade exclusively.
+ * 	              
+ * 	              Benefits:
+ * 	              - Enforces module boundaries (no direct network/core repository access)
+ * 	              - Improves testability (mock facade instead of repository)
+ * 	              - Enables caching and optimization at facade level
  *
  **/
 
@@ -35,15 +44,21 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.StatisticalSummaryDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.TimeSeriesDataPointDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.FlowReadingFacade;
+import dz.sh.trc.hyflo.flow.intelligence.facade.PipelineFacade;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
-import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service providing operational intelligence and analytics for pipelines
- * Focuses on slot-based monitoring, KPI aggregation, and trend analysis
+ * Service providing operational intelligence and analytics for pipelines.
+ * 
+ * Focuses on slot-based monitoring, KPI aggregation, and trend analysis.
+ * 
+ * Architecture Pattern:
+ * - Uses PipelineFacade for pipeline data access (enforces module boundary)
+ * - Uses FlowReadingFacade for flow reading queries
+ * - NO direct access to PipelineRepository or FlowReadingRepository
  */
 @Service
 @Transactional(readOnly = true)
@@ -51,16 +66,31 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PipelineIntelligenceService {
     
-    private final PipelineRepository pipelineRepository;
+    // ========== DEPENDENCIES (Phase 2 Refactored) ==========
+    
+    /**
+     * Facade for accessing pipeline data
+     * REFACTORED: Now using facade instead of direct PipelineRepository access
+     */
+    private final PipelineFacade pipelineFacade;
+    
+    /**
+     * Facade for accessing flow reading data
+     */
     private final FlowReadingFacade flowReadingFacade;
+    
+    // ========== PUBLIC SERVICE METHODS ==========
     
     /**
      * Get comprehensive overview with asset specs and operational KPIs
+     * 
+     * REFACTORED: Now uses PipelineFacade instead of direct repository
      */
     public PipelineOverviewDTO getOverview(Long pipelineId, LocalDate referenceDate) {
         log.debug("Getting overview for pipeline {} on {}", pipelineId, referenceDate);
         
-        Pipeline pipeline = pipelineRepository.findById(pipelineId)
+        // ✅ REFACTORED: Access via facade (enforces module boundary)
+        Pipeline pipeline = pipelineFacade.findById(pipelineId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
         // Build asset DTO
@@ -101,12 +131,14 @@ public class PipelineIntelligenceService {
     
     /**
      * Get slot coverage for specific date (12 slots)
+     * 
+     * REFACTORED: Now uses PipelineFacade instead of direct repository
      */
     public List<SlotStatusDTO> getSlotCoverage(Long pipelineId, LocalDate date) {
         log.debug("Getting slot coverage for pipeline {} on {}", pipelineId, date);
         
-        // Verify pipeline exists
-        if (!pipelineRepository.existsById(pipelineId)) {
+        // ✅ REFACTORED: Verify existence via facade
+        if (!pipelineFacade.existsById(pipelineId)) {
             throw new IllegalArgumentException("Pipeline not found: " + pipelineId);
         }
         
@@ -167,6 +199,8 @@ public class PipelineIntelligenceService {
     
     /**
      * Get time-series data for readings
+     * 
+     * REFACTORED: Now uses PipelineFacade instead of direct repository
      */
     public ReadingsTimeSeriesDTO getReadingsTimeSeries(
             Long pipelineId, 
@@ -177,8 +211,8 @@ public class PipelineIntelligenceService {
         log.debug("Getting time-series for pipeline {} from {} to {}, type: {}",
             pipelineId, startDate, endDate, measurementType);
         
-        // Verify pipeline exists
-        if (!pipelineRepository.existsById(pipelineId)) {
+        // ✅ REFACTORED: Verify existence via facade
+        if (!pipelineFacade.existsById(pipelineId)) {
             throw new IllegalArgumentException("Pipeline not found: " + pipelineId);
         }
         
