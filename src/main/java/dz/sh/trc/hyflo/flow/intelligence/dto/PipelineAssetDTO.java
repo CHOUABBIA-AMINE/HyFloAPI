@@ -13,8 +13,6 @@
 
 package dz.sh.trc.hyflo.flow.intelligence.dto;
 
-import java.math.BigDecimal;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,33 +41,33 @@ public class PipelineAssetDTO {
     
     // Physical Characteristics
     @Schema(description = "Length in kilometers", example = "42.5")
-    private BigDecimal length;
+    private Double length;
     
     @Schema(description = "Nominal diameter in millimeters", example = "508.0")
-    private BigDecimal nominalDiameter;
+    private String nominalDiameter;
     
     @Schema(description = "Nominal thickness in millimeters", example = "12.7")
-    private BigDecimal nominalThickness;
+    private String nominalThickness;
     
     // Pressure Specifications
     @Schema(description = "Design maximum service pressure in bar", example = "85.0")
-    private BigDecimal designMaxServicePressure;
+    private Double designMaxServicePressure;
     
     @Schema(description = "Operational maximum service pressure in bar", example = "80.0")
-    private BigDecimal operationalMaxServicePressure;
+    private Double operationalMaxServicePressure;
     
     @Schema(description = "Design minimum service pressure in bar", example = "10.0")
-    private BigDecimal designMinServicePressure;
+    private Double designMinServicePressure;
     
     @Schema(description = "Operational minimum service pressure in bar", example = "15.0")
-    private BigDecimal operationalMinServicePressure;
+    private Double operationalMinServicePressure;
     
     // Capacity Specifications
     @Schema(description = "Design capacity in m³/h", example = "2500.0")
-    private BigDecimal designCapacity;
+    private Double designCapacity;
     
     @Schema(description = "Operational capacity in m³/h", example = "2300.0")
-    private BigDecimal operationalCapacity;
+    private Double operationalCapacity;
     
     // Network Connections
     @Schema(description = "Departure terminal information")

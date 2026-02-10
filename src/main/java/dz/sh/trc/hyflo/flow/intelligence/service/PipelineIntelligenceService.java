@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
+import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineAssetDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
@@ -32,6 +33,7 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.StatisticalSummaryDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.TimeSeriesDataPointDTO;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +66,7 @@ public class PipelineIntelligenceService {
         PipelineAssetDTO asset = buildAssetDTO(pipeline);
         
         // Get today's slot coverage stats
-        var slotStats = getSlotStatistics(pipelineId, referenceDate);
+        SlotStatistics slotStats = getSlotStatistics(pipelineId, referenceDate);
         
         // Get latest reading for current measurements
         var latestReading = flowReadingRepository.findTopByPipelineIdOrderByRecordedAtDesc(pipelineId);
@@ -76,10 +78,10 @@ public class PipelineIntelligenceService {
         return PipelineOverviewDTO.builder()
             .asset(asset)
             .operationalStatus("ACTIVE") // TODO: Implement actual status tracking
-            .currentPressure(latestReading.map(r -> r.getPressure()).orElse(null))
-            .currentTemperature(latestReading.map(r -> r.getTemperature()).orElse(null))
-            .currentFlowRate(latestReading.map(r -> r.getFlowRate()).orElse(null))
-            .lastReadingTime(latestReading.map(r -> r.getRecordedAt()).orElse(null))
+            .currentPressure(latestReading.map(FlowReading::getPressure).orElse(null))
+            .currentTemperature(latestReading.map(FlowReading::getTemperature).orElse(null))
+            .currentFlowRate(latestReading.map(FlowReading::getFlowRate).orElse(null))
+            .lastReadingTime(latestReading.map(FlowReading::getRecordedAt).orElse(null))
             .totalSlotsToday(12)
             .recordedSlots(slotStats.recordedCount)
             .approvedSlots(slotStats.approvedCount)
@@ -118,7 +120,7 @@ public class PipelineIntelligenceService {
         LocalDateTime now = LocalDateTime.now();
         
         return allSlots.stream().map(slot -> {
-            var reading = readingsBySlot.get(slot.getId());
+            FlowReading reading = readingsBySlot.get(slot.getId());
             
             boolean isOverdue = false;
             if (reading == null || 
@@ -142,10 +144,10 @@ public class PipelineIntelligenceService {
                 .recordedAt(reading != null ? reading.getRecordedAt() : null)
                 .validatedAt(reading != null ? reading.getValidatedAt() : null)
                 .recorderName(reading != null && reading.getRecordedBy() != null 
-                    ? reading.getRecordedBy().getFullName() 
+                    ? getEmployeeFullName(reading.getRecordedBy())
                     : null)
                 .validatorName(reading != null && reading.getValidatedBy() != null 
-                    ? reading.getValidatedBy().getFullName() 
+                    ? getEmployeeFullName(reading.getValidatedBy())
                     : null)
                 .pressure(reading != null ? reading.getPressure() : null)
                 .temperature(reading != null ? reading.getTemperature() : null)
@@ -182,7 +184,7 @@ public class PipelineIntelligenceService {
         List<TimeSeriesDataPointDTO> dataPoints = new ArrayList<>();
         List<BigDecimal> values = new ArrayList<>();
         
-        for (var reading : readings) {
+        for (FlowReading reading : readings) {
             BigDecimal value = extractMeasurementValue(reading, measurementType);
             if (value != null) {
                 dataPoints.add(TimeSeriesDataPointDTO.builder()
@@ -209,11 +211,14 @@ public class PipelineIntelligenceService {
     
     // ========== HELPER METHODS ==========
     
+    /**
+     * Build asset DTO from Pipeline entity
+     */
     private PipelineAssetDTO buildAssetDTO(Pipeline pipeline) {
         return PipelineAssetDTO.builder()
             .id(pipeline.getId())
             .code(pipeline.getCode())
-            .name(pipeline.getDesignationFr()) // TODO: Handle i18n
+            .name(pipeline.getName()) // TODO: Handle i18n
             .length(pipeline.getLength())
             .nominalDiameter(pipeline.getNominalDiameter())
             .nominalThickness(pipeline.getNominalThickness())
@@ -226,7 +231,7 @@ public class PipelineIntelligenceService {
             .departureTerminal(PipelineAssetDTO.TerminalInfoDTO.builder()
                 .id(pipeline.getDepartureTerminal().getId())
                 .code(pipeline.getDepartureTerminal().getCode())
-                .name(pipeline.getDepartureTerminal().getDesignationFr())
+                .name(pipeline.getDepartureTerminal().getName())
                 .type(pipeline.getDepartureTerminal().getTerminalType() != null 
                     ? pipeline.getDepartureTerminal().getTerminalType().getDesignationFr() 
                     : null)
@@ -234,7 +239,7 @@ public class PipelineIntelligenceService {
             .arrivalTerminal(PipelineAssetDTO.TerminalInfoDTO.builder()
                 .id(pipeline.getArrivalTerminal().getId())
                 .code(pipeline.getArrivalTerminal().getCode())
-                .name(pipeline.getArrivalTerminal().getDesignationFr())
+                .name(pipeline.getArrivalTerminal().getName())
                 .type(pipeline.getArrivalTerminal().getTerminalType() != null 
                     ? pipeline.getArrivalTerminal().getTerminalType().getDesignationFr() 
                     : null)
@@ -249,7 +254,7 @@ public class PipelineIntelligenceService {
             .pipelineSystem(PipelineAssetDTO.PipelineSystemInfoDTO.builder()
                 .id(pipeline.getPipelineSystem().getId())
                 .code(pipeline.getPipelineSystem().getCode())
-                .designation(pipeline.getPipelineSystem().getDesignationFr())
+                .designation(pipeline.getPipelineSystem().getName())
                 .build())
             .manager(PipelineAssetDTO.StructureInfoDTO.builder()
                 .id(pipeline.getManager().getId())
@@ -259,6 +264,9 @@ public class PipelineIntelligenceService {
             .build();
     }
     
+    /**
+     * Get slot statistics for a specific date
+     */
     private SlotStatistics getSlotStatistics(Long pipelineId, LocalDate date) {
         var readings = flowReadingRepository.findByPipelineIdAndReadingDate(pipelineId, date);
         
@@ -276,7 +284,7 @@ public class PipelineIntelligenceService {
             ));
         
         for (var slot : allSlots) {
-            var reading = readingsBySlot.get(slot.getId());
+            FlowReading reading = readingsBySlot.get(slot.getId());
             if (reading != null) {
                 recordedCount++;
                 String status = reading.getValidationStatus() != null 
@@ -308,12 +316,15 @@ public class PipelineIntelligenceService {
         return new SlotStatistics(recordedCount, approvedCount, submittedCount, overdueCount, completionRate);
     }
     
+    /**
+     * Calculate weekly completion rate
+     */
     private Double calculateWeeklyCompletionRate(Long pipelineId, LocalDate startDate, LocalDate endDate) {
         List<Double> dailyRates = new ArrayList<>();
         LocalDate current = startDate;
         
         while (!current.isAfter(endDate)) {
-            var stats = getSlotStatistics(pipelineId, current);
+            SlotStatistics stats = getSlotStatistics(pipelineId, current);
             dailyRates.add(stats.completionRate);
             current = current.plusDays(1);
         }
@@ -324,7 +335,10 @@ public class PipelineIntelligenceService {
             .orElse(0.0);
     }
     
-    private BigDecimal extractMeasurementValue(var reading, String measurementType) {
+    /**
+     * Extract measurement value based on type
+     */
+    private BigDecimal extractMeasurementValue(FlowReading reading, String measurementType) {
         if (measurementType == null) {
             return reading.getPressure();
         }
@@ -338,6 +352,9 @@ public class PipelineIntelligenceService {
         };
     }
     
+    /**
+     * Calculate statistical summary from values
+     */
     private StatisticalSummaryDTO calculateStatistics(List<BigDecimal> values) {
         if (values.isEmpty()) {
             return StatisticalSummaryDTO.builder()
@@ -384,6 +401,39 @@ public class PipelineIntelligenceService {
             .median(median)
             .stdDev(stdDev)
             .build();
+    }
+    
+    /**
+     * Get employee full name (handles potential missing getFullName() method)
+     */
+    private String getEmployeeFullName(Employee employee) {
+        if (employee == null) {
+            return null;
+        }
+        
+        // Try to use getFullName() if it exists, otherwise construct manually
+        try {
+            // If Employee has getFullName() method
+            return (String) employee.getClass().getMethod("getFullName").invoke(employee);
+        } catch (Exception e) {
+            // Fallback: construct from first and last name
+            try {
+                String firstName = (String) employee.getClass().getMethod("getFirstNameLt").invoke(employee);
+                String lastName = (String) employee.getClass().getMethod("getLastNameLt").invoke(employee);
+                
+                if (firstName != null && lastName != null) {
+                    return firstName + " " + lastName;
+                } else if (firstName != null) {
+                    return firstName;
+                } else if (lastName != null) {
+                    return lastName;
+                }
+            } catch (Exception ex) {
+                log.warn("Unable to extract employee name", ex);
+            }
+        }
+        
+        return "Unknown";
     }
     
     /**
