@@ -369,7 +369,7 @@ public class PipelineIntelligenceService {
             .collect(Collectors.groupingBy(FlowReadingDTO::getReadingDate));
         
         // Calculate average completion rate across all days
-        LocalDateTime now = LocalDateTime.now();
+        //LocalDateTime now = LocalDateTime.now();
         List<Double> dailyRates = new ArrayList<>();
         
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
