@@ -8,6 +8,7 @@
  * 	@UpdatedOn	: 02-07-2026 - Added 6 operational monitoring queries
  * 	@UpdatedOn	: 02-07-2026 - Added intelligence service queries
  * 	@UpdatedOn	: 02-10-2026 - Phase 1: Removed analytics queries (moved to IntelligenceQueryRepository)
+ * 	@UpdatedOn	: 02-10-2026 - Phase 4: Added JOIN FETCH to prevent N+1 queries
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -20,6 +21,11 @@
  * 	              - getPipelineCoverageByDateRange()
  * 	              
  * 	              This repository now focuses on core CRUD operations and simple queries.
+ * 	
+ * 	@Refactoring: Phase 4 - Performance Optimization:
+ * 	              - Added JOIN FETCH for lazy associations (pipeline, validationStatus, etc.)
+ * 	              - Prevents N+1 query problem when accessing entity relationships
+ * 	              - Improves performance in intelligence services using facades
  *
  **/
 
@@ -68,26 +74,68 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     List<FlowReading> findByRecordedAtBetween(LocalDateTime startTime, LocalDateTime endTime);
     
-    // ========== INTELLIGENCE SERVICE QUERIES ==========
+    // ========== INTELLIGENCE SERVICE QUERIES (WITH JOIN FETCH) ==========
     
     /**
      * Find latest reading for a specific pipeline
      * Used for current measurement display in overview
+     * 
+     * PERFORMANCE: Added JOIN FETCH to prevent N+1 queries
      */
-    Optional<FlowReading> findTopByPipelineIdOrderByRecordedAtDesc(Long pipelineId);
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        LEFT JOIN FETCH fr.pipeline
+        LEFT JOIN FETCH fr.validationStatus
+        LEFT JOIN FETCH fr.recordedBy
+        LEFT JOIN FETCH fr.validatedBy
+        WHERE fr.pipeline.id = :pipelineId
+        ORDER BY fr.recordedAt DESC
+        LIMIT 1
+    """)
+    Optional<FlowReading> findTopByPipelineIdOrderByRecordedAtDesc(@Param("pipelineId") Long pipelineId);
     
     /**
      * Find all readings for a specific pipeline and date
      * Used for slot coverage calculation
+     * 
+     * PERFORMANCE: Added JOIN FETCH to prevent N+1 queries
      */
-    List<FlowReading> findByPipelineIdAndReadingDate(Long pipelineId, LocalDate readingDate);
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        LEFT JOIN FETCH fr.pipeline
+        LEFT JOIN FETCH fr.validationStatus
+        LEFT JOIN FETCH fr.readingSlot
+        LEFT JOIN FETCH fr.recordedBy
+        LEFT JOIN FETCH fr.validatedBy
+        WHERE fr.pipeline.id = :pipelineId
+            AND fr.readingDate = :readingDate
+        ORDER BY fr.readingSlot.sequence ASC
+    """)
+    List<FlowReading> findByPipelineIdAndReadingDate(
+        @Param("pipelineId") Long pipelineId, 
+        @Param("readingDate") LocalDate readingDate
+    );
     
     /**
      * Find readings within date range ordered chronologically
      * Used for time-series analysis
+     * 
+     * PERFORMANCE: Added JOIN FETCH to prevent N+1 queries
      */
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        LEFT JOIN FETCH fr.pipeline
+        LEFT JOIN FETCH fr.validationStatus
+        LEFT JOIN FETCH fr.readingSlot
+        WHERE fr.pipeline.id = :pipelineId
+            AND fr.readingDate BETWEEN :startDate AND :endDate
+        ORDER BY fr.readingDate ASC, fr.recordedAt ASC
+    """)
     List<FlowReading> findByPipelineIdAndReadingDateBetweenOrderByReadingDateAscRecordedAtAsc(
-        Long pipelineId, LocalDate startDate, LocalDate endDate);
+        @Param("pipelineId") Long pipelineId, 
+        @Param("startDate") LocalDate startDate, 
+        @Param("endDate") LocalDate endDate
+    );
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
@@ -205,9 +253,15 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     /**
      * Find readings pending validation
+     * 
+     * PERFORMANCE: Added JOIN FETCH to prevent N+1 queries
      */
     @Query("""
         SELECT fr FROM FlowReading fr
+        LEFT JOIN FETCH fr.pipeline
+        LEFT JOIN FETCH fr.validationStatus
+        LEFT JOIN FETCH fr.readingSlot
+        LEFT JOIN FETCH fr.recordedBy
         WHERE fr.pipeline.manager.id = :structureId
             AND fr.readingDate = :readingDate
             AND fr.readingSlot.id = :slotId
@@ -223,9 +277,18 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     /**
      * Find reading with pessimistic lock for workflow transitions
      * Used to prevent concurrent modifications during state changes
+     * 
+     * PERFORMANCE: Added JOIN FETCH to prevent N+1 queries during validation
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT fr FROM FlowReading fr WHERE fr.id = :id")
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        LEFT JOIN FETCH fr.pipeline
+        LEFT JOIN FETCH fr.validationStatus
+        LEFT JOIN FETCH fr.recordedBy
+        LEFT JOIN FETCH fr.validatedBy
+        WHERE fr.id = :id
+    """)
     Optional<FlowReading> findByIdForUpdate(@Param("id") Long id);
     
     /**
