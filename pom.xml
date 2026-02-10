@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>dz.sh.trc</groupId>
 	<artifactId>hyflo</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.2</version>
 	<name>HyFloAPI</name>
 	<description>Hydrocarbon Flow API</description>
 	<url/>
