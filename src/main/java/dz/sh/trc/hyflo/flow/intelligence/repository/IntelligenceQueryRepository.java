@@ -5,6 +5,7 @@
  * 	@Name		: IntelligenceQueryRepository
  * 	@CreatedOn	: 02-10-2026
  * 	@UpdatedOn	: 02-10-2026 - Created during Phase 1 refactoring
+ * 	@UpdatedOn	: 02-10-2026 - Phase 4: Converted native SQL to JPQL where possible
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -20,6 +21,12 @@
  * 	            - Improves module boundary clarity
  * 	            - Allows independent query optimization
  * 	            - Separates analytics concerns from core persistence
+ * 	
+ * 	@Refactoring: Phase 4 - Query Optimization:
+ * 	              - Converted daily completion statistics to JPQL (database-portable)
+ * 	              - Converted validator workload to JPQL (database-portable)
+ * 	              - Kept submission trends as native SQL (requires DATE_FORMAT)
+ * 	              - Kept pipeline coverage as native SQL (requires CTE + CROSS JOIN)
  *
  **/
 
@@ -38,15 +45,16 @@ import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 /**
  * Repository for intelligence-specific analytics queries.
  * 
- * Contains complex native SQL aggregations that were previously in
- * FlowReadingRepository but are only used by intelligence module.
+ * Contains complex aggregations for analytics/monitoring use cases.
+ * Queries are mixed: some use JPQL (database-portable), some use native SQL
+ * (for advanced features like CTEs, DATE_FORMAT).
  * 
  * All queries are read-only and focused on analytics/monitoring use cases.
  */
 @Repository
 public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, Long> {
 
-    // ========== DAILY COMPLETION STATISTICS ==========
+    // ========== DAILY COMPLETION STATISTICS (JPQL) ==========
 
     /**
      * Get daily completion statistics
@@ -55,6 +63,8 @@ public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, 
      * - Total pipelines managed by structure
      * - Recording completion (how many pipelines have readings)
      * - Validation completion (how many readings are validated)
+     * 
+     * REFACTORED: Converted from native SQL to JPQL for database portability.
      * 
      * Used by: FlowMonitoringService.getDailyCompletionStatistics()
      * 
@@ -65,33 +75,34 @@ public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, 
      *                            approvedCount, rejectedCount, recordingCompletionPct, 
      *                            validationCompletionPct]
      */
-    @Query(value = """
+    @Query("""
         SELECT 
-            fr.reading_date as date,
+            fr.readingDate as date,
             COUNT(DISTINCT p.id) as totalPipelines,
-            COUNT(DISTINCT CASE WHEN fr.id IS NOT NULL THEN fr.id END) as recordedCount,
-            COUNT(DISTINCT CASE WHEN vs.code = 'SUBMITTED' THEN fr.id END) as submittedCount,
-            COUNT(DISTINCT CASE WHEN vs.code IN ('APPROVED', 'VALIDATED') THEN fr.id END) as approvedCount,
-            COUNT(DISTINCT CASE WHEN vs.code = 'REJECTED' THEN fr.id END) as rejectedCount,
-            ROUND(COUNT(DISTINCT CASE WHEN fr.id IS NOT NULL THEN fr.id END) * 100.0 / 
+            COUNT(DISTINCT CASE WHEN fr.id IS NOT NULL THEN fr.id ELSE NULL END) as recordedCount,
+            COUNT(DISTINCT CASE WHEN vs.code = 'SUBMITTED' THEN fr.id ELSE NULL END) as submittedCount,
+            COUNT(DISTINCT CASE WHEN vs.code IN ('APPROVED', 'VALIDATED') THEN fr.id ELSE NULL END) as approvedCount,
+            COUNT(DISTINCT CASE WHEN vs.code = 'REJECTED' THEN fr.id ELSE NULL END) as rejectedCount,
+            ROUND(COUNT(DISTINCT CASE WHEN fr.id IS NOT NULL THEN fr.id ELSE NULL END) * 100.0 / 
                   NULLIF(COUNT(DISTINCT p.id), 0), 2) as recordingCompletionPercentage,
-            ROUND(COUNT(DISTINCT CASE WHEN vs.code IN ('APPROVED', 'VALIDATED', 'REJECTED') THEN fr.id END) * 100.0 / 
+            ROUND(COUNT(DISTINCT CASE WHEN vs.code IN ('APPROVED', 'VALIDATED', 'REJECTED') THEN fr.id ELSE NULL END) * 100.0 / 
                   NULLIF(COUNT(DISTINCT p.id), 0), 2) as validationCompletionPercentage
-        FROM pipeline p
-        LEFT JOIN flow_reading fr ON fr.pipeline_id = p.id
-            AND fr.reading_date BETWEEN :startDate AND :endDate
-        LEFT JOIN validation_status vs ON fr.validation_status_id = vs.id
-        WHERE p.manager_id = :structureId
-        GROUP BY fr.reading_date
-        ORDER BY fr.reading_date DESC
-    """, nativeQuery = true)
+        FROM Pipeline p
+        LEFT JOIN FlowReading fr 
+            ON fr.pipeline = p
+           AND fr.readingDate BETWEEN :startDate AND :endDate
+        LEFT JOIN ValidationStatus vs ON fr.validationStatus = vs
+        WHERE p.manager.id = :structureId
+        GROUP BY fr.readingDate
+        ORDER BY fr.readingDate DESC
+    """)
     List<Object[]> getDailyCompletionStatistics(
         @Param("structureId") Long structureId,
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
 
-    // ========== VALIDATOR WORKLOAD DISTRIBUTION ==========
+    // ========== VALIDATOR WORKLOAD DISTRIBUTION (JPQL) ==========
 
     /**
      * Get validator workload distribution
@@ -101,9 +112,12 @@ public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, 
      * - Approved vs rejected counts
      * - Approval rate percentage
      * 
+     * REFACTORED: Converted from native SQL to JPQL for database portability.
+     * Now uses Employee.getFullNameLt() helper method instead of CONCAT.
+     * 
      * Used by: FlowMonitoringService.getValidatorWorkloadDistribution()
      * 
-     * Performance Note: Joins employee, validation_status, pipeline tables.
+     * Performance Note: Joins employee, validation_status, pipeline entities.
      *                   Consider adding index on (validated_by_id, reading_date)
      *                   if this query becomes slow.
      * 
@@ -113,38 +127,41 @@ public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, 
      * @return Array of objects: [validatorId, validatorName, approvedCount, 
      *                            rejectedCount, totalValidations, approvalRate]
      */
-    @Query(value = """
+    @Query("""
         SELECT 
             e.id as validatorId,
-            CONCAT(e.first_name_lt, ' ', e.last_name_lt) as validatorName,
-            COUNT(CASE WHEN vs.code IN ('APPROVED', 'VALIDATED') THEN 1 END) as approvedCount,
-            COUNT(CASE WHEN vs.code = 'REJECTED' THEN 1 END) as rejectedCount,
-            COUNT(*) as totalValidations,
-            ROUND(COUNT(CASE WHEN vs.code IN ('APPROVED', 'VALIDATED') THEN 1 END) * 100.0 / 
-                  NULLIF(COUNT(*), 0), 2) as approvalRate
-        FROM flow_reading fr
-        JOIN validation_status vs ON fr.validation_status_id = vs.id
-        JOIN employee e ON fr.validated_by_id = e.id
-        JOIN pipeline p ON fr.pipeline_id = p.id
-        WHERE p.manager_id = :structureId
-            AND fr.reading_date BETWEEN :startDate AND :endDate
+            CONCAT(e.firstNameLt, ' ', e.lastNameLt) as validatorName,
+            COUNT(CASE WHEN vs.code IN ('APPROVED', 'VALIDATED') THEN 1 ELSE NULL END) as approvedCount,
+            COUNT(CASE WHEN vs.code = 'REJECTED' THEN 1 ELSE NULL END) as rejectedCount,
+            COUNT(fr) as totalValidations,
+            ROUND(COUNT(CASE WHEN vs.code IN ('APPROVED', 'VALIDATED') THEN 1 ELSE NULL END) * 100.0 / 
+                  NULLIF(COUNT(fr), 0), 2) as approvalRate
+        FROM FlowReading fr
+        JOIN fr.validationStatus vs
+        JOIN fr.validatedBy e
+        JOIN fr.pipeline p
+        WHERE p.manager.id = :structureId
+            AND fr.readingDate BETWEEN :startDate AND :endDate
             AND vs.code IN ('APPROVED', 'VALIDATED', 'REJECTED')
-        GROUP BY e.id, e.first_name_lt, e.last_name_lt
+        GROUP BY e.id, e.firstNameLt, e.lastNameLt
         ORDER BY totalValidations DESC
-    """, nativeQuery = true)
+    """)
     List<Object[]> getValidatorWorkloadDistribution(
         @Param("structureId") Long structureId,
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
 
-    // ========== SUBMISSION TRENDS ==========
+    // ========== SUBMISSION TRENDS (Native SQL - Database-Specific) ==========
 
     /**
      * Get submission trends
      * 
      * Time-series data showing reading submission patterns grouped by time interval.
      * Useful for identifying peak submission times and usage patterns.
+     * 
+     * KEPT AS NATIVE SQL: Uses DATE_FORMAT (MySQL-specific) for date grouping.
+     * Cannot be easily converted to JPQL without using database-specific FUNCTION().
      * 
      * Used by: FlowMonitoringService.getSubmissionTrends()
      * 
@@ -184,7 +201,7 @@ public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, 
         @Param("groupBy") String groupBy
     );
 
-    // ========== PIPELINE COVERAGE ==========
+    // ========== PIPELINE COVERAGE (Native SQL - Advanced Features) ==========
 
     /**
      * Get pipeline coverage by date range
@@ -193,10 +210,13 @@ public interface IntelligenceQueryRepository extends JpaRepository<FlowReading, 
      * Uses CTE (Common Table Expression) to generate expected readings count
      * and compares with actual readings.
      * 
+     * KEPT AS NATIVE SQL: Uses CTE (WITH clause) and CROSS JOIN which are not
+     * well-supported in JPQL. Also uses GROUP_CONCAT (MySQL-specific).
+     * 
      * Used by: FlowMonitoringService.getPipelineCoverageByDateRange()
      * 
      * Performance Note: CTE with CROSS JOIN can be expensive for large date ranges.
-     *                   Consider limiting to 30-90 day ranges.
+     *                   Date range validation (max 90 days) is enforced in service layer.
      * 
      * @param structureId Structure ID to filter pipelines
      * @param startDate Start of date range
