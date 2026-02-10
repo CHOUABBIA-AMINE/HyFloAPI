@@ -4,6 +4,7 @@
  *
  * 	@Name		: PipelineIntelligenceService
  * 	@CreatedOn	: 02-07-2026
+ * 	@UpdatedOn	: 02-10-2026 - Refactored to use SlotStatisticsCalculator utility
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -19,11 +20,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dz.sh.trc.hyflo.flow.common.util.SlotStatisticsCalculator;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineAssetDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
@@ -63,13 +66,16 @@ public class PipelineIntelligenceService {
         // Build asset DTO
         PipelineAssetDTO asset = buildAssetDTO(pipeline);
         
-        // Get today's slot coverage stats
-        SlotStatistics slotStats = getSlotStatistics(pipelineId, referenceDate);
+        // Get today's slot coverage stats using utility
+        var allSlots = flowReadingFacade.findAllSlotsOrdered();
+        var readings = flowReadingFacade.findByPipelineAndDate(pipelineId, referenceDate);
+        SlotStatisticsCalculator.SlotStatistics slotStats = 
+            SlotStatisticsCalculator.calculateForDate(allSlots, readings, referenceDate, LocalDateTime.now());
         
         // Get latest reading for current measurements
         var latestReading = flowReadingFacade.findLatestByPipeline(pipelineId);
         
-        // Calculate weekly completion rate
+        // Calculate weekly completion rate using utility
         LocalDate weekStart = referenceDate.minusDays(6);
         Double weeklyCompletionRate = calculateWeeklyCompletionRate(pipelineId, weekStart, referenceDate);
         
@@ -81,11 +87,11 @@ public class PipelineIntelligenceService {
             .currentFlowRate(latestReading.map(FlowReading::getFlowRate).orElse(null))
             .lastReadingTime(latestReading.map(FlowReading::getRecordedAt).orElse(null))
             .totalSlotsToday(12)
-            .recordedSlots(slotStats.recordedCount)
-            .approvedSlots(slotStats.approvedCount)
-            .pendingValidationSlots(slotStats.submittedCount)
-            .overdueSlots(slotStats.overdueCount)
-            .completionRate(slotStats.completionRate)
+            .recordedSlots(slotStats.recordedCount())
+            .approvedSlots(slotStats.approvedCount())
+            .pendingValidationSlots(slotStats.submittedCount())
+            .overdueSlots(slotStats.overdueCount())
+            .completionRate(slotStats.completionRate())
             .weeklyCompletionRate(weeklyCompletionRate)
             .activeAlertsCount(0) // TODO: Implement alert counting
             .volumeTransportedToday(BigDecimal.ZERO) // TODO: Implement volume calculation
@@ -120,12 +126,13 @@ public class PipelineIntelligenceService {
         return allSlots.stream().map(slot -> {
             FlowReading reading = readingsBySlot.get(slot.getId());
             
+            // Use utility to check if overdue
             boolean isOverdue = false;
-            if (reading == null || 
-                (reading.getValidationStatus() != null && 
-                 !"APPROVED".equals(reading.getValidationStatus().getCode()))) {
-                LocalDateTime slotDeadline = LocalDateTime.of(date, slot.getEndTime());
-                isOverdue = now.isAfter(slotDeadline);
+            if (reading == null) {
+                isOverdue = SlotStatisticsCalculator.isSlotOverdue(slot, date, now);
+            } else if (reading.getValidationStatus() != null && 
+                       !"APPROVED".equals(reading.getValidationStatus().getCode())) {
+                isOverdue = SlotStatisticsCalculator.isReadingOverdue(reading, now);
             }
             
             return SlotStatusDTO.builder()
@@ -263,74 +270,25 @@ public class PipelineIntelligenceService {
     }
     
     /**
-     * Get slot statistics for a specific date
-     */
-    private SlotStatistics getSlotStatistics(Long pipelineId, LocalDate date) {
-        var readings = flowReadingFacade.findByPipelineAndDate(pipelineId, date);
-        
-        int recordedCount = 0;
-        int approvedCount = 0;
-        int submittedCount = 0;
-        int overdueCount = 0;
-        LocalDateTime now = LocalDateTime.now();
-        
-        var allSlots = flowReadingFacade.findAllSlotsOrdered();
-        var readingsBySlot = readings.stream()
-            .collect(Collectors.toMap(
-                reading -> reading.getReadingSlot().getId(),
-                reading -> reading
-            ));
-        
-        for (var slot : allSlots) {
-            FlowReading reading = readingsBySlot.get(slot.getId());
-            if (reading != null) {
-                recordedCount++;
-                String status = reading.getValidationStatus() != null 
-                    ? reading.getValidationStatus().getCode() 
-                    : "DRAFT";
-                
-                if ("APPROVED".equals(status)) {
-                    approvedCount++;
-                } else if ("SUBMITTED".equals(status)) {
-                    submittedCount++;
-                }
-                
-                if (!"APPROVED".equals(status)) {
-                    LocalDateTime slotDeadline = LocalDateTime.of(date, slot.getEndTime());
-                    if (now.isAfter(slotDeadline)) {
-                        overdueCount++;
-                    }
-                }
-            } else {
-                LocalDateTime slotDeadline = LocalDateTime.of(date, slot.getEndTime());
-                if (now.isAfter(slotDeadline)) {
-                    overdueCount++;
-                }
-            }
-        }
-        
-        double completionRate = (approvedCount * 100.0) / 12.0;
-        
-        return new SlotStatistics(recordedCount, approvedCount, submittedCount, overdueCount, completionRate);
-    }
-    
-    /**
-     * Calculate weekly completion rate
+     * Calculate weekly completion rate using SlotStatisticsCalculator utility
      */
     private Double calculateWeeklyCompletionRate(Long pipelineId, LocalDate startDate, LocalDate endDate) {
-        List<Double> dailyRates = new ArrayList<>();
-        LocalDate current = startDate;
+        // Get all slots and readings for the date range
+        var allSlots = flowReadingFacade.findAllSlotsOrdered();
         
-        while (!current.isAfter(endDate)) {
-            SlotStatistics stats = getSlotStatistics(pipelineId, current);
-            dailyRates.add(stats.completionRate);
-            current = current.plusDays(1);
-        }
+        // Group readings by date
+        var allReadings = flowReadingFacade.findByPipelineAndDateRangeOrdered(pipelineId, startDate, endDate);
+        Map<LocalDate, List<FlowReading>> readingsByDate = allReadings.stream()
+            .collect(Collectors.groupingBy(FlowReading::getReadingDate));
         
-        return dailyRates.stream()
-            .mapToDouble(Double::doubleValue)
-            .average()
-            .orElse(0.0);
+        // Use utility to calculate average completion rate
+        return SlotStatisticsCalculator.calculateAverageCompletionRate(
+            allSlots,
+            readingsByDate,
+            startDate,
+            endDate,
+            LocalDateTime.now()
+        );
     }
     
     /**
@@ -433,15 +391,4 @@ public class PipelineIntelligenceService {
         
         return "Unknown";
     }
-    
-    /**
-     * Inner class for slot statistics
-     */
-    private record SlotStatistics(
-        int recordedCount,
-        int approvedCount,
-        int submittedCount,
-        int overdueCount,
-        double completionRate
-    ) {}
 }
