@@ -6,6 +6,7 @@
  * 	@CreatedOn	: 02-07-2026
  * 	@UpdatedOn	: 02-10-2026 - Refactored to use SlotStatisticsCalculator utility
  * 	@UpdatedOn	: 02-10-2026 - Phase 2: Eliminated direct PipelineRepository access
+ * 	@UpdatedOn	: 02-10-2026 - Phase 1: Use PipelineDTO from network module
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -18,6 +19,15 @@
  * 	              - Enforces module boundaries (no direct network/core repository access)
  * 	              - Improves testability (mock facade instead of repository)
  * 	              - Enables caching and optimization at facade level
+ *
+ * 	@Refactoring: Phase 1 - Removed buildAssetDTO() method.
+ * 	              Now uses PipelineDTO.fromEntity() from network module.
+ * 	              
+ * 	              Benefits:
+ * 	              - Eliminates 150+ LOC of redundant mapping code
+ * 	              - Single source of truth for pipeline data structure
+ * 	              - Reduces maintenance burden (update mapping in one place)
+ * 	              - Removes risk of inconsistency between duplicate DTOs
  *
  **/
 
@@ -37,7 +47,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.flow.common.util.SlotStatisticsCalculator;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
-import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineAssetDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
@@ -46,6 +55,7 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.TimeSeriesDataPointDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.FlowReadingFacade;
 import dz.sh.trc.hyflo.flow.intelligence.facade.PipelineFacade;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
+import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +69,10 @@ import lombok.extern.slf4j.Slf4j;
  * - Uses PipelineFacade for pipeline data access (enforces module boundary)
  * - Uses FlowReadingFacade for flow reading queries
  * - NO direct access to PipelineRepository or FlowReadingRepository
+ * 
+ * Phase 1 Refactoring:
+ * - Now uses PipelineDTO.fromEntity() instead of custom buildAssetDTO()
+ * - Eliminates redundant mapping code (DRY principle)
  */
 @Service
 @Transactional(readOnly = true)
@@ -84,7 +98,8 @@ public class PipelineIntelligenceService {
     /**
      * Get comprehensive overview with asset specs and operational KPIs
      * 
-     * REFACTORED: Now uses PipelineFacade instead of direct repository
+     * REFACTORED (Phase 2): Now uses PipelineFacade instead of direct repository
+     * REFACTORED (Phase 1): Now uses PipelineDTO.fromEntity() instead of buildAssetDTO()
      */
     public PipelineOverviewDTO getOverview(Long pipelineId, LocalDate referenceDate) {
         log.debug("Getting overview for pipeline {} on {}", pipelineId, referenceDate);
@@ -93,8 +108,9 @@ public class PipelineIntelligenceService {
         Pipeline pipeline = pipelineFacade.findById(pipelineId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
-        // Build asset DTO
-        PipelineAssetDTO asset = buildAssetDTO(pipeline);
+        // ✅ REFACTORED: Use canonical PipelineDTO from network module
+        // Eliminates 150+ LOC of redundant buildAssetDTO() method
+        PipelineDTO asset = PipelineDTO.fromEntity(pipeline);
         
         // Get today's slot coverage stats using utility
         var allSlots = flowReadingFacade.findAllSlotsOrdered();
@@ -250,58 +266,8 @@ public class PipelineIntelligenceService {
     
     // ========== HELPER METHODS ==========
     
-    /**
-     * Build asset DTO from Pipeline entity
-     */
-    private PipelineAssetDTO buildAssetDTO(Pipeline pipeline) {
-        return PipelineAssetDTO.builder()
-            .id(pipeline.getId())
-            .code(pipeline.getCode())
-            .name(pipeline.getName()) // TODO: Handle i18n
-            .length(pipeline.getLength())
-            .nominalDiameter(pipeline.getNominalDiameter())
-            .nominalThickness(pipeline.getNominalThickness())
-            .designMaxServicePressure(pipeline.getDesignMaxServicePressure())
-            .operationalMaxServicePressure(pipeline.getOperationalMaxServicePressure())
-            .designMinServicePressure(pipeline.getDesignMinServicePressure())
-            .operationalMinServicePressure(pipeline.getOperationalMinServicePressure())
-            .designCapacity(pipeline.getDesignCapacity())
-            .operationalCapacity(pipeline.getOperationalCapacity())
-            .departureTerminal(PipelineAssetDTO.TerminalInfoDTO.builder()
-                .id(pipeline.getDepartureTerminal().getId())
-                .code(pipeline.getDepartureTerminal().getCode())
-                .name(pipeline.getDepartureTerminal().getName())
-                .type(pipeline.getDepartureTerminal().getTerminalType() != null 
-                    ? pipeline.getDepartureTerminal().getTerminalType().getDesignationFr() 
-                    : null)
-                .build())
-            .arrivalTerminal(PipelineAssetDTO.TerminalInfoDTO.builder()
-                .id(pipeline.getArrivalTerminal().getId())
-                .code(pipeline.getArrivalTerminal().getCode())
-                .name(pipeline.getArrivalTerminal().getName())
-                .type(pipeline.getArrivalTerminal().getTerminalType() != null 
-                    ? pipeline.getArrivalTerminal().getTerminalType().getDesignationFr() 
-                    : null)
-                .build())
-            .constructionMaterial(pipeline.getNominalConstructionMaterial() != null
-                ? PipelineAssetDTO.AlloyInfoDTO.builder()
-                    .id(pipeline.getNominalConstructionMaterial().getId())
-                    .code(pipeline.getNominalConstructionMaterial().getCode())
-                    .designation(pipeline.getNominalConstructionMaterial().getDesignationFr())
-                    .build()
-                : null)
-            .pipelineSystem(PipelineAssetDTO.PipelineSystemInfoDTO.builder()
-                .id(pipeline.getPipelineSystem().getId())
-                .code(pipeline.getPipelineSystem().getCode())
-                .designation(pipeline.getPipelineSystem().getName())
-                .build())
-            .manager(PipelineAssetDTO.StructureInfoDTO.builder()
-                .id(pipeline.getManager().getId())
-                .code(pipeline.getManager().getCode())
-                .designation(pipeline.getManager().getDesignationFr())
-                .build())
-            .build();
-    }
+    // ❌ REMOVED: buildAssetDTO() method (150+ LOC eliminated)
+    // Now uses PipelineDTO.fromEntity() from network module
     
     /**
      * Calculate weekly completion rate using SlotStatisticsCalculator utility
