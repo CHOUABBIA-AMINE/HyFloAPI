@@ -109,7 +109,7 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
         LEFT JOIN FETCH fr.validatedBy
         WHERE fr.pipeline.id = :pipelineId
             AND fr.readingDate = :readingDate
-        ORDER BY fr.readingSlot.sequence ASC
+        ORDER BY fr.readingSlot.displayOrder ASC
     """)
     List<FlowReading> findByPipelineIdAndReadingDate(
         @Param("pipelineId") Long pipelineId, 
