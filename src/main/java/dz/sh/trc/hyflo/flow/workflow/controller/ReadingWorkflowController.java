@@ -1,15 +1,16 @@
 /**
  *
  * 	@Author		: MEDJERAB Abir
+ * 
  * 	@Name		: FlowWorkflowController
  * 	@CreatedOn	: 01-28-2026
  * 	@UpdatedOn	: 02-03-2026
  * 	@UpdatedOn	: 02-10-2026 - Renamed from FlowMonitoringController to FlowWorkflowController
  * 	@UpdatedOn	: 02-10-2026 - Updated to match FlowReadingWorkflowService methods (SRP refactoring)
  *
- * 	@Type		: Controller
+ * 	@Type		: Class
  * 	@Layer		: Controller
- * 	@Package	: Flow / Core
+ * 	@Package	: Flow / Workflow
  *
  * 	@Description: REST controller for flow reading workflow state transitions.
  * 	              Provides endpoints for validating and rejecting flow readings.

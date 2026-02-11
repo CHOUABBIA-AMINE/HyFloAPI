@@ -1,3 +1,17 @@
+/**
+ *
+ * 	@Author		: MEDJERAB Abir
+ *
+ * 	@Name		: ReadingSubmitRequestDTO
+ * 	@CreatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 01-23-2026
+ *
+ * 	@Type		: Class
+ * 	@Layer		: DTO
+ * 	@Package	: Flow / Workflow
+ *
+ **/
+
 package dz.sh.trc.hyflo.flow.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

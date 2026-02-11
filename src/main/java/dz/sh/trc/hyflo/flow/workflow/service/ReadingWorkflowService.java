@@ -1,6 +1,6 @@
 /**
  *
- * 	@Author		: CHOUABBIA Amine
+ * 	@Author		: MEDJERAB Abir
  *
  * 	@Name		: FlowReadingWorkflowService
  * 	@CreatedOn	: 02-10-2026
@@ -8,7 +8,7 @@
  *
  * 	@Type		: Class
  * 	@Layer		: Service
- * 	@Package	: Flow / Core
+ * 	@Package	: Flow / Workflow
  *
  * 	@Description: Service handling flow reading workflow state transitions.
  * 	              Extracted from FlowReadingService to follow Single Responsibility Principle.

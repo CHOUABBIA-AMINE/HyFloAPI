@@ -1,14 +1,21 @@
 /**
- * @Author: CHOUABBIA Amine
- * @Name: SlotCoverageController
- * @CreatedOn: 2026-02-11
- * @Type: Controller
- * @Layer: Workflow Controller
- * @Package: Flow / Workflow
- * @Description: REST controller for slot coverage monitoring - operational dashboard API
  * 
- * This controller provides slot-centric monitoring APIs for SONATRACH operational workflow.
- * Handles date + slot + structure filtering and reading lifecycle management.
+ * 	@Author		: MEDJERAB Abir
+ * 
+ * 	@Name		: SlotCoverageController
+ * 	@CreatedOn	: 01-28-2026
+ * 	@UpdatedOn	: 02-03-2026
+ * 	@UpdatedOn	: 02-10-2026 - Renamed from FlowMonitoringController to FlowWorkflowController
+ * 	@UpdatedOn	: 02-10-2026 - Updated to match FlowReadingWorkflowService methods (SRP refactoring)
+ *
+ * 	@Type		: Class
+ * 	@Layer		: Controller
+ * 	@Package	: Flow / Workflow
+ * 
+ * 	@Description: REST controller for slot coverage monitoring - operational dashboard API
+ * 				  This controller provides slot-centric monitoring APIs for SONATRACH operational workflow.
+ * 				  Handles date + slot + structure filtering and reading lifecycle management.
+ * 
  */
 
 package dz.sh.trc.hyflo.flow.workflow.controller;
@@ -71,7 +78,7 @@ public class SlotCoverageController {
      * @return Complete slot coverage with permissions
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW_READING:READ') or hasAuthority('FLOW_READING:WRITE')")
     @Operation(
         summary = "Get slot coverage",
         description = "Get complete slot coverage for a specific date, slot, and structure. "

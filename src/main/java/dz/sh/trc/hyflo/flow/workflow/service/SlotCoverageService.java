@@ -1,11 +1,16 @@
 /**
- * @Author: CHOUABBIA Amine
- * @Name: SlotCoverageService
- * @CreatedOn: 2026-02-11
- * @Type: Service
- * @Layer: Workflow Service
- * @Package: Flow / Workflow
- * @Description: Slot coverage monitoring service - provides operational dashboard data
+ * 
+ * 	@Author		: MEDJERAB Abir
+ *
+ * 	@Name		: FlowReadingWorkflowService
+ * 	@CreatedOn	: 02-10-2026
+ * 	@UpdatedOn	: 02-10-2026 - Extracted from FlowReadingService (SRP refactoring)
+ *
+ * 	@Type		: Class
+ * 	@Layer		: Service
+ * 	@Package	: Flow / Workflow
+ * 
+ * 	@Description: Slot coverage monitoring service - provides operational dashboard data
  */
 
 package dz.sh.trc.hyflo.flow.workflow.service;
