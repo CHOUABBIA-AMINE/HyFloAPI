@@ -9,6 +9,7 @@
  * 	@UpdatedOn	: 02-07-2026 - Added intelligence service queries
  * 	@UpdatedOn	: 02-10-2026 - Phase 1: Removed analytics queries (moved to IntelligenceQueryRepository)
  * 	@UpdatedOn	: 02-10-2026 - Phase 4: Added JOIN FETCH to prevent N+1 queries
+ * 	@UpdatedOn	: 02-11-2026 - Added findByReadingDateAndReadingSlotIdAndStructureId for slot coverage
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -74,6 +75,33 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     
     List<FlowReading> findByRecordedAtBetween(LocalDateTime startTime, LocalDateTime endTime);
     
+    /**
+     * Find all readings for a specific date, slot, and structure.
+     * Used by SlotCoverageService to get all readings for coverage calculation.
+     * 
+     * @param readingDate Business date
+     * @param readingSlotId Slot ID (Long, not Integer)
+     * @param structureId Structure ID
+     * @return List of readings matching criteria
+     */
+    @Query("""
+        SELECT fr FROM FlowReading fr
+        LEFT JOIN FETCH fr.pipeline p
+        LEFT JOIN FETCH fr.validationStatus
+        LEFT JOIN FETCH fr.readingSlot
+        LEFT JOIN FETCH fr.recordedBy
+        LEFT JOIN FETCH fr.validatedBy
+        WHERE fr.readingDate = :readingDate
+            AND fr.readingSlot.id = :readingSlotId
+            AND p.manager.id = :structureId
+        ORDER BY p.code ASC
+    """)
+    List<FlowReading> findByReadingDateAndReadingSlotIdAndStructureId(
+        @Param("readingDate") LocalDate readingDate,
+        @Param("readingSlotId") Long readingSlotId,
+        @Param("structureId") Long structureId
+    );
+
     // ========== INTELLIGENCE SERVICE QUERIES (WITH JOIN FETCH) ==========
     
     /**
