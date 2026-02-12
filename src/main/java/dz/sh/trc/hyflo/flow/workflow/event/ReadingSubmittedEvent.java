@@ -8,11 +8,11 @@
  *
  *  @Type       : Class
  *  @Layer      : Event
- *  @Package    : Configuration / Event
+ *  @Package    : Flow / Workflow
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.event;
+package dz.sh.trc.hyflo.flow.workflow.event;
 
 import dz.sh.trc.hyflo.configuration.event.BaseNotificationEvent;
 import lombok.Getter;

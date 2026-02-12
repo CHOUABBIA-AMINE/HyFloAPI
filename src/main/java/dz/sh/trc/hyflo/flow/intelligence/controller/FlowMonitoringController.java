@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
  * - Pipeline coverage reporting
  */
 @RestController
-@RequestMapping("/flow/monitoring")
+@RequestMapping("/flow/intelligence/monitoring")
 @Tag(name = "Flow Monitoring", description = "Operational monitoring and analytics for flow readings")
 @RequiredArgsConstructor
 @Slf4j

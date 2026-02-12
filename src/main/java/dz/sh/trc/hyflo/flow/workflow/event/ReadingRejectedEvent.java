@@ -2,17 +2,17 @@
  *  
  *  @Author     : MEDJERAB Abir
  *
- *  @Name       : ReadingValidatedEvent
+ *  @Name       : ReadingRejectedEvent
  *  @CreatedOn  : 02-01-2026
  *  @UpdatedOn  : 02-01-2026 - Refactored to extend BaseNotificationEvent
  *
  *  @Type       : Class
  *  @Layer      : Event
- *  @Package    : Configuration / Event
+ *  @Package    : Flow / Workflow
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.event;
+package dz.sh.trc.hyflo.flow.workflow.event;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 /**
- * Event published when a Validator approves a reading
+ * Event published when a Validator rejects a reading
  * Triggers notification to the original Reader
  * 
  * Now extends BaseNotificationEvent for generic notification handling
@@ -30,17 +30,17 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @ToString(callSuper = true)
-public class ReadingValidatedEvent extends BaseNotificationEvent {
+public class ReadingRejectedEvent extends BaseNotificationEvent {
 
     /**
-     * ID of the validated reading
+     * ID of the rejected reading
      */
     private final Long readingId;
 
     /**
-     * Username of the Validator who approved the reading
+     * Username of the Validator who rejected the reading
      */
-    private final String validatedBy;
+    private final String rejectedBy;
 
     /**
      * Username of the Reader who originally submitted the reading
@@ -53,62 +53,58 @@ public class ReadingValidatedEvent extends BaseNotificationEvent {
     private final String readingIdentifier;
 
     /**
-     * Optional validation comment
+     * Rejection reason (mandatory)
      */
-    private final String comment;
+    private final String rejectionReason;
 
     /**
-     * Timestamp when validated
+     * Timestamp when rejected
      */
-    private final String validatedAt;
+    private final String rejectedAt;
 
     /**
-     * Factory method to create ReadingValidatedEvent with proper notification setup
+     * Factory method to create ReadingRejectedEvent with proper notification setup
      * 
-     * @param readingId ID of the validated reading
-     * @param validatedBy Username of the validator
+     * @param readingId ID of the rejected reading
+     * @param rejectedBy Username of the rejector
      * @param originalSubmitter Username of the original submitter
      * @param readingIdentifier Description of the reading
-     * @param comment Optional validation comment
-     * @param validatedAt Timestamp
-     * @return Configured ReadingValidatedEvent
+     * @param rejectionReason Reason for rejection
+     * @param rejectedAt Timestamp
+     * @return Configured ReadingRejectedEvent
      */
-    public static ReadingValidatedEvent create(
+    public static ReadingRejectedEvent create(
             Long readingId,
-            String validatedBy,
+            String rejectedBy,
             String originalSubmitter,
             String readingIdentifier,
-            String comment,
-            String validatedAt) {
+            String rejectionReason,
+            String rejectedAt) {
         
-        // Build notification message
         String message = String.format(
-                "Your reading for %s has been validated by %s",
+                "Your reading for %s has been rejected by %s\n\nReason: %s",
                 readingIdentifier,
-                validatedBy
+                rejectedBy,
+                rejectionReason
         );
         
-        if (comment != null && !comment.isEmpty()) {
-            message += "\n\nComment: " + comment;
-        }
-        
-        return ReadingValidatedEvent.builder()
+        return ReadingRejectedEvent.builder()
                 // Event-specific fields
                 .readingId(readingId)
-                .validatedBy(validatedBy)
+                .rejectedBy(rejectedBy)
                 .originalSubmitter(originalSubmitter)
                 .readingIdentifier(readingIdentifier)
-                .comment(comment)
-                .validatedAt(validatedAt)
+                .rejectionReason(rejectionReason)
+                .rejectedAt(rejectedAt)
                 // Base notification fields
-                .notificationTypeCode("READING_VALIDATED")
-                .notificationTitle("Reading Validated")
+                .notificationTypeCode("READING_REJECTED")
+                .notificationTitle("Reading Rejected")
                 .notificationMessage(message)
                 .relatedEntityId(readingId.toString())
                 .relatedEntityType("READING")
                 .recipientUsernames(List.of(originalSubmitter)) // Send to specific user
-                .occurredAt(validatedAt)
-                .priority(BaseNotificationEvent.NotificationPriority.NORMAL)
+                .occurredAt(rejectedAt)
+                .priority(BaseNotificationEvent.NotificationPriority.HIGH) // Higher priority for rejections
                 .build();
     }
 }

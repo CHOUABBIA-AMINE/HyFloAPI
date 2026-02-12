@@ -67,7 +67,7 @@ import lombok.extern.slf4j.Slf4j;
  * - FlowMonitoringController: Analytics queries
  */
 @RestController
-@RequestMapping("/flow/core/workflow")
+@RequestMapping("/flow/workflow/reading")
 @Tag(name = "Flow Workflow", description = "Flow reading workflow state transition operations")
 @RequiredArgsConstructor
 @Slf4j

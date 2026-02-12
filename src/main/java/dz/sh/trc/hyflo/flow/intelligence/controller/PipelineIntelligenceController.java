@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  * Provides real-time monitoring, KPIs, and analytics for pipeline operations
  */
 @RestController
-@RequestMapping("/api/v1/flow/intelligence/pipelines")
+@RequestMapping("/flow/intelligence/pipeline")
 @Tag(name = "Pipeline Intelligence", description = "Operational intelligence and analytics for pipelines")
 @RequiredArgsConstructor
 @Slf4j

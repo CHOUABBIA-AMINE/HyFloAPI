@@ -36,7 +36,6 @@ package dz.sh.trc.hyflo.flow.core.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,9 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.flow.common.util.FlowReadingIdentifierBuilder;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
-import dz.sh.trc.hyflo.flow.core.event.ReadingSubmittedEvent;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import lombok.RequiredArgsConstructor;
@@ -82,7 +79,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
 
     private final FlowReadingRepository flowReadingRepository;
 
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    //private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected JpaRepository<FlowReading, Long> getRepository() {
@@ -115,7 +112,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
      * Publishes ReadingSubmittedEvent to notify all validators.
      * Uses the generic notification system.
      */
-    @Override
+    /*@Override
     protected void afterCreate(FlowReading reading) {
         String readingIdentifier = buildReadingIdentifier(reading);
         String recordedBy = reading.getRecordedBy() != null 
@@ -131,9 +128,9 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
         );
         
         // Publish event - GenericNotificationEventListener will handle it
-        publishEvent(event);
+        //publishEvent(event);
         log.debug("Published ReadingSubmittedEvent for reading ID: {}", reading.getId());
-    }
+    }*/
 
     // ========== CRUD OPERATIONS ==========
 
@@ -379,7 +376,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
      * @param reading FlowReading entity
      * @return Formatted identifier string (e.g., "PL-001-20260210-S01")
      */
-    private String buildReadingIdentifier(FlowReading reading) {
+    /*private String buildReadingIdentifier(FlowReading reading) {
         if (reading == null) {
             return "Unknown Reading";
         }
@@ -420,7 +417,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingD
             
             return identifier.toString();
         }
-    }
+    }*/
 
     // ========== MIGRATION NOTES ==========
 

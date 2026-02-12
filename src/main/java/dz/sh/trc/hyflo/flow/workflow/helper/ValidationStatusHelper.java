@@ -8,11 +8,11 @@
  *
  * 	@Type		: Helper
  * 	@Layer		: Helper
- * 	@Package	: Flow / Core
+ * 	@Package	: Flow / Workflow
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.helper;
+package dz.sh.trc.hyflo.flow.workflow.helper;
 
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 

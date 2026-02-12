@@ -10,7 +10,7 @@
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
- * 	@Package	: Flow / Workflow
+ * 	@Package	: Flow / Intelligence
  * 
  * 	@Description: REST controller for slot coverage monitoring - operational dashboard API
  * 				  This controller provides slot-centric monitoring APIs for SONATRACH operational workflow.
@@ -18,7 +18,7 @@
  * 
  */
 
-package dz.sh.trc.hyflo.flow.workflow.controller;
+package dz.sh.trc.hyflo.flow.intelligence.controller;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -58,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
  * - POST /slot-coverage/bulk-approve - Approve all slot readings
  */
 @RestController
-@RequestMapping("/flow/core/slot-coverage")
+@RequestMapping("/flow/intelligence/coverage")
 @Tag(name = "Slot Coverage", description = "Slot-based operational monitoring APIs")
 @RequiredArgsConstructor
 @Slf4j
