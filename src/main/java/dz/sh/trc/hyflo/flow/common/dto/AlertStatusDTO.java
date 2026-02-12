@@ -36,23 +36,23 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "Alert status DTO for flow alert lifecycle tracking")
 public class AlertStatusDTO extends GenericDTO<AlertStatus> {
 
-    @Size(max = 50, message = "Arabic designation must not exceed 50 characters")
+    @Size(max = 100, message = "Arabic designation must not exceed 50 characters")
     @Schema(description = "Alert status designation in Arabic", 
             example = "نشط")
     private String designationAr;
 
-    @Size(max = 50, message = "English designation must not exceed 50 characters")
+    @Size(max = 100, message = "English designation must not exceed 50 characters")
     @Schema(description = "Alert status designation in English", 
             example = "Active",
-            maxLength = 50)
+            maxLength = 100)
     private String designationEn;
 
     @NotBlank(message = "French designation is required")
-    @Size(max = 50, message = "French designation must not exceed 50 characters")
+    @Size(max = 100, message = "French designation must not exceed 50 characters")
     @Schema(description = "Alert status designation in French (required)", 
             example = "Actif", 
-            required = true,
-            maxLength = 50)
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            maxLength = 100)
     private String designationFr;
 
     @Override
