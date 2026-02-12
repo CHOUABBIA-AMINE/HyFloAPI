@@ -14,6 +14,10 @@
 
 package dz.sh.trc.hyflo.network.core.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -22,6 +26,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -143,5 +148,30 @@ public class PipelineSegment extends Infrastructure {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_17", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_04"), nullable=false)
 	private Pipeline pipeline;
+
+	@Schema(
+		description = "facility where the pipeline segment originates",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Departure facility is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="F_18", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_05"), nullable=false)
+	private Facility departureFacility;
+
+	@Schema(
+		description = "facility where the pipeline segment terminates",
+		requiredMode = Schema.RequiredMode.REQUIRED
+	)
+	@NotNull(message = "Arrival facility is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="F_19", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_09_FK_06"), nullable=false)
+	private Facility arrivalFacility;
+
+	@Schema(
+		description = "Collection of coordinates setting the path of pipeline segment",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
+	private Set<Coordinate> coordinates = new HashSet<>();
     
 }

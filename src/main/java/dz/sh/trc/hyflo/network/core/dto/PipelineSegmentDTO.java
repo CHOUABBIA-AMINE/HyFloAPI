@@ -15,16 +15,22 @@
 package dz.sh.trc.hyflo.network.core.dto;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.general.localization.dto.CoordinateDTO;
+import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
 import dz.sh.trc.hyflo.network.common.dto.OperationalStatusDTO;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
+import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +38,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -100,6 +107,15 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
 
     @NotNull(message = "Pipeline is required")
     private Long pipelineId;
+
+    @NotNull(message = "Departure Facility is required")
+    private Long departureFacilityId;
+
+    @NotNull(message = "Arrival Facility is required")
+    private Long arrivalFacilityId;
+    
+    @Builder.Default
+    private Set<Long> coordinateIds = new HashSet<>();
     
     private OperationalStatusDTO operationalStatus;
     
@@ -112,6 +128,12 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
     private AlloyDTO interiorCoating;
 
     private PipelineDTO pipeline;
+
+    private FacilityDTO departureFacility;
+
+    private FacilityDTO arrivalFacility;
+
+    private Set<CoordinateDTO> coordinates;
 
     @Override
     public PipelineSegment toEntity() {
@@ -163,6 +185,25 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
             Pipeline pipeline = new Pipeline();
             pipeline.setId(this.pipelineId);
             entity.setPipeline(pipeline);
+        }
+        
+        if (this.departureFacilityId != null) {
+        	Facility facility = new Facility();
+        	facility.setId(this.departureFacilityId);
+            entity.setDepartureFacility(facility);
+        }
+        
+        if (this.arrivalFacilityId != null) {
+        	Facility facility = new Facility();
+        	facility.setId(this.arrivalFacilityId);
+            entity.setArrivalFacility(facility);
+        }
+        
+        if (this.coordinates != null && !this.coordinates.isEmpty()) {
+            Set<Coordinate> coordinates = this.coordinates.stream()
+                    						  		  .map(CoordinateDTO::toEntity)
+                    						  		  .collect(Collectors.toSet());
+            entity.setCoordinates(coordinates);
         }
         
         return entity;
@@ -217,10 +258,34 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
             pipeline.setId(this.pipelineId);
             entity.setPipeline(pipeline);
         }
+        
+        if (this.departureFacilityId != null) {
+        	Facility facility = new Facility();
+        	facility.setId(this.departureFacilityId);
+            entity.setDepartureFacility(facility);
+        }
+        
+        if (this.arrivalFacilityId != null) {
+        	Facility facility = new Facility();
+        	facility.setId(this.arrivalFacilityId);
+            entity.setArrivalFacility(facility);
+        }
+        
+        if (this.coordinates != null && !this.coordinates.isEmpty()) {
+            Set<Coordinate> coordinates = this.coordinates.stream()
+                    						  		  .map(CoordinateDTO::toEntity)
+                    						  		  .collect(Collectors.toSet());
+            entity.setCoordinates(coordinates);
+        }
     }
 
     public static PipelineSegmentDTO fromEntity(PipelineSegment entity) {
         if (entity == null) return null;
+        
+        Set<Long> coordinateIds = new HashSet<>();
+        if (entity.getCoordinates() != null) {
+            entity.getCoordinates().forEach(l -> coordinateIds.add(l.getId()));
+        }
         
         return PipelineSegmentDTO.builder()
                 .id(entity.getId())
@@ -240,13 +305,18 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
                 .exteriorCoatingId(entity.getExteriorCoating() != null ? entity.getExteriorCoating().getId() : null)
                 .interiorCoatingId(entity.getInteriorCoating() != null ? entity.getInteriorCoating().getId() : null)
                 .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
+                .departureFacilityId(entity.getDepartureFacility() != null ? entity.getDepartureFacility().getId() : null)
+                .arrivalFacilityId(entity.getArrivalFacility() != null ? entity.getArrivalFacility().getId() : null)
+                .coordinateIds(coordinateIds)
                 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
                 .constructionMaterial(entity.getConstructionMaterial() != null ? AlloyDTO.fromEntity(entity.getConstructionMaterial()) : null)
                 .exteriorCoating(entity.getExteriorCoating() != null ? AlloyDTO.fromEntity(entity.getExteriorCoating()) : null)
                 .interiorCoating(entity.getInteriorCoating() != null ? AlloyDTO.fromEntity(entity.getInteriorCoating()) : null)
-                .pipeline(entity.getPipeline() != null ? PipelineDTO.fromEntity(entity.getPipeline()) : null)                
+                .pipeline(entity.getPipeline() != null ? PipelineDTO.fromEntity(entity.getPipeline()) : null)                          
+                .departureFacility(entity.getDepartureFacility() != null ? FacilityDTO.fromEntity(entity.getDepartureFacility()) : null)                          
+                .arrivalFacility(entity.getArrivalFacility() != null ? FacilityDTO.fromEntity(entity.getArrivalFacility()) : null)                          
                 .build();
     }
 }

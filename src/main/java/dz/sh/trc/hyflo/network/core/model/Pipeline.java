@@ -17,7 +17,6 @@ package dz.sh.trc.hyflo.network.core.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
@@ -30,7 +29,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -222,13 +220,6 @@ public class Pipeline extends Infrastructure {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_07"), nullable = false)
 	private Structure manager;
-
-	@Schema(
-		description = "Collection of coordinates setting the path of pipeline",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED
-	)
-	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
-	private Set<Coordinate> coordinates = new HashSet<>();
 
 	@Schema(
 		description = "Vendor who supplied or constructed the pipeline",

@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.localization.dto.CoordinateDTO;
-import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
@@ -131,9 +129,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
 
     @NotNull(message = "Manager structure is required")
     private Long managerId;
-    
-    @Builder.Default
-    private Set<Long> coordinateIds = new HashSet<>();
 
     @Builder.Default
     private Set<Long> vendorIds = new HashSet<>();
@@ -157,8 +152,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
     private StructureDTO manager;
 
     private Set<VendorDTO> vendors;
-
-    private Set<CoordinateDTO> coordinates;
 
     @Override
     public Pipeline toEntity() {
@@ -239,13 +232,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                     						  .map(VendorDTO::toEntity)
                     						  .collect(Collectors.toSet());
             entity.setVendors(vendors);
-        }
-        
-        if (this.coordinates != null && !this.coordinates.isEmpty()) {
-            Set<Coordinate> coordinates = this.coordinates.stream()
-                    						  		  .map(CoordinateDTO::toEntity)
-                    						  		  .collect(Collectors.toSet());
-            entity.setCoordinates(coordinates);
         }
         
         return entity;
@@ -330,22 +316,10 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                     						  .collect(Collectors.toSet());
             entity.setVendors(vendors);
         }
-        
-        if (this.coordinates != null && !this.coordinates.isEmpty()) {
-            Set<Coordinate> coordinates = this.coordinates.stream()
-                    						  		  .map(CoordinateDTO::toEntity)
-                    						  		  .collect(Collectors.toSet());
-            entity.setCoordinates(coordinates);
-        }
     }
 
     public static PipelineDTO fromEntity(Pipeline entity) {
         if (entity == null) return null;
-        
-        Set<Long> coordinateIds = new HashSet<>();
-        if (entity.getCoordinates() != null) {
-            entity.getCoordinates().forEach(l -> coordinateIds.add(l.getId()));
-        }
         
         Set<Long> vendorIds = new HashSet<>();
         if (entity.getVendors() != null) {
@@ -379,7 +353,6 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
                 .arrivalTerminalId(entity.getArrivalTerminal() != null ? entity.getArrivalTerminal().getId() : null)
                 .managerId(entity.getManager() != null ? entity.getManager().getId() : null)
                 .vendorIds(vendorIds)
-                .coordinateIds(coordinateIds)
 
                 .operationalStatus(entity.getOperationalStatus() != null ? OperationalStatusDTO.fromEntity(entity.getOperationalStatus()) : null)
                 .owner(entity.getOwner() != null ? StructureDTO.fromEntity(entity.getOwner()) : null)
