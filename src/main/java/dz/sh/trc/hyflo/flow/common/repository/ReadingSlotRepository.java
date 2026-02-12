@@ -1,6 +1,6 @@
 /**
  *
- * 	@Author		: CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  * 	@Name		: ReadingSlotRepository
  * 	@CreatedOn	: 01-27-2026

@@ -1,6 +1,6 @@
 /**
  *
- * 	@Author		: CHOUABBIA Amine
+ * 	@Author		: MEDJERAB Abir
  *
  * 	@Name		: PipelineOverviewDTO
  * 	@CreatedOn	: 02-07-2026
