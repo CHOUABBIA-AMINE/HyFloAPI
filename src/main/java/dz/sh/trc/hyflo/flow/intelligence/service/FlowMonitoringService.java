@@ -49,7 +49,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.common.util.DateTimeUtils;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
@@ -57,6 +56,7 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.ValidatorWorkloadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.FlowReadingFacade;
 import dz.sh.trc.hyflo.flow.intelligence.repository.IntelligenceQueryRepository;
+import dz.sh.trc.hyflo.flow.intelligence.util.DateTimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

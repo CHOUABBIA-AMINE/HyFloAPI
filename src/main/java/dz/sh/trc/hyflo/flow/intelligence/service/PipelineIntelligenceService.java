@@ -56,7 +56,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
-import dz.sh.trc.hyflo.flow.common.util.SlotStatisticsCalculator;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
@@ -65,6 +64,7 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.StatisticalSummaryDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.TimeSeriesDataPointDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.FlowReadingFacade;
 import dz.sh.trc.hyflo.flow.intelligence.facade.PipelineFacade;
+import dz.sh.trc.hyflo.flow.intelligence.util.SlotStatisticsCalculator;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -5,9 +5,9 @@
  * 	@Name		: DateTimeUtils
  * 	@CreatedOn	: 02-10-2026
  *
- * 	@Type		: Utility Class
+ * 	@Type		: Class
  * 	@Layer		: Utility
- * 	@Package	: Flow / Common / Util
+ * 	@Package	: Flow / Intelligence
  *
  * 	@Description: Common date and time utility methods
  * 	             Provides helper methods for date range operations,
@@ -15,7 +15,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.common.util;
+package dz.sh.trc.hyflo.flow.intelligence.util;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
