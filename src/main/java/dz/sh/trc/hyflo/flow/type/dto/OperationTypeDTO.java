@@ -53,33 +53,33 @@ public class OperationTypeDTO extends GenericDTO<OperationType> {
 
     @Size(max = 100, message = "Arabic name must not exceed 100 characters")
     @Schema(description = "Operation type name in Arabic", example = "منتج")
-    private String nameAr;
+    private String designationAr;
 
     @Size(max = 100, message = "French name must not exceed 100 characters")
     @Schema(description = "Operation type name in French", example = "Produit")
-    private String nameFr;
+    private String designationFr;
 
     @Size(max = 100, message = "English name must not exceed 100 characters")
     @Schema(description = "Operation type name in English", example = "Produced")
-    private String nameEn;
+    private String designationEn;
 
     @Override
     public OperationType toEntity() {
         OperationType entity = new OperationType();
         entity.setId(getId());
         entity.setCode(this.code);
-        entity.setDesignationAr(this.nameAr);
-        entity.setDesignationFr(this.nameFr);
-        entity.setDesignationEn(this.nameEn);
+        entity.setDesignationAr(this.designationAr);
+        entity.setDesignationFr(this.designationFr);
+        entity.setDesignationEn(this.designationEn);
         return entity;
     }
 
     @Override
     public void updateEntity(OperationType entity) {
         if (this.code != null) entity.setCode(this.code);
-        if (this.nameAr != null) entity.setDesignationAr(this.nameAr);
-        if (this.nameFr != null) entity.setDesignationFr(this.nameFr);
-        if (this.nameEn != null) entity.setDesignationEn(this.nameEn);
+        if (this.designationAr != null) entity.setDesignationAr(this.designationAr);
+        if (this.designationFr != null) entity.setDesignationFr(this.designationFr);
+        if (this.designationEn != null) entity.setDesignationEn(this.designationEn);
     }
 
     /**
@@ -94,9 +94,9 @@ public class OperationTypeDTO extends GenericDTO<OperationType> {
         return OperationTypeDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
-                .nameAr(entity.getDesignationAr())
-                .nameFr(entity.getDesignationFr())
-                .nameEn(entity.getDesignationEn())
+                .designationAr(entity.getDesignationAr())
+                .designationFr(entity.getDesignationFr())
+                .designationEn(entity.getDesignationEn())
                 .build();
     }
 }
