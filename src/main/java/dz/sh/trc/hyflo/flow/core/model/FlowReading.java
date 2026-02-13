@@ -69,9 +69,7 @@ public class FlowReading extends GenericModel {
 	@Schema(
 		description = "Reading date is required",
 		example = "2026-01-27",
-		requiredMode = Schema.RequiredMode.REQUIRED,
-		minimum = "0.0",
-		maximum = "500.0"
+		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Reading date is required")
 	@PastOrPresent(message = "Reading date cannot be in the future")
@@ -85,7 +83,6 @@ public class FlowReading extends GenericModel {
 		minimum = "0.0",
 		maximum = "500.0"
 	)
-	@PositiveOrZero(message = "Pressure must be zero or positive")
 	@DecimalMin(value = "0.0", message = "Pressure cannot be negative")
 	@DecimalMax(value = "500.0", message = "Pressure exceeds maximum safe operating limit (500 bar)")
 	@Column(name = "F_02", precision = 8, scale = 4)

@@ -29,13 +29,20 @@ import dz.sh.trc.hyflo.system.security.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+	
+	@EntityGraph(attributePaths = {"roles", "roles.permissions", "groups", "groups.roles"})
     Optional<User> findByUsername(String username);
+	
     Optional<User> findByEmail(String email);
+    
     Boolean existsByUsername(String username);
+    
     Boolean existsByEmail(String email);
+    
     //@PreAuthorize("hasRole('ADMIN')")
     Page<User> findAll(Pageable page);
     
+    @EntityGraph(attributePaths = {"roles"})
     Optional<User> findById(@Param("id") Long id);
     
     @Query("SELECT u FROM User u WHERE "
@@ -43,8 +50,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<User> searchByAnyField(@Param("search") String search, Pageable pageable);
     
-    @EntityGraph(attributePaths = {"roles", "roles.permissions", "groups", "groups.roles"})
-    Optional<User> findByIdForAuthentication(Long id);
+    //
+    //@Query("SELECT u FROM User u WHERE u.id = :id")
+    //Optional<User> findByIdForAuthentication(Long id);
     
     /**
      * Find all enabled users who have a specific role (by role name)

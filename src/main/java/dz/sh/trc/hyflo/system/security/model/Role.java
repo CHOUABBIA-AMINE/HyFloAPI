@@ -52,7 +52,7 @@ public class Role extends GenericModel {
 	)
 	@NotBlank(message = "Role name is mandatory")
 	@Size(max = 50, message = "Role name must not exceed 50 characters")
-	@Pattern(regexp = "^ROLE_[A-Z_]+$", message = "Role name must follow format ROLE_NAME_FORMAT")
+	@Pattern(regexp = "^ROLE_[A-Z0-9_]+$", message = "Role name must follow format ROLE_NAME_FORMAT")
 	@Column(name="F_01", length=50, nullable=false)
 	private String name;
 

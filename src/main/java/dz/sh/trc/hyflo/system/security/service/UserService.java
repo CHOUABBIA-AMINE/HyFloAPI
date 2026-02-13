@@ -10,6 +10,8 @@
  *	@Layer		: Service
  *	@Package	: System / Security
  *
+ *  @Description: User management service with cache invalidation support
+ *  
  **/
 
 package dz.sh.trc.hyflo.system.security.service;
@@ -17,6 +19,8 @@ package dz.sh.trc.hyflo.system.security.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -231,91 +235,147 @@ public class UserService extends GenericService<User, UserDTO, Long> {
         userRepository.save(user);
         log.info("Password reset successfully for user: {}", username);
     }
-
+    
     /**
-     * Assign role to user
+     * Assign role to user with cache invalidation.
+     * 
+     * Process:
+     * 1. Load user from database
+     * 2. Add role using addRole() method (auto clears transient cache)
+     * 3. Save user
+     * 4. Evict Spring Security @Cacheable cache
+     * 
+     * @param userId User ID
+     * @param roleId Role ID
+     * @return Updated user
      */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "userAuthorities", key = "#result.username"),
+        @CacheEvict(value = "userAuthoritiesById", key = "#userId", condition = "#userId != null")
+    })
     public UserDTO assignRole(Long userId, Long roleId) {
         log.info("Assigning role {} to user {}", roleId, userId);
         
-        User user = getEntityById(userId);
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with ID: " + roleId));
+            .orElseThrow(() -> new RuntimeException("Role not found: " + roleId));
         
-        if (user.getRoles().contains(role)) {
-            log.warn("User {} already has role {}", userId, roleId);
+        // addRole() automatically clears cachedAuthorities
+        boolean added = user.addRole(role);
+        
+        if (added) {
+            User savedUser = userRepository.save(user);
+            log.info("Role {} assigned to user {}. Cache invalidated.", roleId, userId);
+            return toDTO(savedUser);
         } else {
-            user.getRoles().add(role);
-            userRepository.save(user);
-            log.info("Role {} assigned to user {} successfully", roleId, userId);
+            log.info("User {} already has role {}", userId, roleId);
+            return toDTO(user);
         }
-        
-        return toDTO(user);
     }
 
     /**
-     * Remove role from user
+     * Remove role from user with cache invalidation.
+     * 
+     * @param userId User ID
+     * @param roleId Role ID
+     * @return Updated user
      */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "userAuthorities", key = "#result.username"),
+        @CacheEvict(value = "userAuthoritiesById", key = "#userId", condition = "#userId != null")
+    })
     public UserDTO removeRole(Long userId, Long roleId) {
         log.info("Removing role {} from user {}", roleId, userId);
         
-        User user = getEntityById(userId);
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with ID: " + roleId));
+            .orElseThrow(() -> new RuntimeException("Role not found: " + roleId));
         
-        if (user.getRoles().remove(role)) {
-            userRepository.save(user);
-            log.info("Role {} removed from user {} successfully", roleId, userId);
+        // removeRole() automatically clears cachedAuthorities
+        boolean removed = user.removeRole(role);
+        
+        if (removed) {
+            User savedUser = userRepository.save(user);
+            log.info("Role {} removed from user {}. Cache invalidated.", roleId, userId);
+            return toDTO(savedUser);
         } else {
-            log.warn("User {} does not have role {}", userId, roleId);
+            log.info("User {} doesn't have role {}", userId, roleId);
+            return toDTO(user);
         }
-        
-        return toDTO(user);
     }
 
     /**
-     * Assign group to user
+     * Assign group to user with cache invalidation.
+     * 
+     * @param userId User ID
+     * @param groupId Group ID
+     * @return Updated user
      */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "userAuthorities", key = "#result.username"),
+        @CacheEvict(value = "userAuthoritiesById", key = "#userId", condition = "#userId != null")
+    })
     public UserDTO assignGroup(Long userId, Long groupId) {
         log.info("Assigning group {} to user {}", groupId, userId);
         
-        User user = getEntityById(userId);
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with ID: " + groupId));
+            .orElseThrow(() -> new RuntimeException("Group not found: " + groupId));
         
-        if (user.getGroups().contains(group)) {
-            log.warn("User {} already in group {}", userId, groupId);
+        // addGroup() automatically clears cachedAuthorities
+        boolean added = user.addGroup(group);
+        
+        if (added) {
+            User savedUser = userRepository.save(user);
+            log.info("Group {} assigned to user {}. Cache invalidated.", groupId, userId);
+            return toDTO(savedUser);
         } else {
-            user.getGroups().add(group);
-            userRepository.save(user);
-            log.info("Group {} assigned to user {} successfully", groupId, userId);
+            log.info("User {} already in group {}", userId, groupId);
+            return toDTO(user);
         }
-        
-        return toDTO(user);
     }
 
     /**
-     * Remove group from user
+     * Remove group from user with cache invalidation.
+     * 
+     * @param userId User ID
+     * @param groupId Group ID
+     * @return Updated user
      */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "userAuthorities", key = "#result.username"),
+        @CacheEvict(value = "userAuthoritiesById", key = "#userId", condition = "#userId != null")
+    })
     public UserDTO removeGroup(Long userId, Long groupId) {
         log.info("Removing group {} from user {}", groupId, userId);
         
-        User user = getEntityById(userId);
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with ID: " + groupId));
+            .orElseThrow(() -> new RuntimeException("Group not found: " + groupId));
         
-        if (user.getGroups().remove(group)) {
-            userRepository.save(user);
-            log.info("Group {} removed from user {} successfully", groupId, userId);
+        // removeGroup() automatically clears cachedAuthorities
+        boolean removed = user.removeGroup(group);
+        
+        if (removed) {
+            User savedUser = userRepository.save(user);
+            log.info("Group {} removed from user {}. Cache invalidated.", groupId, userId);
+            return toDTO(savedUser);
         } else {
-            log.warn("User {} is not in group {}", userId, groupId);
+            log.info("User {} not in group {}", userId, groupId);
+            return toDTO(user);
         }
-        
-        return toDTO(user);
     }
 
     /**
@@ -449,5 +509,22 @@ public class UserService extends GenericService<User, UserDTO, Long> {
         }
         
         return executeQuery(p -> userRepository.searchByAnyField(searchTerm.trim(), p), pageable);
+    }
+    
+    /**
+     * Manual cache clear for troubleshooting.
+     * Clears both transient cache (on next load) and Spring @Cacheable cache.
+     * 
+     * @param username Username to clear cache for
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "userAuthorities", key = "#username"),
+        @CacheEvict(value = "userAuthoritiesById", allEntries = true)
+    })
+    public void clearUserCache(String username) {
+        log.info("Manually clearing cache for user: {}", username);
+        
+        // Note: Transient cache will be cleared automatically on next entity load
+        // This method only clears the Spring Security @Cacheable cache
     }
 }
