@@ -47,7 +47,7 @@ public class DataSourceDTO extends GenericDTO<DataSource> {
              message = "Code must contain only uppercase letters, numbers, hyphens, and underscores")
     @Schema(description = "Unique code identifying the data source type", 
             example = "SCADA", 
-            required = true,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             maxLength = 50)
     private String code;
 

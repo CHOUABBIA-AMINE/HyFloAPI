@@ -48,26 +48,37 @@ public class FlowAlertDTO extends GenericDTO<FlowAlert> {
 
     @NotNull(message = "Alert timestamp is required")
     @PastOrPresent(message = "Alert timestamp cannot be in the future")
-    @Schema(description = "Alert trigger timestamp", example = "2026-01-22T00:45:00", required = true)
+    @Schema(description = "Alert trigger timestamp", 
+    		example = "2026-01-22T00:45:00", 
+    		requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime alertTimestamp;
 
     @NotNull(message = "Actual value is required")
-    @Schema(description = "Actual measured value", example = "135.5", required = true)
+    @Schema(description = "Actual measured value", 
+    		example = "135.5", 
+    		requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal actualValue;
 
     @Schema(description = "Threshold value breached", example = "120.0")
     private BigDecimal thresholdValue;
 
     @Size(max = 1000, message = "Alert message must not exceed 1000 characters")
-    @Schema(description = "Alert message", example = "Pressure exceeded maximum", maxLength = 1000)
+    @Schema(description = "Alert message", 
+    		example = "Pressure exceeded maximum", 
+    		maxLength = 1000,
+    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String message;
 
     @PastOrPresent(message = "Acknowledgment time cannot be in the future")
-    @Schema(description = "Acknowledgment timestamp", example = "2026-01-22T00:50:00")
+    @Schema(description = "Acknowledgment timestamp", 
+		    example = "2026-01-22T00:50:00",
+		    requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime acknowledgedAt;
 
     @PastOrPresent(message = "Resolution time cannot be in the future")
-    @Schema(description = "Resolution timestamp", example = "2026-01-22T01:30:00")
+    @Schema(description = "Resolution timestamp", 
+    		example = "2026-01-22T01:30:00",
+    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime resolvedAt;
 
     @Size(max = 1000, message = "Resolution notes must not exceed 1000 characters")
@@ -75,28 +86,35 @@ public class FlowAlertDTO extends GenericDTO<FlowAlert> {
     private String resolutionNotes;
 
     @NotNull(message = "Notification sent flag is required")
-    @Schema(description = "Notification sent", example = "true", required = true)
+    @Schema(description = "Notification sent", 
+    		example = "true", 
+    		requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean notificationSent;
 
     @PastOrPresent(message = "Notification time cannot be in the future")
-    @Schema(description = "Notification timestamp", example = "2026-01-22T00:45:30")
+    @Schema(description = "Notification timestamp", 
+    		example = "2026-01-22T00:45:30", 
+    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime notificationSentAt;
 
-    // Foreign Key IDs
     @Schema(description = "Resolved by employee ID")
     private Long resolvedById;
 
     @NotNull(message = "Threshold is required")
-    @Schema(description = "Threshold ID", required = true)
+    @Schema(description = "Threshold ID", 
+    		requiredMode = Schema.RequiredMode.REQUIRED)
     private Long thresholdId;
 
-    @Schema(description = "Flow reading ID")
+    @Schema(description = "Flow reading ID", 
+    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long flowReadingId;
 
-    @Schema(description = "Alert status ID")
+    @Schema(description = "Alert status ID", 
+    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long statusId;
 
-    @Schema(description = "Acknowledged by employee ID")
+    @Schema(description = "Acknowledged by employee ID", 
+    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long acknowledgedById;
 
     // Nested DTOs

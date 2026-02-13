@@ -110,10 +110,10 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
     private Long readingSlotId;
 
     // Nested DTOs
-    @Schema(description = "Recording employee details")
+    @Schema(description = "Recording employee details", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private EmployeeDTO recordedBy;
 
-    @Schema(description = "Validating employee details")
+    @Schema(description = "Validating employee details", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private EmployeeDTO validatedBy;
 
     @Schema(description = "Validation status details")
