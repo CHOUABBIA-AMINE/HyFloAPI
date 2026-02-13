@@ -152,7 +152,9 @@ public class User extends GenericModel implements UserDetails {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@Builder.Default
-	@ManyToMany(fetch = FetchType.EAGER)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 		name = "R_T000202_T000203",
 		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000202_T000203_FK_01")),
@@ -166,7 +168,9 @@ public class User extends GenericModel implements UserDetails {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@Builder.Default
-	@ManyToMany(fetch = FetchType.EAGER)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 		name = "R_T000202_T000201",
 		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000202_T000201_FK_01")),

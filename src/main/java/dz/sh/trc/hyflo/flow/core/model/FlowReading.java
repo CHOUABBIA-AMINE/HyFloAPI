@@ -59,7 +59,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name="FlowReading")
 @Table(name="T_03_03_03", indexes = {@Index(name="T_03_03_03_IX_01", columnList="F_01"),
-									 @Index(name="T_03_03_03_IX_02", columnList="F_01, F_13")},
+									 @Index(name="T_03_03_03_IX_02", columnList="F_01, F_13"),
+									 @Index(name="T_03_03_03_IX_03", columnList="F_11"),
+									 @Index(name="T_03_03_03_IX_04", columnList="F_09"),
+									 @Index(name="T_03_03_03_IX_05", columnList="F_12, F_11")},
 						  uniqueConstraints = {@UniqueConstraint(name="T_03_03_03_UK_01", columnNames={"F_01", "F_12", "F_13"})})
 public class FlowReading extends GenericModel {
     
@@ -85,7 +88,7 @@ public class FlowReading extends GenericModel {
 	@PositiveOrZero(message = "Pressure must be zero or positive")
 	@DecimalMin(value = "0.0", message = "Pressure cannot be negative")
 	@DecimalMax(value = "500.0", message = "Pressure exceeds maximum safe operating limit (500 bar)")
-	@Column(name = "F_02")
+	@Column(name = "F_02", precision = 8, scale = 4)
 	private BigDecimal pressure;
     
 	@Schema(
@@ -97,7 +100,7 @@ public class FlowReading extends GenericModel {
 	)
 	@DecimalMin(value = "-50.0", message = "Temperature below minimum operating range")
 	@DecimalMax(value = "200.0", message = "Temperature exceeds maximum operating range")
-	@Column(name = "F_03")
+	@Column(name = "F_03", precision = 8, scale = 4)
 	private BigDecimal temperature;
     
 	@Schema(
@@ -106,7 +109,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@PositiveOrZero(message = "Flow rate must be zero or positive")
-	@Column(name = "F_04")
+	@Column(name = "F_04", precision = 10, scale = 4)
 	private BigDecimal flowRate;
     
 	@Schema(
@@ -115,7 +118,7 @@ public class FlowReading extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@PositiveOrZero(message = "Contained volume must be zero or positive")
-	@Column(name = "F_05")
+	@Column(name = "F_05", precision = 15, scale = 4)
 	private BigDecimal containedVolume;
     
 	@Schema(

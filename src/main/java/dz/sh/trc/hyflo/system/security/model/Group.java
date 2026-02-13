@@ -68,7 +68,9 @@ public class Group extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@Builder.Default
-	@ManyToMany(fetch = FetchType.EAGER)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 		name = "R_T000201_T000203",
 		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000201_T000203_FK_01")),

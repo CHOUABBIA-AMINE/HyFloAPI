@@ -60,7 +60,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum pressure is mandatory")
 	@PositiveOrZero(message = "Minimum pressure must be zero or positive")
-	@Column(name="F_01", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_01", precision = 8, scale = 4, nullable = false)
 	private BigDecimal pressureMin;
     
 	@Schema(
@@ -70,7 +70,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum pressure is mandatory")
 	@DecimalMax(value = "500.0", message = "Maximum pressure exceeds absolute limit")
-	@Column(name="F_02", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_02", precision = 8, scale = 4, nullable = false)
 	private BigDecimal pressureMax;
     
 	@Schema(
@@ -80,7 +80,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum temperature is mandatory")
 	@DecimalMin(value = "-50.0", message = "Minimum temperature below absolute limit")
-	@Column(name="F_03", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_03", precision = 8, scale = 4, nullable = false)
 	private BigDecimal temperatureMin;
     
 	@Schema(
@@ -90,7 +90,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum temperature is mandatory")
 	@DecimalMax(value = "200.0", message = "Maximum temperature exceeds absolute limit")
-	@Column(name="F_04", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_04", precision = 8, scale = 4, nullable = false)
 	private BigDecimal temperatureMax;
     
 	@Schema(
@@ -100,7 +100,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum flow rate is mandatory")
 	@PositiveOrZero(message = "Minimum flow rate must be zero or positive")
-	@Column(name="F_05", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_05", precision = 10, scale = 4, nullable = false)
 	private BigDecimal flowRateMin;
     
 	@Schema(
@@ -110,7 +110,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum flow rate is mandatory")
 	@PositiveOrZero(message = "Maximum flow rate must be positive")
-	@Column(name="F_06", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_06", precision = 10, scale = 4, nullable = false)
 	private BigDecimal flowRateMax;
     
 	@Schema(
@@ -120,7 +120,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Minimum contained volume is mandatory")
 	@PositiveOrZero(message = "Minimum contained volume must be zero or positive")
-	@Column(name="F_07", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_07", precision = 15, scale = 4, nullable = false)
 	private BigDecimal containedVolumeMin;
     
 	@Schema(
@@ -130,7 +130,7 @@ public class FlowThreshold extends GenericModel {
 	)
 	@NotNull(message = "Maximum contained volume is mandatory")
 	@PositiveOrZero(message = "Maximum contained volume must be positive")
-	@Column(name="F_08", precision = 12, scale = 2, nullable = false)
+	@Column(name="F_08", precision = 15, scale = 4, nullable = false)
 	private BigDecimal containedVolumeMax;
     
 	@Schema(
@@ -141,7 +141,7 @@ public class FlowThreshold extends GenericModel {
 	@NotNull(message = "Alert tolerance is mandatory")
 	@DecimalMin(value = "0.0", message = "Alert tolerance cannot be negative")
 	@DecimalMax(value = "50.0", message = "Alert tolerance cannot exceed 50%")
-	@Column(name="F_09", precision = 5, scale = 2, nullable = false)
+	@Column(name="F_09", precision = 7, scale = 4, nullable = false)
 	private BigDecimal alertTolerance;
     
 	@Schema(

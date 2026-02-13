@@ -82,7 +82,7 @@ public class FlowOperation extends GenericModel {
 	@NotNull(message = "Volume is mandatory")
 	@DecimalMin(value = "0.0", inclusive = true, message = "Volume cannot be negative")
 	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-	@Column(name = "F_02", precision = 15, scale = 2, nullable = false)
+	@Column(name = "F_02", precision = 15, scale = 4, nullable = false)
 	private BigDecimal volume;
     
 	@Schema(

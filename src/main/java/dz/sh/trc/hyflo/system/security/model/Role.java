@@ -71,7 +71,9 @@ public class Role extends GenericModel {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@Builder.Default
-	@ManyToMany(fetch = FetchType.EAGER)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(
 		name = "R_T000203_T000204",
 		joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="R_T000203_T000204_FK_01")),

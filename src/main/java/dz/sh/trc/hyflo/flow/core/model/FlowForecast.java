@@ -80,7 +80,7 @@ public class FlowForecast extends GenericModel {
 	@NotNull(message = "Predicted volume is mandatory")
 	@DecimalMin(value = "0.0", inclusive = true, message = "Predicted volume cannot be negative")
 	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-	@Column(name = "F_02", precision = 15, scale = 2, nullable = false)
+	@Column(name = "F_02", precision = 15, scale = 4, nullable = false)
 	private BigDecimal predictedVolume;
     
 	@Schema(
@@ -90,7 +90,7 @@ public class FlowForecast extends GenericModel {
 	)
 	@DecimalMin(value = "0.0", message = "Adjusted volume cannot be negative")
 	@Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-	@Column(name = "F_03", precision = 15, scale = 2)
+	@Column(name = "F_03", precision = 15, scale = 4)
 	private BigDecimal adjustedVolume;
     
 	@Schema(
