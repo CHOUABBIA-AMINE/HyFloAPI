@@ -93,7 +93,6 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Structure is required")
     private Long ownerId;
     
     @NotNull(message = "Construction material ID is required")
