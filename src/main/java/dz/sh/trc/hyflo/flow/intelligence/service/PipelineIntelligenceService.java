@@ -110,48 +110,37 @@ public class PipelineIntelligenceService {
             .id(pipelineDTO.getId())
             .name(pipelineDTO.getName())
             .code(pipelineDTO.getCode())
-            .description(pipelineDTO.getDescription())
-            .lengthKm(pipelineDTO.getLengthKm())
-            .diameterMm(pipelineDTO.getDiameterMm())
-            .material(pipelineDTO.getMaterial())
-            .wallThicknessMm(pipelineDTO.getWallThicknessMm())
-            .coatingType(pipelineDTO.getCoatingType())
-            .burialDepthM(pipelineDTO.getBurialDepthM())
-            .maxDesignPressureBar(pipelineDTO.getMaxPressureBar())
-            .minDesignPressureBar(pipelineDTO.getMinPressureBar())
-            .maxDesignTemperatureC(pipelineDTO.getMaxTemperatureC())
-            .minDesignTemperatureC(pipelineDTO.getMinTemperatureC())
-            .designFlowRate(pipelineDTO.getDesignFlowRate())
-            .designStandard(pipelineDTO.getDesignStandard())
-            .operatorName(pipelineDTO.getManager() != null ? pipelineDTO.getManager().getDesignationLt() : null)
-            .commissionDate(pipelineDTO.getCommissionDate())
-            .lastInspectionDate(pipelineDTO.getLastInspectionDate())
-            .nextInspectionDate(pipelineDTO.getNextInspectionDate())
-            .installationYear(pipelineDTO.getInstallationYear())
-            .status(pipelineDTO.getStatus())
-            .geometry(pipelineDTO.getGeometry())
-            .startLocation(pipelineDTO.getStartLocation())
-            .endLocation(pipelineDTO.getEndLocation())
-            .routeDescription(pipelineDTO.getRouteDescription())
-            .fluidType(pipelineDTO.getFluidType())
-            .cathodicProtectionType(pipelineDTO.getCathodicProtectionType())
-            .scadaIntegrated(pipelineDTO.getScadaIntegrated())
-            .pipelineClass(pipelineDTO.getPipelineClass())
-            .complianceStatus(pipelineDTO.getComplianceStatus())
-            .certifications(pipelineDTO.getCertifications())
-            .pipelineDetails(pipelineDTO)
-            .lastUpdateTime(LocalDateTime.now())
-            .dataSource("Network Module")
-            .active(pipelineDTO.getActive());
-        
-        if (Boolean.TRUE.equals(includeEntities)) {
-            builder.stationCount(0).valveCount(0).sensorCount(0).cpStationCount(0);
-        }
-        
-        if (Boolean.TRUE.equals(includeHealth)) {
-            PipelineHealthDTO health = calculatePipelineHealth(pipelineId);
-            builder.currentHealth(health);
-        }
+            .operationalStatus(pipelineDTO.getOperationalStatus().getCode())
+            
+            .length(pipelineDTO.getLength())
+            .nominalDiameter(pipelineDTO.getNominalDiameter())
+            .nominalThickness(pipelineDTO.getNominalThickness())
+            .nominalRoughness(pipelineDTO.getNominalRoughness())
+            .materialName(pipelineDTO.getNominalConstructionMaterial().getCode())
+            .exteriorCoating(pipelineDTO.getNominalExteriorCoating().getCode())
+            .interiorCoating(pipelineDTO.getNominalInteriorCoating().getCode())
+            
+            .designMaxPressure(pipelineDTO.getDesignMaxServicePressure())
+            .operationalMaxPressure(pipelineDTO.getOperationalMaxServicePressure())
+            .designMinPressure(pipelineDTO.getDesignMinServicePressure())
+            .operationalMinPressure(pipelineDTO.getOperationalMinServicePressure())
+            
+            .designCapacity(pipelineDTO.getDesignCapacity())
+            .operationalCapacity(pipelineDTO.getOperationalCapacity())
+            
+            .ownerName(pipelineDTO.getOwner() != null ? pipelineDTO.getOwner().getCode() : null)
+            .managerName(pipelineDTO.getManager() != null ? pipelineDTO.getManager().getCode() : null)
+            
+            .installationDate(pipelineDTO.getInstallationDate())
+            .commissionDate(pipelineDTO.getCommissioningDate())
+            .decommissionDate(pipelineDTO.getDecommissioningDate())
+            
+            .departureTerminalName(pipelineDTO.getDepartureTerminal() != null ? pipelineDTO.getDepartureTerminal().getCode() : null)
+            .arrivalTerminalName(pipelineDTO.getArrivalTerminal() != null ? pipelineDTO.getArrivalTerminal().getCode() : null)
+            
+            .pipelineSystemName(pipelineDTO.getPipelineSystem() != null ? pipelineDTO.getPipelineSystem().getCode() : null)
+            
+            .pipelineDetails(pipelineDTO);
         
         return builder.build();
     }
@@ -282,11 +271,11 @@ public class PipelineIntelligenceService {
             items.add(TimelineItemDTO.builder()
                 .id(event.getId())
                 .type("EVENT")
-                .severity(event.getSeverity() != null ? event.getSeverity().getCode() : "INFO")
+                .severity(event.getSeverity() != null ? event.getSeverity().getDesignationEn() : "INFO")
                 .title(event.getTitle())
                 .description(event.getDescription())
                 .timestamp(event.getEventTimestamp())
-                .status(event.getStatus() != null ? event.getStatus().getCode() : "UNKNOWN")
+                .status(event.getStatus() != null ? event.getStatus().getDesignationEn() : "UNKNOWN")
                 .pipelineId(pipelineId)
                 .operatorName(event.getReportedBy() != null ? 
                     event.getReportedBy().getFirstNameLt() + " " + event.getReportedBy().getLastNameLt() : null)
@@ -576,7 +565,7 @@ public class PipelineIntelligenceService {
     private String mapAlertSeverity(FlowAlert alert) {
         // Simple severity mapping - can be enhanced based on threshold breach magnitude
         if (alert.getStatus() != null) {
-            String statusCode = alert.getStatus().getCode();
+            String statusCode = alert.getStatus().getDesignationEn();
             if ("CRITICAL".equalsIgnoreCase(statusCode) || "EMERGENCY".equalsIgnoreCase(statusCode)) {
                 return "CRITICAL";
             }

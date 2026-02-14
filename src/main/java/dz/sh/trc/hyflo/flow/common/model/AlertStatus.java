@@ -41,8 +41,18 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "AlertStatus")
-@Table(name = "T_03_02_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_02_02_UK_01", columnNames = {"F_03"})})
+@Table(name = "T_03_02_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_02_02_UK_01", columnNames = {"F_04"})})
 public class AlertStatus extends GenericModel {
+    
+	@Schema(
+		description = "Alert status code",
+		example = "INFO",
+		requiredMode = Schema.RequiredMode.REQUIRED,
+		maxLength = 10
+	)
+	@Size(max = 10, message = "Code must not exceed 10 characters")
+	@Column(name = "F_01", length = 10, nullable=false)
+	private String code;
       
 	@Schema(
 		description = "Alert status designation in Arabic",
@@ -51,7 +61,7 @@ public class AlertStatus extends GenericModel {
 		maxLength = 100
 	)
 	@Size(max = 100, message = "Arabic designation must not exceed 100 characters")
-	@Column(name = "F_01", length = 100)
+	@Column(name = "F_02", length = 100)
 	private String designationAr;
     
 	@Schema(
@@ -61,7 +71,7 @@ public class AlertStatus extends GenericModel {
 		maxLength = 100
 	)
 	@Size(max = 100, message = "English designation must not exceed 100 characters")
-	@Column(name = "F_02", length = 100)
+	@Column(name = "F_03", length = 100)
 	private String designationEn;
     
 	@Schema(
@@ -72,6 +82,6 @@ public class AlertStatus extends GenericModel {
 	)
 	@NotBlank(message = "French designation is mandatory")
 	@Size(max = 100, message = "French designation must not exceed 100 characters")
-	@Column(name = "F_03", length = 100, nullable = false)
+	@Column(name = "F_04", length = 100, nullable = false)
 	private String designationFr;
 }

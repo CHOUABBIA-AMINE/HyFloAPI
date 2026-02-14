@@ -33,8 +33,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.dto.StationDTO;
-import dz.sh.trc.hyflo.network.core.dto.ValveDTO;
-import dz.sh.trc.hyflo.network.core.dto.SensorDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -64,9 +62,6 @@ public class PipelineInfoDTO {
     @Schema(description = "[Pipeline] Pipeline code/reference", example = "PL-GT-2023-A")
     private String code;
 
-    @Schema(description = "[Pipeline] Pipeline description")
-    private String description;
-
     @Schema(description = "[Pipeline.operationalStatus] Current operational status from Pipeline entity", 
             example = "OPERATIONAL")
     private String operationalStatus;
@@ -74,7 +69,7 @@ public class PipelineInfoDTO {
     // ========== PHYSICAL SPECIFICATIONS (Source: Pipeline) ==========
     
     @Schema(description = "[Pipeline.length] Pipeline length in kilometers", example = "850.5")
-    private Double lengthKm;
+    private Double length;
 
     @Schema(description = "[Pipeline.nominalDiameter] Nominal internal diameter", example = "48 inches")
     private String nominalDiameter;
@@ -97,32 +92,32 @@ public class PipelineInfoDTO {
     // ========== PRESSURE SPECIFICATIONS (Source: Pipeline) ==========
     
     @Schema(description = "[Pipeline.designMaxServicePressure] Maximum design service pressure in bar", example = "120.5")
-    private Double designMaxPressureBar;
+    private Double designMaxPressure;
 
     @Schema(description = "[Pipeline.operationalMaxServicePressure] Maximum operational service pressure in bar", example = "100.0")
-    private Double operationalMaxPressureBar;
+    private Double operationalMaxPressure;
 
     @Schema(description = "[Pipeline.designMinServicePressure] Minimum design service pressure in bar", example = "10.0")
-    private Double designMinPressureBar;
+    private Double designMinPressure;
 
     @Schema(description = "[Pipeline.operationalMinServicePressure] Minimum operational service pressure in bar", example = "15.0")
-    private Double operationalMinPressureBar;
+    private Double operationalMinPressure;
 
     // ========== CAPACITY SPECIFICATIONS (Source: Pipeline) ==========
     
     @Schema(description = "[Pipeline.designCapacity] Design capacity in m³/day", example = "50000.0")
-    private Double designCapacityM3PerDay;
+    private Double designCapacity;
 
     @Schema(description = "[Pipeline.operationalCapacity] Operational capacity in m³/day", example = "45000.0")
-    private Double operationalCapacityM3PerDay;
+    private Double operationalCapacity;
 
     // ========== ADMINISTRATIVE (Source: Pipeline) ==========
-    
-    @Schema(description = "[Pipeline.manager.designationLt] Managing organization name", example = "Sonatrach - Region Centre")
-    private String managerName;
 
     @Schema(description = "[Pipeline.owner.designationLt] Owner organization name", example = "Sonatrach")
     private String ownerName;
+    
+    @Schema(description = "[Pipeline.manager.designationLt] Managing organization name", example = "Sonatrach - Region Centre")
+    private String managerName;
 
     @Schema(description = "[Pipeline.installationDate] Installation date", example = "2023-01-15")
     private LocalDate installationDate;
@@ -148,30 +143,18 @@ public class PipelineInfoDTO {
 
     // ========== GEOGRAPHIC DATA (Source: Pipeline) ==========
     
-    @Schema(description = "[Pipeline.geometry] Pipeline route geometry (GeoJSON LineString)")
-    private Object geometry;
+    //@Schema(description = "[Pipeline.geometry] Pipeline route geometry (GeoJSON LineString)")
+    //private Object geometry;
 
     // ========== LINKED ENTITIES (Source: Network module - lazy-loaded) ==========
     
-    @Schema(description = "[Network] Connected stations along the pipeline (lazy-loaded)")
-    private List<StationDTO> stations;
-
-    @Schema(description = "[Network] Valves installed on the pipeline (lazy-loaded)")
-    private List<ValveDTO> valves;
-
-    @Schema(description = "[Network] Sensors monitoring the pipeline (lazy-loaded)")
-    private List<SensorDTO> sensors;
+    //@Schema(description = "[Network] Connected stations along the pipeline (lazy-loaded)")
+    //private List<StationDTO> stations;
 
     // ========== COUNTS (Source: Calculated/Aggregated) ==========
     
-    @Schema(description = "[Calculated] Number of connected stations", example = "3")
-    private Integer stationCount;
-
-    @Schema(description = "[Calculated] Number of installed valves", example = "12")
-    private Integer valveCount;
-
-    @Schema(description = "[Calculated] Number of active sensors", example = "45")
-    private Integer sensorCount;
+    //@Schema(description = "[Calculated] Number of connected stations", example = "3")
+    //private Integer stationCount;
 
     // ========== FULL PIPELINE DETAILS (Source: Pipeline) ==========
     
