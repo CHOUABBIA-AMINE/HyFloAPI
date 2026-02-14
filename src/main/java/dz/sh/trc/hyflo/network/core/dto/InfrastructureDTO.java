@@ -58,7 +58,6 @@ public class InfrastructureDTO extends GenericDTO<Infrastructure> {
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Owner structure is required")
     private Long ownerId;
     
     private OperationalStatusDTO operationalStatus;
