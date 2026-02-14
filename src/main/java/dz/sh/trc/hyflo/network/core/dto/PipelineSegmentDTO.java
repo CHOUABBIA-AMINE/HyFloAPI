@@ -298,6 +298,8 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
                 .length(entity.getLength())
                 .thickness(entity.getThickness())
                 .roughness(entity.getRoughness())
+                .startPoint(entity.getStartPoint())
+                .endPoint(entity.getEndPoint())
                 
                 .operationalStatusId(entity.getOperationalStatus() != null ? entity.getOperationalStatus().getId() : null)
                 .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
