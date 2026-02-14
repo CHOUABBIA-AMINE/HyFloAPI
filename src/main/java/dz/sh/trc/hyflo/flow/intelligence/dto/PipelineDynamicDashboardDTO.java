@@ -4,7 +4,7 @@
  *
  * 	@Name		: PipelineDynamicDashboardDTO
  * 	@CreatedOn	: 02-14-2026
- * 	@UpdatedOn	: 02-14-2026
+ * 	@UpdatedOn	: 02-14-2026 - Replace Map with KeyMetricsDTO
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -27,7 +27,6 @@
 package dz.sh.trc.hyflo.flow.intelligence.dto;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -65,9 +64,8 @@ public class PipelineDynamicDashboardDTO {
 
     // ========== KEY METRICS (Source: FlowReading - latest) ==========
     
-    @Schema(description = "[FlowReading.latest] Key operational metrics map for quick display", 
-            example = "{\"pressure\": 45.2, \"temperature\": 42.0, \"flowRate\": 1250.5}")
-    private Map<String, BigDecimal> keyMetrics;
+    @Schema(description = "[FlowReading.latest] Key operational metrics extracted from latest reading for quick display")
+    private KeyMetricsDTO keyMetrics;
 
     // ========== HEALTH INDICATORS (Source: Calculated from FlowAlert + FlowReading) ==========
     
