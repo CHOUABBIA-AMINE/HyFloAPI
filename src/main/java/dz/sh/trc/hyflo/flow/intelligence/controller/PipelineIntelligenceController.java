@@ -1,9 +1,10 @@
 /**
  *
- *	@Author		: MEDJERAB Abir
+ *	@Author		: MEDJERAB Abir, CHOUABBIA Amine
  *
  * 	@Name		: PipelineIntelligenceController
  * 	@CreatedOn	: 02-07-2026
+ * 	@UpdatedOn	: 02-14-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -14,6 +15,7 @@
 package dz.sh.trc.hyflo.flow.intelligence.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineInfoDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineDynamicDashboardDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineTimelineDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
@@ -41,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * REST API for Pipeline Operational Intelligence
  * Provides real-time monitoring, KPIs, and analytics for pipeline operations
+ * Extended to support comprehensive PipelineInfoPage functionality
  */
 @RestController
 @RequestMapping("/flow/intelligence/pipeline")
@@ -50,6 +56,177 @@ import lombok.extern.slf4j.Slf4j;
 public class PipelineIntelligenceController {
     
     private final PipelineIntelligenceService intelligenceService;
+    
+    /**
+     * Get comprehensive pipeline information for detail page
+     * Aggregates static infrastructure with optional dynamic health data
+     */
+    @GetMapping("/{pipelineId}/info")
+    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @Operation(
+        summary = "Get Pipeline Detailed Information",
+        description = "Retrieve comprehensive pipeline information including static infrastructure, " +
+                      "linked entities (stations, valves, sensors), and optional current health status. " +
+                      "This endpoint is optimized for PipelineInfoPage with caching support."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved pipeline information",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = PipelineInfoDTO.class)
+        )
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Pipeline not found"
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Access denied - insufficient permissions"
+    )
+    public ResponseEntity<PipelineInfoDTO> getPipelineInfo(
+            @Parameter(description = "Pipeline ID", required = true)
+            @PathVariable Long pipelineId,
+            
+            @Parameter(description = "Include current health status (may increase response time)", 
+                       example = "true")
+            @RequestParam(required = false, defaultValue = "true") 
+            Boolean includeHealth,
+            
+            @Parameter(description = "Include linked entities (stations, valves, sensors)", 
+                       example = "true")
+            @RequestParam(required = false, defaultValue = "false") 
+            Boolean includeEntities) {
+        
+        log.info("GET /flow/intelligence/pipeline/{}/info?includeHealth={}&includeEntities={}", 
+                 pipelineId, includeHealth, includeEntities);
+        
+        PipelineInfoDTO info = intelligenceService.getPipelineInfo(pipelineId, includeHealth, includeEntities);
+        return ResponseEntity.ok(info);
+    }
+    
+    /**
+     * Get real-time operational dashboard data
+     * Optimized for frequent updates with short cache TTL
+     */
+    @GetMapping("/{pipelineId}/dashboard")
+    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @Operation(
+        summary = "Get Real-time Pipeline Dashboard",
+        description = "Retrieve real-time operational dashboard metrics including current readings, " +
+                      "health indicators, alert counts, and quick statistics. Optimized for frequent " +
+                      "polling or WebSocket updates (30-second cache)."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved dashboard data",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = PipelineDynamicDashboardDTO.class)
+        )
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Pipeline not found"
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Access denied - insufficient permissions"
+    )
+    public ResponseEntity<PipelineDynamicDashboardDTO> getDashboard(
+            @Parameter(description = "Pipeline ID", required = true)
+            @PathVariable Long pipelineId) {
+        
+        log.info("GET /flow/intelligence/pipeline/{}/dashboard", pipelineId);
+        
+        PipelineDynamicDashboardDTO dashboard = intelligenceService.getDashboard(pipelineId);
+        return ResponseEntity.ok(dashboard);
+    }
+    
+    /**
+     * Get unified timeline of alerts and events
+     * Merges alerts and events chronologically with pagination
+     */
+    @GetMapping("/{pipelineId}/timeline")
+    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @Operation(
+        summary = "Get Pipeline Timeline",
+        description = "Retrieve unified timeline merging alerts and events chronologically. " +
+                      "Supports filtering by date range, severity, and type with pagination. " +
+                      "Includes distribution statistics for dashboard visualization."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved timeline",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = PipelineTimelineDTO.class)
+        )
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Pipeline not found"
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Access denied - insufficient permissions"
+    )
+    public ResponseEntity<PipelineTimelineDTO> getTimeline(
+            @Parameter(description = "Pipeline ID", required = true)
+            @PathVariable Long pipelineId,
+            
+            @Parameter(description = "Start date/time for timeline", 
+                       example = "2026-02-07T00:00:00")
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
+            LocalDateTime from,
+            
+            @Parameter(description = "End date/time for timeline (defaults to now)", 
+                       example = "2026-02-14T23:59:59")
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) 
+            LocalDateTime to,
+            
+            @Parameter(
+                description = "Filter by severity",
+                schema = @Schema(
+                    type = "string",
+                    allowableValues = {"CRITICAL", "WARNING", "INFO", "NORMAL"}
+                )
+            )
+            @RequestParam(required = false) 
+            String severity,
+            
+            @Parameter(
+                description = "Filter by type",
+                schema = @Schema(
+                    type = "string",
+                    allowableValues = {"ALERT", "EVENT", "OPERATION"}
+                )
+            )
+            @RequestParam(required = false) 
+            String type,
+            
+            @Parameter(description = "Page number (0-indexed)", example = "0")
+            @RequestParam(required = false, defaultValue = "0") 
+            Integer page,
+            
+            @Parameter(description = "Items per page", example = "20")
+            @RequestParam(required = false, defaultValue = "20") 
+            Integer size) {
+        
+        LocalDateTime fromDate = from != null ? from : LocalDateTime.now().minusDays(7);
+        LocalDateTime toDate = to != null ? to : LocalDateTime.now();
+        
+        log.info("GET /flow/intelligence/pipeline/{}/timeline?from={}&to={}&severity={}&type={}&page={}&size={}",
+            pipelineId, fromDate, toDate, severity, type, page, size);
+        
+        PipelineTimelineDTO timeline = intelligenceService.getTimeline(
+            pipelineId, fromDate, toDate, severity, type, page, size);
+        
+        return ResponseEntity.ok(timeline);
+    }
     
     /**
      * Get comprehensive operational overview for a pipeline
@@ -90,7 +267,7 @@ public class PipelineIntelligenceController {
             LocalDate referenceDate) {
         
         LocalDate date = referenceDate != null ? referenceDate : LocalDate.now();
-        log.info("GET /api/v1/flow/intelligence/pipelines/{}/overview?referenceDate={}", pipelineId, date);
+        log.info("GET /flow/intelligence/pipeline/{}/overview?referenceDate={}", pipelineId, date);
         
         PipelineOverviewDTO overview = intelligenceService.getOverview(pipelineId, date);
         return ResponseEntity.ok(overview);
@@ -135,7 +312,7 @@ public class PipelineIntelligenceController {
             LocalDate date) {
         
         LocalDate targetDate = date != null ? date : LocalDate.now();
-        log.info("GET /api/v1/flow/intelligence/pipelines/{}/slot-coverage?date={}", pipelineId, targetDate);
+        log.info("GET /flow/intelligence/pipeline/{}/slot-coverage?date={}", pipelineId, targetDate);
         
         List<SlotStatusDTO> slotCoverage = intelligenceService.getSlotCoverage(pipelineId, targetDate);
         return ResponseEntity.ok(slotCoverage);
@@ -199,7 +376,7 @@ public class PipelineIntelligenceController {
         LocalDate start = startDate != null ? startDate : LocalDate.now().minusDays(7);
         LocalDate end = endDate != null ? endDate : LocalDate.now();
         
-        log.info("GET /api/v1/flow/intelligence/pipelines/{}/readings-timeseries?startDate={}&endDate={}&measurementType={}",
+        log.info("GET /flow/intelligence/pipeline/{}/readings-timeseries?startDate={}&endDate={}&measurementType={}",
             pipelineId, start, end, measurementType);
         
         ReadingsTimeSeriesDTO timeSeries = intelligenceService.getReadingsTimeSeries(
