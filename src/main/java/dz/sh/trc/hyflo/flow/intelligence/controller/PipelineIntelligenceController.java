@@ -62,7 +62,7 @@ public class PipelineIntelligenceController {
      * Aggregates static infrastructure with optional dynamic health data
      */
     @GetMapping("/{pipelineId}/info")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    //@PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
     @Operation(
         summary = "Get Pipeline Detailed Information",
         description = "Retrieve comprehensive pipeline information including static infrastructure, " +
@@ -111,7 +111,7 @@ public class PipelineIntelligenceController {
      * Optimized for frequent updates with short cache TTL
      */
     @GetMapping("/{pipelineId}/dashboard")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    //@PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
     @Operation(
         summary = "Get Real-time Pipeline Dashboard",
         description = "Retrieve real-time operational dashboard metrics including current readings, " +
@@ -149,7 +149,7 @@ public class PipelineIntelligenceController {
      * Merges alerts and events chronologically with pagination
      */
     @GetMapping("/{pipelineId}/timeline")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    //@PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
     @Operation(
         summary = "Get Pipeline Timeline",
         description = "Retrieve unified timeline merging alerts and events chronologically. " +
@@ -233,7 +233,7 @@ public class PipelineIntelligenceController {
      * Includes asset specs, KPIs, slot coverage, and current measurements
      */
     @GetMapping("/{pipelineId}/overview")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    //@PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
     @Operation(
         summary = "Get Pipeline Overview",
         description = "Retrieve comprehensive operational overview including asset specifications, " +
@@ -278,7 +278,7 @@ public class PipelineIntelligenceController {
      * Shows all 12 reading slots with their status, recordings, and validations
      */
     @GetMapping("/{pipelineId}/slot-coverage")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    //@PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
     @Operation(
         summary = "Get Slot Coverage",
         description = "Retrieve detailed status of all 12 reading slots for a specific date. " +
@@ -323,7 +323,7 @@ public class PipelineIntelligenceController {
      * Supports trend analysis, pattern detection, and statistical summaries
      */
     @GetMapping("/{pipelineId}/readings-timeseries")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    //@PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
     @Operation(
         summary = "Get Readings Time Series",
         description = "Retrieve historical time-series data for a specific measurement type. " +
