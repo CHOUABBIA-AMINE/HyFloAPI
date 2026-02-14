@@ -9,44 +9,21 @@
  * 	@UpdatedOn	: 02-10-2026 - Phase 1: Use PipelineDTO from network module
  * 	@UpdatedOn	: 02-10-2026 - Phase 2: Remove all entity dependencies
  * 	@UpdatedOn	: 02-14-2026 - Phase 3: Add PipelineInfoPage support methods
+ * 	@UpdatedOn	: 02-14-2026 - Phase 4: Refactor to separate pipeline data from operational data
  *
  * 	@Type		: Class
  * 	@Layer		: Service
  * 	@Package	: Flow / Intelligence
  *
- * 	@Refactoring: Phase 2 - Removed direct PipelineRepository dependency.
- * 	              Now uses PipelineFacade exclusively.
+ * 	@Refactoring: Phase 4 - Clean separation of concerns.
+ * 	              PipelineInfoDTO now contains ONLY pipeline-specific data.
+ * 	              Operational metrics moved to PipelineDynamicDashboardDTO.
  * 	              
  * 	              Benefits:
- * 	              - Enforces module boundaries (no direct network/core repository access)
- * 	              - Improves testability (mock facade instead of repository)
- * 	              - Enables caching and optimization at facade level
- *
- * 	@Refactoring: Phase 1 - Removed buildAssetDTO() method.
- * 	              Now uses PipelineDTO.fromEntity() from network module.
- * 	              
- * 	              Benefits:
- * 	              - Eliminates 150+ LOC of redundant mapping code
- * 	              - Single source of truth for pipeline data structure
- * 	              - Reduces maintenance burden (update mapping in one place)
- * 	              - Removes risk of inconsistency between duplicate DTOs
- *
- * 	@Refactoring: Phase 2 (Enhancement) - Removed ALL entity dependencies.
- * 	              Service now works exclusively with DTOs from facades.
- * 	              
- * 	              Benefits:
- * 	              - Complete decoupling from entity layer
- * 	              - No lazy loading issues (DTOs have all data pre-loaded)
- * 	              - Clear architectural boundary enforcement
- * 	              - Intelligence layer is fully independent
- *
- * 	@Enhancement: Phase 3 - Added PipelineInfoPage support.
- * 	              New methods: getPipelineInfo(), getDashboard(), getTimeline()
- * 	              
- * 	              Features:
- * 	              - Comprehensive pipeline information aggregation
- * 	              - Real-time operational dashboard metrics
- * 	              - Unified timeline of alerts and events
+ * 	              - Clear module boundaries (pipeline data vs operational data)
+ * 	              - No data mixing from different modules
+ * 	              - Each DTO has single responsibility
+ * 	              - Frontend can cache static pipeline info separately from dynamic metrics
  *
  **/
 
@@ -87,28 +64,11 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Service providing operational intelligence and analytics for pipelines.
  * 
- * Focuses on slot-based monitoring, KPI aggregation, and trend analysis.
- * Extended with PipelineInfoPage support for comprehensive operational views.
- * 
- * Architecture Pattern:
- * - Uses PipelineFacade for pipeline data access (enforces module boundary)
- * - Uses FlowReadingFacade for flow reading queries
- * - NO direct access to repositories
- * - NO entity dependencies (works exclusively with DTOs)
- * 
- * Phase 1 Refactoring:
- * - Now uses PipelineDTO.fromEntity() instead of custom buildAssetDTO()
- * - Eliminates redundant mapping code (DRY principle)
- * 
- * Phase 2 Refactoring:
- * - Facades now return DTOs instead of entities
- * - Service no longer imports or uses entity classes
- * - Complete decoupling from entity layer
- * 
- * Phase 3 Enhancement:
- * - Added comprehensive PipelineInfoPage support
- * - New methods for info, dashboard, and timeline views
- * - Maintains existing architecture patterns
+ * Phase 4 Refactoring:
+ * - Clean separation: Pipeline static data vs operational dynamic data
+ * - PipelineInfoDTO: ONLY pipeline infrastructure (network module domain)
+ * - PipelineDynamicDashboardDTO: ONLY operational metrics (flow module domain)
+ * - No data mixing between modules
  */
 @Service
 @Transactional(readOnly = true)
@@ -116,27 +76,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PipelineIntelligenceService {
     
-    // ========== DEPENDENCIES (Phase 2 Refactored) ==========
+    // ========== DEPENDENCIES ==========
     
-    /**
-     * Facade for accessing pipeline data as DTOs
-     * REFACTORED: Now returns DTOs instead of entities
-     */
     private final PipelineFacade pipelineFacade;
-    
-    /**
-     * Facade for accessing flow reading data as DTOs
-     * REFACTORED: Now returns DTOs instead of entities
-     */
     private final FlowReadingFacade flowReadingFacade;
     
-    // TODO: Add AlertFacade when alerts module is implemented
+    // TODO: Add when available
     // private final AlertFacade alertFacade;
-    
-    // TODO: Add EventFacade when events module is implemented
     // private final EventFacade eventFacade;
-    
-    // TODO: Add StationFacade, ValveFacade, SensorFacade for entity linking
     // private final StationFacade stationFacade;
     // private final ValveFacade valveFacade;
     // private final SensorFacade sensorFacade;
@@ -144,72 +91,123 @@ public class PipelineIntelligenceService {
     // ========== PUBLIC SERVICE METHODS (PHASE 3 - NEW) ==========
     
     /**
-     * Get comprehensive pipeline information for PipelineInfoPage
+     * Get comprehensive pipeline INFRASTRUCTURE information
      * 
-     * Aggregates static infrastructure with optional dynamic health data.
-     * Supports lazy loading for linked entities to optimize performance.
+     * REFACTORED (Phase 4): Returns ONLY pipeline-specific static data.
+     * Does NOT include operational metrics, thresholds, or forecasts.
+     * 
+     * For operational data, use getDashboard() instead.
      * 
      * @param pipelineId Pipeline ID
-     * @param includeHealth Whether to include current health metrics
+     * @param includeHealth Whether to include current health metrics (from operational data)
      * @param includeEntities Whether to include linked entities (stations, valves, sensors)
-     * @return Comprehensive pipeline information DTO
+     * @return Pipeline infrastructure information DTO
      */
     public PipelineInfoDTO getPipelineInfo(Long pipelineId, Boolean includeHealth, Boolean includeEntities) {
         log.debug("Getting pipeline info for ID {} (health={}, entities={})", 
                   pipelineId, includeHealth, includeEntities);
         
-        // Get core pipeline data
+        // Get core pipeline data from Network module
         PipelineDTO pipelineDTO = pipelineFacade.findById(pipelineId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
-        // Build base info
+        // Build base infrastructure info (ONLY pipeline attributes)
         PipelineInfoDTO.PipelineInfoDTOBuilder builder = PipelineInfoDTO.builder()
+            // Core identification
             .id(pipelineDTO.getId())
             .name(pipelineDTO.getName())
             .code(pipelineDTO.getCode())
-            .status(determineOperationalStatus(pipelineId)) // TODO: Implement status logic
+            .description(pipelineDTO.getDescription())
+            
+            // Physical specifications
             .lengthKm(pipelineDTO.getLengthKm())
             .diameterMm(pipelineDTO.getDiameterMm())
             .material(pipelineDTO.getMaterial())
-            .operatorName(pipelineDTO.getManager() != null ? pipelineDTO.getManager().getDesignationLt() : null)
-            .commissionDate(pipelineDTO.getCommissionDate())
-            .geometry(pipelineDTO.getGeometry())
-            .description(pipelineDTO.getDescription())
-            .maxPressureBar(pipelineDTO.getMaxPressureBar())
+            .wallThicknessMm(pipelineDTO.getWallThicknessMm())
+            .coatingType(pipelineDTO.getCoatingType())
+            .burialDepthM(pipelineDTO.getBurialDepthM())
+            
+            // Design specifications
+            .maxDesignPressureBar(pipelineDTO.getMaxPressureBar())
+            .minDesignPressureBar(pipelineDTO.getMinPressureBar())
+            .maxDesignTemperatureC(pipelineDTO.getMaxTemperatureC())
+            .minDesignTemperatureC(pipelineDTO.getMinTemperatureC())
             .designFlowRate(pipelineDTO.getDesignFlowRate())
+            .designStandard(pipelineDTO.getDesignStandard())
+            
+            // Operational info (pipeline-level, not reading-level)
+            .operatorName(pipelineDTO.getManager() != null ? 
+                pipelineDTO.getManager().getDesignationLt() : null)
+            .commissionDate(pipelineDTO.getCommissionDate())
+            .lastInspectionDate(pipelineDTO.getLastInspectionDate())
+            .nextInspectionDate(pipelineDTO.getNextInspectionDate())
+            .installationYear(pipelineDTO.getInstallationYear())
+            .status(pipelineDTO.getStatus())
+            
+            // Geographic data
+            .geometry(pipelineDTO.getGeometry())
+            .startLocation(pipelineDTO.getStartLocation())
+            .endLocation(pipelineDTO.getEndLocation())
+            .routeDescription(pipelineDTO.getRouteDescription())
+            
+            // Additional technical info
+            .fluidType(pipelineDTO.getFluidType())
+            .cathodicProtectionType(pipelineDTO.getCathodicProtectionType())
+            .scadaIntegrated(pipelineDTO.getScadaIntegrated())
+            .pipelineClass(pipelineDTO.getPipelineClass())
+            .complianceStatus(pipelineDTO.getComplianceStatus())
+            .certifications(pipelineDTO.getCertifications())
+            
+            // Full details
             .pipelineDetails(pipelineDTO)
-            .lastUpdateTime(LocalDateTime.now());
+            
+            // Metadata
+            .lastUpdateTime(LocalDateTime.now())
+            .dataSource("Network Module")
+            .active(pipelineDTO.getActive());
         
-        // Include current health if requested
+        // Include linked entities if requested (lazy-loaded from Network module)
+        if (Boolean.TRUE.equals(includeEntities)) {
+            // TODO: Load via respective facades when available
+            // List<StationDTO> stations = stationFacade.findByPipelineId(pipelineId);
+            // List<ValveDTO> valves = valveFacade.findByPipelineId(pipelineId);
+            // List<SensorDTO> sensors = sensorFacade.findByPipelineId(pipelineId);
+            
+            // builder.stations(stations)
+            //     .valves(valves)
+            //     .sensors(sensors)
+            //     .stationCount(stations.size())
+            //     .valveCount(valves.size())
+            //     .sensorCount(sensors.size());
+            
+            // For now, set counts to 0
+            builder.stationCount(0)
+                .valveCount(0)
+                .sensorCount(0)
+                .cpStationCount(0);
+        }
+        
+        // Optionally include current health (from Flow module)
+        // NOTE: This is operational data, but included here for convenience
+        // Frontend can cache static info separately and refresh health independently
         if (Boolean.TRUE.equals(includeHealth)) {
             PipelineHealthDTO health = calculatePipelineHealth(pipelineId);
             builder.currentHealth(health);
-        }
-        
-        // Include linked entities if requested
-        if (Boolean.TRUE.equals(includeEntities)) {
-            // TODO: Implement entity loading via facades
-            // builder.stations(stationFacade.findByPipelineId(pipelineId));
-            // builder.valves(valveFacade.findByPipelineId(pipelineId));
-            // builder.sensors(sensorFacade.findByPipelineId(pipelineId));
-            
-            // For now, set counts to 0
-            builder.stationCount(0);
-            builder.valveCount(0);
-            builder.sensorCount(0);
         }
         
         return builder.build();
     }
     
     /**
-     * Get real-time operational dashboard metrics
+     * Get real-time OPERATIONAL dashboard metrics
      * 
-     * Optimized for frequent updates with minimal data transfer.
-     * Should be cached with short TTL (30 seconds).
+     * REFACTORED (Phase 4): Contains ONLY operational/dynamic data.
+     * Does NOT include static pipeline specifications.
+     * 
+     * For static pipeline info, use getPipelineInfo() instead.
      * 
      * @param pipelineId Pipeline ID
-     * @return Real-time dashboard metrics DTO
+     * @return Real-time operational dashboard metrics DTO
      */
     public PipelineDynamicDashboardDTO getDashboard(Long pipelineId) {
         log.debug("Getting dashboard for pipeline {}", pipelineId);
@@ -218,13 +216,13 @@ public class PipelineIntelligenceService {
         PipelineDTO pipeline = pipelineFacade.findById(pipelineId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
-        // Get latest reading
+        // Get latest reading (operational data)
         var latestReading = flowReadingFacade.findLatestByPipeline(pipelineId);
         
-        // Calculate health metrics
+        // Calculate health metrics (operational data)
         PipelineHealthDTO health = calculatePipelineHealth(pipelineId);
         
-        // Get 24-hour statistics
+        // Get 24-hour statistics (operational data)
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
         var last24hReadings = flowReadingFacade.findByPipelineAndDateRangeOrdered(
@@ -235,7 +233,7 @@ public class PipelineIntelligenceService {
         BigDecimal avgFlowRate24h = calculateAverage(last24hReadings, "FLOW_RATE");
         BigDecimal throughput24h = calculateThroughput(last24hReadings);
         
-        // Get today's validation stats
+        // Get today's validation stats (operational data)
         var todayReadings = flowReadingFacade.findByPipelineAndDate(pipelineId, today);
         int validatedToday = (int) todayReadings.stream()
             .filter(r -> r.getValidationStatus() != null && "APPROVED".equals(r.getValidationStatus().getCode()))
@@ -244,7 +242,7 @@ public class PipelineIntelligenceService {
             .filter(r -> r.getValidationStatus() != null && "SUBMITTED".equals(r.getValidationStatus().getCode()))
             .count();
         
-        // Build key metrics map
+        // Build key metrics map (operational data)
         Map<String, BigDecimal> keyMetrics = new HashMap<>();
         latestReading.ifPresent(reading -> {
             if (reading.getPressure() != null) keyMetrics.put("pressure", reading.getPressure());
@@ -284,7 +282,6 @@ public class PipelineIntelligenceService {
      * Get unified timeline of alerts and events
      * 
      * Merges alerts and events chronologically with pagination support.
-     * Includes filtering by severity and type.
      * 
      * @param pipelineId Pipeline ID
      * @param from Start date/time
@@ -328,11 +325,11 @@ public class PipelineIntelligenceService {
         // if (severity != null) items = items.stream().filter(i -> severity.equals(i.getSeverity())).collect(Collectors.toList());
         // if (type != null) items = items.stream().filter(i -> type.equals(i.getType())).collect(Collectors.toList());
         
-        // TODO: Apply pagination
+        // Apply pagination
         int totalItems = items.size();
         int startIndex = page * size;
         int endIndex = Math.min(startIndex + size, totalItems);
-        List<TimelineItemDTO> paginatedItems = items.subList(startIndex, endIndex);
+        List<TimelineItemDTO> paginatedItems = items.isEmpty() ? items : items.subList(startIndex, endIndex);
         
         // Calculate distribution statistics
         Map<String, Integer> severityCounts = items.stream()
@@ -347,7 +344,7 @@ public class PipelineIntelligenceService {
                 Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
             ));
         
-        int totalPages = (int) Math.ceil((double) totalItems / size);
+        int totalPages = size > 0 ? (int) Math.ceil((double) totalItems / size) : 0;
         
         return PipelineTimelineDTO.builder()
             .items(paginatedItems)
@@ -366,31 +363,21 @@ public class PipelineIntelligenceService {
     
     /**
      * Get comprehensive overview with asset specs and operational KPIs
-     * 
-     * REFACTORED (Phase 2): Now uses PipelineFacade.findById() which returns PipelineDTO
-     * REFACTORED (Phase 1): Reuses network module's PipelineDTO
-     * REFACTORED (Phase 2 Enhancement): Works exclusively with DTOs, no entity dependencies
      */
     public PipelineOverviewDTO getOverview(Long pipelineId, LocalDate referenceDate) {
         log.debug("Getting overview for pipeline {} on {}", pipelineId, referenceDate);
         
-        // ✅ REFACTORED: Facade returns DTO directly (Phase 2)
         PipelineDTO asset = pipelineFacade.findById(pipelineId)
             .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
         
-        // Get today's slot coverage stats using utility
         var allSlots = flowReadingFacade.findAllSlotsOrdered();
         var readings = flowReadingFacade.findByPipelineAndDate(pipelineId, referenceDate);
         
-        // ✅ Convert DTOs to minimal data structure for statistics calculation
-        // SlotStatisticsCalculator works with reading data, not full entities
         SlotStatisticsCalculator.SlotStatistics slotStats = 
             calculateSlotStatisticsFromDTOs(allSlots, readings, referenceDate);
         
-        // Get latest reading for current measurements
         var latestReading = flowReadingFacade.findLatestByPipeline(pipelineId);
         
-        // Calculate weekly completion rate using utility
         LocalDate weekStart = referenceDate.minusDays(6);
         Double weeklyCompletionRate = calculateWeeklyCompletionRate(pipelineId, weekStart, referenceDate);
         
@@ -416,21 +403,15 @@ public class PipelineIntelligenceService {
     
     /**
      * Get slot coverage for specific date (12 slots)
-     * 
-     * REFACTORED: Now works with DTOs from facades
      */
     public List<SlotStatusDTO> getSlotCoverage(Long pipelineId, LocalDate date) {
         log.debug("Getting slot coverage for pipeline {} on {}", pipelineId, date);
         
-        // ✅ REFACTORED: Verify existence via facade
         if (!pipelineFacade.existsById(pipelineId)) {
             throw new IllegalArgumentException("Pipeline not found: " + pipelineId);
         }
         
-        // Get all 12 slots
         var allSlots = flowReadingFacade.findAllSlotsOrdered();
-        
-        // Get readings for this date (now returns DTOs)
         var readings = flowReadingFacade.findByPipelineAndDate(pipelineId, date);
         var readingsBySlot = readings.stream()
             .collect(Collectors.toMap(
@@ -443,13 +424,11 @@ public class PipelineIntelligenceService {
         return allSlots.stream().map(slot -> {
             FlowReadingDTO reading = readingsBySlot.get(slot.getId());
             
-            // Use utility to check if overdue
             boolean isOverdue = false;
             if (reading == null) {
                 isOverdue = SlotStatisticsCalculator.isSlotOverdue(slot, date, now);
             } else if (reading.getValidationStatus() != null && 
                        !"APPROVED".equals(reading.getValidationStatus().getCode())) {
-                // Convert DTO data to check if overdue
                 isOverdue = isReadingOverdueFromDTO(reading, now);
             }
             
@@ -458,7 +437,7 @@ public class PipelineIntelligenceService {
                 .slotCode(slot.getCode())
                 .startTime(slot.getStartTime())
                 .endTime(slot.getEndTime())
-                .designation(slot.getDesignationFr()) // TODO: Handle i18n
+                .designation(slot.getDesignationFr())
                 .displayOrder(slot.getDisplayOrder())
                 .readingId(reading != null ? reading.getId() : null)
                 .validationStatus(reading != null && reading.getValidationStatus() != null 
@@ -485,8 +464,6 @@ public class PipelineIntelligenceService {
     
     /**
      * Get time-series data for readings
-     * 
-     * REFACTORED: Now works with DTOs from facades
      */
     public ReadingsTimeSeriesDTO getReadingsTimeSeries(
             Long pipelineId, 
@@ -497,12 +474,10 @@ public class PipelineIntelligenceService {
         log.debug("Getting time-series for pipeline {} from {} to {}, type: {}",
             pipelineId, startDate, endDate, measurementType);
         
-        // ✅ REFACTORED: Verify existence via facade
         if (!pipelineFacade.existsById(pipelineId)) {
             throw new IllegalArgumentException("Pipeline not found: " + pipelineId);
         }
         
-        // Get readings in date range (now returns DTOs)
         var readings = flowReadingFacade.findByPipelineAndDateRangeOrdered(
             pipelineId, startDate, endDate);
         
@@ -534,18 +509,12 @@ public class PipelineIntelligenceService {
             .build();
     }
     
-    // ========== HELPER METHODS (PHASE 3 - NEW) ==========
+    // ========== HELPER METHODS ==========
     
     /**
-     * Calculate comprehensive pipeline health metrics
-     * 
-     * Aggregates current readings, alerts, and thresholds to determine health status.
-     * 
-     * @param pipelineId Pipeline ID
-     * @return Health metrics DTO
+     * Calculate comprehensive pipeline health metrics (operational data)
      */
     private PipelineHealthDTO calculatePipelineHealth(Long pipelineId) {
-        // Get latest reading
         var latestReading = flowReadingFacade.findLatestByPipeline(pipelineId);
         
         // TODO: Get active alerts from AlertFacade
@@ -554,12 +523,9 @@ public class PipelineIntelligenceService {
         int warningAlerts = 0;
         
         // TODO: Calculate health score based on readings and alerts
-        double healthScore = 92.5; // Placeholder
+        double healthScore = 92.5;
+        String overallHealth = "HEALTHY";
         
-        // TODO: Determine overall health status
-        String overallHealth = "HEALTHY"; // Placeholder
-        
-        // Get 24-hour averages
         LocalDate today = LocalDate.now();
         LocalDate yesterday = today.minusDays(1);
         var last24hReadings = flowReadingFacade.findByPipelineAndDateRangeOrdered(
@@ -568,9 +534,7 @@ public class PipelineIntelligenceService {
         BigDecimal avgPressure24h = calculateAverage(last24hReadings, "PRESSURE");
         BigDecimal throughput24h = calculateThroughput(last24hReadings);
         
-        // Get 7-day event count
-        // TODO: Implement via EventFacade
-        int eventsLast7Days = 0;
+        int eventsLast7Days = 0; // TODO: Implement via EventFacade
         
         return PipelineHealthDTO.builder()
             .overallHealth(overallHealth)
@@ -586,31 +550,13 @@ public class PipelineIntelligenceService {
             .eventsLast7Days(eventsLast7Days)
             .lastReadingTime(latestReading.map(FlowReadingDTO::getRecordedAt).orElse(null))
             .pressureStatus("NORMAL") // TODO: Implement threshold checking
-            .temperatureStatus("NORMAL") // TODO: Implement threshold checking
-            .flowRateStatus("NORMAL") // TODO: Implement threshold checking
+            .temperatureStatus("NORMAL")
+            .flowRateStatus("NORMAL")
             .availabilityPercent(99.5) // TODO: Implement availability calculation
             .sensorOnlinePercent(97.8) // TODO: Implement via SensorFacade
             .build();
     }
     
-    /**
-     * Determine operational status based on latest data
-     * 
-     * @param pipelineId Pipeline ID
-     * @return Status string (OPERATIONAL, MAINTENANCE, SHUTDOWN, EMERGENCY)
-     */
-    private String determineOperationalStatus(Long pipelineId) {
-        // TODO: Implement status determination logic
-        // - Check latest readings
-        // - Check active alerts
-        // - Check scheduled maintenance
-        // - Check emergency shutdowns
-        return "OPERATIONAL";
-    }
-    
-    /**
-     * Calculate average value for a measurement type
-     */
     private BigDecimal calculateAverage(List<FlowReadingDTO> readings, String measurementType) {
         List<BigDecimal> values = readings.stream()
             .map(r -> extractMeasurementValue(r, measurementType))
@@ -625,43 +571,24 @@ public class PipelineIntelligenceService {
         return sum.divide(BigDecimal.valueOf(values.size()), 2, RoundingMode.HALF_UP);
     }
     
-    /**
-     * Calculate total throughput from readings
-     */
     private BigDecimal calculateThroughput(List<FlowReadingDTO> readings) {
-        // TODO: Implement proper throughput calculation
-        // Sum of (flow_rate * time_interval) for each reading
         return readings.stream()
             .map(FlowReadingDTO::getContainedVolume)
             .filter(v -> v != null)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
-    /**
-     * Calculate data completeness percentage for today
-     */
     private Double calculateDataCompleteness(List<FlowReadingDTO> todayReadings) {
         int totalSlots = 12;
         int recordedSlots = todayReadings.size();
         return (recordedSlots * 100.0) / totalSlots;
     }
     
-    // ========== HELPER METHODS (EXISTING) ==========
-    
-    /**
-     * Calculate slot statistics from DTOs instead of entities
-     * 
-     * NEW (Phase 2): Adapter method to work with DTOs while using existing utility
-     */
     private SlotStatisticsCalculator.SlotStatistics calculateSlotStatisticsFromDTOs(
             List<ReadingSlot> allSlots, 
             List<FlowReadingDTO> readingDTOs, 
             LocalDate referenceDate) {
         
-        // For now, we need to work around the utility expecting entities
-        // TODO: Refactor SlotStatisticsCalculator to accept DTOs or interfaces
-        
-        // Count statistics directly from DTOs
         int totalSlots = allSlots.size();
         int recordedCount = (int) readingDTOs.stream()
             .filter(r -> r.getValidationStatus() != null)
@@ -673,7 +600,6 @@ public class PipelineIntelligenceService {
             .filter(r -> r.getValidationStatus() != null && "SUBMITTED".equals(r.getValidationStatus().getCode()))
             .count();
         
-        // Calculate overdue count
         LocalDateTime now = LocalDateTime.now();
         int overdueCount = 0;
         for (ReadingSlot slot : allSlots) {
@@ -701,11 +627,6 @@ public class PipelineIntelligenceService {
         );
     }
     
-    /**
-     * Check if reading is overdue based on DTO data
-     * 
-     * NEW (Phase 2): Helper method to check overdue status without entity dependency
-     */
     private boolean isReadingOverdueFromDTO(FlowReadingDTO reading, LocalDateTime now) {
         if (reading.getReadingSlot() == null) {
             return false;
@@ -714,26 +635,17 @@ public class PipelineIntelligenceService {
         LocalDateTime deadline = LocalDateTime.of(
             reading.getReadingDate(),
             reading.getReadingSlot().getEndTime()
-        ).plusHours(2); // 2-hour grace period
+        ).plusHours(2);
         
         return now.isAfter(deadline);
     }
     
-    /**
-     * Calculate weekly completion rate using SlotStatisticsCalculator utility
-     * 
-     * UPDATED (Phase 2): Now works with DTOs from facade
-     */
     private Double calculateWeeklyCompletionRate(Long pipelineId, LocalDate startDate, LocalDate endDate) {
-        // Get all slots and readings for the date range
         var allSlots = flowReadingFacade.findAllSlotsOrdered();
-        
-        // Group readings by date (now working with DTOs)
         var allReadings = flowReadingFacade.findByPipelineAndDateRangeOrdered(pipelineId, startDate, endDate);
         Map<LocalDate, List<FlowReadingDTO>> readingsByDate = allReadings.stream()
             .collect(Collectors.groupingBy(FlowReadingDTO::getReadingDate));
         
-        // Calculate average completion rate across all days
         List<Double> dailyRates = new ArrayList<>();
         
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
@@ -748,11 +660,6 @@ public class PipelineIntelligenceService {
             .orElse(0.0);
     }
     
-    /**
-     * Extract measurement value based on type
-     * 
-     * UPDATED (Phase 2): Now works with FlowReadingDTO
-     */
     private BigDecimal extractMeasurementValue(FlowReadingDTO reading, String measurementType) {
         if (measurementType == null) {
             return reading.getPressure();
@@ -767,9 +674,6 @@ public class PipelineIntelligenceService {
         };
     }
     
-    /**
-     * Calculate statistical summary from values
-     */
     private StatisticalSummaryDTO calculateStatistics(List<BigDecimal> values) {
         if (values.isEmpty()) {
             return StatisticalSummaryDTO.builder()
@@ -788,7 +692,6 @@ public class PipelineIntelligenceService {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal avg = sum.divide(BigDecimal.valueOf(values.size()), 2, RoundingMode.HALF_UP);
         
-        // Calculate median
         List<BigDecimal> sorted = values.stream().sorted().collect(Collectors.toList());
         BigDecimal median;
         int size = sorted.size();
@@ -800,7 +703,6 @@ public class PipelineIntelligenceService {
             median = sorted.get(size / 2);
         }
         
-        // Calculate standard deviation
         BigDecimal variance = values.stream()
             .map(v -> v.subtract(avg).pow(2))
             .reduce(BigDecimal.ZERO, BigDecimal::add)
