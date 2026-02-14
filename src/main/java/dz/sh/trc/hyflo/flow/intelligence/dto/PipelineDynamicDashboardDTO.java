@@ -10,6 +10,18 @@
  * 	@Layer		: DTO
  * 	@Package	: Flow / Intelligence
  *
+ * 	@Description: Real-time operational dashboard for pipeline monitoring.
+ * 	              
+ * 	              DATA SOURCES (indicated in @Schema descriptions):
+ * 	              - [Pipeline] = Network.Core.Pipeline entity
+ * 	              - [FlowReading] = FlowReading entity (latest or aggregated)
+ * 	              - [FlowAlert] = FlowAlert entities (active alerts)
+ * 	              - [FlowEvent] = FlowEvent entities for event counts
+ * 	              - [FlowOperation] = FlowOperation entities for operation counts
+ * 	              - [FlowThreshold] = Threshold comparisons for status
+ * 	              - [Calculated] = Aggregated/derived metrics
+ * 	              - [Sensor] = Network.Sensor entities for sensor status
+ *
  **/
 
 package dz.sh.trc.hyflo.flow.intelligence.dto;
@@ -28,96 +40,114 @@ import lombok.NoArgsConstructor;
 
 /**
  * Pipeline Dynamic Dashboard DTO
- * Real-time operational dashboard data optimized for frequent updates
+ * Real-time operational dashboard data optimized for frequent updates (30-second cache)
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Real-time operational dashboard metrics for pipeline")
+@Schema(description = "Real-time operational dashboard metrics for pipeline monitoring")
 public class PipelineDynamicDashboardDTO {
 
-    @Schema(description = "Pipeline ID", example = "1", required = true)
+    // ========== IDENTIFICATION (Source: Pipeline) ==========
+    
+    @Schema(description = "[Pipeline] Pipeline ID", example = "1", required = true)
     private Long pipelineId;
 
-    @Schema(description = "Pipeline name", example = "GT-2023-A")
+    @Schema(description = "[Pipeline] Pipeline name", example = "GT-2023-A")
     private String pipelineName;
 
-    // Current Real-time Reading
-    @Schema(description = "Latest sensor reading with all measurements")
+    // ========== CURRENT READING (Source: FlowReading - latest) ==========
+    
+    @Schema(description = "[FlowReading.latest] Latest sensor reading with full measurement details")
     private FlowReadingDTO latestReading;
 
-    // Key Metrics (for quick display)
-    @Schema(description = "Key operational metrics map", example = "{\"pressure\": 45.2, \"temperature\": 42.0, \"flowRate\": 1250.5}")
+    // ========== KEY METRICS (Source: FlowReading - latest) ==========
+    
+    @Schema(description = "[FlowReading.latest] Key operational metrics map for quick display", 
+            example = "{\"pressure\": 45.2, \"temperature\": 42.0, \"flowRate\": 1250.5}")
     private Map<String, BigDecimal> keyMetrics;
 
-    // Health Indicators
-    @Schema(description = "Overall health status", example = "HEALTHY",
+    // ========== HEALTH INDICATORS (Source: Calculated from FlowAlert + FlowReading) ==========
+    
+    @Schema(description = "[Calculated] Overall health status from alerts and threshold violations", 
+            example = "HEALTHY",
             allowableValues = {"HEALTHY", "WARNING", "CRITICAL", "UNKNOWN"})
     private String overallHealth;
 
-    @Schema(description = "Health score (0-100)", example = "92.5", minimum = "0", maximum = "100")
+    @Schema(description = "[Calculated] Health score (0-100) based on alerts, thresholds, and data quality", 
+            example = "92.5", minimum = "0", maximum = "100")
     private Double healthScore;
 
-    @Schema(description = "Number of active alerts", example = "2")
+    @Schema(description = "[FlowAlert] Number of active (unresolved) alerts", example = "2")
     private Integer activeAlertsCount;
 
-    @Schema(description = "Number of critical alerts", example = "0")
+    @Schema(description = "[FlowAlert] Number of critical severity alerts", example = "0")
     private Integer criticalAlertsCount;
 
-    @Schema(description = "Number of warning alerts", example = "2")
+    @Schema(description = "[FlowAlert] Number of warning severity alerts", example = "2")
     private Integer warningAlertsCount;
 
-    // Quick Statistics
-    @Schema(description = "Average pressure over last 24 hours in bar", example = "44.8")
+    // ========== 24-HOUR STATISTICS (Source: Calculated from FlowReading) ==========
+    
+    @Schema(description = "[Calculated] Average pressure over last 24 hours in bar", example = "44.8")
     private BigDecimal avgPressureLast24h;
 
-    @Schema(description = "Average temperature over last 24 hours in Celsius", example = "41.5")
+    @Schema(description = "[Calculated] Average temperature over last 24 hours in Celsius", example = "41.5")
     private BigDecimal avgTemperatureLast24h;
 
-    @Schema(description = "Average flow rate over last 24 hours in m³/h", example = "1248.2")
+    @Schema(description = "[Calculated] Average flow rate over last 24 hours in m³/h", example = "1248.2")
     private BigDecimal avgFlowRateLast24h;
 
-    @Schema(description = "Total throughput over last 24 hours in m³", example = "30012.0")
+    @Schema(description = "[Calculated] Total throughput (sum of contained volumes) over last 24 hours in m³", example = "30012.0")
     private BigDecimal throughputLast24h;
 
-    @Schema(description = "Number of events in last 7 days", example = "15")
+    // ========== RECENT ACTIVITY COUNTS (Source: FlowEvent + FlowOperation) ==========
+    
+    @Schema(description = "[FlowEvent] Number of events recorded in last 7 days", example = "15")
     private Integer eventsLast7Days;
 
-    @Schema(description = "Number of operations in last 7 days", example = "8")
+    @Schema(description = "[FlowOperation] Number of operations performed in last 7 days", example = "8")
     private Integer operationsLast7Days;
 
-    // Status Indicators
-    @Schema(description = "Pressure status", example = "NORMAL",
+    // ========== STATUS INDICATORS (Source: Calculated from FlowReading vs FlowThreshold) ==========
+    
+    @Schema(description = "[Calculated] Pressure status based on FlowThreshold comparison", 
+            example = "NORMAL",
             allowableValues = {"NORMAL", "LOW", "HIGH", "CRITICAL"})
     private String pressureStatus;
 
-    @Schema(description = "Temperature status", example = "NORMAL",
+    @Schema(description = "[Calculated] Temperature status based on FlowThreshold comparison", 
+            example = "NORMAL",
             allowableValues = {"NORMAL", "LOW", "HIGH", "CRITICAL"})
     private String temperatureStatus;
 
-    @Schema(description = "Flow rate status", example = "NORMAL",
+    @Schema(description = "[Calculated] Flow rate status based on FlowThreshold comparison", 
+            example = "NORMAL",
             allowableValues = {"NORMAL", "LOW", "HIGH", "CRITICAL"})
     private String flowRateStatus;
 
-    // Sensor Coverage
-    @Schema(description = "Percentage of sensors online", example = "97.8")
+    // ========== SENSOR COVERAGE (Source: Sensor entities + Calculated) ==========
+    
+    @Schema(description = "[Calculated] Percentage of sensors currently online/reporting", example = "97.8")
     private Double sensorOnlinePercent;
 
-    @Schema(description = "Number of online sensors", example = "44")
+    @Schema(description = "[Sensor] Number of sensors currently online", example = "44")
     private Integer onlineSensors;
 
-    @Schema(description = "Total number of sensors", example = "45")
+    @Schema(description = "[Sensor] Total number of sensors installed on pipeline", example = "45")
     private Integer totalSensors;
 
-    // Data Quality
-    @Schema(description = "Data completeness percentage for today", example = "95.5")
+    // ========== DATA QUALITY (Source: Calculated from FlowReading today) ==========
+    
+    @Schema(description = "[Calculated] Data completeness percentage for today (recorded slots / total slots * 100)", 
+            example = "95.5")
     private Double dataCompletenessPercent;
 
-    @Schema(description = "Number of readings validated today", example = "8")
+    @Schema(description = "[FlowReading] Number of readings validated today", example = "8")
     private Integer validatedReadingsToday;
 
-    @Schema(description = "Number of pending readings today", example = "4")
+    @Schema(description = "[FlowReading] Number of readings pending validation today", example = "4")
     private Integer pendingReadingsToday;
 }
