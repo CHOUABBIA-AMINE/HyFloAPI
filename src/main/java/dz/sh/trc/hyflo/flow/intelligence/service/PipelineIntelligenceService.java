@@ -12,6 +12,7 @@
  * 	@UpdatedOn	: 02-14-2026 - Phase 4: Refactor to separate pipeline data from operational data
  * 	@UpdatedOn	: 02-14-2026 - Phase 5: Complete implementation with real data integration
  * 	@UpdatedOn	: 02-14-2026 - Phase 6: Replace Map with KeyMetricsDTO for type safety
+ * 	@UpdatedOn	: 02-14-2026 - Phase 7: Add null safety for coating and material fields
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -21,6 +22,10 @@
  * 	              - Improved type safety in getDashboard() method
  * 	              - Better API contract clarity
  * 	              - Consistent DTO usage throughout service
+ *
+ * 	@BugFix: Phase 7 - Add null safety for optional pipeline fields
+ * 	          - Fix NullPointerException when coating/material fields are null
+ * 	          - Graceful handling of incomplete pipeline data
  *
  **/
 
@@ -109,15 +114,21 @@ public class PipelineIntelligenceService {
             .id(pipelineDTO.getId())
             .name(pipelineDTO.getName())
             .code(pipelineDTO.getCode())
-            .operationalStatus(pipelineDTO.getOperationalStatus().getCode())
+            .operationalStatus(pipelineDTO.getOperationalStatus() != null ? 
+                pipelineDTO.getOperationalStatus().getCode() : null)
             
             .length(pipelineDTO.getLength())
             .nominalDiameter(pipelineDTO.getNominalDiameter())
             .nominalThickness(pipelineDTO.getNominalThickness())
             .nominalRoughness(pipelineDTO.getNominalRoughness())
-            .materialName(pipelineDTO.getNominalConstructionMaterial().getCode())
-            .exteriorCoating(pipelineDTO.getNominalExteriorCoating().getCode())
-            .interiorCoating(pipelineDTO.getNominalInteriorCoating().getCode())
+            
+            // NULL-SAFE: Check for null before calling getCode()
+            .materialName(pipelineDTO.getNominalConstructionMaterial() != null ? 
+                pipelineDTO.getNominalConstructionMaterial().getCode() : null)
+            .exteriorCoating(pipelineDTO.getNominalExteriorCoating() != null ? 
+                pipelineDTO.getNominalExteriorCoating().getCode() : null)
+            .interiorCoating(pipelineDTO.getNominalInteriorCoating() != null ? 
+                pipelineDTO.getNominalInteriorCoating().getCode() : null)
             
             .designMaxPressure(pipelineDTO.getDesignMaxServicePressure())
             .operationalMaxPressure(pipelineDTO.getOperationalMaxServicePressure())
@@ -134,10 +145,13 @@ public class PipelineIntelligenceService {
             .commissionDate(pipelineDTO.getCommissioningDate())
             .decommissionDate(pipelineDTO.getDecommissioningDate())
             
-            .departureTerminalName(pipelineDTO.getDepartureTerminal() != null ? pipelineDTO.getDepartureTerminal().getCode() : null)
-            .arrivalTerminalName(pipelineDTO.getArrivalTerminal() != null ? pipelineDTO.getArrivalTerminal().getCode() : null)
+            .departureTerminalName(pipelineDTO.getDepartureTerminal() != null ? 
+                pipelineDTO.getDepartureTerminal().getCode() : null)
+            .arrivalTerminalName(pipelineDTO.getArrivalTerminal() != null ? 
+                pipelineDTO.getArrivalTerminal().getCode() : null)
             
-            .pipelineSystemName(pipelineDTO.getPipelineSystem() != null ? pipelineDTO.getPipelineSystem().getCode() : null)
+            .pipelineSystemName(pipelineDTO.getPipelineSystem() != null ? 
+                pipelineDTO.getPipelineSystem().getCode() : null)
             
             .pipelineDetails(pipelineDTO);
         
