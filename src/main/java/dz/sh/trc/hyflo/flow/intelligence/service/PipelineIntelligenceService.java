@@ -11,17 +11,16 @@
  * 	@UpdatedOn	: 02-14-2026 - Phase 3: Add PipelineInfoPage support methods
  * 	@UpdatedOn	: 02-14-2026 - Phase 4: Refactor to separate pipeline data from operational data
  * 	@UpdatedOn	: 02-14-2026 - Phase 5: Complete implementation with real data integration
+ * 	@UpdatedOn	: 02-14-2026 - Phase 6: Replace Map with KeyMetricsDTO for type safety
  *
  * 	@Type		: Class
  * 	@Layer		: Service
  * 	@Package	: Flow / Intelligence
  *
- * 	@Enhancement: Phase 5 - Full implementation with real data sources.
- * 	              - Integrated FlowThresholdRepository for operating limits
- * 	              - Integrated FlowAlertRepository for real-time alerts
- * 	              - Integrated FlowEventRepository for operational events
- * 	              - Threshold-based health status calculations
- * 	              - Timeline merging with alerts and events
+ * 	@Enhancement: Phase 6 - Replace Map<String, BigDecimal> with typed KeyMetricsDTO.
+ * 	              - Improved type safety in getDashboard() method
+ * 	              - Better API contract clarity
+ * 	              - Consistent DTO usage throughout service
  *
  **/
 
@@ -33,7 +32,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,6 +53,7 @@ import dz.sh.trc.hyflo.flow.core.model.FlowThreshold;
 import dz.sh.trc.hyflo.flow.core.repository.FlowAlertRepository;
 import dz.sh.trc.hyflo.flow.core.repository.FlowEventRepository;
 import dz.sh.trc.hyflo.flow.core.repository.FlowThresholdRepository;
+import dz.sh.trc.hyflo.flow.intelligence.dto.KeyMetricsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineInfoDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineHealthDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineDynamicDashboardDTO;
@@ -94,7 +93,7 @@ public class PipelineIntelligenceService {
     // private final ValveFacade valveFacade;
     // private final SensorFacade sensorFacade;
     
-    // ========== PUBLIC SERVICE METHODS (PHASE 5 - FULLY IMPLEMENTED) ==========
+    // ========== PUBLIC SERVICE METHODS ==========
     
     /**
      * Get comprehensive pipeline INFRASTRUCTURE information
@@ -181,12 +180,17 @@ public class PipelineIntelligenceService {
         int operationsLast7Days = (int) eventRepository.findByInfrastructureIdAndEventTimestampBetween(
             pipelineId, sevenDaysAgo, now).size();
         
-        Map<String, BigDecimal> keyMetrics = new HashMap<>();
-        latestReading.ifPresent(reading -> {
-            if (reading.getPressure() != null) keyMetrics.put("pressure", reading.getPressure());
-            if (reading.getTemperature() != null) keyMetrics.put("temperature", reading.getTemperature());
-            if (reading.getFlowRate() != null) keyMetrics.put("flowRate", reading.getFlowRate());
-        });
+        // Build KeyMetricsDTO from latest reading
+        KeyMetricsDTO keyMetrics = null;
+        if (latestReading.isPresent()) {
+            FlowReadingDTO reading = latestReading.get();
+            keyMetrics = KeyMetricsDTO.builder()
+                .pressure(reading.getPressure())
+                .temperature(reading.getTemperature())
+                .flowRate(reading.getFlowRate())
+                .containedVolume(reading.getContainedVolume())
+                .build();
+        }
         
         return PipelineDynamicDashboardDTO.builder()
             .pipelineId(pipelineId)
