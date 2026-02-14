@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineSegmentService
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 02-14-2026 13:32 - Enhanced logging for findByPipeline
  *
  *	@Type		: Class
  *	@Layer		: Service
@@ -107,10 +107,48 @@ public class PipelineSegmentService extends GenericService<PipelineSegment, Pipe
         return executeQuery(p -> pipelineSegmentRepository.searchByAnyField(searchTerm.trim(), p), pageable);
     }
 
+    /**
+     * Find all pipeline segments belonging to a specific pipeline.
+     * 
+     * This method includes comprehensive logging to help debug filtering issues.
+     * 
+     * @param pipelineId The ID of the parent pipeline
+     * @return List of segments belonging to the specified pipeline
+     */
     public List<PipelineSegmentDTO> findByPipeline(Long pipelineId) {
-        log.debug("Finding pipeline segments by pipeline id: {}", pipelineId);
-        return pipelineSegmentRepository.findByPipelineId(pipelineId).stream()
+        log.info("🔍 Finding pipeline segments for pipeline ID: {}", pipelineId);
+        
+        // Execute repository query
+        List<PipelineSegment> segments = pipelineSegmentRepository.findByPipelineId(pipelineId);
+        log.info("📦 Repository returned {} segments for pipeline {}", segments.size(), pipelineId);
+        
+        // Detailed logging for debugging
+        if (log.isDebugEnabled()) {
+            segments.forEach(seg -> {
+                Long segmentPipelineId = seg.getPipeline() != null ? seg.getPipeline().getId() : null;
+                log.debug("  → Segment ID={}, Code={}, PipelineID={}", 
+                    seg.getId(), 
+                    seg.getCode(), 
+                    segmentPipelineId
+                );
+                
+                // Warn about data integrity issues
+                if (segmentPipelineId == null) {
+                    log.warn("⚠️ Segment {} has NULL pipeline reference!", seg.getCode());
+                } else if (!segmentPipelineId.equals(pipelineId)) {
+                    log.error("🚨 DATA INTEGRITY ERROR: Segment {} (ID={}) has pipelineId={} but query was for pipelineId={}!",
+                        seg.getCode(), seg.getId(), segmentPipelineId, pipelineId);
+                }
+            });
+        }
+        
+        // Convert to DTOs
+        List<PipelineSegmentDTO> dtos = segments.stream()
                 .map(PipelineSegmentDTO::fromEntity)
                 .collect(Collectors.toList());
+        
+        log.info("✅ Returning {} segment DTOs for pipeline {}", dtos.size(), pipelineId);
+        
+        return dtos;
     }
 }
