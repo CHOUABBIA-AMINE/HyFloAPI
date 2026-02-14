@@ -108,7 +108,7 @@ public class ReadingWorkflowService {
                 ? reading.getRecordedBy().getLastNameLt() + " " + reading.getRecordedBy().getFirstNameLt()
                 : "Unknown";
         
-        ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
+        ValidationStatus validatedStatus = validationStatusRepository.findByCode("APPROVED")
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "VALIDATED status not found in database. Please configure validation statuses."));
         

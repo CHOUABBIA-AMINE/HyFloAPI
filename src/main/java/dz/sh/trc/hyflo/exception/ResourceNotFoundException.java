@@ -34,7 +34,7 @@ public class ResourceNotFoundException extends IaasException {
 	
 	public ResourceNotFoundException(String resourceType) {
         super(
-            String.format("%s with ID %s not found", resourceType),
+            String.format("%s with ID %s not found", resourceType, resourceType),
             "RESOURCE_NOT_FOUND",
             HttpStatus.NOT_FOUND,
             resourceType

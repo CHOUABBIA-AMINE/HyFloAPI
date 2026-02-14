@@ -87,7 +87,7 @@ public class ReadingWorkflowController {
      * @param validatedById Employee ID of the validator
      * @return Updated reading DTO with VALIDATED status
      */
-    @PostMapping("/readings/{id}/validate")
+    @PostMapping("/{id}/validate")
     @Operation(
         summary = "Validate a flow reading",
         description = "Approves a submitted reading, transitions status to VALIDATED, and records validator information"
@@ -138,7 +138,7 @@ public class ReadingWorkflowController {
      * @param rejectionReason Reason for rejection (required)
      * @return Updated reading DTO with REJECTED status
      */
-    @PostMapping("/readings/{id}/reject")
+    @PostMapping("/{id}/reject")
     @Operation(
         summary = "Reject a flow reading",
         description = "Rejects a submitted reading with a reason, transitions status to REJECTED, and notifies recorder"
