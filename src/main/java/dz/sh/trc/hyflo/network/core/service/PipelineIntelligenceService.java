@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.dto.PipelineSegmentDTO;
-import dz.sh.trc.hyflo.network.core.dto.FacilityDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

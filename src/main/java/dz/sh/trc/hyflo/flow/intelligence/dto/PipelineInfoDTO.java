@@ -27,12 +27,10 @@ package dz.sh.trc.hyflo.flow.intelligence.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
-import dz.sh.trc.hyflo.network.core.dto.StationDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
