@@ -99,10 +99,8 @@ public class PipelineSegmentDTO extends GenericDTO<PipelineSegment> {
     @NotNull(message = "Construction material ID is required")
     private Long constructionMaterialId;
 
-    @NotNull(message = "Exterior coating ID is required")
     private Long exteriorCoatingId;
 
-    @NotNull(message = "Interior coating ID is required")
     private Long interiorCoatingId;
 
     @NotNull(message = "Pipeline is required")
