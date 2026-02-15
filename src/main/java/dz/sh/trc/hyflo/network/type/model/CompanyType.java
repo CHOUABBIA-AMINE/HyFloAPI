@@ -75,7 +75,7 @@ public class CompanyType extends GenericModel {
 		maxLength = 100
 	)
 	@NotBlank(message = "French designation is mandatory")
-	@Size(max = 100, message = "French designation must not exceed 100 characters")
+	@Size(min = 2, max = 100, message = "French designation must be between 2 and 100 characters")
 	@Column(name="F_03", length=100, nullable=false)
 	private String designationFr;
     
