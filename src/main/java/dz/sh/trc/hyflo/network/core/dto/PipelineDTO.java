@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2025
+ *	@UpdatedOn	: 02-15-2026 - CRITICAL: Fixed validation mismatches and added comprehensive @Schema
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -33,9 +33,11 @@ import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.model.Terminal;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +46,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Schema(description = "Data Transfer Object for hydrocarbon transportation pipelines with comprehensive technical and operational specifications")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -52,105 +55,244 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PipelineDTO extends GenericDTO<Pipeline> {
 
+    @Schema(
+        description = "Unique identification code for the pipeline",
+        example = "OLZ-PL-001",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 20
+    )
 	@NotBlank(message = "Code is required")
-    @Size(min = 2, max = 20, message = "Code must be between 2 and 20 characters")
+    @Size(max = 20, message = "Code must not exceed 20 characters")
     private String code;
 
+    @Schema(
+        description = "Official name of the pipeline",
+        example = "Hassi Messaoud - Skikda Crude Oil Pipeline",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
     @NotBlank(message = "Name is required")
-    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
+    @Size(max = 100, message = "Name must not exceed 100 characters")
     private String name;
 
+    @Schema(
+        description = "Date when the pipeline was physically installed",
+        example = "2020-05-15",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @PastOrPresent(message = "Installation date cannot be in the future")
     private LocalDate installationDate;
 
+    @Schema(
+        description = "Date when the pipeline was officially commissioned for operational use",
+        example = "2020-08-01",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @PastOrPresent(message = "Commissioning date cannot be in the future")
     private LocalDate commissioningDate;
 
+    @Schema(
+        description = "Date when the pipeline was decommissioned or retired from service",
+        example = "2045-12-31",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private LocalDate decommissioningDate;
 
-    @NotNull(message = "Nominal diameter is required")
-    @Size(min = 1, max = 255, message = "Name must be between 3 and 255 characters")
+    @Schema(
+        description = "Nominal internal diameter of the pipeline (e.g., '48 inches', '1200 mm')",
+        example = "48 inches",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 255
+    )
+    @NotBlank(message = "Nominal diameter is required")
+    @Size(max = 255, message = "Nominal diameter must not exceed 255 characters")
     private String nominalDiameter;
 
+    @Schema(
+        description = "Total length of the pipeline in kilometers",
+        example = "850.5",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Length is required")
-    @PositiveOrZero(message = "Length must be positive")
+    @Positive(message = "Length must be positive")
     private Double length;
 
-    @NotNull(message = "Nominal thickness is required")
-    @Size(min = 3, max = 255, message = "Name must be between 3 and 255 characters")
+    @Schema(
+        description = "Nominal wall thickness of the pipeline (e.g., '12.7 mm', '0.5 inch')",
+        example = "12.7 mm",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 255
+    )
+    @NotBlank(message = "Nominal thickness is required")
+    @Size(max = 255, message = "Nominal thickness must not exceed 255 characters")
     private String nominalThickness;
 
+    @Schema(
+        description = "Internal surface roughness of the pipeline material in millimeters",
+        example = "0.045",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Nominal roughness is required")
-    @PositiveOrZero(message = "Nominal roughness must be positive")
+    @Positive(message = "Nominal roughness must be positive")
     private Double nominalRoughness;
 
-    @NotNull(message = "Design max service pressure is required")
-    @PositiveOrZero(message = "Design max service pressure must be positive")
+    @Schema(
+        description = "Maximum design service pressure in bar",
+        example = "120.5",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Design maximum service pressure is required")
+    @Positive(message = "Design maximum service pressure must be positive")
     private Double designMaxServicePressure;
 
-    @NotNull(message = "Real max service pressure is required")
-    @PositiveOrZero(message = "Real max service pressure must be positive")
+    @Schema(
+        description = "Maximum operational service pressure in bar (typically lower than design pressure)",
+        example = "100.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Operational maximum service pressure is required")
+    @Positive(message = "Operational maximum service pressure must be positive")
     private Double operationalMaxServicePressure;
 
-    @NotNull(message = "Design min service pressure is required")
-    @PositiveOrZero(message = "Design min service pressure must be positive")
+    @Schema(
+        description = "Minimum design service pressure in bar",
+        example = "10.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Design minimum service pressure is required")
+    @Positive(message = "Design minimum service pressure must be positive")
     private Double designMinServicePressure;
 
-    @NotNull(message = "Real min service pressure is required")
-    @PositiveOrZero(message = "Real min service pressure must be positive")
+    @Schema(
+        description = "Minimum operational service pressure in bar",
+        example = "15.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Operational minimum service pressure is required")
+    @Positive(message = "Operational minimum service pressure must be positive")
     private Double operationalMinServicePressure;
 
+    @Schema(
+        description = "Design capacity of the pipeline in cubic meters per day",
+        example = "50000.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Design capacity is required")
-    @PositiveOrZero(message = "Design capacity must be positive")
+    @Positive(message = "Design capacity must be positive")
     private Double designCapacity;
 
-    @NotNull(message = "Real capacity is required")
-    @PositiveOrZero(message = "Real capacity must be positive")
+    @Schema(
+        description = "Operational capacity of the pipeline in cubic meters per day (typically lower than design capacity)",
+        example = "45000.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Operational capacity is required")
+    @Positive(message = "Operational capacity must be positive")
     private Double operationalCapacity;
 
+    @Schema(
+        description = "ID of the current operational status (required)",
+        example = "1",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Operational status ID is required")
     private Long operationalStatusId;
 
-    @NotNull(message = "Owner structure is required")
+    @Schema(
+        description = "ID of the organizational structure owning this pipeline",
+        example = "5",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long ownerId;
 
+    @Schema(
+        description = "ID of the alloy or material used for pipeline construction",
+        example = "3",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long nominalConstructionMaterialId;
 
+    @Schema(
+        description = "ID of the alloy or material used for exterior coating/protection",
+        example = "7",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long nominalExteriorCoatingId;
 
+    @Schema(
+        description = "ID of the alloy or material used for interior coating/lining",
+        example = "9",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long nominalInteriorCoatingId;
 
+    @Schema(
+        description = "ID of the pipeline system to which this pipeline belongs (required)",
+        example = "2",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Pipeline system ID is required")
     private Long pipelineSystemId;
 
-    @NotNull(message = "Departure facility ID is required")
+    @Schema(
+        description = "ID of the terminal where the pipeline originates (required)",
+        example = "10",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Departure terminal ID is required")
     private Long departureTerminalId;
 
-    @NotNull(message = "Arrival facility ID is required")
+    @Schema(
+        description = "ID of the terminal where the pipeline terminates (required)",
+        example = "15",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Arrival terminal ID is required")
     private Long arrivalTerminalId;
 
+    @Schema(
+        description = "ID of the organizational structure responsible for managing this pipeline (required)",
+        example = "8",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Manager structure is required")
     private Long managerId;
 
+    @Schema(
+        description = "Set of vendor IDs who supplied or constructed the pipeline",
+        example = "[12, 14, 18]"
+    )
     @Builder.Default
     private Set<Long> vendorIds = new HashSet<>();
     
+    @Schema(description = "Current operational status of the pipeline")
     private OperationalStatusDTO operationalStatus;
     
+    @Schema(description = "Organizational structure owning this pipeline")
     private StructureDTO owner;
     
+    @Schema(description = "Alloy or material used for pipeline construction")
     private AlloyDTO nominalConstructionMaterial;
     
+    @Schema(description = "Alloy or material used for exterior coating/protection")
     private AlloyDTO nominalExteriorCoating;
     
+    @Schema(description = "Alloy or material used for interior coating/lining")
     private AlloyDTO nominalInteriorCoating;
     
+    @Schema(description = "Pipeline system to which this pipeline belongs")
     private PipelineSystemDTO pipelineSystem;
     
+    @Schema(description = "Terminal where the pipeline originates")
     private TerminalDTO departureTerminal;
     
+    @Schema(description = "Terminal where the pipeline terminates")
     private TerminalDTO arrivalTerminal;
     
+    @Schema(description = "Organizational structure managing this pipeline")
     private StructureDTO manager;
 
+    @Schema(description = "Vendors who supplied or constructed the pipeline")
     private Set<VendorDTO> vendors;
 
     @Override
