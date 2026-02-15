@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -31,10 +32,25 @@ import jakarta.validation.constraints.Size;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResetPasswordRequest {
     
+	@Schema(
+        description = "Unique username for authentication (letters, numbers, dots, hyphens, and underscores only)",
+        example = "medabir",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 3,
+        maxLength = 20,
+        pattern = "^[a-zA-Z0-9._-]{3,20}$"
+    )
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     private String username;
     
+    @Schema(
+        description = "User new password (must be at least 8 characters, will be BCrypt encrypted)",
+        example = "SecurePassword123!",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 8,
+        accessMode = Schema.AccessMode.WRITE_ONLY
+    )
     @NotBlank(message = "New password is required")
     @Size(min = 6, max = 120, message = "Password must be between 6 and 120 characters")
     private String newPassword;
