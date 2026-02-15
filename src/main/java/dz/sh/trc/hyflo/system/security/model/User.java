@@ -107,6 +107,7 @@ public class User extends GenericModel implements UserDetails {
         accessMode = Schema.AccessMode.WRITE_ONLY
     )
     @NotBlank(message = "Password is mandatory")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]{8,120}$")
     @Size(min = 8, message = "Password must be at least 8 characters")
     @JsonIgnore
     @Column(name="F_03", length=120, nullable=false)

@@ -79,6 +79,7 @@ public class UserDTO extends GenericDTO<User> {
         accessMode = Schema.AccessMode.WRITE_ONLY
     )
     @Size(min = 8, message = "Password must be at least 8 characters long")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]{8,120}$")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     
