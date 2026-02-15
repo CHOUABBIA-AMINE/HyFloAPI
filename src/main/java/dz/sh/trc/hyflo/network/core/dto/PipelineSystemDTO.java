@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineSystemDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2025
+ *	@UpdatedOn	: 02-15-2026 - Added comprehensive @Schema documentation
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -24,6 +24,7 @@ import dz.sh.trc.hyflo.network.common.dto.ProductDTO;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -33,6 +34,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Schema(description = "Data Transfer Object for pipeline systems representing logical groupings of pipelines transporting specific products")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -41,27 +43,57 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PipelineSystemDTO extends GenericDTO<PipelineSystem> {
 
+    @Schema(
+        description = "Unique identification code for the pipeline system",
+        example = "PS-OLZ-001",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 50
+    )
     @NotBlank(message = "Code is required")
     @Size(max = 50, message = "Code must not exceed 50 characters")
     private String code;
 
+    @Schema(
+        description = "Official name of the pipeline system",
+        example = "Hassi Messaoud Crude Oil Transport System",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name must not exceed 100 characters")
     private String name;
 
+    @Schema(
+        description = "ID of the product transported by this pipeline system (required)",
+        example = "2",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Product is required")
     private Long productId;
 
-    @NotNull(message = "OperationalStatus is required")
+    @Schema(
+        description = "ID of the current operational status (required)",
+        example = "1",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Operational status is required")
     private Long operationalStatusId;
 
+    @Schema(
+        description = "ID of the organizational structure managing this pipeline system (required)",
+        example = "7",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Structure is required")
     private Long structureId;
     
+    @Schema(description = "Product transported by this pipeline system")
     private ProductDTO product;
     
+    @Schema(description = "Current operational status of the pipeline system")
     private OperationalStatusDTO operationalStatus;
     
+    @Schema(description = "Organizational structure managing this pipeline system")
     private StructureDTO structure;
 
     @Override
