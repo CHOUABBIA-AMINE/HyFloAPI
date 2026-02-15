@@ -4,7 +4,7 @@
  *
  *	@Name		: UserDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-11-2025
+ *	@UpdatedOn	: 02-15-2026 - Added validation and documentation
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -26,12 +26,18 @@ import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.system.security.model.Group;
 import dz.sh.trc.hyflo.system.security.model.Role;
 import dz.sh.trc.hyflo.system.security.model.User;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Schema(description = "Data Transfer Object for user account management with Spring Security integration")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -40,22 +46,97 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDTO extends GenericDTO<User> {
     
+    @Schema(
+        description = "Unique username for authentication (letters, numbers, dots, hyphens, and underscores only)",
+        example = "medabir",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 3,
+        maxLength = 20,
+        pattern = "^[a-zA-Z0-9._-]{3,20}$"
+    )
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]{3,20}$", message = "Username must contain only letters, numbers, dots, hyphens, and underscores")
     private String username;
+
+    @Schema(
+        description = "User email address for notifications and account recovery",
+        example = "abir.medjerab@sonatrach.dz",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100,
+        format = "email"
+    )
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be a valid email address")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
     
+    @Schema(
+        description = "User password (must be at least 8 characters, will be BCrypt encrypted)",
+        example = "SecurePassword123!",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 8,
+        accessMode = Schema.AccessMode.WRITE_ONLY
+    )
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     
+    @Schema(
+        description = "Indicates if the user account is enabled and can authenticate",
+        example = "true",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        defaultValue = "true"
+    )
     private Boolean enabled;
+
+    @Schema(
+        description = "Indicates if the account has not expired (account lifecycle management)",
+        example = "true",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        defaultValue = "true"
+    )
     private Boolean accountNonExpired;
+
+    @Schema(
+        description = "Indicates if the account is not locked (security lockout management)",
+        example = "true",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        defaultValue = "true"
+    )
     private Boolean accountNonLocked;
+
+    @Schema(
+        description = "Indicates if the credentials (password) have not expired",
+        example = "true",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        defaultValue = "true"
+    )
     private Boolean credentialsNonExpired;
     
+    @Schema(
+        description = "ID of the associated SONATRACH employee record",
+        example = "123",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long employeeId;
     
+    @Schema(
+        description = "Full employee details (populated when fetching user with employee information)",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO employee;
     
+    @Schema(
+        description = "Set of roles directly assigned to this user",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Set<RoleDTO> roles;
+
+    @Schema(
+        description = "Set of groups the user belongs to (each group contains roles)",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Set<GroupDTO> groups;
 
     @Override
