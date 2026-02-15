@@ -17,7 +17,6 @@ package dz.sh.trc.hyflo.general.localization.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.general.localization.model.Location;
 import io.swagger.v3.oas.annotations.media.Schema;
