@@ -17,11 +17,9 @@ package dz.sh.trc.hyflo.general.localization.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.general.localization.model.State;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -76,20 +74,6 @@ public class StateDTO extends GenericDTO<State> {
     @Size(max = 100, message = "French designation must not exceed 100 characters")
     private String designationFr;
 
-    @Schema(
-        description = "ID of the country this state belongs to (required)",
-        example = "1",
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotNull(message = "Country ID is required")
-    private Long countryId;
-
-    @Schema(
-        description = "Country details (populated when fetching with country information)",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private CountryDTO country;
-
     @Override
     public State toEntity() {
         State entity = new State();
@@ -98,12 +82,6 @@ public class StateDTO extends GenericDTO<State> {
         entity.setDesignationAr(this.designationAr);
         entity.setDesignationEn(this.designationEn);
         entity.setDesignationFr(this.designationFr);
-
-        if (this.countryId != null) {
-            Country country = new Country();
-            country.setId(this.countryId);
-            entity.setCountry(country);
-        }
 
         return entity;
     }
@@ -114,12 +92,6 @@ public class StateDTO extends GenericDTO<State> {
         if (this.designationAr != null) entity.setDesignationAr(this.designationAr);
         if (this.designationEn != null) entity.setDesignationEn(this.designationEn);
         if (this.designationFr != null) entity.setDesignationFr(this.designationFr);
-
-        if (this.countryId != null) {
-            Country country = new Country();
-            country.setId(this.countryId);
-            entity.setCountry(country);
-        }
     }
 
     public static StateDTO fromEntity(State entity) {
@@ -130,8 +102,6 @@ public class StateDTO extends GenericDTO<State> {
                 .designationAr(entity.getDesignationAr())
                 .designationEn(entity.getDesignationEn())
                 .designationFr(entity.getDesignationFr())
-                .countryId(entity.getCountry() != null ? entity.getCountry().getId() : null)
-                .country(entity.getCountry() != null ? CountryDTO.fromEntity(entity.getCountry()) : null)
                 .build();
     }
 }

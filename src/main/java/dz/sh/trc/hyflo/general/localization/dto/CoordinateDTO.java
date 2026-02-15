@@ -62,11 +62,11 @@ public class CoordinateDTO extends GenericDTO<Coordinate> {
     private Double longitude;
 
     @Schema(
-        description = "Altitude/elevation in meters above sea level",
+        description = "Elevation/elevation in meters above sea level",
         example = "25.0",
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    private Double altitude;
+    private Double elevation;
 
     @Override
     public Coordinate toEntity() {
@@ -74,7 +74,7 @@ public class CoordinateDTO extends GenericDTO<Coordinate> {
         entity.setId(this.getId());
         entity.setLatitude(this.latitude);
         entity.setLongitude(this.longitude);
-        entity.setAltitude(this.altitude);
+        entity.setElevation(this.elevation);
         return entity;
     }
 
@@ -82,7 +82,7 @@ public class CoordinateDTO extends GenericDTO<Coordinate> {
     public void updateEntity(Coordinate entity) {
         if (this.latitude != null) entity.setLatitude(this.latitude);
         if (this.longitude != null) entity.setLongitude(this.longitude);
-        if (this.altitude != null) entity.setAltitude(this.altitude);
+        if (this.elevation != null) entity.setElevation(this.elevation);
     }
 
     public static CoordinateDTO fromEntity(Coordinate entity) {
@@ -91,7 +91,7 @@ public class CoordinateDTO extends GenericDTO<Coordinate> {
                 .id(entity.getId())
                 .latitude(entity.getLatitude())
                 .longitude(entity.getLongitude())
-                .altitude(entity.getAltitude())
+                .elevation(entity.getElevation())
                 .build();
     }
 }

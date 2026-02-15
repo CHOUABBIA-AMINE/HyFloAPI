@@ -21,7 +21,10 @@ import dz.sh.trc.hyflo.general.localization.model.Coordinate;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.general.localization.model.Location;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -67,22 +70,35 @@ public class LocationDTO extends GenericDTO<Location> {
     private String designationFr;
 
     @Schema(
-        description = "Physical address in Arabic script",
-        example = "الطريق الوطني رقم 11، درقانة، الجزائر العاصمة",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        maxLength = 200
+        description = "Latitude in decimal degrees (required, range: -90 to 90)",
+        example = "36.753768",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minimum = "-90",
+        maximum = "90"
     )
-    @Size(max = 200, message = "Arabic address must not exceed 200 characters")
-    private String addressAr;
+    @NotNull(message = "Latitude is required")
+    @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
+    @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
+    private Double latitude;
 
     @Schema(
-        description = "Physical address in Latin script",
-        example = "Route Nationale N°11, Dergana, Alger",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        maxLength = 200
+        description = "Longitude in decimal degrees (required, range: -180 to 180)",
+        example = "3.058756",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minimum = "-180",
+        maximum = "180"
     )
-    @Size(max = 200, message = "Latin address must not exceed 200 characters")
-    private String addressLt;
+    @NotNull(message = "Longitude is required")
+    @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
+    @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
+    private Double longitude;
+
+    @Schema(
+        description = "Elevation/elevation in meters above sea level",
+        example = "25.0",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    private Double elevation;
 
     @Schema(
         description = "ID of the locality/commune where this location is situated",
@@ -92,23 +108,10 @@ public class LocationDTO extends GenericDTO<Location> {
     private Long localityId;
 
     @Schema(
-        description = "ID of the GPS coordinate for this location",
-        example = "1",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private Long coordinateId;
-
-    @Schema(
         description = "Locality/Commune details (populated when fetching with locality information)",
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     private LocalityDTO locality;
-
-    @Schema(
-        description = "GPS coordinate details (populated when fetching with coordinate information)",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    private CoordinateDTO coordinate;
 
     @Override
     public Location toEntity() {
@@ -117,19 +120,14 @@ public class LocationDTO extends GenericDTO<Location> {
         entity.setDesignationAr(this.designationAr);
         entity.setDesignationEn(this.designationEn);
         entity.setDesignationFr(this.designationFr);
-        entity.setAddressAr(this.addressAr);
-        entity.setAddressLt(this.addressLt);
+        entity.setLatitude(this.latitude);
+        entity.setLongitude(this.longitude);
+        entity.setElevation(this.elevation);
 
         if (this.localityId != null) {
             Locality locality = new Locality();
             locality.setId(this.localityId);
             entity.setLocality(locality);
-        }
-
-        if (this.coordinateId != null) {
-            Coordinate coordinate = new Coordinate();
-            coordinate.setId(this.coordinateId);
-            entity.setCoordinate(coordinate);
         }
 
         return entity;
@@ -140,19 +138,14 @@ public class LocationDTO extends GenericDTO<Location> {
         if (this.designationAr != null) entity.setDesignationAr(this.designationAr);
         if (this.designationEn != null) entity.setDesignationEn(this.designationEn);
         if (this.designationFr != null) entity.setDesignationFr(this.designationFr);
-        if (this.addressAr != null) entity.setAddressAr(this.addressAr);
-        if (this.addressLt != null) entity.setAddressLt(this.addressLt);
+        if (this.latitude != null) entity.setLatitude(this.latitude);
+        if (this.longitude != null) entity.setLongitude(this.longitude);
+        if (this.elevation != null) entity.setElevation(this.elevation);
 
         if (this.localityId != null) {
             Locality locality = new Locality();
             locality.setId(this.localityId);
             entity.setLocality(locality);
-        }
-
-        if (this.coordinateId != null) {
-            Coordinate coordinate = new Coordinate();
-            coordinate.setId(this.coordinateId);
-            entity.setCoordinate(coordinate);
         }
     }
 
@@ -163,12 +156,11 @@ public class LocationDTO extends GenericDTO<Location> {
                 .designationAr(entity.getDesignationAr())
                 .designationEn(entity.getDesignationEn())
                 .designationFr(entity.getDesignationFr())
-                .addressAr(entity.getAddressAr())
-                .addressLt(entity.getAddressLt())
+                .latitude(entity.getLatitude())
+                .longitude(entity.getLongitude())
+                .elevation(entity.getElevation())
                 .localityId(entity.getLocality() != null ? entity.getLocality().getId() : null)
-                .coordinateId(entity.getCoordinate() != null ? entity.getCoordinate().getId() : null)
                 .locality(entity.getLocality() != null ? LocalityDTO.fromEntity(entity.getLocality()) : null)
-                .coordinate(entity.getCoordinate() != null ? CoordinateDTO.fromEntity(entity.getCoordinate()) : null)
                 .build();
     }
 }
