@@ -119,7 +119,7 @@ public class User extends GenericModel implements UserDetails {
     )
     @Builder.Default
     @Column(name="F_04", nullable=false)
-    private boolean accountNonExpired = true;
+    private Boolean accountNonExpired = true;
     
     @Schema(
         description = "Indicates if the account is not locked",
@@ -128,7 +128,7 @@ public class User extends GenericModel implements UserDetails {
     )
     @Builder.Default
     @Column(name="F_05", nullable=false)
-    private boolean accountNonLocked = true;
+    private Boolean accountNonLocked = true;
     
     @Schema(
         description = "Indicates if the credentials have not expired",
@@ -137,7 +137,7 @@ public class User extends GenericModel implements UserDetails {
     )
     @Builder.Default
     @Column(name="F_06", nullable=false)
-    private boolean credentialsNonExpired = true;
+    private Boolean credentialsNonExpired = true;
     
     @Schema(
         description = "Indicates if the user account is enabled",
@@ -146,7 +146,7 @@ public class User extends GenericModel implements UserDetails {
     )
     @Builder.Default
     @Column(name="F_07", nullable=false)
-    private boolean enabled = true;
+    private Boolean enabled = true;
 
     @Schema(
         description = "Associated SONATRACH employee record",
@@ -220,6 +220,7 @@ public class User extends GenericModel implements UserDetails {
     private transient volatile Collection<GrantedAuthority> cachedAuthorities;
 
     /**
+     * 
      * Get user authorities with caching optimization.
      * 
      * First call: Computes authorities from roles and groups (O(R × P + G × R × P))
@@ -239,6 +240,7 @@ public class User extends GenericModel implements UserDetails {
      * - Unmodifiable collection prevents concurrent modification
      * 
      * @return Collection of granted authorities (cached after first computation)
+     * 
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
