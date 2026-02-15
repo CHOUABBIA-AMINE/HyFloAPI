@@ -4,7 +4,7 @@
  *
  *	@Name		: VendorTypeDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 02-15-2026 - Added comprehensive @Schema documentation
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.type.model.VendorType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Schema(description = "Data Transfer Object for vendor type classification (equipment suppliers, service providers, material suppliers)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -34,14 +36,32 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VendorTypeDTO extends GenericDTO<VendorType> {
 
-	@Size(max = 100, message = "Arabic designation must not exceed 100 characters")
+    @Schema(
+        description = "Vendor type designation in Arabic script",
+        example = "مورد معدات",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationAr;
 
-    @Size(max = 100, message = "English designation must not exceed 100 characters")
+    @Schema(
+        description = "Vendor type designation in English",
+        example = "Equipment Supplier",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationEn;
 
-    @NotBlank(message = "French designation is required")
-    @Size(min = 2, max = 100, message = "French designation must be between 2 and 100 characters")
+    @Schema(
+        description = "Vendor type designation in French (required for SONATRACH operations)",
+        example = "Fournisseur d'Équipements",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
+    @NotBlank(message = "Designation is required")
+    @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationFr;
 
     @Override

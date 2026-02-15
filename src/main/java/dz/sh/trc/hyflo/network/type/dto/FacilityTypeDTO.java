@@ -4,7 +4,7 @@
  *
  *	@Name		: FacilityTypeDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 02-15-2026 - Added comprehensive @Schema documentation
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.type.model.FacilityType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Schema(description = "Data Transfer Object for facility type classification in oil & gas network (operational buildings, storage, utilities)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -34,16 +36,40 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FacilityTypeDTO extends GenericDTO<FacilityType> {
 
+    @Schema(
+        description = "Unique code identifying the facility type (required)",
+        example = "WHS-001",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 20
+    )
     @NotBlank(message = "Code is required")
     @Size(max = 20, message = "Code must not exceed 20 characters")
     private String code;
 
+    @Schema(
+        description = "Facility type designation in Arabic script",
+        example = "مستودع",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
     @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationAr;
 
+    @Schema(
+        description = "Facility type designation in English",
+        example = "Warehouse",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
     @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationEn;
 
+    @Schema(
+        description = "Facility type designation in French (required for SONATRACH operations)",
+        example = "Entrepôt",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
     @NotBlank(message = "Designation is required")
     @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationFr;

@@ -4,7 +4,7 @@
  *
  *	@Name		: PartnerTypeDTO
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 02-15-2026 - Added comprehensive @Schema documentation
  *
  *	@Type		: Class
  *	@Layer		: DTO
@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.network.type.model.PartnerType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+@Schema(description = "Data Transfer Object for partner type classification (joint ventures, consortiums, subcontractors in oil & gas projects)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -34,14 +36,32 @@ import lombok.experimental.SuperBuilder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PartnerTypeDTO extends GenericDTO<PartnerType> {
 
-	@Size(max = 100, message = "Arabic designation must not exceed 100 characters")
+    @Schema(
+        description = "Partner type designation in Arabic script",
+        example = "شريك مشارك",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationAr;
 
-    @Size(max = 100, message = "English designation must not exceed 100 characters")
+    @Schema(
+        description = "Partner type designation in English",
+        example = "Joint Venture Partner",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationEn;
 
-    @NotBlank(message = "French designation is required")
-    @Size(min = 2, max = 100, message = "French designation must be between 2 and 100 characters")
+    @Schema(
+        description = "Partner type designation in French (required for SONATRACH operations)",
+        example = "Partenaire en Coentreprise",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
+    @NotBlank(message = "Designation is required")
+    @Size(max = 100, message = "Designation must not exceed 100 characters")
     private String designationFr;
 
     @Override
