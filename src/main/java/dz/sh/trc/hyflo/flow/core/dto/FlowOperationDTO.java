@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowOperationDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Updated @Schema documentation and requiredMode syntax
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -33,7 +33,6 @@ import dz.sh.trc.hyflo.network.common.model.Product;
 import dz.sh.trc.hyflo.network.core.dto.InfrastructureDTO;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
@@ -45,75 +44,146 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for FlowOperation entity.
+ * Used for API requests and responses related to daily flow operations.
+ */
+@Schema(description = "Flow operation DTO for tracking daily hydrocarbon movements (production, transport, consumption)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Daily flow operation DTO tracking hydrocarbon movements")
 public class FlowOperationDTO extends GenericDTO<FlowOperation> {
 
+    @Schema(
+        description = "Date of the flow operation",
+        example = "2026-01-22",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Operation date is required")
     @PastOrPresent(message = "Operation date cannot be in the future")
-    @Schema(description = "Date of the flow operation", example = "2026-01-22", requiredMode = RequiredMode.REQUIRED)
     private LocalDate operationDate;
 
+    @Schema(
+        description = "Volume of product moved in cubic meters or barrels",
+        example = "25000.50",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Volume is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Volume cannot be negative")
     @Digits(integer = 13, fraction = 2, message = "Volume must have at most 13 integer digits and 2 decimal places")
-    @Schema(description = "Volume of product moved", example = "25000.50", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal volume;
 
+    @Schema(
+        description = "Timestamp when this operation was recorded",
+        example = "2026-01-22T08:00:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @PastOrPresent(message = "Record time cannot be in the future")
+    private LocalDateTime recordedAt;
+
+    @Schema(
+        description = "Timestamp when this operation was validated by supervisor",
+        example = "2026-01-22T08:30:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PastOrPresent(message = "Validation time cannot be in the future")
-    @Schema(description = "Timestamp when validated", example = "2026-01-22T08:30:00")
     private LocalDateTime validatedAt;
 
+    @Schema(
+        description = "Additional notes or comments about this operation",
+        example = "Normal operation, no anomalies detected",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 500
+    )
     @Size(max = 500, message = "Notes must not exceed 500 characters")
-    @Schema(description = "Additional notes", example = "Normal operation", maxLength = 500)
     private String notes;
 
     // Foreign Key IDs
+    @Schema(
+        description = "ID of the infrastructure where this operation occurred",
+        example = "101",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Infrastructure is required")
-    @Schema(description = "Infrastructure ID", requiredMode = RequiredMode.REQUIRED)
     private Long infrastructureId;
 
+    @Schema(
+        description = "ID of the product type being moved",
+        example = "5",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Product is required")
-    @Schema(description = "Product ID", requiredMode = RequiredMode.REQUIRED)
     private Long productId;
 
+    @Schema(
+        description = "ID of the operation type (production, transport, consumption)",
+        example = "1",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Operation type is required")
-    @Schema(description = "Operation type ID", requiredMode = RequiredMode.REQUIRED)
     private Long typeId;
 
+    @Schema(
+        description = "ID of the employee who recorded this operation",
+        example = "234",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Recording employee is required")
-    @Schema(description = "Recorded by employee ID", requiredMode = RequiredMode.REQUIRED)
     private Long recordedById;
 
-    @Schema(description = "Validated by employee ID")
+    @Schema(
+        description = "ID of the supervisor who validated this operation",
+        example = "345",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long validatedById;
 
+    @Schema(
+        description = "ID of the current validation status",
+        example = "2",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Validation status is required")
-    @Schema(description = "Validation status ID", requiredMode = RequiredMode.REQUIRED)
     private Long validationStatusId;
 
-    // Nested DTOs (for read operations)
-    @Schema(description = "Infrastructure details")
+    // Nested DTOs
+    @Schema(
+        description = "Details of the infrastructure",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private InfrastructureDTO infrastructure;
 
-    @Schema(description = "Product details")
+    @Schema(
+        description = "Details of the product type",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private ProductDTO product;
 
-    @Schema(description = "Operation type details")
+    @Schema(
+        description = "Details of the operation type",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private OperationTypeDTO type;
 
-    @Schema(description = "Recording employee details")
+    @Schema(
+        description = "Details of the recording employee",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO recordedBy;
 
-    @Schema(description = "Validating employee details")
+    @Schema(
+        description = "Details of the validating supervisor",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO validatedBy;
 
-    @Schema(description = "Validation status details")
+    @Schema(
+        description = "Details of the validation status",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private ValidationStatusDTO validationStatus;
 
     @Override
@@ -122,6 +192,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
         entity.setId(getId());
         entity.setOperationDate(this.operationDate);
         entity.setVolume(this.volume);
+        entity.setRecordedAt(this.recordedAt);
         entity.setValidatedAt(this.validatedAt);
         entity.setNotes(this.notes);
 
@@ -168,6 +239,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
     public void updateEntity(FlowOperation entity) {
         if (this.operationDate != null) entity.setOperationDate(this.operationDate);
         if (this.volume != null) entity.setVolume(this.volume);
+        if (this.recordedAt != null) entity.setRecordedAt(this.recordedAt);
         if (this.validatedAt != null) entity.setValidatedAt(this.validatedAt);
         if (this.notes != null) entity.setNotes(this.notes);
 
@@ -208,6 +280,12 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
         }
     }
 
+    /**
+     * Converts a FlowOperation entity to its DTO representation.
+     *
+     * @param entity the FlowOperation entity to convert
+     * @return FlowOperationDTO or null if entity is null
+     */
     public static FlowOperationDTO fromEntity(FlowOperation entity) {
         if (entity == null) return null;
 
@@ -215,6 +293,7 @@ public class FlowOperationDTO extends GenericDTO<FlowOperation> {
                 .id(entity.getId())
                 .operationDate(entity.getOperationDate())
                 .volume(entity.getVolume())
+                .recordedAt(entity.getRecordedAt())
                 .validatedAt(entity.getValidatedAt())
                 .notes(entity.getNotes())
 

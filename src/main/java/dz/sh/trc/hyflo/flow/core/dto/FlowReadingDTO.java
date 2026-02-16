@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowReadingDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - CRITICAL: Fixed redundant validation and wrong @Schema descriptions
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -43,86 +43,161 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for FlowReading entity.
+ * Used for API requests and responses related to flow measurements.
+ */
+@Schema(description = "Flow measurement reading DTO capturing real-time pipeline operational parameters")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow measurement reading DTO capturing pipeline operational parameters")
 public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
-	@NotNull(message = "Reading date is required")
+    @Schema(
+        description = "Date when the reading was taken",
+        example = "2026-01-27",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @NotNull(message = "Reading date is required")
     @PastOrPresent(message = "Reading date cannot be in the future")
-	@Schema(example = "2026-01-27")
     private LocalDate readingDate;
-	
-	@PositiveOrZero(message = "Pressure must be zero or positive")
+
+    @Schema(
+        description = "Pressure measurement in bar",
+        example = "85.50",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        minimum = "0.0",
+        maximum = "500.0"
+    )
     @DecimalMin(value = "0.0", message = "Pressure cannot be negative")
     @DecimalMax(value = "500.0", message = "Pressure exceeds maximum (500 bar)")
-    @Schema(description = "Pressure in bar", example = "85.50", minimum = "0.0", maximum = "500.0")
     private BigDecimal pressure;
 
+    @Schema(
+        description = "Temperature measurement in degrees Celsius",
+        example = "65.5",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        minimum = "-50.0",
+        maximum = "200.0"
+    )
     @DecimalMin(value = "-50.0", message = "Temperature below minimum range")
     @DecimalMax(value = "200.0", message = "Temperature exceeds maximum range")
-    @Schema(description = "Temperature in Celsius", example = "65.5", minimum = "-50.0", maximum = "200.0")
     private BigDecimal temperature;
 
+    @Schema(
+        description = "Flow rate in cubic meters per hour (m³/h) or barrels per day (bpd)",
+        example = "1250.75",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PositiveOrZero(message = "Flow rate must be zero or positive")
-    @Schema(description = "Flow rate in m³/h", example = "1250.75")
     private BigDecimal flowRate;
 
+    @Schema(
+        description = "Total volume contained in pipeline segment in cubic meters",
+        example = "5000.00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PositiveOrZero(message = "Contained volume must be zero or positive")
-    @Schema(description = "Contained volume in m³", example = "5000.00")
     private BigDecimal containedVolume;
 
+    @Schema(
+        description = "Timestamp when this reading was recorded by the operator or system",
+        example = "2026-01-22T00:15:00",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Recording timestamp is required")
     @PastOrPresent(message = "Recording time cannot be in the future")
-    @Schema(description = "Timestamp when recorded", example = "2026-01-22T00:15:00", required = true)
     private LocalDateTime recordedAt;
 
+    @Schema(
+        description = "Timestamp when this reading was validated by supervisor",
+        example = "2026-01-22T08:30:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PastOrPresent(message = "Validation time cannot be in the future")
-    @Schema(description = "Timestamp when validated", example = "2026-01-22T08:30:00")
     private LocalDateTime validatedAt;
 
+    @Schema(
+        description = "Additional notes about this reading (anomalies, calibration, maintenance, etc.)",
+        example = "Sensor calibrated this morning, reading within normal parameters",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 500
+    )
     @Size(max = 500, message = "Notes must not exceed 500 characters")
-    @Schema(description = "Additional notes", example = "Sensor calibrated", maxLength = 500)
     private String notes;
 
     // Foreign Key IDs
+    @Schema(
+        description = "ID of the employee who recorded this reading",
+        example = "234",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Recording employee is required")
-    @Schema(description = "Recorded by employee ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long recordedById;
 
-    @Schema(description = "Validated by employee ID")
+    @Schema(
+        description = "ID of the employee who validated this reading",
+        example = "345",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long validatedById;
 
+    @Schema(
+        description = "ID of the current validation status (pending, approved, rejected)",
+        example = "1",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Validation status is required")
-    @Schema(description = "Validation status ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long validationStatusId;
 
+    @Schema(
+        description = "ID of the pipeline where this reading was taken",
+        example = "101",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Pipeline is required")
-    @Schema(description = "Pipeline ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long pipelineId;
 
+    @Schema(
+        description = "ID of the reading slot (time window for scheduled readings)",
+        example = "2",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Reading slot is required")
-    @Schema(description = "Pipeline ID", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long readingSlotId;
 
     // Nested DTOs
-    @Schema(description = "Recording employee details", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Details of the employee who recorded this reading",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO recordedBy;
 
-    @Schema(description = "Validating employee details", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "Details of the employee who validated this reading",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO validatedBy;
 
-    @Schema(description = "Validation status details")
+    @Schema(
+        description = "Details of the validation status",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private ValidationStatusDTO validationStatus;
 
-    @Schema(description = "Pipeline details")
+    @Schema(
+        description = "Details of the pipeline",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private PipelineDTO pipeline;
 
-    @Schema(description = "ReadingSlot details")
+    @Schema(
+        description = "Details of the reading slot",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private ReadingSlotDTO readingSlot;
 
     @Override
@@ -163,7 +238,7 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
         }
 
         if (this.readingSlotId != null) {
-        	ReadingSlot readingSlot = new ReadingSlot();
+            ReadingSlot readingSlot = new ReadingSlot();
             readingSlot.setId(this.readingSlotId);
             entity.setReadingSlot(readingSlot);
         }
@@ -173,7 +248,7 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
 
     @Override
     public void updateEntity(FlowReading entity) {
-    	if (this.readingDate != null) entity.setReadingDate(this.readingDate);
+        if (this.readingDate != null) entity.setReadingDate(this.readingDate);
         if (this.pressure != null) entity.setPressure(this.pressure);
         if (this.temperature != null) entity.setTemperature(this.temperature);
         if (this.flowRate != null) entity.setFlowRate(this.flowRate);
@@ -207,12 +282,18 @@ public class FlowReadingDTO extends GenericDTO<FlowReading> {
         }
 
         if (this.readingSlotId != null) {
-        	ReadingSlot readingSlot = new ReadingSlot();
+            ReadingSlot readingSlot = new ReadingSlot();
             readingSlot.setId(this.readingSlotId);
             entity.setReadingSlot(readingSlot);
         }
     }
 
+    /**
+     * Converts a FlowReading entity to its DTO representation.
+     *
+     * @param entity the FlowReading entity to convert
+     * @return FlowReadingDTO or null if entity is null
+     */
     public static FlowReadingDTO fromEntity(FlowReading entity) {
         if (entity == null) return null;
 

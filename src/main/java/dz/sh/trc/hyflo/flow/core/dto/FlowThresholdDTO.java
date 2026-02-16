@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowThresholdDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Updated @Schema documentation and requiredMode syntax
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -23,7 +23,6 @@ import dz.sh.trc.hyflo.flow.core.model.FlowThreshold;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -34,72 +33,128 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for FlowThreshold entity.
+ * Used for API requests and responses related to pipeline threshold configuration.
+ */
+@Schema(description = "Pipeline operating thresholds DTO for monitoring and automated alerting configuration")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow threshold DTO for pipeline operating thresholds configuration")
 public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
 
+    @Schema(
+        description = "Minimum safe pressure in bar",
+        example = "50.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Minimum pressure is required")
     @PositiveOrZero(message = "Minimum pressure must be zero or positive")
-    @Schema(description = "Minimum safe pressure (bar)", example = "50.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal pressureMin;
 
+    @Schema(
+        description = "Maximum safe pressure in bar",
+        example = "120.0",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maximum = "500.0"
+    )
     @NotNull(message = "Maximum pressure is required")
     @DecimalMax(value = "500.0", message = "Maximum pressure exceeds absolute limit")
-    @Schema(description = "Maximum safe pressure (bar)", example = "120.0", requiredMode = RequiredMode.REQUIRED, maximum = "500.0")
     private BigDecimal pressureMax;
 
+    @Schema(
+        description = "Minimum safe temperature in degrees Celsius",
+        example = "5.0",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minimum = "-50.0"
+    )
     @NotNull(message = "Minimum temperature is required")
     @DecimalMin(value = "-50.0", message = "Minimum temperature below absolute limit")
-    @Schema(description = "Minimum safe temperature (°C)", example = "5.0", requiredMode = RequiredMode.REQUIRED, minimum = "-50.0")
     private BigDecimal temperatureMin;
 
+    @Schema(
+        description = "Maximum safe temperature in degrees Celsius",
+        example = "85.0",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maximum = "200.0"
+    )
     @NotNull(message = "Maximum temperature is required")
     @DecimalMax(value = "200.0", message = "Maximum temperature exceeds absolute limit")
-    @Schema(description = "Maximum safe temperature (°C)", example = "85.0", requiredMode = RequiredMode.REQUIRED, maximum = "200.0")
     private BigDecimal temperatureMax;
 
+    @Schema(
+        description = "Minimum acceptable flow rate in m³/h or bpd",
+        example = "500.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Minimum flow rate is required")
     @PositiveOrZero(message = "Minimum flow rate must be zero or positive")
-    @Schema(description = "Minimum acceptable flow rate (m³/h)", example = "500.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal flowRateMin;
 
+    @Schema(
+        description = "Maximum acceptable flow rate in m³/h or bpd",
+        example = "2000.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Maximum flow rate is required")
     @PositiveOrZero(message = "Maximum flow rate must be positive")
-    @Schema(description = "Maximum acceptable flow rate (m³/h)", example = "2000.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal flowRateMax;
 
+    @Schema(
+        description = "Minimum acceptable contained volume in cubic meters",
+        example = "500.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Minimum contained volume is required")
     @PositiveOrZero(message = "Minimum contained volume must be zero or positive")
-    @Schema(description = "Minimum acceptable contained volume (m³)", example = "500.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal containedVolumeMin;
 
+    @Schema(
+        description = "Maximum acceptable contained volume in cubic meters",
+        example = "40000.0",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Maximum contained volume is required")
     @PositiveOrZero(message = "Maximum contained volume must be positive")
-    @Schema(description = "Maximum acceptable contained volume (m³)", example = "40000.0", requiredMode = RequiredMode.REQUIRED)
     private BigDecimal containedVolumeMax;
 
+    @Schema(
+        description = "Alert tolerance percentage for threshold breaches (e.g., 5.0 for ±5%)",
+        example = "5.0",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minimum = "0.0",
+        maximum = "50.0"
+    )
     @NotNull(message = "Alert tolerance is required")
     @DecimalMin(value = "0.0", message = "Alert tolerance cannot be negative")
     @DecimalMax(value = "50.0", message = "Alert tolerance cannot exceed 50%")
-    @Schema(description = "Alert tolerance percentage (±5%)", example = "5.0", requiredMode = RequiredMode.REQUIRED, minimum = "0.0", maximum = "50.0")
     private BigDecimal alertTolerance;
 
+    @Schema(
+        description = "Indicates whether this threshold configuration is currently active",
+        example = "true",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Active status is required")
-    @Schema(description = "Is this threshold active", example = "true", requiredMode = RequiredMode.REQUIRED)
     private Boolean active;
 
-    // Foreign Key IDs
+    // Foreign Key ID
+    @Schema(
+        description = "ID of the pipeline to which these thresholds apply",
+        example = "101",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Pipeline is required")
-    @Schema(description = "Pipeline ID", requiredMode = RequiredMode.REQUIRED)
     private Long pipelineId;
 
-    // Nested DTOs
-    @Schema(description = "Pipeline details")
+    // Nested DTO
+    @Schema(
+        description = "Details of the pipeline",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private PipelineDTO pipeline;
 
     @Override
@@ -146,6 +201,12 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
         }
     }
 
+    /**
+     * Converts a FlowThreshold entity to its DTO representation.
+     *
+     * @param entity the FlowThreshold entity to convert
+     * @return FlowThresholdDTO or null if entity is null
+     */
     public static FlowThresholdDTO fromEntity(FlowThreshold entity) {
         if (entity == null) return null;
 
@@ -163,7 +224,6 @@ public class FlowThresholdDTO extends GenericDTO<FlowThreshold> {
                 .active(entity.getActive())
 
                 .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
-
                 .pipeline(entity.getPipeline() != null ? PipelineDTO.fromEntity(entity.getPipeline()) : null)
                 .build();
     }
