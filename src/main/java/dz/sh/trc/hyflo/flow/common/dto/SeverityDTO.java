@@ -4,7 +4,7 @@
  *
  * 	@Name		: SeverityDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Fixed validation messages and added comprehensive @Schema
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -27,32 +27,45 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for Severity entity.
+ * Used for API requests and responses related to severity level classification.
+ */
+@Schema(description = "Severity DTO for alert and event criticality classification (low, medium, high, critical)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Severity DTO for alert and event criticality classification")
 public class SeverityDTO extends GenericDTO<Severity> {
 
-    @Size(max = 50, message = "Arabic designation must not exceed 50 characters")
-    @Schema(description = "Severity designation in Arabic", 
-            example = "حرج")
+    @Schema(
+        description = "Severity level designation in Arabic",
+        example = "حرج",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
     private String designationAr;
 
-    @Size(max = 50, message = "English designation must not exceed 50 characters")
-    @Schema(description = "Severity designation in English", 
-            example = "Critical",
-            maxLength = 50)
+    @Schema(
+        description = "Severity level designation in English",
+        example = "Critical",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "English designation must not exceed 100 characters")
     private String designationEn;
 
+    @Schema(
+        description = "Severity level designation in French (required for system use)",
+        example = "Critique",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
     @NotBlank(message = "French designation is required")
-    @Size(max = 50, message = "French designation must not exceed 50 characters")
-    @Schema(description = "Severity designation in French (required)", 
-            example = "Critique", 
-            required = true,
-            maxLength = 50)
+    @Size(max = 100, message = "French designation must not exceed 100 characters")
     private String designationFr;
 
     @Override
@@ -72,6 +85,12 @@ public class SeverityDTO extends GenericDTO<Severity> {
         if (this.designationFr != null) entity.setDesignationFr(this.designationFr);
     }
 
+    /**
+     * Converts a Severity entity to its DTO representation.
+     *
+     * @param entity the Severity entity to convert
+     * @return SeverityDTO or null if entity is null
+     */
     public static SeverityDTO fromEntity(Severity entity) {
         if (entity == null) return null;
         
