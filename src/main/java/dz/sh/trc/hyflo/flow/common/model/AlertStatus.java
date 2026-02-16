@@ -48,10 +48,10 @@ public class AlertStatus extends GenericModel {
 		description = "Alert status code",
 		example = "INFO",
 		requiredMode = Schema.RequiredMode.REQUIRED,
-		maxLength = 10
+		maxLength = 20
 	)
-	@Size(max = 10, message = "Code must not exceed 10 characters")
-	@Column(name = "F_01", length = 10, nullable=false)
+	@Size(max = 20, message = "Code must not exceed 10 characters")
+	@Column(name = "F_01", length = 20, nullable=false)
 	private String code;
       
 	@Schema(

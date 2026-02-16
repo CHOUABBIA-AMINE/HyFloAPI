@@ -44,10 +44,10 @@ public class AlertStatusDTO extends GenericDTO<AlertStatus> {
         description = "Unique alert status code",
         example = "ACTIVE",
         requiredMode = Schema.RequiredMode.REQUIRED,
-        maxLength = 10
+        maxLength = 20
     )
     @NotBlank(message = "Alert status code is required")
-    @Size(max = 10, message = "Code must not exceed 10 characters")
+    @Size(max = 20, message = "Code must not exceed 10 characters")
     private String code;
 
     @Schema(
