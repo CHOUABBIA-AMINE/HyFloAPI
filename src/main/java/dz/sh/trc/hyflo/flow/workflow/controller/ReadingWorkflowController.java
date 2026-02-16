@@ -8,6 +8,7 @@
  * 	@UpdatedOn	: 02-10-2026 - Renamed from FlowMonitoringController to FlowWorkflowController
  * 	@UpdatedOn	: 02-10-2026 - Updated to match ReadingWorkflowService methods (SRP refactoring)
  * 	@UpdatedOn	: 02-16-2026 - Enhanced with comprehensive OpenAPI documentation
+ * 	@UpdatedOn	: 02-16-2026 - Fixed text blocks to string concatenation
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -96,32 +97,26 @@ public class ReadingWorkflowController {
      */
     @Operation(
         summary = "Validate a flow reading",
-        description = """Approves a submitted reading and transitions its status to VALIDATED.
-        
-        **Workflow Transition:** SUBMITTED → VALIDATED
-        
-        **Process:**
-        - Updates reading validation status to VALIDATED
-        - Records validator employee information (validatedBy, validatedAt)
-        - Publishes ReadingValidatedEvent for notification system
-        - Sends notification to original recorder
-        
-        **Business Rules:**
-        - Reading must exist in the system
-        - Validator employee must exist and have appropriate permissions
-        - VALIDATED status must be configured in validation_status table
-        - Only SUBMITTED readings can be validated
-        
-        **Notifications:**
-        - Recorder receives notification of validation approval
-        - Event published via Spring ApplicationEventPublisher
-        - Integration with generic notification system
-        
-        **Use Cases:**
-        - Operational supervisor approving field readings
-        - Quality control officer validating measurement data
-        - Automated validation after passing data integrity checks
-        """
+        description = "Approves a submitted reading and transitions its status to VALIDATED.\n\n" +
+            "**Workflow Transition:** SUBMITTED → VALIDATED\n\n" +
+            "**Process:**\n" +
+            "- Updates reading validation status to VALIDATED\n" +
+            "- Records validator employee information (validatedBy, validatedAt)\n" +
+            "- Publishes ReadingValidatedEvent for notification system\n" +
+            "- Sends notification to original recorder\n\n" +
+            "**Business Rules:**\n" +
+            "- Reading must exist in the system\n" +
+            "- Validator employee must exist and have appropriate permissions\n" +
+            "- VALIDATED status must be configured in validation_status table\n" +
+            "- Only SUBMITTED readings can be validated\n\n" +
+            "**Notifications:**\n" +
+            "- Recorder receives notification of validation approval\n" +
+            "- Event published via Spring ApplicationEventPublisher\n" +
+            "- Integration with generic notification system\n\n" +
+            "**Use Cases:**\n" +
+            "- Operational supervisor approving field readings\n" +
+            "- Quality control officer validating measurement data\n" +
+            "- Automated validation after passing data integrity checks"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -191,46 +186,38 @@ public class ReadingWorkflowController {
      */
     @Operation(
         summary = "Reject a flow reading",
-        description = """Rejects a submitted reading with a mandatory reason and transitions its status to REJECTED.
-        
-        **Workflow Transition:** SUBMITTED → REJECTED
-        
-        **Process:**
-        - Updates reading validation status to REJECTED
-        - Records rejector employee information (validatedBy, validatedAt)
-        - Appends rejection reason to reading notes for audit trail
-        - Publishes ReadingRejectedEvent for notification system
-        - Sends notification to original recorder
-        
-        **Business Rules:**
-        - Reading must exist in the system
-        - Rejector employee must exist and have appropriate permissions
-        - Rejection reason is mandatory (minimum 3 characters)
-        - REJECTED status must be configured in validation_status table
-        - Only SUBMITTED readings can be rejected
-        
-        **Rejection Reason:**
-        - Appended to reading notes with timestamp and rejector information
-        - Format: "=== REJECTION === Rejected by: [Name] ([ID]) Date: [Timestamp] Reason: [Reason]"
-        - Provides audit trail for quality control
-        - Helps recorder understand what needs correction
-        
-        **Notifications:**
-        - Recorder receives notification with rejection reason
-        - Event published via Spring ApplicationEventPublisher
-        - Integration with generic notification system
-        
-        **Use Cases:**
-        - Readings with suspicious values requiring verification
-        - Data quality issues detected during review
-        - Incomplete or missing measurement information
-        - Equipment malfunction suspected
-        - Values outside acceptable operational ranges
-        
-        **Future Enhancement:**
-        - Rejected readings can be resubmitted after correction
-        - Resubmission workflow will be added in future version
-        """
+        description = "Rejects a submitted reading with a mandatory reason and transitions its status to REJECTED.\n\n" +
+            "**Workflow Transition:** SUBMITTED → REJECTED\n\n" +
+            "**Process:**\n" +
+            "- Updates reading validation status to REJECTED\n" +
+            "- Records rejector employee information (validatedBy, validatedAt)\n" +
+            "- Appends rejection reason to reading notes for audit trail\n" +
+            "- Publishes ReadingRejectedEvent for notification system\n" +
+            "- Sends notification to original recorder\n\n" +
+            "**Business Rules:**\n" +
+            "- Reading must exist in the system\n" +
+            "- Rejector employee must exist and have appropriate permissions\n" +
+            "- Rejection reason is mandatory (minimum 3 characters)\n" +
+            "- REJECTED status must be configured in validation_status table\n" +
+            "- Only SUBMITTED readings can be rejected\n\n" +
+            "**Rejection Reason:**\n" +
+            "- Appended to reading notes with timestamp and rejector information\n" +
+            "- Format: \"=== REJECTION === Rejected by: [Name] ([ID]) Date: [Timestamp] Reason: [Reason]\"\n" +
+            "- Provides audit trail for quality control\n" +
+            "- Helps recorder understand what needs correction\n\n" +
+            "**Notifications:**\n" +
+            "- Recorder receives notification with rejection reason\n" +
+            "- Event published via Spring ApplicationEventPublisher\n" +
+            "- Integration with generic notification system\n\n" +
+            "**Use Cases:**\n" +
+            "- Readings with suspicious values requiring verification\n" +
+            "- Data quality issues detected during review\n" +
+            "- Incomplete or missing measurement information\n" +
+            "- Equipment malfunction suspected\n" +
+            "- Values outside acceptable operational ranges\n\n" +
+            "**Future Enhancement:**\n" +
+            "- Rejected readings can be resubmitted after correction\n" +
+            "- Resubmission workflow will be added in future version"
     )
     @ApiResponses(value = {
         @ApiResponse(
