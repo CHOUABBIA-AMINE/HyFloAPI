@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowAlertDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Updated @Schema documentation and requiredMode syntax
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -37,100 +37,159 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for FlowAlert entity.
+ * Used for API requests and responses related to threshold breach alerts.
+ */
+@Schema(description = "Flow alert DTO for threshold breach notifications and resolution tracking")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow alert DTO for threshold breach notifications")
 public class FlowAlertDTO extends GenericDTO<FlowAlert> {
 
+    @Schema(
+        description = "Timestamp when the alert was triggered by the system",
+        example = "2026-01-22T00:45:00",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Alert timestamp is required")
     @PastOrPresent(message = "Alert timestamp cannot be in the future")
-    @Schema(description = "Alert trigger timestamp", 
-    		example = "2026-01-22T00:45:00", 
-    		requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime alertTimestamp;
 
+    @Schema(
+        description = "Actual measured value that triggered the threshold breach",
+        example = "135.5",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Actual value is required")
-    @Schema(description = "Actual measured value", 
-    		example = "135.5", 
-    		requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal actualValue;
 
-    @Schema(description = "Threshold value breached", example = "120.0")
+    @Schema(
+        description = "Threshold value that was breached",
+        example = "120.0",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private BigDecimal thresholdValue;
 
+    @Schema(
+        description = "Alert message describing the threshold breach and potential impact",
+        example = "Pressure exceeded maximum threshold by 12.9%",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 1000
+    )
     @Size(max = 1000, message = "Alert message must not exceed 1000 characters")
-    @Schema(description = "Alert message", 
-    		example = "Pressure exceeded maximum", 
-    		maxLength = 1000,
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String message;
 
+    @Schema(
+        description = "Timestamp when the alert was acknowledged by an operator",
+        example = "2026-01-22T00:50:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PastOrPresent(message = "Acknowledgment time cannot be in the future")
-    @Schema(description = "Acknowledgment timestamp", 
-		    example = "2026-01-22T00:50:00",
-		    requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime acknowledgedAt;
 
+    @Schema(
+        description = "Timestamp when the alert was resolved",
+        example = "2026-01-22T01:30:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PastOrPresent(message = "Resolution time cannot be in the future")
-    @Schema(description = "Resolution timestamp", 
-    		example = "2026-01-22T01:30:00",
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime resolvedAt;
 
+    @Schema(
+        description = "Notes describing the resolution action taken to address the alert",
+        example = "Adjusted valve to reduce pressure. System stabilized.",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 1000
+    )
     @Size(max = 1000, message = "Resolution notes must not exceed 1000 characters")
-    @Schema(description = "Resolution notes", example = "Adjusted valve", maxLength = 1000)
     private String resolutionNotes;
 
+    @Schema(
+        description = "Indicates whether notification was sent to operators",
+        example = "true",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Notification sent flag is required")
-    @Schema(description = "Notification sent", 
-    		example = "true", 
-    		requiredMode = Schema.RequiredMode.REQUIRED)
     private Boolean notificationSent;
 
+    @Schema(
+        description = "Timestamp when the notification was sent to operators",
+        example = "2026-01-22T00:45:30",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PastOrPresent(message = "Notification time cannot be in the future")
-    @Schema(description = "Notification timestamp", 
-    		example = "2026-01-22T00:45:30", 
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private LocalDateTime notificationSentAt;
 
-    @Schema(description = "Resolved by employee ID")
+    // Foreign Key IDs
+    @Schema(
+        description = "ID of the employee who resolved this alert",
+        example = "123",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long resolvedById;
 
+    @Schema(
+        description = "ID of the threshold that was breached",
+        example = "456",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Threshold is required")
-    @Schema(description = "Threshold ID", 
-    		requiredMode = Schema.RequiredMode.REQUIRED)
     private Long thresholdId;
 
-    @Schema(description = "Flow reading ID", 
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "ID of the flow reading that triggered this alert",
+        example = "789",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long flowReadingId;
 
-    @Schema(description = "Alert status ID", 
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "ID of the current alert status (active, acknowledged, resolved)",
+        example = "1",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long statusId;
 
-    @Schema(description = "Acknowledged by employee ID", 
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(
+        description = "ID of the employee who acknowledged this alert",
+        example = "234",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long acknowledgedById;
 
     // Nested DTOs
-    @Schema(description = "Resolved by employee details")
+    @Schema(
+        description = "Details of the employee who resolved this alert",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO resolvedBy;
 
-    @Schema(description = "Threshold details")
+    @Schema(
+        description = "Details of the threshold that was breached",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private FlowThresholdDTO threshold;
 
-    @Schema(description = "Flow reading details")
+    @Schema(
+        description = "Details of the flow reading that triggered this alert",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private FlowReadingDTO flowReading;
 
-    @Schema(description = "Alert status details")
+    @Schema(
+        description = "Details of the current alert status",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private AlertStatusDTO status;
 
-    @Schema(description = "Acknowledged by employee details")
+    @Schema(
+        description = "Details of the employee who acknowledged this alert",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO acknowledgedBy;
 
     @Override
@@ -223,6 +282,12 @@ public class FlowAlertDTO extends GenericDTO<FlowAlert> {
         }
     }
 
+    /**
+     * Converts a FlowAlert entity to its DTO representation.
+     *
+     * @param entity the FlowAlert entity to convert
+     * @return FlowAlertDTO or null if entity is null
+     */
     public static FlowAlertDTO fromEntity(FlowAlert entity) {
         if (entity == null) return null;
 

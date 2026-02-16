@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowEventDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Updated @Schema documentation and requiredMode syntax
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -41,82 +41,160 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for FlowEvent entity.
+ * Used for API requests and responses related to operational events and incidents.
+ */
+@Schema(description = "Flow event DTO for operational activities, incidents, and maintenance tracking")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow event DTO for operational events and incidents")
 public class FlowEventDTO extends GenericDTO<FlowEvent> {
 
+    @Schema(
+        description = "Timestamp when the event occurred",
+        example = "2026-01-22T03:15:00",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Event timestamp is required")
     @PastOrPresent(message = "Event timestamp cannot be in the future")
-    @Schema(description = "Timestamp when event occurred", example = "2026-01-22T03:15:00", required = true)
     private LocalDateTime eventTimestamp;
 
+    @Schema(
+        description = "Brief title summarizing the event",
+        example = "Emergency Shutdown - Pipeline P-101",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        minLength = 3,
+        maxLength = 100
+    )
     @NotBlank(message = "Event title is required")
     @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
-    @Schema(description = "Brief event title", example = "Emergency Shutdown - Pipeline P-101", required = true, minLength = 3, maxLength = 100)
     private String title;
 
+    @Schema(
+        description = "Detailed description of the event, including circumstances and observations",
+        example = "Automatic shutdown triggered due to pressure spike. Leak detected at KP 45.2.",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 2000
+    )
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
-    @Schema(description = "Detailed event description", example = "Automatic shutdown triggered", maxLength = 2000)
     private String description;
 
+    @Schema(
+        description = "Timestamp when the event started (for ongoing or time-bound events)",
+        example = "2026-01-22T03:15:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     @PastOrPresent(message = "Start time cannot be in the future")
-    @Schema(description = "Event start timestamp", example = "2026-01-22T03:15:00")
     private LocalDateTime startTime;
 
-    @Schema(description = "Event end timestamp", example = "2026-01-22T05:30:00")
+    @Schema(
+        description = "Timestamp when the event ended (for completed events)",
+        example = "2026-01-22T05:30:00",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private LocalDateTime endTime;
 
+    @Schema(
+        description = "Description of corrective action taken to address the event",
+        example = "Isolated affected segment, deployed repair crew. Leak sealed and pressure restored.",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 2000
+    )
     @Size(max = 2000, message = "Action taken must not exceed 2000 characters")
-    @Schema(description = "Corrective action description", example = "Isolated segment, deployed repair crew", maxLength = 2000)
     private String actionTaken;
 
+    @Schema(
+        description = "Indicates whether this event impacted normal flow operations",
+        example = "true",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Impact on flow flag is required")
-    @Schema(description = "Did this event impact flow operations", example = "true", required = true)
     private Boolean impactOnFlow;
 
     // Foreign Key IDs
-    @Schema(description = "Severity ID")
+    @Schema(
+        description = "ID of the severity level of this event",
+        example = "2",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long severityId;
 
+    @Schema(
+        description = "ID of the infrastructure affected by this event",
+        example = "101",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Infrastructure is required")
-    @Schema(description = "Infrastructure ID", required = true)
     private Long infrastructureId;
 
+    @Schema(
+        description = "ID of the employee who reported this event",
+        example = "345",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotNull(message = "Reporter is required")
-    @Schema(description = "Reported by employee ID", required = true)
     private Long reportedById;
 
-    @Schema(description = "Related flow reading ID")
+    @Schema(
+        description = "ID of the related flow reading if this event was triggered by a measurement",
+        example = "789",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long relatedReadingId;
 
-    @Schema(description = "Related alert ID")
+    @Schema(
+        description = "ID of the related alert if this event originated from an alert",
+        example = "456",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long relatedAlertId;
 
-    @Schema(description = "Event status ID")
+    @Schema(
+        description = "ID of the current status of this event",
+        example = "3",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private Long statusId;
 
     // Nested DTOs
-    @Schema(description = "Severity details")
+    @Schema(
+        description = "Details of the severity level",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private SeverityDTO severity;
 
-    @Schema(description = "Infrastructure details")
+    @Schema(
+        description = "Details of the affected infrastructure",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private InfrastructureDTO infrastructure;
 
-    @Schema(description = "Reporter employee details")
+    @Schema(
+        description = "Details of the employee who reported the event",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EmployeeDTO reportedBy;
 
-    @Schema(description = "Related flow reading details")
+    @Schema(
+        description = "Details of the related flow reading",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private FlowReadingDTO relatedReading;
 
-    @Schema(description = "Related alert details")
+    @Schema(
+        description = "Details of the related alert",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private FlowAlertDTO relatedAlert;
 
-    @Schema(description = "Event status details")
+    @Schema(
+        description = "Details of the current event status",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
     private EventStatusDTO status;
 
     @Override
@@ -217,6 +295,12 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
         }
     }
 
+    /**
+     * Converts a FlowEvent entity to its DTO representation.
+     *
+     * @param entity the FlowEvent entity to convert
+     * @return FlowEventDTO or null if entity is null
+     */
     public static FlowEventDTO fromEntity(FlowEvent entity) {
         if (entity == null) return null;
 
