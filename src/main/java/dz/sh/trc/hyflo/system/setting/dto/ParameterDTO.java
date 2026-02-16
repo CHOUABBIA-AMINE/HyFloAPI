@@ -30,7 +30,7 @@ import lombok.experimental.SuperBuilder;
 
 /**
  * Data Transfer Object for system configuration parameters.
- * Supports key-value configuration storage with metadata and validation.
+ * Supports key-value configuration storage with type specification.
  */
 @Schema(description = "Data Transfer Object for system configuration parameter management")
 @Data
@@ -42,94 +42,56 @@ import lombok.experimental.SuperBuilder;
 public class ParameterDTO extends GenericDTO<Parameter> {
 
     @Schema(
-        description = "Unique parameter key identifier (dot-notation hierarchy, lowercase)",
-        example = "system.notification.retention.days",
+        description = "Unique parameter key identifier",
+        example = "flow_reading_validator",
         requiredMode = Schema.RequiredMode.REQUIRED,
-        maxLength = 100,
-        pattern = "^[a-z][a-z0-9.]*[a-z0-9]$"
+        maxLength = 100
     )
     @NotBlank(message = "Parameter key is required")
     @Size(max = 100, message = "Key must not exceed 100 characters")
-    @Pattern(regexp = "^[a-z][a-z0-9.]*[a-z0-9]$", message = "Key must be lowercase with dots (e.g., system.config.value)")
     private String key;
 
     @Schema(
-        description = "Parameter value (can be string, number, boolean, or JSON)",
-        example = "30",
+        description = "Parameter value",
+        example = "FK:3 -> TRC",
         requiredMode = Schema.RequiredMode.REQUIRED,
-        maxLength = 1000
+        maxLength = 250
     )
     @NotBlank(message = "Parameter value is required")
-    @Size(max = 1000, message = "Value must not exceed 1000 characters")
+    @Size(max = 250, message = "Value must not exceed 250 characters")
     private String value;
 
     @Schema(
-        description = "Human-readable parameter name",
-        example = "Notification Retention Period",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        maxLength = 200
+        description = "Type of the parameter value for validation and parsing",
+        example = "FOREIGN_KEY",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 20,
+        allowableValues = {"NUMBER", "STRING", "FOREIGN_KEY", "OTHER"}
     )
-    @Size(max = 200, message = "Name must not exceed 200 characters")
-    private String name;
-
-    @Schema(
-        description = "Detailed description of parameter purpose and valid values",
-        example = "Number of days to retain notifications before automatic deletion (1-365)",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        maxLength = 500
-    )
-    @Size(max = 500, message = "Description must not exceed 500 characters")
-    private String description;
-
-    @Schema(
-        description = "Parameter data type for validation and UI rendering",
-        example = "INTEGER",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        allowableValues = {"STRING", "INTEGER", "DECIMAL", "BOOLEAN", "JSON", "DATE", "EMAIL", "URL"}
-    )
+    @NotBlank(message = "Parameter type is required")
+    @Size(max = 20, message = "Type must not exceed 20 characters")
     @Pattern(
-        regexp = "^(STRING|INTEGER|DECIMAL|BOOLEAN|JSON|DATE|EMAIL|URL)$",
-        message = "Type must be one of: STRING, INTEGER, DECIMAL, BOOLEAN, JSON, DATE, EMAIL, URL"
+        regexp = "^(NUMBER|STRING|FOREIGN_KEY|OTHER)$",
+        message = "Type must be one of: NUMBER, STRING, FOREIGN_KEY, OTHER"
     )
     private String type;
 
     @Schema(
-        description = "Category for parameter grouping and organization",
-        example = "NOTIFICATION",
+        description = "Parameter description explaining its purpose and usage",
+        example = "The parameter is used to define the default validator for flow readings",
         requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        maxLength = 50
+        maxLength = 250
     )
-    @Size(max = 50, message = "Category must not exceed 50 characters")
-    private String category;
-
-    @Schema(
-        description = "Indicates whether this parameter is editable via UI",
-        example = "true",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        defaultValue = "true"
-    )
-    private Boolean editable;
-
-    @Schema(
-        description = "Indicates whether this parameter contains sensitive data (e.g., passwords, API keys)",
-        example = "false",
-        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-        defaultValue = "false"
-    )
-    private Boolean sensitive;
+    @Size(max = 250, message = "Description must not exceed 250 characters")
+    private String description;
 
     @Override
     public Parameter toEntity() {
-        Parameter parameter = Parameter.builder()
-                .key(this.key)
-                .value(this.value)
-                .name(this.name)
-                .description(this.description)
-                .type(this.type)
-                .category(this.category)
-                .editable(this.editable != null ? this.editable : true)
-                .sensitive(this.sensitive != null ? this.sensitive : false)
-                .build();
+        Parameter parameter = new Parameter();
+        parameter.setKey(this.key);
+        parameter.setValue(this.value);
+        parameter.setType(this.type);
+        parameter.setDescription(this.description);
 
         if (getId() != null) {
             parameter.setId(getId());
@@ -142,36 +104,19 @@ public class ParameterDTO extends GenericDTO<Parameter> {
     public void updateEntity(Parameter entity) {
         if (this.key != null) entity.setKey(this.key);
         if (this.value != null) entity.setValue(this.value);
-        if (this.name != null) entity.setName(this.name);
-        if (this.description != null) entity.setDescription(this.description);
         if (this.type != null) entity.setType(this.type);
-        if (this.category != null) entity.setCategory(this.category);
-        if (this.editable != null) entity.setEditable(this.editable);
-        if (this.sensitive != null) entity.setSensitive(this.sensitive);
+        if (this.description != null) entity.setDescription(this.description);
     }
 
     public static ParameterDTO fromEntity(Parameter entity) {
-        return fromEntity(entity, false);
-    }
-
-    public static ParameterDTO fromEntity(Parameter entity, boolean maskSensitive) {
         if (entity == null) return null;
-
-        String value = entity.getValue();
-        if (maskSensitive && Boolean.TRUE.equals(entity.getSensitive())) {
-            value = "********";
-        }
 
         return ParameterDTO.builder()
                 .id(entity.getId())
                 .key(entity.getKey())
-                .value(value)
-                .name(entity.getName())
-                .description(entity.getDescription())
+                .value(entity.getValue())
                 .type(entity.getType())
-                .category(entity.getCategory())
-                .editable(entity.getEditable())
-                .sensitive(entity.getSensitive())
+                .description(entity.getDescription())
                 .build();
     }
 }

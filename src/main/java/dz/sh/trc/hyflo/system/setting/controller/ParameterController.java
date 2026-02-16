@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.system.setting.dto.ParameterDTO;
 import dz.sh.trc.hyflo.system.setting.service.ParameterService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 /**
  * REST Controller for system configuration parameter management.
@@ -42,7 +42,7 @@ import java.util.Map;
  */
 @Tag(
     name = "System Parameters",
-    description = "API for managing system configuration parameters, application settings, and runtime configuration"
+    description = "API for managing system configuration parameters and application settings"
 )
 @SecurityRequirement(name = "bearer-auth")
 @RestController
@@ -77,7 +77,7 @@ public class ParameterController extends GenericController<ParameterDTO, Long> {
 
     @Operation(
         summary = "Get all parameters",
-        description = "Retrieve paginated list of all system configuration parameters. Sensitive values are masked by default."
+        description = "Retrieve paginated list of all system configuration parameters."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Parameters retrieved", content = @Content(schema = @Schema(implementation = Page.class))),
@@ -109,54 +109,61 @@ public class ParameterController extends GenericController<ParameterDTO, Long> {
     @GetMapping("/by-key/{key}")
     @PreAuthorize("hasAuthority('SETTING:READ')")
     public ResponseEntity<ParameterDTO> getByKey(
-        @Parameter(description = "Parameter key", required = true, example = "system.notification.retention.days") @PathVariable String key
+        @Parameter(description = "Parameter key", required = true, example = "flow_reading_validator") @PathVariable String key
     ) {
         log.debug("Getting parameter by key: {}", key);
-        ParameterDTO parameter = parameterService.getByKey(key);
-        return success(parameter);
+        Optional<ParameterDTO> parameter = parameterService.findByKey(key);
+        return parameter.map(this::success)
+                .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with key: " + key));
     }
 
     @Operation(
-        summary = "Get parameters by category",
-        description = "Retrieve all configuration parameters within a specific category for grouped configuration management."
+        summary = "Get parameters by type",
+        description = "Retrieve all configuration parameters of a specific type for grouped configuration management."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Parameters retrieved", content = @Content(schema = @Schema(implementation = List.class))),
+        @ApiResponse(responseCode = "200", description = "Parameters retrieved", content = @Content(schema = @Schema(implementation = Page.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid type or pagination", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
-    @GetMapping("/category/{category}")
+    @GetMapping("/type/{type}")
     @PreAuthorize("hasAuthority('SETTING:READ')")
-    public ResponseEntity<List<ParameterDTO>> getByCategory(
-        @Parameter(description = "Parameter category", required = true, example = "NOTIFICATION") @PathVariable String category
+    public ResponseEntity<Page<ParameterDTO>> getByType(
+        @Parameter(description = "Parameter type", required = true, example = "FOREIGN_KEY") @PathVariable String type,
+        @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size
     ) {
-        log.debug("Getting parameters by category: {}", category);
-        List<ParameterDTO> parameters = parameterService.getByCategory(category);
+        log.debug("Getting parameters by type: {}", type);
+        Page<ParameterDTO> parameters = parameterService.findByType(type, buildPageable(page, size, "key", "asc"));
         return success(parameters);
     }
 
     @Operation(
-        summary = "Get all parameters as map",
-        description = "Retrieve all parameters as a key-value map for efficient configuration loading. Excludes sensitive parameters by default."
+        summary = "Search parameters",
+        description = "Search configuration parameters across all fields (key, value, description) with pagination support."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Parameters map retrieved", content = @Content(schema = @Schema(implementation = Map.class))),
+        @ApiResponse(responseCode = "200", description = "Search results retrieved", content = @Content(schema = @Schema(implementation = Page.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid search query or pagination", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
-    @GetMapping("/map")
+    @GetMapping("/search")
     @PreAuthorize("hasAuthority('SETTING:READ')")
-    public ResponseEntity<Map<String, String>> getAllAsMap(
-        @Parameter(description = "Include sensitive parameters", example = "false") @RequestParam(defaultValue = "false") boolean includeSensitive
+    public ResponseEntity<Page<ParameterDTO>> search(
+        @Parameter(description = "Search query", required = true, example = "validator") @RequestParam String query,
+        @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size
     ) {
-        log.debug("Getting all parameters as map (includeSensitive: {})", includeSensitive);
-        Map<String, String> parametersMap = parameterService.getAllAsMap(includeSensitive);
-        return success(parametersMap);
+        log.debug("Searching parameters with query: {}", query);
+        Page<ParameterDTO> results = parameterService.search(query, buildPageable(page, size, "key", "asc"));
+        return success(results);
     }
 
     @Operation(
         summary = "Create parameter",
-        description = "Create a new system configuration parameter. Key must be unique and follow dot-notation naming convention."
+        description = "Create a new system configuration parameter. Key must be unique."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Parameter created", content = @Content(schema = @Schema(implementation = ParameterDTO.class))),
@@ -176,7 +183,7 @@ public class ParameterController extends GenericController<ParameterDTO, Long> {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Parameter updated", content = @Content(schema = @Schema(implementation = ParameterDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid parameter data or parameter not editable", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid parameter data", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "404", description = "Parameter not found", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
@@ -185,28 +192,6 @@ public class ParameterController extends GenericController<ParameterDTO, Long> {
     @PreAuthorize("hasAuthority('SETTING:MANAGE')")
     public ResponseEntity<ParameterDTO> update(@PathVariable Long id, @Valid @RequestBody ParameterDTO dto) {
         return super.update(id, dto);
-    }
-
-    @Operation(
-        summary = "Update parameter value by key",
-        description = "Quick update of parameter value using its key. Convenient for programmatic configuration updates."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Parameter value updated", content = @Content(schema = @Schema(implementation = ParameterDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid value or parameter not editable", content = @Content(schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "404", description = "Parameter not found", content = @Content(schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
-    })
-    @PatchMapping("/by-key/{key}")
-    @PreAuthorize("hasAuthority('SETTING:MANAGE')")
-    public ResponseEntity<ParameterDTO> updateValueByKey(
-        @Parameter(description = "Parameter key", required = true, example = "system.notification.retention.days") @PathVariable String key,
-        @Parameter(description = "New parameter value", required = true, example = "30") @RequestBody String value
-    ) {
-        log.debug("Updating parameter value for key: {}", key);
-        ParameterDTO parameter = parameterService.updateValueByKey(key, value);
-        return success(parameter);
     }
 
     @Operation(
