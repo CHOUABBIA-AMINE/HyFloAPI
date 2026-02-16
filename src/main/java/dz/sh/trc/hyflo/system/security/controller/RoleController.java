@@ -67,7 +67,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role found", content = @Content(schema = @Schema(implementation = RoleDTO.class))),
         @ApiResponse(responseCode = "404", description = "Role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<RoleDTO> getById(
             @Parameter(description = "Role ID", required = true, example = "1") 
@@ -80,7 +81,9 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Get all roles (paginated)", description = "Retrieves a paginated list of all roles")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Roles retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<RoleDTO>> getAll(
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -95,7 +98,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Get all roles (unpaginated)", description = "Retrieves all roles without pagination")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Roles retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<RoleDTO>> getAll() {
         return super.getAll();
@@ -106,8 +110,10 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Create a new role", description = "Creates a new role with validation for unique name")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Role created successfully", content = @Content(schema = @Schema(implementation = RoleDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or role name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority")
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "409", description = "Role name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<RoleDTO> create(
             @Parameter(description = "Role data", required = true) 
@@ -121,9 +127,11 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Update role", description = "Updates an existing role including its permissions")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role updated successfully", content = @Content(schema = @Schema(implementation = RoleDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
         @ApiResponse(responseCode = "404", description = "Role not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or role name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Role name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<RoleDTO> update(
             @Parameter(description = "Role ID", required = true, example = "1") @PathVariable Long id, 
@@ -137,7 +145,9 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Role deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Cannot delete role - assigned to users or groups"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "Role ID", required = true, example = "1") 
@@ -150,7 +160,9 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Search roles", description = "Searches roles by name or description (case-insensitive partial match)")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<RoleDTO>> search(
             @Parameter(description = "Search query", example = "admin") @RequestParam(required = false) String q,
@@ -166,7 +178,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Check if role exists", description = "Checks if a role with the given ID exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Existence check result"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Boolean> exists(
             @Parameter(description = "Role ID", required = true, example = "1") 
@@ -179,7 +192,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Count roles", description = "Returns the total number of roles in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role count returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Long> count() {
         return super.count();
@@ -193,7 +207,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission assigned successfully", content = @Content(schema = @Schema(implementation = RoleDTO.class))),
         @ApiResponse(responseCode = "404", description = "Role or permission not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<RoleDTO> assignPermission(
             @Parameter(description = "Role ID", required = true, example = "1") @PathVariable Long roleId,
@@ -208,7 +223,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission removed successfully", content = @Content(schema = @Schema(implementation = RoleDTO.class))),
         @ApiResponse(responseCode = "404", description = "Role or permission not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<RoleDTO> removePermission(
             @Parameter(description = "Role ID", required = true, example = "1") @PathVariable Long roleId,
@@ -234,7 +250,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role found", content = @Content(schema = @Schema(implementation = RoleDTO.class))),
         @ApiResponse(responseCode = "404", description = "Role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<RoleDTO> getByName(
             @Parameter(description = "Role name", required = true, example = "ROLE_ADMIN") 
@@ -249,7 +266,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Roles retrieved successfully"),
         @ApiResponse(responseCode = "404", description = "Permission not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<RoleDTO>> getByPermission(
             @Parameter(description = "Permission ID", required = true, example = "5") 
@@ -263,7 +281,8 @@ public class RoleController extends GenericController<RoleDTO, Long> {
     @Operation(summary = "Check if role name exists", description = "Checks if a role with the given name already exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Check result returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires ROLE:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Boolean>> checkExists(
             @Parameter(description = "Role name", required = true, example = "ROLE_ADMIN") 
