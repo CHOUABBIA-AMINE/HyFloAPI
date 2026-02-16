@@ -67,7 +67,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Group found", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
         @ApiResponse(responseCode = "404", description = "Group not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<GroupDTO> getById(
             @Parameter(description = "Group ID", required = true, example = "1") 
@@ -80,7 +81,9 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Get all groups (paginated)", description = "Retrieves a paginated list of all groups")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Groups retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<GroupDTO>> getAll(
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -95,7 +98,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Get all groups (unpaginated)", description = "Retrieves all groups without pagination")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Groups retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<GroupDTO>> getAll() {
         return super.getAll();
@@ -106,8 +110,10 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Create a new group", description = "Creates a new user group with validation for unique name")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Group created successfully", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or group name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority")
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "409", description = "Group name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<GroupDTO> create(
             @Parameter(description = "Group data", required = true) 
@@ -121,9 +127,11 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Update group", description = "Updates an existing group including its roles")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Group updated successfully", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
         @ApiResponse(responseCode = "404", description = "Group not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or group name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Group name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<GroupDTO> update(
             @Parameter(description = "Group ID", required = true, example = "1") @PathVariable Long id, 
@@ -137,7 +145,9 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Group deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Group not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Cannot delete group - has assigned users"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "Group ID", required = true, example = "1") 
@@ -150,7 +160,9 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Search groups", description = "Searches groups by name or description (case-insensitive partial match)")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<GroupDTO>> search(
             @Parameter(description = "Search query", example = "admin") @RequestParam(required = false) String q,
@@ -166,7 +178,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Check if group exists", description = "Checks if a group with the given ID exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Existence check result"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Boolean> exists(
             @Parameter(description = "Group ID", required = true, example = "1") 
@@ -179,7 +192,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Count groups", description = "Returns the total number of groups in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Group count returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Long> count() {
         return super.count();
@@ -193,7 +207,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role assigned successfully", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
         @ApiResponse(responseCode = "404", description = "Group or role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<GroupDTO> assignRole(
             @Parameter(description = "Group ID", required = true, example = "1") @PathVariable Long groupId,
@@ -208,7 +223,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role removed successfully", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
         @ApiResponse(responseCode = "404", description = "Group or role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<GroupDTO> removeRole(
             @Parameter(description = "Group ID", required = true, example = "1") @PathVariable Long groupId,
@@ -234,7 +250,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Group found", content = @Content(schema = @Schema(implementation = GroupDTO.class))),
         @ApiResponse(responseCode = "404", description = "Group not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<GroupDTO> getByName(
             @Parameter(description = "Group name", required = true, example = "Administrators") 
@@ -249,7 +266,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Groups retrieved successfully"),
         @ApiResponse(responseCode = "404", description = "Role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<GroupDTO>> getByRole(
             @Parameter(description = "Role ID", required = true, example = "2") 
@@ -263,7 +281,8 @@ public class GroupController extends GenericController<GroupDTO, Long> {
     @Operation(summary = "Check if group name exists", description = "Checks if a group with the given name already exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Check result returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires GROUP:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Boolean>> checkExists(
             @Parameter(description = "Group name", required = true, example = "Administrators") 
