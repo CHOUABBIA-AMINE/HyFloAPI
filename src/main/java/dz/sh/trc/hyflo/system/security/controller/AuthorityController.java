@@ -4,7 +4,7 @@
  *
  *	@Name		: AuthorityController
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 12-12-2025
+ *	@UpdatedOn	: 02-16-2026
  *
  *	@Type		: Class
  *	@Layer		: Controller
@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,12 +32,22 @@ import org.springframework.web.bind.annotation.RestController;
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.system.security.dto.AuthorityDTO;
 import dz.sh.trc.hyflo.system.security.service.AuthorityService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/system/security/authority")
 @Slf4j
+@Tag(name = "Authority Management", description = "APIs for managing system authorities and authorization types")
+@SecurityRequirement(name = "bearer-auth")
 public class AuthorityController extends GenericController<AuthorityDTO, Long> {
 
     private final AuthorityService authorityService;
@@ -50,63 +61,124 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
-    public ResponseEntity<AuthorityDTO> getById(@PathVariable Long id) {
+    @Operation(summary = "Get authority by ID", description = "Retrieves a single authority by its unique identifier")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authority found", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Authority not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
+    public ResponseEntity<AuthorityDTO> getById(
+            @Parameter(description = "Authority ID", required = true, example = "1") 
+            @PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    @Operation(summary = "Get all authorities (paginated)", description = "Retrieves a paginated list of all authorities")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authorities retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
     public ResponseEntity<Page<AuthorityDTO>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "id") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Sort direction", example = "asc") @RequestParam(defaultValue = "asc") String sortDir) {
         return super.getAll(page, size, sortBy, sortDir);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    @Operation(summary = "Get all authorities (unpaginated)", description = "Retrieves all authorities without pagination")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authorities retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
     public ResponseEntity<List<AuthorityDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:MANAGE')")
-    public ResponseEntity<AuthorityDTO> create(@Valid @RequestBody AuthorityDTO dto) {
-        return super.create(dto);
+    @Operation(summary = "Create a new authority", description = "Creates a new authority with validation for unique name")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Authority created successfully", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input or authority name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority")
+    })
+    public ResponseEntity<AuthorityDTO> create(
+            @Parameter(description = "Authority data", required = true) 
+            @Valid @RequestBody AuthorityDTO dto) {
+        AuthorityDTO created = authorityService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:MANAGE')")
-    public ResponseEntity<AuthorityDTO> update(@PathVariable Long id, @Valid @RequestBody AuthorityDTO dto) {
+    @Operation(summary = "Update authority", description = "Updates an existing authority")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authority updated successfully", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Authority not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid input or authority name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority")
+    })
+    public ResponseEntity<AuthorityDTO> update(
+            @Parameter(description = "Authority ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "Updated authority data", required = true) @Valid @RequestBody AuthorityDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:MANAGE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @Operation(summary = "Delete authority", description = "Deletes an authority permanently")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Authority deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Authority not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority")
+    })
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Authority ID", required = true, example = "1") 
+            @PathVariable Long id) {
         return super.delete(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    @Operation(summary = "Search authorities", description = "Searches authorities by name or type (case-insensitive partial match)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Search results returned"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
     public ResponseEntity<Page<AuthorityDTO>> search(
-            @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @Parameter(description = "Search query", example = "admin") @RequestParam(required = false) String q,
+            @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "id") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Sort direction", example = "asc") @RequestParam(defaultValue = "asc") String sortDir) {
         return super.search(q, page, size, sortBy, sortDir);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
-    public ResponseEntity<Boolean> exists(@PathVariable Long id) {
+    @Operation(summary = "Check if authority exists", description = "Checks if an authority with the given ID exists")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Existence check result"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
+    public ResponseEntity<Boolean> exists(
+            @Parameter(description = "Authority ID", required = true, example = "1") 
+            @PathVariable Long id) {
         return super.exists(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
+    @Operation(summary = "Count authorities", description = "Returns the total number of authorities in the system")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authority count returned"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
     public ResponseEntity<Long> count() {
         return super.count();
     }
@@ -124,21 +196,43 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
 
     @GetMapping("/name/{name}")
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
-    public ResponseEntity<AuthorityDTO> getByName(@PathVariable String name) {
+    @Operation(summary = "Get authority by name", description = "Retrieves an authority by its unique name")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authority found", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Authority not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
+    public ResponseEntity<AuthorityDTO> getByName(
+            @Parameter(description = "Authority name", required = true, example = "SYSTEM_ADMIN") 
+            @PathVariable String name) {
         log.info("REST request to get Authority by name: {}", name);
         return ResponseEntity.ok(authorityService.findByName(name));
     }
 
     @GetMapping("/type/{type}")
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
-    public ResponseEntity<List<AuthorityDTO>> getByType(@PathVariable String type) {
+    @Operation(summary = "Get authorities by type", description = "Retrieves all authorities of a specific type")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Authorities retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
+    public ResponseEntity<List<AuthorityDTO>> getByType(
+            @Parameter(description = "Authority type", required = true, example = "SYSTEM") 
+            @PathVariable String type) {
         log.info("REST request to get Authorities by type: {}", type);
         return ResponseEntity.ok(authorityService.findByType(type));
     }
 
     @GetMapping("/exists/{name}")
     @PreAuthorize("hasAuthority('AUTHORITY:READ')")
-    public ResponseEntity<Map<String, Boolean>> checkExists(@PathVariable String name) {
+    @Operation(summary = "Check if authority name exists", description = "Checks if an authority with the given name already exists")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Check result returned"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+    })
+    public ResponseEntity<Map<String, Boolean>> checkExists(
+            @Parameter(description = "Authority name", required = true, example = "SYSTEM_ADMIN") 
+            @PathVariable String name) {
         log.info("REST request to check if Authority exists: {}", name);
         boolean exists = authorityService.existsByName(name);
         return ResponseEntity.ok(Map.of("exists", exists));
