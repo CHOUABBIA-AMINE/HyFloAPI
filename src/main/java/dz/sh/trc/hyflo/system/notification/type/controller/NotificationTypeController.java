@@ -37,11 +37,11 @@ import java.util.List;
 
 /**
  * REST Controller for notification type configuration and management.
- * Defines notification categories, priorities, icons, and behavior rules.
+ * Defines notification categories with multilingual support.
  */
 @Tag(
     name = "Notification Type Configuration",
-    description = "API for managing notification type definitions, categories, priorities, and display configurations"
+    description = "API for managing notification type definitions, multilingual designations, and display configurations"
 )
 @SecurityRequirement(name = "bearer-auth")
 @RestController
@@ -89,7 +89,7 @@ public class NotificationTypeController extends GenericController<NotificationTy
     public ResponseEntity<Page<NotificationTypeDTO>> getAll(
         @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
-        @Parameter(description = "Sort field", example = "name") @RequestParam(defaultValue = "id") String sortBy,
+        @Parameter(description = "Sort field", example = "designationFr") @RequestParam(defaultValue = "id") String sortBy,
         @Parameter(description = "Sort direction", example = "asc") @RequestParam(defaultValue = "asc") String sortDir
     ) {
         return super.getAll(page, size, sortBy, sortDir);
@@ -106,21 +106,62 @@ public class NotificationTypeController extends GenericController<NotificationTy
     })
     @GetMapping("/active")
     @PreAuthorize("hasAuthority('NOTIFICATION:READ')")
-    public ResponseEntity<List<NotificationTypeDTO>> getActiveTypes() {
-        log.debug("Getting active notification types");
-        List<NotificationTypeDTO> types = notificationTypeService.getActiveTypes();
+    public ResponseEntity<List<NotificationTypeDTO>> getAllActive() {
+        log.debug("Getting all active notification types");
+        List<NotificationTypeDTO> types = notificationTypeService.getAllActive();
         return success(types);
     }
 
     @Operation(
+        summary = "Get notification type by code",
+        description = "Retrieve notification type by its unique code identifier. More efficient than ID lookup for configuration access."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Notification type found", content = @Content(schema = @Schema(implementation = NotificationTypeDTO.class))),
+        @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "Notification type not found", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/by-code/{code}")
+    @PreAuthorize("hasAuthority('NOTIFICATION:READ')")
+    public ResponseEntity<NotificationTypeDTO> getByCode(
+        @Parameter(description = "Notification type code", required = true, example = "READING_VALIDATION") @PathVariable String code
+    ) {
+        log.debug("Getting notification type by code: {}", code);
+        NotificationTypeDTO type = notificationTypeService.getByCode(code);
+        return success(type);
+    }
+
+    @Operation(
+        summary = "Search notification types",
+        description = "Search notification types across all fields with pagination support."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Search results retrieved", content = @Content(schema = @Schema(implementation = Page.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid search query or pagination", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/search")
+    @PreAuthorize("hasAuthority('NOTIFICATION:READ')")
+    public ResponseEntity<Page<NotificationTypeDTO>> search(
+        @Parameter(description = "Search query", required = true, example = "reading") @RequestParam String query,
+        @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
+        @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size
+    ) {
+        log.debug("Searching notification types with query: {}", query);
+        Page<NotificationTypeDTO> results = notificationTypeService.globalSearch(query, buildPageable(page, size, "designationFr", "asc"));
+        return success(results);
+    }
+
+    @Operation(
         summary = "Create notification type",
-        description = "Create a new notification type configuration. Defines category, priority, icon, and display properties."
+        description = "Create a new notification type configuration. Code must be unique."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Notification type created", content = @Content(schema = @Schema(implementation = NotificationTypeDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid notification type data", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid notification type data or duplicate code", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
-        @ApiResponse(responseCode = "409", description = "Notification type code already exists", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @Override

@@ -17,13 +17,11 @@ package dz.sh.trc.hyflo.system.notification.core.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
 import dz.sh.trc.hyflo.system.notification.core.dto.NotificationDTO;
 import dz.sh.trc.hyflo.system.notification.core.service.NotificationService;
-import dz.sh.trc.hyflo.system.security.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +37,7 @@ import java.util.List;
 
 /**
  * REST Controller for user notification management and real-time delivery.
- * Supports notification CRUD, user-specific queries, read status tracking, and SSE streaming.
+ * Supports notification CRUD, user-specific queries, and read status tracking.
  */
 @Tag(
     name = "Notification Management",
@@ -159,15 +157,30 @@ public class NotificationController extends GenericController<NotificationDTO, L
     @GetMapping("/my-notifications")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<NotificationDTO>> getMyNotifications(
-        @AuthenticationPrincipal User currentUser,
         @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
         @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size
     ) {
-        log.debug("Getting notifications for user: {}", currentUser.getUsername());
-        Page<NotificationDTO> notifications = notificationService.getNotificationsForUser(
-            currentUser.getId(), 
+        log.debug("Getting notifications for current authenticated user");
+        Page<NotificationDTO> notifications = notificationService.getMyNotifications(
             buildPageable(page, size, "createdAt", "desc")
         );
+        return success(notifications);
+    }
+
+    @Operation(
+        summary = "Get current user unread notifications",
+        description = "Retrieve list of unread notifications for the authenticated user without pagination."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Unread notifications retrieved", content = @Content(schema = @Schema(implementation = List.class))),
+        @ApiResponse(responseCode = "403", description = "User not authenticated", content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping("/my-unread")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<NotificationDTO>> getMyUnreadNotifications() {
+        log.debug("Getting unread notifications for current authenticated user");
+        List<NotificationDTO> notifications = notificationService.getMyUnreadNotifications();
         return success(notifications);
     }
 
@@ -182,9 +195,9 @@ public class NotificationController extends GenericController<NotificationDTO, L
     })
     @GetMapping("/unread-count")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal User currentUser) {
-        log.debug("Getting unread count for user: {}", currentUser.getUsername());
-        Long unreadCount = notificationService.getUnreadCount(currentUser.getId());
+    public ResponseEntity<Long> getUnreadCount() {
+        log.debug("Getting unread count for current authenticated user");
+        Long unreadCount = notificationService.getUnreadCount();
         return success(unreadCount);
     }
 
@@ -201,11 +214,10 @@ public class NotificationController extends GenericController<NotificationDTO, L
     @PatchMapping("/{id}/mark-read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificationDTO> markAsRead(
-        @Parameter(description = "Notification ID", required = true, example = "1") @PathVariable Long id,
-        @AuthenticationPrincipal User currentUser
+        @Parameter(description = "Notification ID", required = true, example = "1") @PathVariable Long id
     ) {
-        log.debug("Marking notification {} as read for user: {}", id, currentUser.getUsername());
-        NotificationDTO notification = notificationService.markAsRead(id, currentUser.getId());
+        log.debug("Marking notification {} as read", id);
+        NotificationDTO notification = notificationService.markAsRead(id);
         return success(notification);
     }
 
@@ -214,15 +226,15 @@ public class NotificationController extends GenericController<NotificationDTO, L
         description = "Mark all unread notifications for the authenticated user as read. Bulk operation for clearing notification badges."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "All notifications marked as read", content = @Content(schema = @Schema(implementation = List.class))),
+        @ApiResponse(responseCode = "204", description = "All notifications marked as read", content = @Content),
         @ApiResponse(responseCode = "403", description = "User not authenticated", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
     @PatchMapping("/mark-all-read")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<NotificationDTO>> markAllAsRead(@AuthenticationPrincipal User currentUser) {
-        log.debug("Marking all notifications as read for user: {}", currentUser.getUsername());
-        List<NotificationDTO> notifications = notificationService.markAllAsRead(currentUser.getId());
-        return success(notifications);
+    public ResponseEntity<Void> markAllAsRead() {
+        log.debug("Marking all notifications as read for current user");
+        notificationService.markAllAsRead();
+        return noContent();
     }
 }
