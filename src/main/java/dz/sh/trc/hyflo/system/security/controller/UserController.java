@@ -71,7 +71,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> getById(
             @Parameter(description = "User ID", required = true, example = "1") 
@@ -84,7 +85,9 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Get all users (paginated)", description = "Retrieves a paginated list of all users")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<UserDTO>> getAll(
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -99,7 +102,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Get all users (unpaginated)", description = "Retrieves all users without pagination")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<UserDTO>> getAll() {
         return super.getAll();
@@ -110,8 +114,10 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Create a new user", description = "Creates a new user account with password hashing and validation")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "User created successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or username/email already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "409", description = "Username or email already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> create(
             @Parameter(description = "User data", required = true) 
@@ -125,9 +131,11 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Update user", description = "Updates an existing user. Users can update themselves, admins can update anyone")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User updated successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or username/email already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "409", description = "Username or email already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> update(
             @Parameter(description = "User ID", required = true, example = "1") @PathVariable Long id, 
@@ -141,7 +149,9 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "User deleted successfully"),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Cannot delete user - has active sessions or dependencies"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "User ID", required = true, example = "1") 
@@ -154,7 +164,9 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Search users", description = "Searches users by username or email (case-insensitive partial match)")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<UserDTO>> search(
             @Parameter(description = "Search query", example = "john") @RequestParam(required = false) String q,
@@ -170,7 +182,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Check if user exists", description = "Checks if a user with the given ID exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Existence check result"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Boolean> exists(
             @Parameter(description = "User ID", required = true, example = "1") 
@@ -183,7 +196,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Count users", description = "Returns the total number of users in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User count returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Long> count() {
         return super.count();
@@ -206,7 +220,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> getUserByUsername(
             @Parameter(description = "Username", required = true, example = "john.doe") 
@@ -221,7 +236,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> getUserByEmail(
             @Parameter(description = "Email address", required = true, example = "john.doe@example.com") 
@@ -233,7 +249,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @GetMapping("/exists/username/{username}")
     @Operation(summary = "Check if username exists", description = "Checks if a username is already taken (for registration validation)")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Check result returned")
+        @ApiResponse(responseCode = "200", description = "Check result returned"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Boolean>> checkUsernameExists(
             @Parameter(description = "Username to check", required = true, example = "john.doe") 
@@ -246,7 +263,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @GetMapping("/exists/email/{email}")
     @Operation(summary = "Check if email exists", description = "Checks if an email is already registered (for registration validation)")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Check result returned")
+        @ApiResponse(responseCode = "200", description = "Check result returned"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Boolean>> checkEmailExists(
             @Parameter(description = "Email to check", required = true, example = "john.doe@example.com") 
@@ -263,9 +281,10 @@ public class UserController extends GenericController<UserDTO, Long> {
     @Operation(summary = "Reset user password", description = "Resets a user's password and restores account security flags")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid password format or validation failed"),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid password format"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, String>> resetPassword(
             @Parameter(description = "Password reset request", required = true) 
@@ -286,7 +305,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role assigned successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User or role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> assignRole(
             @Parameter(description = "User ID", required = true, example = "1") @PathVariable Long userId,
@@ -301,7 +321,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Role removed successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User or role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> removeRole(
             @Parameter(description = "User ID", required = true, example = "1") @PathVariable Long userId,
@@ -316,7 +337,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
         @ApiResponse(responseCode = "404", description = "Role not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<UserDTO>> getUsersByRole(
             @Parameter(description = "Role ID", required = true, example = "2") 
@@ -333,7 +355,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Group assigned successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User or group not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> assignGroup(
             @Parameter(description = "User ID", required = true, example = "1") @PathVariable Long userId,
@@ -348,7 +371,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Group removed successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User or group not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> removeGroup(
             @Parameter(description = "User ID", required = true, example = "1") @PathVariable Long userId,
@@ -363,7 +387,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
         @ApiResponse(responseCode = "404", description = "Group not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<UserDTO>> getUsersByGroup(
             @Parameter(description = "Group ID", required = true, example = "3") 
@@ -380,7 +405,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User enabled successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> enableUser(
             @Parameter(description = "User ID", required = true, example = "1") 
@@ -395,7 +421,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User disabled successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> disableUser(
             @Parameter(description = "User ID", required = true, example = "1") 
@@ -410,7 +437,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User locked successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> lockUser(
             @Parameter(description = "User ID", required = true, example = "1") 
@@ -425,7 +453,8 @@ public class UserController extends GenericController<UserDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "User unlocked successfully", content = @Content(schema = @Schema(implementation = UserDTO.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires USER:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<UserDTO> unlockUser(
             @Parameter(description = "User ID", required = true, example = "1") 
