@@ -47,7 +47,7 @@ public class AlertStatusDTO extends GenericDTO<AlertStatus> {
         maxLength = 20
     )
     @NotBlank(message = "Alert status code is required")
-    @Size(max = 20, message = "Code must not exceed 10 characters")
+    @Size(max = 20, message = "Code must not exceed 20 characters")
     private String code;
 
     @Schema(

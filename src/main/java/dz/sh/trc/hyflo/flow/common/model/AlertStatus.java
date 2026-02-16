@@ -50,7 +50,7 @@ public class AlertStatus extends GenericModel {
 		requiredMode = Schema.RequiredMode.REQUIRED,
 		maxLength = 20
 	)
-	@Size(max = 20, message = "Code must not exceed 10 characters")
+	@Size(max = 20, message = "Code must not exceed 20 characters")
 	@Column(name = "F_01", length = 20, nullable=false)
 	private String code;
       
