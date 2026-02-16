@@ -2,11 +2,12 @@
  *
  * 	@Author		: MEDJERAB Abir
  * 
- * 	@Name		: FlowWorkflowController
+ * 	@Name		: ReadingWorkflowController
  * 	@CreatedOn	: 01-28-2026
  * 	@UpdatedOn	: 02-03-2026
  * 	@UpdatedOn	: 02-10-2026 - Renamed from FlowMonitoringController to FlowWorkflowController
- * 	@UpdatedOn	: 02-10-2026 - Updated to match FlowReadingWorkflowService methods (SRP refactoring)
+ * 	@UpdatedOn	: 02-10-2026 - Updated to match ReadingWorkflowService methods (SRP refactoring)
+ * 	@UpdatedOn	: 02-16-2026 - Enhanced with comprehensive OpenAPI documentation
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -31,6 +32,7 @@
 package dz.sh.trc.hyflo.flow.workflow.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +47,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -66,9 +69,13 @@ import lombok.extern.slf4j.Slf4j;
  * - FlowReadingController: CRUD operations
  * - FlowMonitoringController: Analytics queries
  */
+@Tag(
+    name = "Flow Reading Workflow",
+    description = "Workflow state transition operations for flow readings. Handles validation and rejection processes with automatic notification publishing."
+)
+@SecurityRequirement(name = "bearer-auth")
 @RestController
 @RequestMapping("/flow/workflow/reading")
-@Tag(name = "Flow Workflow", description = "Flow reading workflow state transition operations")
 @RequiredArgsConstructor
 @Slf4j
 public class ReadingWorkflowController {
@@ -87,36 +94,80 @@ public class ReadingWorkflowController {
      * @param validatedById Employee ID of the validator
      * @return Updated reading DTO with VALIDATED status
      */
-    @PostMapping("/{id}/validate")
     @Operation(
         summary = "Validate a flow reading",
-        description = "Approves a submitted reading, transitions status to VALIDATED, and records validator information"
+        description = """Approves a submitted reading and transitions its status to VALIDATED.
+        
+        **Workflow Transition:** SUBMITTED → VALIDATED
+        
+        **Process:**
+        - Updates reading validation status to VALIDATED
+        - Records validator employee information (validatedBy, validatedAt)
+        - Publishes ReadingValidatedEvent for notification system
+        - Sends notification to original recorder
+        
+        **Business Rules:**
+        - Reading must exist in the system
+        - Validator employee must exist and have appropriate permissions
+        - VALIDATED status must be configured in validation_status table
+        - Only SUBMITTED readings can be validated
+        
+        **Notifications:**
+        - Recorder receives notification of validation approval
+        - Event published via Spring ApplicationEventPublisher
+        - Integration with generic notification system
+        
+        **Use Cases:**
+        - Operational supervisor approving field readings
+        - Quality control officer validating measurement data
+        - Automated validation after passing data integrity checks
+        """
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Reading validated successfully",
+            description = "Reading validated successfully. Returns updated reading with VALIDATED status and validator information.",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = FlowReadingDTO.class)
             )
         ),
         @ApiResponse(
-            responseCode = "404",
-            description = "Reading or employee not found",
-            content = @Content
+            responseCode = "400",
+            description = "Invalid request parameters or business rule violation (e.g., reading already validated, invalid status transition)",
+            content = @Content(schema = @Schema(implementation = String.class))
         ),
         @ApiResponse(
-            responseCode = "400",
-            description = "Invalid request parameters",
-            content = @Content
+            responseCode = "403",
+            description = "Access forbidden - insufficient permissions to validate readings",
+            content = @Content(schema = @Schema(implementation = String.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Reading not found with provided ID, or validator employee not found, or VALIDATED status not configured",
+            content = @Content(schema = @Schema(implementation = String.class))
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error during validation process or event publishing",
+            content = @Content(schema = @Schema(implementation = String.class))
         )
     })
+    @PostMapping("/{id}/validate")
+    @PreAuthorize("hasAuthority('READING:VALIDATE')")
     public ResponseEntity<FlowReadingDTO> validateReading(
-        @Parameter(description = "Reading ID to validate", required = true)
+        @Parameter(
+            description = "Unique identifier of the reading to validate",
+            required = true,
+            example = "1"
+        )
         @PathVariable Long id,
         
-        @Parameter(description = "Employee ID of the validator", required = true)
+        @Parameter(
+            description = "Employee ID of the validator performing the approval. Must correspond to an existing employee with validation permissions.",
+            required = true,
+            example = "42"
+        )
         @RequestParam @NotNull(message = "Validator ID is required") Long validatedById
     ) {
         log.info("REST: Validating reading {} by employee {}", id, validatedById);
@@ -138,39 +189,101 @@ public class ReadingWorkflowController {
      * @param rejectionReason Reason for rejection (required)
      * @return Updated reading DTO with REJECTED status
      */
-    @PostMapping("/{id}/reject")
     @Operation(
         summary = "Reject a flow reading",
-        description = "Rejects a submitted reading with a reason, transitions status to REJECTED, and notifies recorder"
+        description = """Rejects a submitted reading with a mandatory reason and transitions its status to REJECTED.
+        
+        **Workflow Transition:** SUBMITTED → REJECTED
+        
+        **Process:**
+        - Updates reading validation status to REJECTED
+        - Records rejector employee information (validatedBy, validatedAt)
+        - Appends rejection reason to reading notes for audit trail
+        - Publishes ReadingRejectedEvent for notification system
+        - Sends notification to original recorder
+        
+        **Business Rules:**
+        - Reading must exist in the system
+        - Rejector employee must exist and have appropriate permissions
+        - Rejection reason is mandatory (minimum 3 characters)
+        - REJECTED status must be configured in validation_status table
+        - Only SUBMITTED readings can be rejected
+        
+        **Rejection Reason:**
+        - Appended to reading notes with timestamp and rejector information
+        - Format: "=== REJECTION === Rejected by: [Name] ([ID]) Date: [Timestamp] Reason: [Reason]"
+        - Provides audit trail for quality control
+        - Helps recorder understand what needs correction
+        
+        **Notifications:**
+        - Recorder receives notification with rejection reason
+        - Event published via Spring ApplicationEventPublisher
+        - Integration with generic notification system
+        
+        **Use Cases:**
+        - Readings with suspicious values requiring verification
+        - Data quality issues detected during review
+        - Incomplete or missing measurement information
+        - Equipment malfunction suspected
+        - Values outside acceptable operational ranges
+        
+        **Future Enhancement:**
+        - Rejected readings can be resubmitted after correction
+        - Resubmission workflow will be added in future version
+        """
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Reading rejected successfully",
+            description = "Reading rejected successfully. Returns updated reading with REJECTED status, rejector information, and rejection reason in notes.",
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = FlowReadingDTO.class)
             )
         ),
         @ApiResponse(
-            responseCode = "404",
-            description = "Reading or employee not found",
-            content = @Content
+            responseCode = "400",
+            description = "Invalid request parameters (missing rejection reason, invalid status transition, or business rule violation)",
+            content = @Content(schema = @Schema(implementation = String.class))
         ),
         @ApiResponse(
-            responseCode = "400",
-            description = "Invalid request parameters or missing rejection reason",
-            content = @Content
+            responseCode = "403",
+            description = "Access forbidden - insufficient permissions to reject readings",
+            content = @Content(schema = @Schema(implementation = String.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Reading not found with provided ID, or rejector employee not found, or REJECTED status not configured",
+            content = @Content(schema = @Schema(implementation = String.class))
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error during rejection process or event publishing",
+            content = @Content(schema = @Schema(implementation = String.class))
         )
     })
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasAuthority('READING:VALIDATE')")
     public ResponseEntity<FlowReadingDTO> rejectReading(
-        @Parameter(description = "Reading ID to reject", required = true)
+        @Parameter(
+            description = "Unique identifier of the reading to reject",
+            required = true,
+            example = "1"
+        )
         @PathVariable Long id,
         
-        @Parameter(description = "Employee ID of the rejector", required = true)
+        @Parameter(
+            description = "Employee ID of the rejector performing the rejection. Must correspond to an existing employee with validation permissions.",
+            required = true,
+            example = "42"
+        )
         @RequestParam @NotNull(message = "Rejector ID is required") Long rejectedById,
         
-        @Parameter(description = "Reason for rejection", required = true)
+        @Parameter(
+            description = "Detailed reason for rejecting the reading. Must explain what is wrong with the data so the recorder can make corrections. Minimum 3 characters.",
+            required = true,
+            example = "Flow rate value (2500 m³/h) exceeds maximum pipeline capacity (2000 m³/h). Please verify measurement equipment calibration."
+        )
         @RequestParam @NotBlank(message = "Rejection reason is required") String rejectionReason
     ) {
         log.info("REST: Rejecting reading {} by employee {} with reason: {}", 
@@ -182,26 +295,35 @@ public class ReadingWorkflowController {
     // ========== MIGRATION NOTES ==========
 
     /**
-     * ⚠️ ENDPOINT CHANGES
+     * ⚠️ ENDPOINT CHANGES (SRP Refactoring)
      * 
      * The following endpoints were removed in this refactoring:
      * 
      * 1. POST /slot-coverage
      *    → MOVED to intelligence module (FlowIntelligenceController)
-     *    → Slot coverage is an analytics feature, not a workflow operation
+     *    → Rationale: Slot coverage is an analytics feature, not a workflow operation
+     *    → New location: /flow/intelligence/slot-coverage
      * 
      * 2. POST /readings/submit
      *    → USE FlowReadingController.create() instead
-     *    → CRUD operations belong in FlowReadingController
+     *    → Rationale: CRUD operations belong in FlowReadingController
+     *    → New location: POST /flow/core/readings
      * 
      * 3. POST /readings/validate (with ReadingValidationRequestDTO)
      *    → REPLACED with two specific endpoints:
      *      - POST /readings/{id}/validate
      *      - POST /readings/{id}/reject
-     *    → Clearer RESTful semantics
+     *    → Rationale: Clearer RESTful semantics and separation of approve/reject actions
      * 
-     * New endpoint structure:
-     * - POST /flow/core/workflow/readings/{id}/validate?validatedById={id}
-     * - POST /flow/core/workflow/readings/{id}/reject?rejectedById={id}&rejectionReason={reason}
+     * **New endpoint structure:**
+     * - POST /flow/workflow/reading/{id}/validate?validatedById={id}
+     * - POST /flow/workflow/reading/{id}/reject?rejectedById={id}&rejectionReason={reason}
+     * 
+     * **Benefits of SRP refactoring:**
+     * - Clear separation of concerns (CRUD vs Workflow vs Analytics)
+     * - Easier testing with focused service mocks
+     * - Better maintainability with isolated business logic
+     * - Future-proof for additional workflow states (PENDING, REVIEWING)
+     * - Improved API discoverability and documentation
      */
 }
