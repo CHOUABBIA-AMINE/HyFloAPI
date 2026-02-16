@@ -4,7 +4,7 @@
  *
  * 	@Name		: DataSourceDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Fixed validation and added comprehensive @Schema
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -32,59 +32,80 @@ import lombok.experimental.SuperBuilder;
  * Data Transfer Object for DataSource entity.
  * Used for API requests and responses related to data source classification.
  */
+@Schema(description = "Data source DTO for flow measurement origin tracking (SCADA, manual, calculated sources)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Data source DTO for flow measurement origin tracking")
 public class DataSourceDTO extends GenericDTO<DataSource> {
 
+    @Schema(
+        description = "Unique code identifying the data source type (uppercase letters, numbers, hyphens, underscores)",
+        example = "SCADA",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 50
+    )
     @NotBlank(message = "Data source code is required")
-    @Size(min = 2, max = 50, message = "Code must be between 2 and 50 characters")
+    @Size(max = 50, message = "Code must not exceed 50 characters")
     @Pattern(regexp = "^[A-Z0-9_-]+$", 
              message = "Code must contain only uppercase letters, numbers, hyphens, and underscores")
-    @Schema(description = "Unique code identifying the data source type", 
-            example = "SCADA", 
-            requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 50)
     private String code;
 
+    @Schema(
+        description = "Data source designation in Arabic",
+        example = "نظام SCADA",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
     @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
-    @Schema(description = "Data source designation in Arabic", 
-            example = "نظام SCADA")
     private String designationAr;
 
+    @Schema(
+        description = "Data source designation in English",
+        example = "SCADA System",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
     @Size(max = 100, message = "English designation must not exceed 100 characters")
-    @Schema(description = "Data source designation in English", 
-            example = "SCADA System",
-            maxLength = 100)
     private String designationEn;
 
+    @Schema(
+        description = "Data source designation in French (required for system use)",
+        example = "Système SCADA",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
     @NotBlank(message = "French designation is required")
     @Size(max = 100, message = "French designation must not exceed 100 characters")
-    @Schema(description = "Data source designation in French (required)", 
-            example = "Système SCADA", 
-            required = true,
-            maxLength = 100)
     private String designationFr;
 
+    @Schema(
+        description = "Detailed description in Arabic",
+        example = "قراءات تلقائية من نظام المراقبة والتحكم",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 255
+    )
     @Size(max = 255, message = "Arabic description must not exceed 255 characters")
-    @Schema(description = "Detailed description in Arabic", 
-            example = "قراءات تلقائية من نظام المراقبة والتحكم")
     private String descriptionAr;
 
+    @Schema(
+        description = "Detailed description in English",
+        example = "Automated readings from Supervisory Control and Data Acquisition system",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 255
+    )
     @Size(max = 255, message = "English description must not exceed 255 characters")
-    @Schema(description = "Detailed description in English", 
-            example = "Automated readings from SCADA system",
-            maxLength = 255)
     private String descriptionEn;
 
+    @Schema(
+        description = "Detailed description in French",
+        example = "Lectures automatisées du système de contrôle et d'acquisition de données",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 255
+    )
     @Size(max = 255, message = "French description must not exceed 255 characters")
-    @Schema(description = "Detailed description in French", 
-            example = "Lectures automatisées du système SCADA",
-            maxLength = 255)
     private String descriptionFr;
 
     @Override
@@ -112,6 +133,12 @@ public class DataSourceDTO extends GenericDTO<DataSource> {
         if (this.descriptionFr != null) entity.setDescriptionFr(this.descriptionFr);
     }
 
+    /**
+     * Converts a DataSource entity to its DTO representation.
+     *
+     * @param entity the DataSource entity to convert
+     * @return DataSourceDTO or null if entity is null
+     */
     public static DataSourceDTO fromEntity(DataSource entity) {
         if (entity == null) return null;
         

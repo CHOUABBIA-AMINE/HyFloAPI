@@ -4,7 +4,7 @@
  *
  * 	@Name		: EventStatusDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - Fixed validation messages and added comprehensive @Schema
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -27,32 +27,45 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * Data Transfer Object for EventStatus entity.
+ * Used for API requests and responses related to operational event lifecycle tracking.
+ */
+@Schema(description = "Event status DTO for operational event lifecycle tracking from reporting to closure")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Event status DTO for operational event lifecycle tracking")
 public class EventStatusDTO extends GenericDTO<EventStatus> {
 
-    @Size(max = 50, message = "Arabic designation must not exceed 50 characters")
-    @Schema(description = "Event status designation in Arabic", 
-            example = "قيد التنفيذ")
+    @Schema(
+        description = "Event status designation in Arabic",
+        example = "قيد التنفيذ",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
     private String designationAr;
 
-    @Size(max = 50, message = "English designation must not exceed 50 characters")
-    @Schema(description = "Event status designation in English", 
-            example = "In Progress",
-            maxLength = 50)
+    @Schema(
+        description = "Event status designation in English",
+        example = "In Progress",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "English designation must not exceed 100 characters")
     private String designationEn;
 
+    @Schema(
+        description = "Event status designation in French (required for system use)",
+        example = "En Cours",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
     @NotBlank(message = "French designation is required")
-    @Size(max = 50, message = "French designation must not exceed 50 characters")
-    @Schema(description = "Event status designation in French (required)", 
-            example = "En Cours", 
-            required = true,
-            maxLength = 50)
+    @Size(max = 100, message = "French designation must not exceed 100 characters")
     private String designationFr;
 
     @Override
@@ -72,6 +85,12 @@ public class EventStatusDTO extends GenericDTO<EventStatus> {
         if (this.designationFr != null) entity.setDesignationFr(this.designationFr);
     }
 
+    /**
+     * Converts an EventStatus entity to its DTO representation.
+     *
+     * @param entity the EventStatus entity to convert
+     * @return EventStatusDTO or null if entity is null
+     */
     public static EventStatusDTO fromEntity(EventStatus entity) {
         if (entity == null) return null;
         
