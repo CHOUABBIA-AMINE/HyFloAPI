@@ -65,7 +65,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authority found", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
         @ApiResponse(responseCode = "404", description = "Authority not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<AuthorityDTO> getById(
             @Parameter(description = "Authority ID", required = true, example = "1") 
@@ -78,7 +79,9 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Get all authorities (paginated)", description = "Retrieves a paginated list of all authorities")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authorities retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<AuthorityDTO>> getAll(
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -93,7 +96,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Get all authorities (unpaginated)", description = "Retrieves all authorities without pagination")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authorities retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<AuthorityDTO>> getAll() {
         return super.getAll();
@@ -104,8 +108,10 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Create a new authority", description = "Creates a new authority with validation for unique name")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Authority created successfully", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or authority name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority")
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "409", description = "Authority name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<AuthorityDTO> create(
             @Parameter(description = "Authority data", required = true) 
@@ -119,9 +125,11 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Update authority", description = "Updates an existing authority")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authority updated successfully", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
         @ApiResponse(responseCode = "404", description = "Authority not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or authority name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Authority name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<AuthorityDTO> update(
             @Parameter(description = "Authority ID", required = true, example = "1") @PathVariable Long id, 
@@ -135,7 +143,9 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Authority deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Authority not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Cannot delete authority - in use by system"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "Authority ID", required = true, example = "1") 
@@ -148,7 +158,9 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Search authorities", description = "Searches authorities by name or type (case-insensitive partial match)")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<AuthorityDTO>> search(
             @Parameter(description = "Search query", example = "admin") @RequestParam(required = false) String q,
@@ -164,7 +176,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Check if authority exists", description = "Checks if an authority with the given ID exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Existence check result"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Boolean> exists(
             @Parameter(description = "Authority ID", required = true, example = "1") 
@@ -177,7 +190,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Count authorities", description = "Returns the total number of authorities in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authority count returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Long> count() {
         return super.count();
@@ -200,7 +214,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authority found", content = @Content(schema = @Schema(implementation = AuthorityDTO.class))),
         @ApiResponse(responseCode = "404", description = "Authority not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<AuthorityDTO> getByName(
             @Parameter(description = "Authority name", required = true, example = "SYSTEM_ADMIN") 
@@ -214,7 +229,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Get authorities by type", description = "Retrieves all authorities of a specific type")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Authorities retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<AuthorityDTO>> getByType(
             @Parameter(description = "Authority type", required = true, example = "SYSTEM") 
@@ -228,7 +244,8 @@ public class AuthorityController extends GenericController<AuthorityDTO, Long> {
     @Operation(summary = "Check if authority name exists", description = "Checks if an authority with the given name already exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Check result returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires AUTHORITY:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Boolean>> checkExists(
             @Parameter(description = "Authority name", required = true, example = "SYSTEM_ADMIN") 

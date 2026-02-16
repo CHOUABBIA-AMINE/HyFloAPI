@@ -65,7 +65,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission found", content = @Content(schema = @Schema(implementation = PermissionDTO.class))),
         @ApiResponse(responseCode = "404", description = "Permission not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<PermissionDTO> getById(
             @Parameter(description = "Permission ID", required = true, example = "1") 
@@ -78,7 +79,9 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Get all permissions (paginated)", description = "Retrieves a paginated list of all permissions")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permissions retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<PermissionDTO>> getAll(
             @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
@@ -93,7 +96,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Get all permissions (unpaginated)", description = "Retrieves all permissions without pagination")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permissions retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<PermissionDTO>> getAll() {
         return super.getAll();
@@ -104,8 +108,10 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Create a new permission", description = "Creates a new permission with validation for unique name")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Permission created successfully", content = @Content(schema = @Schema(implementation = PermissionDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input or permission name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:MANAGE authority")
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "409", description = "Permission name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<PermissionDTO> create(
             @Parameter(description = "Permission data", required = true) 
@@ -119,9 +125,11 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Update permission", description = "Updates an existing permission")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission updated successfully", content = @Content(schema = @Schema(implementation = PermissionDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
         @ApiResponse(responseCode = "404", description = "Permission not found"),
-        @ApiResponse(responseCode = "400", description = "Invalid input or permission name already exists"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Permission name already exists"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<PermissionDTO> update(
             @Parameter(description = "Permission ID", required = true, example = "1") @PathVariable Long id, 
@@ -135,7 +143,9 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Permission deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Permission not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:MANAGE authority")
+        @ApiResponse(responseCode = "409", description = "Cannot delete permission - assigned to roles"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "Permission ID", required = true, example = "1") 
@@ -148,7 +158,9 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Search permissions", description = "Searches permissions by name, resource, or action (case-insensitive partial match)")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Search results returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Page<PermissionDTO>> search(
             @Parameter(description = "Search query", example = "read") @RequestParam(required = false) String q,
@@ -164,7 +176,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Check if permission exists", description = "Checks if a permission with the given ID exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Existence check result"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Boolean> exists(
             @Parameter(description = "Permission ID", required = true, example = "1") 
@@ -177,7 +190,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Count permissions", description = "Returns the total number of permissions in the system")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission count returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Long> count() {
         return super.count();
@@ -200,7 +214,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permission found", content = @Content(schema = @Schema(implementation = PermissionDTO.class))),
         @ApiResponse(responseCode = "404", description = "Permission not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<PermissionDTO> getByName(
             @Parameter(description = "Permission name", required = true, example = "USER:READ") 
@@ -214,7 +229,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Get permissions by resource", description = "Retrieves all permissions for a specific resource (e.g., 'USER')")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permissions retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<PermissionDTO>> getByResource(
             @Parameter(description = "Resource name", required = true, example = "USER") 
@@ -228,7 +244,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Get permissions by action", description = "Retrieves all permissions for a specific action (e.g., 'READ', 'MANAGE')")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permissions retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<PermissionDTO>> getByAction(
             @Parameter(description = "Action name", required = true, example = "READ") 
@@ -242,7 +259,9 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Get permissions by resource and action", description = "Retrieves permissions matching both resource and action")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Permissions retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "400", description = "Invalid or missing resource/action parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<List<PermissionDTO>> getByResourceAndAction(
             @Parameter(description = "Resource name", required = true, example = "USER") @RequestParam String resource,
@@ -256,7 +275,8 @@ public class PermissionController extends GenericController<PermissionDTO, Long>
     @Operation(summary = "Check if permission name exists", description = "Checks if a permission with the given name already exists")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Check result returned"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires PERMISSION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, Boolean>> checkExists(
             @Parameter(description = "Permission name", required = true, example = "USER:READ") 
