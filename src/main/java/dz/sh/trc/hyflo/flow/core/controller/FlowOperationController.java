@@ -5,6 +5,7 @@
  * 	@Name		: FlowOperationController
  * 	@CreatedOn	: 01-23-2026
  * 	@UpdatedOn	: 01-31-2026 - Added validate and reject endpoints
+ * 	@UpdatedOn	: 02-16-2026 - Added comprehensive OpenAPI documentation
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -20,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,13 +41,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/flow/core/operation")
-@Tag(name = "Flow Operations", description = "API for managing flow operations (production, transportation, consumption)")
+@Tag(name = "Flow Operation Management", description = "APIs for managing flow operations (production, transportation, consumption) with workflow validation")
+@SecurityRequirement(name = "bearer-auth")
 @Slf4j
 public class FlowOperationController extends GenericController<FlowOperationDTO, Long> {
 
@@ -59,63 +63,135 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
     // ========== SECURED CRUD OPERATIONS ==========
 
     @Override
+    @Operation(summary = "Get flow operation by ID", description = "Retrieves a single flow operation by its unique identifier")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Flow operation found", content = @Content(schema = @Schema(implementation = FlowOperationDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Flow operation not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    public ResponseEntity<FlowOperationDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<FlowOperationDTO> getById(
+            @Parameter(description = "Flow operation ID", required = true, example = "1") 
+            @PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
+    @Operation(summary = "Get all flow operations (paginated)", description = "Retrieves a paginated list of all flow operations")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Flow operations retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
     public ResponseEntity<Page<FlowOperationDTO>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @Parameter(description = "Page number (0-based)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "id") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Sort direction", example = "asc") @RequestParam(defaultValue = "asc") String sortDir) {
         return super.getAll(page, size, sortBy, sortDir);
     }
 
     @Override
+    @Operation(summary = "Get all flow operations (unpaginated)", description = "Retrieves all flow operations without pagination")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Flow operations retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
     public ResponseEntity<List<FlowOperationDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
+    @Operation(summary = "Create flow operation", description = "Creates a new flow operation")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Flow operation created successfully", content = @Content(schema = @Schema(implementation = FlowOperationDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:WRITE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:WRITE')")
-    public ResponseEntity<FlowOperationDTO> create(@Valid @RequestBody FlowOperationDTO dto) {
-        return super.create(dto);
+    public ResponseEntity<FlowOperationDTO> create(
+            @Parameter(description = "Flow operation data", required = true) 
+            @Valid @RequestBody FlowOperationDTO dto) {
+        FlowOperationDTO created = flowOperationService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Override
+    @Operation(summary = "Update flow operation", description = "Updates an existing flow operation")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Flow operation updated successfully", content = @Content(schema = @Schema(implementation = FlowOperationDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input - validation failed"),
+        @ApiResponse(responseCode = "404", description = "Flow operation not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:WRITE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:WRITE')")
-    public ResponseEntity<FlowOperationDTO> update(@PathVariable Long id, @Valid @RequestBody FlowOperationDTO dto) {
+    public ResponseEntity<FlowOperationDTO> update(
+            @Parameter(description = "Flow operation ID", required = true, example = "1") @PathVariable Long id, 
+            @Parameter(description = "Updated flow operation data", required = true) @Valid @RequestBody FlowOperationDTO dto) {
         return super.update(id, dto);
     }
 
     @Override
+    @Operation(summary = "Delete flow operation", description = "Deletes a flow operation permanently")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Flow operation deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Flow operation not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:MANAGE authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:MANAGE')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Flow operation ID", required = true, example = "1") 
+            @PathVariable Long id) {
         return super.delete(id);
     }
 
     @Override
+    @Operation(summary = "Search flow operations", description = "Searches flow operations by multiple criteria")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Search results returned"),
+        @ApiResponse(responseCode = "400", description = "Invalid search parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
     public ResponseEntity<Page<FlowOperationDTO>> search(
-            @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @Parameter(description = "Search query") @RequestParam(required = false) String q,
+            @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "id") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Sort direction", example = "asc") @RequestParam(defaultValue = "asc") String sortDir) {
         return super.search(q, page, size, sortBy, sortDir);
     }
 
     @Override
+    @Operation(summary = "Check if flow operation exists", description = "Checks if a flow operation with the given ID exists")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Existence check result"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    public ResponseEntity<Boolean> exists(@PathVariable Long id) {
+    public ResponseEntity<Boolean> exists(
+            @Parameter(description = "Flow operation ID", required = true, example = "1") 
+            @PathVariable Long id) {
         return super.exists(id);
     }
 
     @Override
+    @Operation(summary = "Count flow operations", description = "Returns the total number of flow operations")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Flow operation count returned"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
     public ResponseEntity<Long> count() {
         return super.count();
@@ -125,8 +201,15 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
 
     @GetMapping("/date/{date}")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    @Operation(summary = "Get operations by date", description = "Retrieve all flow operations for a specific date")
+    @Operation(summary = "Get operations by date", description = "Retrieves all flow operations for a specific date")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid date format"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<FlowOperationDTO>> getByDate(
+            @Parameter(description = "Operation date (ISO 8601)", required = true, example = "2026-02-15")
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         log.info("GET /flow/core/operation/date/{} - Getting operations by date", date);
         return ResponseEntity.ok(flowOperationService.findByDate(date));
@@ -134,42 +217,80 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
 
     @GetMapping("/date-range")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    @Operation(summary = "Get operations by date range", description = "Retrieve flow operations within a date range")
+    @Operation(summary = "Get operations by date range", description = "Retrieves flow operations within a specified date range")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid date range parameters"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<List<FlowOperationDTO>> getByDateRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @Parameter(description = "Start date (ISO 8601)", required = true, example = "2026-01-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "End date (ISO 8601)", required = true, example = "2026-12-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         log.info("GET /flow/core/operation/date-range - Getting operations from {} to {}", startDate, endDate);
         return ResponseEntity.ok(flowOperationService.findByDateRange(startDate, endDate));
     }
 
     @GetMapping("/infrastructure/{infrastructureId}")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    @Operation(summary = "Get operations by infrastructure", description = "Retrieve all flow operations for a specific infrastructure")
-    public ResponseEntity<List<FlowOperationDTO>> getByInfrastructure(@PathVariable Long infrastructureId) {
+    @Operation(summary = "Get operations by infrastructure", description = "Retrieves all flow operations for a specific infrastructure")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Infrastructure not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<FlowOperationDTO>> getByInfrastructure(
+            @Parameter(description = "Infrastructure ID", required = true, example = "1") 
+            @PathVariable Long infrastructureId) {
         log.info("GET /flow/core/operation/infrastructure/{} - Getting operations by infrastructure", infrastructureId);
         return ResponseEntity.ok(flowOperationService.findByInfrastructure(infrastructureId));
     }
 
     @GetMapping("/product/{productId}")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    @Operation(summary = "Get operations by product", description = "Retrieve all flow operations for a specific product")
-    public ResponseEntity<List<FlowOperationDTO>> getByProduct(@PathVariable Long productId) {
+    @Operation(summary = "Get operations by product", description = "Retrieves all flow operations for a specific product")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Product not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<FlowOperationDTO>> getByProduct(
+            @Parameter(description = "Product ID", required = true, example = "1") 
+            @PathVariable Long productId) {
         log.info("GET /flow/core/operation/product/{} - Getting operations by product", productId);
         return ResponseEntity.ok(flowOperationService.findByProduct(productId));
     }
 
     @GetMapping("/type/{typeId}")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    @Operation(summary = "Get operations by type", description = "Retrieve all flow operations of a specific type")
-    public ResponseEntity<List<FlowOperationDTO>> getByType(@PathVariable Long typeId) {
+    @Operation(summary = "Get operations by type", description = "Retrieves all flow operations of a specific type (production, transportation, consumption)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Operation type not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<FlowOperationDTO>> getByType(
+            @Parameter(description = "Operation type ID", required = true, example = "1") 
+            @PathVariable Long typeId) {
         log.info("GET /flow/core/operation/type/{} - Getting operations by type", typeId);
         return ResponseEntity.ok(flowOperationService.findByType(typeId));
     }
 
     @GetMapping("/validation-status/{statusId}")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
-    @Operation(summary = "Get operations by validation status", description = "Retrieve all flow operations with a specific validation status")
-    public ResponseEntity<List<FlowOperationDTO>> getByValidationStatus(@PathVariable Long statusId) {
+    @Operation(summary = "Get operations by validation status", description = "Retrieves all flow operations with a specific validation status (PENDING, VALIDATED, REJECTED)")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Validation status not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<FlowOperationDTO>> getByValidationStatus(
+            @Parameter(description = "Validation status ID", required = true, example = "1") 
+            @PathVariable Long statusId) {
         log.info("GET /flow/core/operation/validation-status/{} - Getting operations by validation status", statusId);
         return ResponseEntity.ok(flowOperationService.findByValidationStatus(statusId));
     }
@@ -177,15 +298,22 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
     @GetMapping("/infrastructure/{infrastructureId}/date-range")
     @PreAuthorize("hasAuthority('FLOW_OPERATION:READ')")
     @Operation(summary = "Get operations by infrastructure and date range", 
-               description = "Retrieve paginated flow operations for specific infrastructure within date range")
+               description = "Retrieves paginated flow operations for a specific infrastructure within a date range")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Operations retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid date range or pagination parameters"),
+        @ApiResponse(responseCode = "404", description = "Infrastructure not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_OPERATION:READ authority"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<Page<FlowOperationDTO>> getByInfrastructureAndDateRange(
-            @PathVariable Long infrastructureId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @Parameter(description = "Infrastructure ID", required = true, example = "1") @PathVariable Long infrastructureId,
+            @Parameter(description = "Start date (ISO 8601)", required = true, example = "2026-01-01") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "End date (ISO 8601)", required = true, example = "2026-12-31") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @Parameter(description = "Page number", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size", example = "20") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field", example = "date") @RequestParam(defaultValue = "date") String sortBy,
+            @Parameter(description = "Sort direction", example = "desc") @RequestParam(defaultValue = "desc") String sortDir) {
         log.info("GET /flow/core/operation/infrastructure/{}/date-range - Getting operations from {} to {}", 
                  infrastructureId, startDate, endDate);
         return ResponseEntity.ok(flowOperationService.findByInfrastructureAndDateRange(
@@ -209,7 +337,7 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Invalid request - operation is not in PENDING status"
+            description = "Invalid request - operation is not in PENDING status or validatorId is missing"
         ),
         @ApiResponse(
             responseCode = "404",
@@ -217,11 +345,15 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Insufficient permissions to validate operations"
+            description = "Access denied - requires FLOW_OPERATION:MANAGE authority"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error"
         )
     })
     public ResponseEntity<FlowOperationDTO> validate(
-            @Parameter(description = "ID of the flow operation to validate", required = true)
+            @Parameter(description = "ID of the flow operation to validate", required = true, example = "1")
             @PathVariable Long id,
             @Parameter(description = "Request body containing validator employee ID", required = true)
             @RequestBody Map<String, Long> request) {
@@ -260,11 +392,15 @@ public class FlowOperationController extends GenericController<FlowOperationDTO,
         ),
         @ApiResponse(
             responseCode = "403",
-            description = "Insufficient permissions to reject operations"
+            description = "Access denied - requires FLOW_OPERATION:VALIDATE authority"
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error"
         )
     })
     public ResponseEntity<FlowOperationDTO> reject(
-            @Parameter(description = "ID of the flow operation to reject", required = true)
+            @Parameter(description = "ID of the flow operation to reject", required = true, example = "1")
             @PathVariable Long id,
             @Parameter(description = "Request body containing validator ID and rejection reason", required = true)
             @RequestBody Map<String, String> request) {
