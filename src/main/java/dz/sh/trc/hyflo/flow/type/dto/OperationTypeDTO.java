@@ -4,7 +4,7 @@
  *
  * 	@Name		: OperationTypeDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-23-2026
+ * 	@UpdatedOn	: 02-16-2026 - CRITICAL: Fixed pattern validation and missing @NotBlank
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -32,35 +32,53 @@ import lombok.experimental.SuperBuilder;
  * Data Transfer Object for OperationType entity.
  * Used for API requests and responses related to flow operation type classification.
  */
+@Schema(description = "Flow operation type DTO for classifying hydrocarbon operations (production, transport, consumption)")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Flow operation type DTO for classifying PRODUCED, TRANSPORTED, and CONSUMED operations")
 public class OperationTypeDTO extends GenericDTO<OperationType> {
 
+    @Schema(
+        description = "Unique code for operation type (uppercase letters, numbers, hyphens, underscores)",
+        example = "PRODUCTION",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 20
+    )
     @NotBlank(message = "Operation type code is required")
-    @Size(min = 2, max = 20, message = "Code must be between 2 and 20 characters")
-    @Pattern(regexp = "PRODUCED|TRANSPORTED|CONSUMED", 
-             message = "Code must be one of: PRODUCED, TRANSPORTED, CONSUMED")
-    @Schema(description = "Unique code for operation type", 
-            example = "PRODUCED", 
-            requiredMode = Schema.RequiredMode.REQUIRED,
-            allowableValues = {"PRODUCED", "TRANSPORTED", "CONSUMED"})
+    @Size(max = 20, message = "Code must not exceed 20 characters")
+    @Pattern(regexp = "^[A-Z0-9_-]+$", 
+             message = "Code must contain only uppercase letters, numbers, hyphens, and underscores")
     private String code;
 
-    @Size(max = 100, message = "Arabic name must not exceed 100 characters")
-    @Schema(description = "Operation type name in Arabic", example = "منتج")
+    @Schema(
+        description = "Operation type designation in Arabic",
+        example = "إنتاج",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
     private String designationAr;
 
-    @Size(max = 100, message = "French name must not exceed 100 characters")
-    @Schema(description = "Operation type name in French", example = "Produit")
+    @Schema(
+        description = "Operation type designation in French (required for system use)",
+        example = "Production",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        maxLength = 100
+    )
+    @NotBlank(message = "French designation is required")
+    @Size(max = 100, message = "French designation must not exceed 100 characters")
     private String designationFr;
 
-    @Size(max = 100, message = "English name must not exceed 100 characters")
-    @Schema(description = "Operation type name in English", example = "Produced")
+    @Schema(
+        description = "Operation type designation in English",
+        example = "Production",
+        requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+        maxLength = 100
+    )
+    @Size(max = 100, message = "English designation must not exceed 100 characters")
     private String designationEn;
 
     @Override
