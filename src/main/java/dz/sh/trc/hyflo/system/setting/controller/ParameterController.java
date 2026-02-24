@@ -149,7 +149,7 @@ public class ParameterController extends GenericController<ParameterDTO, Long> {
         @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
-    @GetMapping("/search")
+    @GetMapping("/search/parameter")
     @PreAuthorize("hasAuthority('SETTING:READ')")
     public ResponseEntity<Page<ParameterDTO>> search(
         @Parameter(description = "Search query", required = true, example = "validator") @RequestParam String query,

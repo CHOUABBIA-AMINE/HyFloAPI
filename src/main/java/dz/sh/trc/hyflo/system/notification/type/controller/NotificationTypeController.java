@@ -142,7 +142,7 @@ public class NotificationTypeController extends GenericController<NotificationTy
         @ApiResponse(responseCode = "403", description = "Access forbidden", content = @Content(schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(implementation = String.class)))
     })
-    @GetMapping("/search")
+    @GetMapping("/search/notify")
     @PreAuthorize("hasAuthority('NOTIFICATION:READ')")
     public ResponseEntity<Page<NotificationTypeDTO>> search(
         @Parameter(description = "Search query", required = true, example = "reading") @RequestParam String query,
