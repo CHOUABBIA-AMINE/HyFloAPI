@@ -1,0 +1,35 @@
+HyFlo will evolve from:
+
+Phase 1 — Monitoring System
+
+Operational pipeline monitoring.
+
+Phase 2 — Operational Intelligence Platform
+
+Detect anomalies:
+
+abnormal pressure
+
+flow irregularities
+
+sensor coverage issues
+
+Phase 3 — Decision Support System
+
+Advanced capabilities:
+
+predictive maintenance
+
+pipeline health scoring
+
+operational optimization
+
+Phase 4 — National Energy Transport Governance Platform
+
+Executive dashboards:
+
+national flow overview
+
+system risk scoring
+
+strategic capacity planning
