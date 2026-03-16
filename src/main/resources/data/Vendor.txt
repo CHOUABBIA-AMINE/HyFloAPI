@@ -1,0 +1,38 @@
+| name                                        | shortName     | vendorType                                              | country              |
+| ------------------------------------------- | ------------- | ------------------------------------------------------- | -------------------- |
+| ABB Ltd.                                    | ABB           | Industrial Automation & Power Technology Supplier       | Switzerland          |
+| Bechtel Corporation                         | BECHTEL       | EPC Contractor (Engineering, Procurement, Construction) | United States        |
+| Brown & Root Condor                         | BRC           | EPC Contractor                                          | United States        |
+| Capag                                       | CAPAG         | Pipeline Construction Contractor                        | France               |
+| China Jiangsu International Group / CJB     | CJB           | Construction / EPC Contractor                           | China                |
+| Cosider Construction                        | COSIDER       | Construction & Infrastructure Contractor                | Algeria              |
+| Dodsal Trading & Contracting                | DTC           | EPC Contractor                                          | United Arab Emirates |
+| ENAC S.p.A.                                 | ENAC          | Pipeline Construction Contractor                        | Italy                |
+| Entrepose Contracting                       | Entrepose     | Pipeline Engineering & Construction                     | France               |
+| Groupement Cosider Canalisations            | GCB           | Pipeline Construction Contractor                        | Algeria              |
+| General Electric                            | GE            | Energy Technology & Equipment Supplier                  | United States        |
+| Groupement Infrastructures Pétrolières      | GIP           | Oil & Gas Infrastructure Contractor                     | Algeria              |
+| Groupement Réalisation Engineering Pipeline | GREP          | Pipeline Engineering Contractor                         | Algeria              |
+| GRESS Engineering                           | GRESS         | Engineering & Pipeline Services                         | Algeria              |
+| Groupement Travaux Pétroliers               | GTP           | Oil & Gas Construction Contractor                       | Algeria              |
+| JGC Corporation                             | JGC           | EPC Contractor                                          | Japan                |
+| Kanaghaz                                    | KANAGHAZ      | Oil & Gas Pipeline Contractor                           | Iran                 |
+| Mannesmann Anlagenbau                       | MANNESSMAN    | Pipeline Engineering & Construction                     | Germany              |
+| MASA Global                                 | MASA          | Oil & Gas Engineering Contractor                        | Algeria              |
+| National Pipeline Company (Nacap)           | NACAP         | Pipeline Construction Contractor                        | Netherlands          |
+| Petrojet                                    | PETROJET      | EPC Contractor (Oil & Gas)                              | Egypt                |
+| Sadelmi S.p.A.                              | SADELMI       | Industrial EPC Contractor                               | Italy                |
+| Saipem S.p.A.                               | SAIPEM        | EPC Contractor (Oil & Gas & Offshore)                   | Italy                |
+| SARPI                                       | SARPI         | Pipeline Construction Contractor                        | Algeria              |
+| Sonatrach / Dodsal JV                       | SH-DTC        | Oil & Gas EPC Joint Venture                             | Algeria / UAE        |
+| Snamprogetti                                | SNAMPROGETTI  | Oil & Gas EPC Contractor                                | Italy                |
+| SOCEA                                       | SOCEA         | Construction & Civil Engineering                        | France               |
+| Socoman                                     | SOCOMAN       | Pipeline Construction Contractor                        | France               |
+| Sofregaz                                    | Sofregaz      | Oil & Gas Engineering Consultant                        | France               |
+| SPIE Oil & Gas Services                     | SPIE          | Energy Services & Engineering                           | France               |
+| Stroytransgaz                               | Stroytransgaz | Oil & Gas EPC Contractor                                | Russia               |
+| TMCA                                        | TMCA          | Pipeline Construction Contractor                        | Algeria              |
+| TMPE                                        | TMPE          | Pipeline Engineering Contractor                         | Algeria              |
+| Trapil                                      | TRAPIL        | Pipeline Transport Operator                             | France               |
+| Willbros Group                              | WILLBROS      | Pipeline Construction Contractor                        | United States        |
+| Zakhem International                        | ZAKHEM        | Pipeline Engineering & Construction                     | Lebanon              |
