@@ -4,7 +4,7 @@
  *
  *	@Name		: PipelineSegment
  *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 01-02-2026
+ *	@UpdatedOn	: 03-25-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -25,6 +25,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
@@ -173,5 +174,40 @@ public class PipelineSegment extends Infrastructure {
 	)
 	@OneToMany(mappedBy = "infrastructure", fetch = FetchType.LAZY)
 	private Set<Coordinate> coordinates = new HashSet<>();
-    
+
+    @Schema(
+            description = "Terrain type for this segment (e.g., DESERT, URBAN, MOUNTAIN, OFFSHORE)",
+            example = "DESERT",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 50
+    )
+    @Column(name = "F_20", length = 50)
+    private String terrainType;
+
+    @Schema(
+            description = "Environmental sensitivity indicator (e.g., PROTECTED_AREA, WATER_CROSSING)",
+            example = "WATER_CROSSING",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 50
+    )
+    @Column(name = "F_21", length = 50)
+    private String environmentSensitivity;
+
+    @Schema(
+            description = "Corrosion risk index for this segment (0-100, higher means higher risk)",
+            example = "75.0",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Column(name = "F_22")
+    private Double corrosionIndex;
+
+    @Schema(
+            description = "Criticality level for this segment (e.g., LOW, MEDIUM, HIGH, CRITICAL)",
+            example = "HIGH",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 20
+    )
+    @Column(name = "F_23", length = 20)
+    private String criticality;
+
 }
