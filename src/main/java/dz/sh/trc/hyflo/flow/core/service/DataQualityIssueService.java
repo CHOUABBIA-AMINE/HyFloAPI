@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: DataQualityIssueService
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : DataQualityIssueService
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 — Commit 26.3: marked deprecated before Phase 4
  *
- * 	@Type		: Class
- * 	@Layer		: Service
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : Service (TRANSITIONAL GENERIC — DO NOT EXTEND)
+ *  @Package    : Flow / Core
  *
  **/
 
@@ -31,8 +32,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service for DataQualityIssue entities.
+ * <b>TRANSITIONAL — do not bind new code to this class.</b>
+ *
+ * <p>DataQualityIssue belongs to the intelligence domain. This generic service
+ * is a temporary placeholder kept for controller compatibility only.
+ *
+ * <p>Phase 4 will replace this with a dedicated data quality scoring service
+ * inside the intelligence module, aligned with the AI readiness layer.
+ * Do NOT add business logic here.
+ *
+ * @deprecated since v2-phase3 — will be replaced by intelligence domain
+ *             data quality command/query services in Phase 4. Scheduled
+ *             for removal during controller migration.
  */
+@Deprecated(since = "v2-phase3", forRemoval = true)
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -74,6 +87,8 @@ public class DataQualityIssueService extends GenericService<DataQualityIssue, Da
         return dataQualityIssueRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
     }
 
+    /** @deprecated use intelligence quality scoring service */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
     public List<DataQualityIssueReadDto> getByReadingId(Long readingId) {
         log.debug("Getting data quality issues for reading ID: {}", readingId);
         return dataQualityIssueRepository.findByReadingId(readingId)

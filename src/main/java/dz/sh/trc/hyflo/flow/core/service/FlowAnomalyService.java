@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowAnomalyService
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : FlowAnomalyService
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 — Commit 26.3: marked deprecated before Phase 4
  *
- * 	@Type		: Class
- * 	@Layer		: Service
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : Service (TRANSITIONAL GENERIC — DO NOT EXTEND)
+ *  @Package    : Flow / Core
  *
  **/
 
@@ -31,8 +32,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service for FlowAnomaly entities.
+ * <b>TRANSITIONAL — do not bind new code to this class.</b>
+ *
+ * <p>FlowAnomaly belongs to the intelligence domain. This generic service
+ * is a temporary placeholder kept for controller compatibility only.
+ *
+ * <p>Phase 4 will replace this with a dedicated anomaly command/query service
+ * pair inside the intelligence module. Do NOT add business logic here.
+ *
+ * @deprecated since v2-phase3 — will be replaced by intelligence domain
+ *             command/query services in Phase 4. Scheduled for removal
+ *             during controller migration.
  */
+@Deprecated(since = "v2-phase3", forRemoval = true)
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -74,12 +86,16 @@ public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyR
         return flowAnomalyRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
     }
 
+    /** @deprecated use intelligence query service */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
     public List<FlowAnomalyReadDto> getByReadingId(Long readingId) {
         log.debug("Getting anomalies for reading ID: {}", readingId);
         return flowAnomalyRepository.findByReadingId(readingId)
                 .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
     }
 
+    /** @deprecated use intelligence query service */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
     public List<FlowAnomalyReadDto> getByPipelineSegmentId(Long segmentId) {
         log.debug("Getting anomalies for segment ID: {}", segmentId);
         return flowAnomalyRepository.findByPipelineSegmentId(segmentId)
