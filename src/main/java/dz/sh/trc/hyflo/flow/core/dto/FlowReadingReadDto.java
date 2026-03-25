@@ -1,13 +1,15 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowReadingReadDto
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : FlowReadingReadDto
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 - Phase 2: removed fromEntity() — mapper owns mapping
+ *                             Added readingSlot and workflow fields for full v2 query contract
  *
- * 	@Type		: Class
- * 	@Layer		: DTO
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : DTO / Query
+ *  @Package    : Flow / Core
  *
  **/
 
@@ -40,7 +42,7 @@ public class FlowReadingReadDto extends GenericDTO<FlowReading> {
     @Schema(description = "Date of the reading", example = "2026-03-20")
     private LocalDate readingDate;
 
-    @Schema(description = "Measured flow volume in m³", example = "12500.5000")
+    @Schema(description = "Measured flow volume in m\u00b3", example = "12500.5000")
     private BigDecimal volumeM3;
 
     @Schema(description = "Measured flow volume in MSCF", example = "441.4500")
@@ -76,33 +78,28 @@ public class FlowReadingReadDto extends GenericDTO<FlowReading> {
     @Schema(description = "Code of the validation status", example = "APPROVED")
     private String validationStatusCode;
 
+    @Schema(description = "ID of the reading slot")
+    private Long readingSlotId;
+
+    @Schema(description = "Code of the reading slot", example = "SLOT_06H")
+    private String readingSlotCode;
+
+    @Schema(description = "ID of the workflow instance")
+    private Long workflowInstanceId;
+
+    @Schema(description = "Current workflow state code", example = "SUBMITTED")
+    private String workflowStateCode;
+
+    // ---- NO fromEntity / mapping logic ----
+    // All mapping is owned by FlowReadingMapper.
+
     @Override
     public FlowReading toEntity() {
-        throw new UnsupportedOperationException("Use FlowReadingCommandService for write operations");
+        throw new UnsupportedOperationException("Use FlowReadingMapper for write operations");
     }
 
     @Override
     public void updateEntity(FlowReading entity) {
-        throw new UnsupportedOperationException("Use FlowReadingCommandService for update operations");
-    }
-
-    public static FlowReadingReadDto fromEntity(FlowReading entity) {
-        if (entity == null) return null;
-        return FlowReadingReadDto.builder()
-                .id(entity.getId())
-                .readingDate(entity.getReadingDate())
-                .volumeM3(entity.getVolumeM3())
-                .volumeMscf(entity.getVolumeMscf())
-                .inletPressureBar(entity.getInletPressureBar())
-                .outletPressureBar(entity.getOutletPressureBar())
-                .temperatureCelsius(entity.getTemperatureCelsius())
-                .notes(entity.getNotes())
-                .submittedAt(entity.getSubmittedAt())
-                .validatedAt(entity.getValidatedAt())
-                .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
-                .pipelineCode(entity.getPipeline() != null ? entity.getPipeline().getCode() : null)
-                .validationStatusId(entity.getValidationStatus() != null ? entity.getValidationStatus().getId() : null)
-                .validationStatusCode(entity.getValidationStatus() != null ? entity.getValidationStatus().getCode() : null)
-                .build();
+        throw new UnsupportedOperationException("Use FlowReadingMapper for update operations");
     }
 }
