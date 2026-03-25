@@ -1,12 +1,12 @@
 /**
- * 
- * 	@Author		: HyFlo v2 Mapper
+ *
+ * 	@Author		: HyFlo v2
  *
  * 	@Name		: PipelineRiskScoreReadMapper
  * 	@CreatedOn	: 03-25-2026
  *
- * 	@Type		: Class
- * 	@Layer		: Mapping
+ * 	@Type		: Class (Utility / Static Mapper)
+ * 	@Layer		: Mapper
  * 	@Package	: Network / Core
  *
  **/
@@ -17,26 +17,18 @@ import dz.sh.trc.hyflo.network.core.dto.PipelineRiskScoreReadDto;
 import dz.sh.trc.hyflo.network.core.model.PipelineRiskScore;
 
 /**
- * Static mapper from PipelineRiskScore entity to read DTO.
+ * Static utility mapper for the Network / Core read layer.
+ * Delegates to the static fromEntity() method on PipelineRiskScoreReadDto.
  */
 public final class PipelineRiskScoreReadMapper {
 
     private PipelineRiskScoreReadMapper() {
-        // utility class
+        // Utility class — no instantiation.
     }
 
+    // ========== PipelineRiskScore ==========
+
     public static PipelineRiskScoreReadDto toDto(PipelineRiskScore entity) {
-        if (entity == null) {
-            return null;
-        }
-        PipelineRiskScoreReadDto dto = new PipelineRiskScoreReadDto();
-        dto.setId(entity.getId());
-        dto.setPipelineSegmentId(entity.getPipelineSegment() != null ? entity.getPipelineSegment().getId() : null);
-        dto.setCalculatedAt(entity.getCalculatedAt());
-        dto.setValidUntil(entity.getValidUntil());
-        dto.setRiskScore(entity.getRiskScore());
-        dto.setModelName(entity.getModelName());
-        dto.setDetails(entity.getDetails());
-        return dto;
+        return PipelineRiskScoreReadDto.fromEntity(entity);
     }
 }
