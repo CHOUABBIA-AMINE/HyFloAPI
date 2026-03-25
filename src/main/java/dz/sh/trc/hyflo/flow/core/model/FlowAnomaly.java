@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -83,7 +84,7 @@ public class FlowAnomaly extends GenericModel {
             foreignKey = @ForeignKey(name = "T_04_02_01_FK_02"))
     private DerivedFlowReading derivedReading;
 
-    @Schema(description = "FK to the pipeline segment where the anomaly occurred")
+    @Schema(description = "FK to the pipeline segment where the anomaly occurred (canonical network/core ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_09", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_04_02_01_FK_03"))

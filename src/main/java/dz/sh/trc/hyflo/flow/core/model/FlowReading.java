@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,7 +55,7 @@ public class FlowReading extends GenericModel {
     @Column(name = "F_01", nullable = false)
     private LocalDate readingDate;
 
-    @Schema(description = "Measured flow volume in m³", example = "12500.50")
+    @Schema(description = "Measured flow volume in m\u00b3", example = "12500.50")
     @Column(name = "F_02", precision = 18, scale = 4)
     private BigDecimal volumeM3;
 
@@ -85,13 +87,13 @@ public class FlowReading extends GenericModel {
     @Column(name = "F_09")
     private LocalDateTime validatedAt;
 
-    @Schema(description = "FK to pipeline")
+    @Schema(description = "FK to pipeline (canonical network/core ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_10", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_04_01_01_FK_01"), nullable = false)
     private Pipeline pipeline;
 
-    @Schema(description = "FK to validation status reference")
+    @Schema(description = "FK to validation status reference (canonical flow/common ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_04_01_01_FK_02"))

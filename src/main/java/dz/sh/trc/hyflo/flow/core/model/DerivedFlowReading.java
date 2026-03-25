@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,7 +52,7 @@ public class DerivedFlowReading extends GenericModel {
     @Column(name = "F_01", nullable = false)
     private LocalDate readingDate;
 
-    @Schema(description = "Derived average flow volume in m³", example = "12400.00")
+    @Schema(description = "Derived average flow volume in m\u00b3", example = "12400.00")
     @Column(name = "F_02", precision = 18, scale = 4)
     private BigDecimal avgVolumeM3;
 
@@ -67,7 +68,7 @@ public class DerivedFlowReading extends GenericModel {
     @Column(name = "F_05", length = 100)
     private String computationModel;
 
-    @Schema(description = "FK to pipeline segment")
+    @Schema(description = "FK to pipeline segment (canonical network/core ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_06", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_04_01_02_FK_01"), nullable = false)
