@@ -1,13 +1,22 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowReadingService
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : FlowReadingService
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 — Commit 17: converted to transitional delegator (Phase 3)
  *
- * 	@Type		: Class
- * 	@Layer		: Service
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : Service (Transitional — Legacy Compatibility)
+ *  @Package    : Flow / Core
+ *
+ *  @Description: Transitional delegator retained for controller compilation compatibility.
+ *                All read logic delegates to FlowReadingQueryService.
+ *                All write operations throw UnsupportedOperationException.
+ *                To be removed in Phase 4 during controller migration.
+ *
+ *  @Deprecated since v2, forRemoval = true
+ *  TODO(Phase 4): remove after controller migration to FlowReadingCommandService / FlowReadingQueryService
  *
  **/
 
@@ -15,7 +24,6 @@ package dz.sh.trc.hyflo.flow.core.service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,22 +33,30 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.mapper.FlowCoreReadMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Service for FlowReading entities.
+ * Transitional delegator — retained for controller compilation compatibility.
+ *
+ * All read logic delegates to FlowReadingQueryService.
+ * All write operations throw UnsupportedOperationException —
+ * use FlowReadingCommandService instead.
+ *
+ * @deprecated since v2 — to be removed in Phase 4 controller migration.
+ * TODO(Phase 4): migrate controller to FlowReadingCommandService / FlowReadingQueryService
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
+@Deprecated(since = "v2", forRemoval = true)
 public class FlowReadingService extends GenericService<FlowReading, FlowReadingReadDto, Long> {
 
     private final FlowReadingRepository flowReadingRepository;
+    private final FlowReadingQueryService flowReadingQueryService;
 
     @Override
     protected JpaRepository<FlowReading, Long> getRepository() {
@@ -54,43 +70,43 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingR
 
     @Override
     protected FlowReadingReadDto toDTO(FlowReading entity) {
-        return FlowCoreReadMapper.toDto(entity);
+        return flowReadingQueryService.getById(entity.getId());
     }
 
     @Override
     protected FlowReading toEntity(FlowReadingReadDto dto) {
-        // Write operations via dedicated command service in Phase 2.
-        throw new UnsupportedOperationException("Use FlowReadingCommandService for write operations");
+        throw new UnsupportedOperationException(
+                "Use FlowReadingCommandService.createReading() for write operations.");
     }
 
     @Override
     protected void updateEntityFromDTO(FlowReading entity, FlowReadingReadDto dto) {
-        throw new UnsupportedOperationException("Use FlowReadingCommandService for update operations");
+        throw new UnsupportedOperationException(
+                "Use FlowReadingCommandService.updateReading() for update operations.");
     }
 
     @Override
     protected Page<FlowReadingReadDto> searchByQuery(String query, Pageable pageable) {
-        if (query == null || query.trim().isEmpty()) {
-            return getAll(pageable);
-        }
-        return flowReadingRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
+        return flowReadingQueryService.search(query, pageable);
     }
 
+    // =====================================================================
+    // Transitional delegates — controllers can call these until Phase 4
+    // =====================================================================
+
     public List<FlowReadingReadDto> getByPipelineId(Long pipelineId) {
-        log.debug("Getting flow readings for pipeline ID: {}", pipelineId);
-        return flowReadingRepository.findByPipelineId(pipelineId)
-                .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
+        log.debug("[TRANSITIONAL] getByPipelineId delegating to FlowReadingQueryService");
+        return flowReadingQueryService.getByPipeline(pipelineId);
     }
 
     public List<FlowReadingReadDto> getByDateRange(LocalDate from, LocalDate to) {
-        log.debug("Getting flow readings from {} to {}", from, to);
-        return flowReadingRepository.findByReadingDateBetween(from, to)
-                .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
+        log.debug("[TRANSITIONAL] getByDateRange delegating to FlowReadingQueryService");
+        return flowReadingQueryService.getByDateRange(from, to);
     }
 
-    public List<FlowReadingReadDto> getByPipelineAndDateRange(Long pipelineId, LocalDate from, LocalDate to) {
-        log.debug("Getting flow readings for pipeline {} from {} to {}", pipelineId, from, to);
-        return flowReadingRepository.findByPipelineIdAndReadingDateBetween(pipelineId, from, to)
-                .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
+    public List<FlowReadingReadDto> getByPipelineAndDateRange(
+            Long pipelineId, LocalDate from, LocalDate to) {
+        log.debug("[TRANSITIONAL] getByPipelineAndDateRange delegating to FlowReadingQueryService");
+        return flowReadingQueryService.getByPipelineAndDateRange(pipelineId, from, to);
     }
 }

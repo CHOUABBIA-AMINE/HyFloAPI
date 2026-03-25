@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowReadingRepository
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : FlowReadingRepository
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 — Commit 17/25: added Phase 3 service-support query methods
  *
- * 	@Type		: Interface
- * 	@Layer		: Repository
- * 	@Package	: Flow / Core
+ *  @Type       : Interface
+ *  @Layer      : Repository
+ *  @Package    : Flow / Core
  *
  **/
 
@@ -15,6 +16,7 @@ package dz.sh.trc.hyflo.flow.core.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,15 +29,22 @@ import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 
 /**
  * Repository for FlowReading entities.
+ *
+ * Methods added in Phase 3 (Commit 17/25) support:
+ * - Command/query service split (FlowReadingQueryServiceImpl)
+ * - Segment distribution and workflow orchestration
  */
 @Repository
 public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> {
+
+    // --- Base queries (pre-Phase 3) ---
 
     List<FlowReading> findByPipelineId(Long pipelineId);
 
     List<FlowReading> findByReadingDateBetween(LocalDate from, LocalDate to);
 
-    List<FlowReading> findByPipelineIdAndReadingDateBetween(Long pipelineId, LocalDate from, LocalDate to);
+    List<FlowReading> findByPipelineIdAndReadingDateBetween(
+            Long pipelineId, LocalDate from, LocalDate to);
 
     List<FlowReading> findByValidationStatusId(Long validationStatusId);
 
@@ -43,4 +52,28 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
             + "CAST(r.id AS string) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(r.notes) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<FlowReading> searchByAnyField(@Param("search") String search, Pageable pageable);
+
+    // --- Phase 3 additions ---
+
+    /** Used by FlowReadingQueryServiceImpl.getByPipelineAndSlot() */
+    List<FlowReading> findByPipelineIdAndReadingSlotId(Long pipelineId, Long readingSlotId);
+
+    /** Used by FlowReadingQueryServiceImpl.getLatestByPipeline() with sorted pageable */
+    Page<FlowReading> findByPipelineId(Long pipelineId, Pageable pageable);
+
+    /** Exact slot+date lookup per pipeline — uniqueness support */
+    List<FlowReading> findByPipelineIdAndReadingSlotIdAndReadingDate(
+            Long pipelineId, Long readingSlotId, LocalDate date);
+
+    /** Workflow linkage — used by ReadingWorkflowService */
+    List<FlowReading> findByWorkflowInstanceId(Long workflowInstanceId);
+
+    /** Latest reading per pipeline — used by dashboard endpoints */
+    @Query("SELECT r FROM FlowReading r WHERE r.pipeline.id = :pipelineId "
+            + "ORDER BY r.readingDate DESC")
+    List<FlowReading> findLatestByPipelineId(
+            @Param("pipelineId") Long pipelineId, Pageable pageable);
+
+    /** Single latest reading for a pipeline — convenience method */
+    Optional<FlowReading> findTopByPipelineIdOrderByReadingDateDesc(Long pipelineId);
 }
