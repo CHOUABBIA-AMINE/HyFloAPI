@@ -4,6 +4,7 @@
  *
  * 	@Name		: ForecastResult
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-25-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -25,7 +26,6 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -51,7 +51,6 @@ public class ForecastResult extends GenericModel {
             description = "Flow forecast being evaluated",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NotNull(message = "Forecast reference is mandatory")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_01", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_03_11_FK_01"), nullable = false)
@@ -94,7 +93,6 @@ public class ForecastResult extends GenericModel {
             description = "Timestamp when this evaluation was computed",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NotNull(message = "Evaluation timestamp is mandatory")
     @Column(name = "F_06", nullable = false)
     private LocalDateTime evaluatedAt;
 }

@@ -4,6 +4,7 @@
  *
  * 	@Name		: IncidentImpact
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-25-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -31,8 +32,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -51,17 +50,16 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "IncidentImpact")
-@Table(name = "T_03_05_02")
+@Table(name = "T_05_01_02")
 public class IncidentImpact extends GenericModel {
 
     @Schema(
             description = "Incident this impact record belongs to",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NotNull(message = "Incident reference is mandatory")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_05_02_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_05_01_02_FK_01"), nullable = false)
     private Incident incident;
 
     @Schema(
@@ -70,12 +68,13 @@ public class IncidentImpact extends GenericModel {
     )
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "R_T030502_T020308",
+            name = "R_T050102_T020308",
             joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-                    foreignKey = @ForeignKey(name = "R_T030502_T020308_FK_01")),
+                    foreignKey = @ForeignKey(name = "R_T050102_T020308_FK_01")),
             inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00",
-                    foreignKey = @ForeignKey(name = "R_T030502_T020308_FK_02")),
-            uniqueConstraints = @UniqueConstraint(name = "R_T030502_T020308_UK_01", columnNames = {"F_01", "F_02"})
+                    foreignKey = @ForeignKey(name = "R_T050102_T020308_FK_02")),
+            uniqueConstraints = @UniqueConstraint(name = "R_T050102_T020308_UK_01",
+                    columnNames = {"F_01", "F_02"})
     )
     private Set<Pipeline> affectedPipelines = new HashSet<>();
 
@@ -85,12 +84,13 @@ public class IncidentImpact extends GenericModel {
     )
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "R_T030502_T020309",
+            name = "R_T050102_T020309",
             joinColumns = @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-                    foreignKey = @ForeignKey(name = "R_T030502_T020309_FK_01")),
+                    foreignKey = @ForeignKey(name = "R_T050102_T020309_FK_01")),
             inverseJoinColumns = @JoinColumn(name = "F_02", referencedColumnName = "F_00",
-                    foreignKey = @ForeignKey(name = "R_T030502_T020309_FK_02")),
-            uniqueConstraints = @UniqueConstraint(name = "R_T030502_T020309_UK_01", columnNames = {"F_01", "F_02"})
+                    foreignKey = @ForeignKey(name = "R_T050102_T020309_FK_02")),
+            uniqueConstraints = @UniqueConstraint(name = "R_T050102_T020309_UK_01",
+                    columnNames = {"F_01", "F_02"})
     )
     private Set<PipelineSegment> affectedSegments = new HashSet<>();
 
@@ -99,7 +99,6 @@ public class IncidentImpact extends GenericModel {
             example = "1500000.00",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @PositiveOrZero(message = "Estimated loss must be zero or positive")
     @Column(name = "F_05", precision = 18, scale = 2)
     private BigDecimal estimatedLoss;
 
@@ -108,7 +107,6 @@ public class IncidentImpact extends GenericModel {
             example = "180",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    @PositiveOrZero(message = "Downtime must be zero or positive")
     @Column(name = "F_06")
     private Long downtimeMinutes;
 
