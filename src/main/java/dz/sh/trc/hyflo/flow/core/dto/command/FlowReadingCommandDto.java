@@ -4,6 +4,7 @@
  *
  *  @Name       : FlowReadingCommandDto
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 — Commit 20: added optional secondary readable target FKs
  *
  *  @Type       : Class
  *  @Layer      : DTO / Command
@@ -37,6 +38,11 @@ import lombok.NoArgsConstructor;
  * Carries only write-side fields.
  * Validation annotations belong exclusively on this class.
  * Mapping logic lives in FlowReadingMapper — not here.
+ *
+ * Commit 20: added optional secondary readable target FKs:
+ *   pipelineSegmentId, stationId, terminalId
+ *   All are optional (NOT_REQUIRED, no @NotNull).
+ *   Validated by ReadableTargetValidationService in service layer.
  */
 @Schema(description = "Command DTO for recording or updating an operational flow reading on a pipeline")
 @Data
@@ -119,4 +125,20 @@ public class FlowReadingCommandDto {
     @Schema(description = "ID of the workflow instance governing this reading lifecycle",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long workflowInstanceId;
+
+    // --- Optional secondary readable target FKs (Commit 20) ---
+    // At most one of these may be set per reading.
+    // Validated by ReadableTargetValidationService in service layer.
+
+    @Schema(description = "Optional: ID of a specific pipeline segment targeted by this reading",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long pipelineSegmentId;
+
+    @Schema(description = "Optional: ID of a specific station targeted by this reading",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long stationId;
+
+    @Schema(description = "Optional: ID of a specific terminal targeted by this reading",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private Long terminalId;
 }
