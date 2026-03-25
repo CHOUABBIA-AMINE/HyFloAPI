@@ -4,7 +4,7 @@
  *
  *	@Name		: FlowReading
  *	@CreatedOn	: 01-20-2026
- *	@UpdatedOn	: 01-22-2026
+ *	@UpdatedOn	: 03-25-2026
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -190,4 +191,13 @@ public class FlowReading extends GenericModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_03_03_FK_05"), nullable = false)
     private ReadingSlot readingSlot;
+
+    @Schema(
+            description = "Workflow instance governing the validation lifecycle of this reading",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_14", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_03_03_03_FK_06"))
+    private WorkflowInstance workflowInstance;
 }
