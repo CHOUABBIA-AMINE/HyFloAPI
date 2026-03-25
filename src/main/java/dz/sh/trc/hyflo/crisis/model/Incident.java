@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.crisis.model;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.flow.core.model.PipelineSegment;
+import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,8 +25,6 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -50,13 +48,10 @@ import lombok.ToString;
 public class Incident extends GenericModel {
 
     @Schema(description = "Unique incident code", example = "INC-2026-0012")
-    @NotBlank
-    @Size(max = 50)
     @Column(name = "F_01", length = 50, nullable = false, unique = true)
     private String code;
 
     @Schema(description = "Short title of the incident", example = "Pressure drop – GZ1 Seg 3")
-    @Size(max = 200)
     @Column(name = "F_02", length = 200)
     private String title;
 
