@@ -15,6 +15,11 @@
  * 	Handles CRUD operations and threshold lifecycle management.
  * 	Enforces business rules: only one active threshold per pipeline.
  *
+ *  Commit 36.1 — Phase 4/5 bridge
+ *  Updated class declaration to implement FlowThresholdCommandService
+ *  and FlowThresholdQueryService interfaces (created in Commit 35).
+ *  No method bodies changed. No behavior changes.
+ *
  **/
 
 package dz.sh.trc.hyflo.flow.core.service;
@@ -46,12 +51,12 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @Slf4j
 @RequiredArgsConstructor
-public class FlowThresholdService {
+public class FlowThresholdService implements FlowThresholdCommandService, FlowThresholdQueryService {
     
     private final FlowThresholdRepository flowThresholdRepository;
     private final PipelineRepository pipelineRepository;
     
-    // ========== CREATE ==========
+    // ========== COMMAND — implements FlowThresholdCommandService ==========
     
     /**
      * Create a new threshold for a pipeline.
@@ -61,8 +66,9 @@ public class FlowThresholdService {
      * @param dto Threshold data transfer object
      * @return Created threshold DTO
      * @throws ResourceNotFoundException if pipeline not found
-     * @throws BusinessException if validation fails
+     * @throws BusinessValidationException if validation fails
      */
+    @Override
     public FlowThresholdDTO createThreshold(FlowThresholdDTO dto) {
         
         log.debug("Creating threshold for pipeline ID: {}", dto.getPipelineId());
@@ -102,227 +108,6 @@ public class FlowThresholdService {
         return FlowThresholdDTO.fromEntity(saved);
     }
     
-    // ========== READ ==========
-    
-    /**
-     * Get threshold by ID
-     *
-     * @param id Threshold identifier
-     * @return Threshold DTO
-     * @throws ResourceNotFoundException if not found
-     */
-    @Transactional(readOnly = true)
-    public FlowThresholdDTO getThresholdById(Long id) {
-        
-        FlowThreshold threshold = flowThresholdRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Threshold not found: " + id));
-        
-        return FlowThresholdDTO.fromEntity(threshold);
-    }
-    
-    /**
-     * Get active threshold for a pipeline
-     *
-     * @param pipelineId Pipeline identifier
-     * @return Optional threshold DTO
-     */
-    @Transactional(readOnly = true)
-    public Optional<FlowThresholdDTO> getActiveThresholdByPipelineId(Long pipelineId) {
-        
-        return flowThresholdRepository
-            .findByPipelineIdAndActiveTrue(pipelineId)
-            .map(FlowThresholdDTO::fromEntity);
-    }
-    
-    /**
-     * Get all thresholds for a pipeline (active and inactive)
-     *
-     * @param pipelineId Pipeline identifier
-     * @return List of threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public List<FlowThresholdDTO> getThresholdsByPipelineId(Long pipelineId) {
-        
-        return flowThresholdRepository.findByPipelineId(pipelineId)
-            .stream()
-            .map(FlowThresholdDTO::fromEntity)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get all active thresholds for a structure (station, terminal, manifold)
-     *
-     * @param structureId Structure identifier
-     * @return List of threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public List<FlowThresholdDTO> getActiveThresholdsByStructureId(Long structureId) {
-        
-        return flowThresholdRepository.findActiveByStructureId(structureId)
-            .stream()
-            .map(FlowThresholdDTO::fromEntity)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get all thresholds with pagination
-     *
-     * @param page Page number (0-indexed)
-     * @param size Page size
-     * @param sortBy Sort field (default: pipeline.code)
-     * @param sortDirection Sort direction (ASC/DESC)
-     * @return Page of threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public Page<FlowThresholdDTO> getAllThresholds(
-        int page, 
-        int size, 
-        String sortBy, 
-        String sortDirection
-    ) {
-        
-        Sort sort = Sort.by(
-            "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC,
-            sortBy != null ? sortBy : "id"
-        );
-        
-        Pageable pageable = PageRequest.of(page, size, sort);
-        
-        return flowThresholdRepository.findAllWithPagination(pageable)
-            .map(FlowThresholdDTO::fromEntity);
-    }
-    
-    /**
-     * Get all active thresholds with pagination
-     *
-     * @param page Page number (0-indexed)
-     * @param size Page size
-     * @return Page of active threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public Page<FlowThresholdDTO> getActiveThresholds(int page, int size) {
-        
-        Pageable pageable = PageRequest.of(page, size);
-        return flowThresholdRepository.findActiveWithPagination(pageable)
-            .map(FlowThresholdDTO::fromEntity);
-    }
-    
-    /**
-     * Get pipelines without any threshold configuration
-     *
-     * @return List of pipeline IDs lacking thresholds
-     */
-    @Transactional(readOnly = true)
-    public List<Long> getPipelinesWithoutThresholds() {
-        
-        return flowThresholdRepository.findPipelinesWithoutThresholds();
-    }
-    
-    /**
-     * Get pipelines without active threshold configuration
-     *
-     * @return List of pipeline IDs lacking active thresholds
-     */
-    @Transactional(readOnly = true)
-    public List<Long> getPipelinesWithoutActiveThresholds() {
-        
-        return flowThresholdRepository.findPipelinesWithoutActiveThresholds();
-    }
-    
-    /**
-     * Get count of pipelines without thresholds
-     *
-     * @return Count of pipelines lacking thresholds
-     */
-    @Transactional(readOnly = true)
-    public long countPipelinesWithoutThresholds() {
-        
-        return flowThresholdRepository.countPipelinesWithoutThresholds();
-    }
-    
-    /**
-     * Search thresholds by pipeline code
-     *
-     * @param pipelineCode Pipeline code (exact match)
-     * @return List of threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public List<FlowThresholdDTO> searchByPipelineCode(String pipelineCode) {
-        
-        return flowThresholdRepository.findByPipelineCode(pipelineCode)
-            .stream()
-            .map(FlowThresholdDTO::fromEntity)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Search thresholds by pipeline code pattern
-     *
-     * @param pattern Pipeline code pattern (e.g., "OZ%")
-     * @return List of threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public List<FlowThresholdDTO> searchByPipelineCodePattern(String pattern) {
-        
-        return flowThresholdRepository.findByPipelineCodeLike(pattern)
-            .stream()
-            .map(FlowThresholdDTO::fromEntity)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get all active thresholds (no pagination)
-     *
-     * @return List of all active threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public List<FlowThresholdDTO> getAllActiveThresholds() {
-        
-        return flowThresholdRepository.findByActiveTrue()
-            .stream()
-            .map(FlowThresholdDTO::fromEntity)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get all inactive thresholds
-     *
-     * @return List of all inactive threshold DTOs
-     */
-    @Transactional(readOnly = true)
-    public List<FlowThresholdDTO> getAllInactiveThresholds() {
-        
-        return flowThresholdRepository.findByActiveFalse()
-            .stream()
-            .map(FlowThresholdDTO::fromEntity)
-            .collect(Collectors.toList());
-    }
-    
-    /**
-     * Count active thresholds
-     *
-     * @return Number of active thresholds
-     */
-    @Transactional(readOnly = true)
-    public long countActiveThresholds() {
-        
-        return flowThresholdRepository.countByActiveTrue();
-    }
-    
-    /**
-     * Check if pipeline has an active threshold
-     *
-     * @param pipelineId Pipeline identifier
-     * @return true if active threshold exists
-     */
-    @Transactional(readOnly = true)
-    public boolean hasActiveThreshold(Long pipelineId) {
-        
-        return flowThresholdRepository.existsByPipelineIdAndActiveTrue(pipelineId);
-    }
-    
-    // ========== UPDATE ==========
-    
     /**
      * Update an existing threshold
      *
@@ -330,8 +115,9 @@ public class FlowThresholdService {
      * @param dto Updated threshold data
      * @return Updated threshold DTO
      * @throws ResourceNotFoundException if threshold not found
-     * @throws BusinessException if validation fails
+     * @throws BusinessValidationException if validation fails
      */
+    @Override
     public FlowThresholdDTO updateThreshold(Long id, FlowThresholdDTO dto) {
         
         log.debug("Updating threshold ID: {}", id);
@@ -369,12 +155,36 @@ public class FlowThresholdService {
     }
     
     /**
+     * Delete a threshold
+     * WARNING: This is a hard delete. Consider deactivation instead for audit trail.
+     *
+     * @param id Threshold identifier
+     * @throws ResourceNotFoundException if threshold not found
+     */
+    @Override
+    public void deleteThreshold(Long id) {
+        
+        log.debug("Deleting threshold ID: {}", id);
+        
+        FlowThreshold threshold = flowThresholdRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Threshold not found: " + id));
+        
+        String pipelineCode = threshold.getPipeline().getCode();
+        
+        flowThresholdRepository.delete(threshold);
+        
+        log.warn("DELETED threshold {} for pipeline {} - no audit trail", 
+            id, pipelineCode);
+    }
+    
+    /**
      * Activate a threshold (deactivates other active thresholds for same pipeline)
      *
      * @param id Threshold identifier
      * @return Updated threshold DTO
      * @throws ResourceNotFoundException if threshold not found
      */
+    @Override
     public FlowThresholdDTO activateThreshold(Long id) {
         
         log.debug("Activating threshold ID: {}", id);
@@ -418,6 +228,7 @@ public class FlowThresholdService {
      * @return Updated threshold DTO
      * @throws ResourceNotFoundException if threshold not found
      */
+    @Override
     public FlowThresholdDTO deactivateThreshold(Long id) {
         
         log.debug("Deactivating threshold ID: {}", id);
@@ -440,37 +251,247 @@ public class FlowThresholdService {
         return FlowThresholdDTO.fromEntity(deactivated);
     }
     
-    // ========== DELETE ==========
+    // ========== QUERY — implements FlowThresholdQueryService ==========
     
     /**
-     * Delete a threshold
-     * WARNING: This is a hard delete. Consider deactivation instead for audit trail.
+     * Get threshold by ID
      *
      * @param id Threshold identifier
-     * @throws ResourceNotFoundException if threshold not found
+     * @return Threshold DTO
+     * @throws ResourceNotFoundException if not found
      */
-    public void deleteThreshold(Long id) {
-        
-        log.debug("Deleting threshold ID: {}", id);
+    @Override
+    @Transactional(readOnly = true)
+    public FlowThresholdDTO getThresholdById(Long id) {
         
         FlowThreshold threshold = flowThresholdRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Threshold not found: " + id));
         
-        String pipelineCode = threshold.getPipeline().getCode();
-        
-        flowThresholdRepository.delete(threshold);
-        
-        log.warn("DELETED threshold {} for pipeline {} - no audit trail", 
-            id, pipelineCode);
+        return FlowThresholdDTO.fromEntity(threshold);
     }
     
-    // ========== VALIDATION ==========
+    /**
+     * Get active threshold for a pipeline
+     *
+     * @param pipelineId Pipeline identifier
+     * @return Optional threshold DTO
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<FlowThresholdDTO> getActiveThresholdByPipelineId(Long pipelineId) {
+        
+        return flowThresholdRepository
+            .findByPipelineIdAndActiveTrue(pipelineId)
+            .map(FlowThresholdDTO::fromEntity);
+    }
+    
+    /**
+     * Get all thresholds for a pipeline (active and inactive)
+     *
+     * @param pipelineId Pipeline identifier
+     * @return List of threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowThresholdDTO> getThresholdsByPipelineId(Long pipelineId) {
+        
+        return flowThresholdRepository.findByPipelineId(pipelineId)
+            .stream()
+            .map(FlowThresholdDTO::fromEntity)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get all active thresholds for a structure (station, terminal, manifold)
+     *
+     * @param structureId Structure identifier
+     * @return List of threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowThresholdDTO> getActiveThresholdsByStructureId(Long structureId) {
+        
+        return flowThresholdRepository.findActiveByStructureId(structureId)
+            .stream()
+            .map(FlowThresholdDTO::fromEntity)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get all thresholds with pagination
+     *
+     * @param page Page number (0-indexed)
+     * @param size Page size
+     * @param sortBy Sort field (default: pipeline.code)
+     * @param sortDirection Sort direction (ASC/DESC)
+     * @return Page of threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FlowThresholdDTO> getAllThresholds(
+        int page, 
+        int size, 
+        String sortBy, 
+        String sortDirection
+    ) {
+        
+        Sort sort = Sort.by(
+            "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC,
+            sortBy != null ? sortBy : "id"
+        );
+        
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        return flowThresholdRepository.findAllWithPagination(pageable)
+            .map(FlowThresholdDTO::fromEntity);
+    }
+    
+    /**
+     * Get all active thresholds with pagination
+     *
+     * @param page Page number (0-indexed)
+     * @param size Page size
+     * @return Page of active threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FlowThresholdDTO> getActiveThresholds(int page, int size) {
+        
+        Pageable pageable = PageRequest.of(page, size);
+        return flowThresholdRepository.findActiveWithPagination(pageable)
+            .map(FlowThresholdDTO::fromEntity);
+    }
+    
+    /**
+     * Get pipelines without any threshold configuration
+     *
+     * @return List of pipeline IDs lacking thresholds
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getPipelinesWithoutThresholds() {
+        
+        return flowThresholdRepository.findPipelinesWithoutThresholds();
+    }
+    
+    /**
+     * Get pipelines without active threshold configuration
+     *
+     * @return List of pipeline IDs lacking active thresholds
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getPipelinesWithoutActiveThresholds() {
+        
+        return flowThresholdRepository.findPipelinesWithoutActiveThresholds();
+    }
+    
+    /**
+     * Get count of pipelines without thresholds
+     *
+     * @return Count of pipelines lacking thresholds
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public long countPipelinesWithoutThresholds() {
+        
+        return flowThresholdRepository.countPipelinesWithoutThresholds();
+    }
+    
+    /**
+     * Search thresholds by pipeline code
+     *
+     * @param pipelineCode Pipeline code (exact match)
+     * @return List of threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowThresholdDTO> searchByPipelineCode(String pipelineCode) {
+        
+        return flowThresholdRepository.findByPipelineCode(pipelineCode)
+            .stream()
+            .map(FlowThresholdDTO::fromEntity)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Search thresholds by pipeline code pattern
+     *
+     * @param pattern Pipeline code pattern (e.g., "OZ%")
+     * @return List of threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowThresholdDTO> searchByPipelineCodePattern(String pattern) {
+        
+        return flowThresholdRepository.findByPipelineCodeLike(pattern)
+            .stream()
+            .map(FlowThresholdDTO::fromEntity)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get all active thresholds (no pagination)
+     *
+     * @return List of all active threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowThresholdDTO> getAllActiveThresholds() {
+        
+        return flowThresholdRepository.findByActiveTrue()
+            .stream()
+            .map(FlowThresholdDTO::fromEntity)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get all inactive thresholds
+     *
+     * @return List of all inactive threshold DTOs
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlowThresholdDTO> getAllInactiveThresholds() {
+        
+        return flowThresholdRepository.findByActiveFalse()
+            .stream()
+            .map(FlowThresholdDTO::fromEntity)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Count active thresholds
+     *
+     * @return Number of active thresholds
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public long countActiveThresholds() {
+        
+        return flowThresholdRepository.countByActiveTrue();
+    }
+    
+    /**
+     * Check if pipeline has an active threshold
+     *
+     * @param pipelineId Pipeline identifier
+     * @return true if active threshold exists
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasActiveThreshold(Long pipelineId) {
+        
+        return flowThresholdRepository.existsByPipelineIdAndActiveTrue(pipelineId);
+    }
+    
+    // ========== VALIDATION (private) ==========
     
     /**
      * Validate threshold ranges (min < max for all parameters)
      *
      * @param dto Threshold DTO
-     * @throws BusinessException if validation fails
+     * @throws BusinessValidationException if validation fails
      */
     private void validateThresholdRanges(FlowThresholdDTO dto) {
         
