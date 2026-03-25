@@ -18,6 +18,10 @@ import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
@@ -118,4 +122,14 @@ public class DataSource extends GenericModel {
 	@Size(max = 255, message = "French description must not exceed 255 characters")
 	@Column(name = "F_07", length = 255)
 	private String descriptionFr;
+
+    @Schema(
+            description = "Reading source nature associated with this data source (DIRECT, DERIVED, AI_ASSISTED)",
+            example = "DIRECT",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_03_02_04_FK_01"), nullable = false)
+    private ReadingSourceNature sourceNature;
 }
