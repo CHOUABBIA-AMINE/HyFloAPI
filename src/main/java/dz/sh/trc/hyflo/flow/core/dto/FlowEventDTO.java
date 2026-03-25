@@ -5,6 +5,7 @@
  * 	@Name		: FlowEventDTO
  * 	@CreatedOn	: 01-23-2026
  * 	@UpdatedOn	: 02-16-2026 - Updated @Schema documentation and requiredMode syntax
+ * 				  03-25-2026 - Marked @Deprecated for v2 migration (Commit 15.2)
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -44,8 +45,12 @@ import lombok.experimental.SuperBuilder;
 /**
  * Data Transfer Object for FlowEvent entity.
  * Used for API requests and responses related to operational events and incidents.
+ *
+ * @deprecated Use the v2 command/read DTOs in the corresponding command/ and query/ packages.
+ *             This class remains temporarily for compatibility and will be removed in a future cleanup phase.
  */
-@Schema(description = "Flow event DTO for operational activities, incidents, and maintenance tracking")
+@Deprecated(since = "v2", forRemoval = true)
+@Schema(description = "[DEPRECATED] Flow event DTO — use FlowEventCommandDto / FlowEventReadDto")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -296,11 +301,9 @@ public class FlowEventDTO extends GenericDTO<FlowEvent> {
     }
 
     /**
-     * Converts a FlowEvent entity to its DTO representation.
-     *
-     * @param entity the FlowEvent entity to convert
-     * @return FlowEventDTO or null if entity is null
+     * @deprecated Use IncidentMapper or a dedicated FlowEventMapper instead.
      */
+    @Deprecated(since = "v2", forRemoval = true)
     public static FlowEventDTO fromEntity(FlowEvent entity) {
         if (entity == null) return null;
 
