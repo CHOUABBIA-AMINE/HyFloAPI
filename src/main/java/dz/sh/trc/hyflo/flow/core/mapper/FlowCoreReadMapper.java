@@ -1,13 +1,15 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowCoreReadMapper
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : FlowCoreReadMapper
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 - Phase 2: rewritten to own mapping logic directly
+ *                             No longer delegates to DTO.fromEntity() (anti-pattern removed)
  *
- * 	@Type		: Class (Utility / Static Mapper)
- * 	@Layer		: Mapper
- * 	@Package	: Flow / Core
+ *  @Type       : Class (Utility / Static Mapper — Facade)
+ *  @Layer      : Mapper
+ *  @Package    : Flow / Core
  *
  **/
 
@@ -21,31 +23,25 @@ import dz.sh.trc.hyflo.flow.core.model.FlowAnomaly;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 
 /**
- * Static utility mapper for the Flow / Core read layer.
- * Delegates directly to the static fromEntity() methods on each DTO
- * to keep a single authoritative mapping path.
+ * Facade mapper for the Flow / Core read layer.
+ *
+ * Delegates to the dedicated mapper for each entity.
+ * Does NOT call any DTO.fromEntity() method — that anti-pattern
+ * has been removed in Phase 2.
  */
 public final class FlowCoreReadMapper {
 
-    private FlowCoreReadMapper() {
-        // Utility class — no instantiation.
-    }
-
-    // ========== FlowReading ==========
+    private FlowCoreReadMapper() {}
 
     public static FlowReadingReadDto toDto(FlowReading entity) {
-        return FlowReadingReadDto.fromEntity(entity);
+        return FlowReadingMapper.toReadDto(entity);
     }
-
-    // ========== FlowAnomaly ==========
 
     public static FlowAnomalyReadDto toDto(FlowAnomaly entity) {
-        return FlowAnomalyReadDto.fromEntity(entity);
+        return FlowAnomalyMapper.toReadDto(entity);
     }
 
-    // ========== DataQualityIssue ==========
-
     public static DataQualityIssueReadDto toDto(DataQualityIssue entity) {
-        return DataQualityIssueReadDto.fromEntity(entity);
+        return DataQualityIssueMapper.toReadDto(entity);
     }
 }
