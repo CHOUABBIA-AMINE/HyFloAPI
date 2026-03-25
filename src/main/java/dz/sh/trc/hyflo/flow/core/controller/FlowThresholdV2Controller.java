@@ -4,48 +4,32 @@
  *
  *  @Name       : FlowThresholdV2Controller
  *  @CreatedOn  : Phase 4 — Commit 33
+ *  @UpdatedOn  : Phase 4/5 bridge — Commit 36.2
  *
  *  @Type       : Class
  *  @Layer      : Controller
  *  @Package    : Flow / Core
  *
  *  @Description: v2 REST controller for pipeline operating thresholds.
- *                Clean API wrapper over FlowThresholdService.
+ *                Clean API wrapper over FlowThresholdCommandService (writes)
+ *                and FlowThresholdQueryService (reads).
  *                No entity exposure. No legacy DTO leaks in v2 paths.
  *                Business invariant: only one active threshold per pipeline.
  *                Deactivation of existing active threshold on new activation
- *                is handled inside FlowThresholdService.
+ *                is handled inside FlowThresholdCommandService.
  *
- *  Phase 4 — Commit 33
- *
- *  FlowThresholdService public method signatures (confirmed):
- *    createThreshold(FlowThresholdDTO)                         -> FlowThresholdDTO
- *    updateThreshold(Long, FlowThresholdDTO)                   -> FlowThresholdDTO
- *    deleteThreshold(Long)                                      -> void
- *    activateThreshold(Long)                                    -> FlowThresholdDTO
- *    deactivateThreshold(Long)                                  -> FlowThresholdDTO
- *    getThresholdById(Long)                                     -> FlowThresholdDTO
- *    getAllThresholds(int, int, String, String)                  -> Page<FlowThresholdDTO>
- *    getActiveThresholds(int, int)                              -> Page<FlowThresholdDTO>
- *    getThresholdsByPipelineId(Long)                            -> List<FlowThresholdDTO>
- *    getActiveThresholdByPipelineId(Long)                       -> Optional<FlowThresholdDTO>
- *    getActiveThresholdsByStructureId(Long)                     -> List<FlowThresholdDTO>
- *    searchByPipelineCode(String)                               -> List<FlowThresholdDTO>
- *    searchByPipelineCodePattern(String)                        -> List<FlowThresholdDTO>
- *    getAllActiveThresholds()                                    -> List<FlowThresholdDTO>
- *    getAllInactiveThresholds()                                  -> List<FlowThresholdDTO>
- *    getPipelinesWithoutThresholds()                            -> List<Long>
- *    getPipelinesWithoutActiveThresholds()                      -> List<Long>
- *    countPipelinesWithoutThresholds()                          -> long
- *    countActiveThresholds()                                    -> long
- *    hasActiveThreshold(Long)                                   -> boolean
+ *  Commit 36.2 — Phase 4/5 bridge
+ *  Rewired from concrete FlowThresholdService to
+ *  FlowThresholdCommandService + FlowThresholdQueryService interfaces.
+ *  No endpoint changes. No behavior changes.
  *
  **/
 
 package dz.sh.trc.hyflo.flow.core.controller;
 
 import dz.sh.trc.hyflo.flow.core.dto.FlowThresholdDTO;
-import dz.sh.trc.hyflo.flow.core.service.FlowThresholdService;
+import dz.sh.trc.hyflo.flow.core.service.FlowThresholdCommandService;
+import dz.sh.trc.hyflo.flow.core.service.FlowThresholdQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -73,7 +57,8 @@ import java.util.Optional;
 @SecurityRequirement(name = "bearer-auth")
 public class FlowThresholdV2Controller {
 
-    private final FlowThresholdService thresholdService;
+    private final FlowThresholdCommandService commandService;
+    private final FlowThresholdQueryService   queryService;
 
     // =========================================================
     // QUERY ENDPOINTS
@@ -88,7 +73,7 @@ public class FlowThresholdV2Controller {
     })
     public ResponseEntity<FlowThresholdDTO> getById(
             @Parameter(description = "Threshold ID") @PathVariable Long id) {
-        return ResponseEntity.ok(thresholdService.getThresholdById(id));
+        return ResponseEntity.ok(queryService.getThresholdById(id));
     }
 
     @GetMapping
@@ -100,7 +85,7 @@ public class FlowThresholdV2Controller {
             @RequestParam(defaultValue = "20")  int size,
             @RequestParam(defaultValue = "id")  String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection) {
-        return ResponseEntity.ok(thresholdService.getAllThresholds(page, size, sortBy, sortDirection));
+        return ResponseEntity.ok(queryService.getAllThresholds(page, size, sortBy, sortDirection));
     }
 
     @GetMapping("/active")
@@ -109,7 +94,7 @@ public class FlowThresholdV2Controller {
     public ResponseEntity<Page<FlowThresholdDTO>> getActivePaginated(
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(thresholdService.getActiveThresholds(page, size));
+        return ResponseEntity.ok(queryService.getActiveThresholds(page, size));
     }
 
     @GetMapping("/active/all")
@@ -117,7 +102,7 @@ public class FlowThresholdV2Controller {
     @Operation(summary = "List all active thresholds (unpaginated)",
                description = "Returns all active thresholds without pagination. Use for configuration exports.")
     public ResponseEntity<List<FlowThresholdDTO>> getAllActive() {
-        return ResponseEntity.ok(thresholdService.getAllActiveThresholds());
+        return ResponseEntity.ok(queryService.getAllActiveThresholds());
     }
 
     @GetMapping("/inactive/all")
@@ -125,7 +110,7 @@ public class FlowThresholdV2Controller {
     @Operation(summary = "List all inactive thresholds",
                description = "Returns all deactivated (historical) thresholds for audit purposes.")
     public ResponseEntity<List<FlowThresholdDTO>> getAllInactive() {
-        return ResponseEntity.ok(thresholdService.getAllInactiveThresholds());
+        return ResponseEntity.ok(queryService.getAllInactiveThresholds());
     }
 
     @GetMapping("/pipeline/{pipelineId}")
@@ -134,7 +119,7 @@ public class FlowThresholdV2Controller {
                description = "Returns all threshold versions (active and historical) for a pipeline.")
     public ResponseEntity<List<FlowThresholdDTO>> getByPipeline(
             @PathVariable Long pipelineId) {
-        return ResponseEntity.ok(thresholdService.getThresholdsByPipelineId(pipelineId));
+        return ResponseEntity.ok(queryService.getThresholdsByPipelineId(pipelineId));
     }
 
     @GetMapping("/pipeline/{pipelineId}/active")
@@ -143,7 +128,7 @@ public class FlowThresholdV2Controller {
                description = "Returns the currently active threshold for a pipeline, if any.")
     public ResponseEntity<FlowThresholdDTO> getActiveByPipeline(
             @PathVariable Long pipelineId) {
-        Optional<FlowThresholdDTO> result = thresholdService.getActiveThresholdByPipelineId(pipelineId);
+        Optional<FlowThresholdDTO> result = queryService.getActiveThresholdByPipelineId(pipelineId);
         return result.map(ResponseEntity::ok)
                      .orElse(ResponseEntity.notFound().build());
     }
@@ -153,7 +138,7 @@ public class FlowThresholdV2Controller {
     @Operation(summary = "Check if pipeline has an active threshold")
     public ResponseEntity<Boolean> hasActiveThreshold(
             @PathVariable Long pipelineId) {
-        return ResponseEntity.ok(thresholdService.hasActiveThreshold(pipelineId));
+        return ResponseEntity.ok(queryService.hasActiveThreshold(pipelineId));
     }
 
     @GetMapping("/structure/{structureId}/active")
@@ -162,7 +147,7 @@ public class FlowThresholdV2Controller {
                description = "Returns active thresholds for all pipelines managed by a structure (station, terminal, manifold).")
     public ResponseEntity<List<FlowThresholdDTO>> getActiveByStructure(
             @PathVariable Long structureId) {
-        return ResponseEntity.ok(thresholdService.getActiveThresholdsByStructureId(structureId));
+        return ResponseEntity.ok(queryService.getActiveThresholdsByStructureId(structureId));
     }
 
     @GetMapping("/search")
@@ -170,7 +155,7 @@ public class FlowThresholdV2Controller {
     @Operation(summary = "Search thresholds by exact pipeline code")
     public ResponseEntity<List<FlowThresholdDTO>> searchByPipelineCode(
             @Parameter(description = "Exact pipeline code") @RequestParam String code) {
-        return ResponseEntity.ok(thresholdService.searchByPipelineCode(code));
+        return ResponseEntity.ok(queryService.searchByPipelineCode(code));
     }
 
     @GetMapping("/search/pattern")
@@ -179,35 +164,35 @@ public class FlowThresholdV2Controller {
                description = "Supports SQL LIKE patterns (e.g., OZ% for all Oran-zone pipelines).")
     public ResponseEntity<List<FlowThresholdDTO>> searchByPipelineCodePattern(
             @Parameter(description = "Pipeline code LIKE pattern (e.g., OZ%)") @RequestParam String pattern) {
-        return ResponseEntity.ok(thresholdService.searchByPipelineCodePattern(pattern));
+        return ResponseEntity.ok(queryService.searchByPipelineCodePattern(pattern));
     }
 
     @GetMapping("/stats/pipelines-without-thresholds")
     @PreAuthorize("hasAuthority('THRESHOLD:READ')")
     @Operation(summary = "Get pipeline IDs with no threshold configured")
     public ResponseEntity<List<Long>> getPipelinesWithoutThresholds() {
-        return ResponseEntity.ok(thresholdService.getPipelinesWithoutThresholds());
+        return ResponseEntity.ok(queryService.getPipelinesWithoutThresholds());
     }
 
     @GetMapping("/stats/pipelines-without-active-thresholds")
     @PreAuthorize("hasAuthority('THRESHOLD:READ')")
     @Operation(summary = "Get pipeline IDs with no active threshold")
     public ResponseEntity<List<Long>> getPipelinesWithoutActiveThresholds() {
-        return ResponseEntity.ok(thresholdService.getPipelinesWithoutActiveThresholds());
+        return ResponseEntity.ok(queryService.getPipelinesWithoutActiveThresholds());
     }
 
     @GetMapping("/stats/count-pipelines-without-thresholds")
     @PreAuthorize("hasAuthority('THRESHOLD:READ')")
     @Operation(summary = "Count pipelines with no threshold configured")
     public ResponseEntity<Long> countPipelinesWithoutThresholds() {
-        return ResponseEntity.ok(thresholdService.countPipelinesWithoutThresholds());
+        return ResponseEntity.ok(queryService.countPipelinesWithoutThresholds());
     }
 
     @GetMapping("/stats/count-active")
     @PreAuthorize("hasAuthority('THRESHOLD:READ')")
     @Operation(summary = "Count total active thresholds")
     public ResponseEntity<Long> countActiveThresholds() {
-        return ResponseEntity.ok(thresholdService.countActiveThresholds());
+        return ResponseEntity.ok(queryService.countActiveThresholds());
     }
 
     // =========================================================
@@ -227,7 +212,7 @@ public class FlowThresholdV2Controller {
     public ResponseEntity<FlowThresholdDTO> create(
             @Valid @RequestBody FlowThresholdDTO dto) {
         log.info("POST /api/v2/flow/thresholds - create for pipelineId={}", dto.getPipelineId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(thresholdService.createThreshold(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(commandService.createThreshold(dto));
     }
 
     @PutMapping("/{id}")
@@ -243,7 +228,7 @@ public class FlowThresholdV2Controller {
     public ResponseEntity<FlowThresholdDTO> update(
             @PathVariable Long id,
             @Valid @RequestBody FlowThresholdDTO dto) {
-        return ResponseEntity.ok(thresholdService.updateThreshold(id, dto));
+        return ResponseEntity.ok(commandService.updateThreshold(id, dto));
     }
 
     @PostMapping("/{id}/activate")
@@ -256,7 +241,7 @@ public class FlowThresholdV2Controller {
     })
     public ResponseEntity<FlowThresholdDTO> activate(@PathVariable Long id) {
         log.info("POST /api/v2/flow/thresholds/{}/activate", id);
-        return ResponseEntity.ok(thresholdService.activateThreshold(id));
+        return ResponseEntity.ok(commandService.activateThreshold(id));
     }
 
     @PostMapping("/{id}/deactivate")
@@ -269,7 +254,7 @@ public class FlowThresholdV2Controller {
     })
     public ResponseEntity<FlowThresholdDTO> deactivate(@PathVariable Long id) {
         log.info("POST /api/v2/flow/thresholds/{}/deactivate", id);
-        return ResponseEntity.ok(thresholdService.deactivateThreshold(id));
+        return ResponseEntity.ok(commandService.deactivateThreshold(id));
     }
 
     @DeleteMapping("/{id}")
@@ -283,7 +268,7 @@ public class FlowThresholdV2Controller {
     })
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         log.warn("DELETE /api/v2/flow/thresholds/{} - hard delete requested", id);
-        thresholdService.deleteThreshold(id);
+        commandService.deleteThreshold(id);
         return ResponseEntity.noContent().build();
     }
 }
