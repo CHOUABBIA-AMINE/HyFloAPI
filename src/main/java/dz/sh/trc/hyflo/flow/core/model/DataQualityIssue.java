@@ -27,7 +27,9 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -90,6 +92,8 @@ public class DataQualityIssue extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED,
             maxLength = 100
     )
+    @NotBlank(message = "Issue type is mandatory")
+    @Size(max = 100, message = "Issue type must not exceed 100 characters")
     @Column(name = "F_05", length = 100, nullable = false)
     private String issueType;
 

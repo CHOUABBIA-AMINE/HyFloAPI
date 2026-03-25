@@ -28,7 +28,9 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -95,6 +97,8 @@ public class FlowAnomaly extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED,
             maxLength = 100
     )
+    @NotBlank(message = "Anomaly type is mandatory")
+    @Size(max = 100, message = "Anomaly type must not exceed 100 characters")
     @Column(name = "F_05", length = 100, nullable = false)
     private String anomalyType;
 
@@ -112,6 +116,7 @@ public class FlowAnomaly extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 100
     )
+    @Size(max = 100, message = "Model name must not exceed 100 characters")
     @Column(name = "F_07", length = 100)
     private String modelName;
 

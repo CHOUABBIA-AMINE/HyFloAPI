@@ -31,6 +31,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -57,6 +58,7 @@ public class IncidentImpact extends GenericModel {
             description = "Incident this impact record belongs to",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotNull(message = "Incident reference is mandatory")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_01", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_05_02_FK_01"), nullable = false)

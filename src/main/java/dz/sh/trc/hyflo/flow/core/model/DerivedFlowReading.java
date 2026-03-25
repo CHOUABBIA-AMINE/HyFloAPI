@@ -35,6 +35,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -74,6 +75,7 @@ public class DerivedFlowReading extends GenericModel {
             example = "2026-01-27",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotNull(message = "Derived reading date is required")
     @PastOrPresent(message = "Derived reading date cannot be in the future")
     @Column(name = "F_01", nullable = false)
     private LocalDate readingDate;
@@ -125,6 +127,7 @@ public class DerivedFlowReading extends GenericModel {
             example = "2026-01-22T01:15:00",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotNull(message = "Calculation time is mandatory")
     @PastOrPresent(message = "Calculation time cannot be in the future")
     @Column(name = "F_06", nullable = false)
     private LocalDateTime calculatedAt;
@@ -133,6 +136,7 @@ public class DerivedFlowReading extends GenericModel {
             description = "Direct reading this derived reading is based on",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotNull(message = "Source reading is mandatory")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_07", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_03_08_FK_01"), nullable = false)
@@ -142,6 +146,7 @@ public class DerivedFlowReading extends GenericModel {
             description = "Pipeline segment this derived reading is associated with",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotNull(message = "Pipeline segment is mandatory")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_08", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_03_08_FK_02"), nullable = false)
@@ -178,6 +183,7 @@ public class DerivedFlowReading extends GenericModel {
             description = "Reading slot for which this derived reading is calculated",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotNull(message = "Reading slot is mandatory")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_03_08_FK_06"), nullable = false)
