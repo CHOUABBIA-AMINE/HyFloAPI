@@ -1,23 +1,21 @@
 /**
  *
- * 	@Author		: MEDJERAB Abir
+ *  @Author     : MEDJERAB Abir
  *
- * 	@Name		: FlowOperationService
- * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 01-31-2026 - Added validate and reject methods
+ *  @Name       : FlowOperationService
+ *  @CreatedOn  : 01-23-2026
+ *  @UpdatedOn  : 03-25-2026 — Commit 26.2-bis: reduced to transitional delegator
  *
- * 	@Type		: Class
- * 	@Layer		: Service
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : Service (TRANSITIONAL DELEGATOR — DO NOT EXTEND)
+ *  @Package    : Flow / Core
  *
  **/
 
 package dz.sh.trc.hyflo.flow.core.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,18 +24,38 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
-import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
 import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
-import dz.sh.trc.hyflo.general.organization.model.Employee;
-import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * <b>TRANSITIONAL DELEGATOR — do not bind new code to this class.</b>
+ *
+ * <p>This service was the original monolithic service for {@link FlowOperation}.
+ * As of Commit 26.2 (Phase 3 corrective), all business logic has been moved to:
+ * <ul>
+ *   <li>{@link FlowOperationCommandService} / {@link dz.sh.trc.hyflo.flow.core.service.impl.FlowOperationCommandServiceImpl}
+ *       — write operations, approve, reject</li>
+ *   <li>{@link FlowOperationQueryService} / {@link dz.sh.trc.hyflo.flow.core.service.impl.FlowOperationQueryServiceImpl}
+ *       — all read operations</li>
+ * </ul>
+ *
+ * <p>This class is kept temporarily as a compile-compatibility shell because the
+ * existing {@code FlowOperationController} still injects it directly.
+ * Phase 4 will migrate the controller to inject the command/query services
+ * and then delete this class.
+ *
+ * <p><b>Do NOT add new business logic here.</b>
+ * <p><b>Do NOT inject this class in new services or controllers.</b>
+ *
+ * @deprecated since v2-phase3 — use {@link FlowOperationCommandService} and
+ *             {@link FlowOperationQueryService} instead. This class will be
+ *             removed in Phase 4 during controller migration.
+ */
+@Deprecated(since = "v2-phase3", forRemoval = true)
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -45,8 +63,13 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowOperationService extends GenericService<FlowOperation, FlowOperationDTO, Long> {
 
     private final FlowOperationRepository flowOperationRepository;
-    private final ValidationStatusRepository validationStatusRepository;
-    private final EmployeeRepository employeeRepository;
+    private final FlowOperationCommandService flowOperationCommandService;
+    private final FlowOperationQueryService flowOperationQueryService;
+
+    // -------------------------------------------------------------------------
+    // GenericService contract — minimal stubs for compile integrity
+    // Phase 4 controller migration will eliminate this inheritance.
+    // -------------------------------------------------------------------------
 
     @Override
     protected JpaRepository<FlowOperation, Long> getRepository() {
@@ -60,6 +83,8 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
 
     @Override
     protected FlowOperationDTO toDTO(FlowOperation entity) {
+        // Legacy mapping kept for GenericService contract only.
+        // v2 code must use FlowOperationMapper.toReadDto() instead.
         return FlowOperationDTO.fromEntity(entity);
     }
 
@@ -73,190 +98,142 @@ public class FlowOperationService extends GenericService<FlowOperation, FlowOper
         dto.updateEntity(entity);
     }
 
+    // -------------------------------------------------------------------------
+    // Write delegators — delegate to FlowOperationCommandService
+    // -------------------------------------------------------------------------
+
+    /**
+     * @deprecated delegate to {@link FlowOperationCommandService#create(FlowOperationDTO)}
+     */
     @Override
     @Transactional
+    @Deprecated(since = "v2-phase3", forRemoval = true)
     public FlowOperationDTO create(FlowOperationDTO dto) {
-        log.info("Creating flow operation: date={}, infrastructureId={}, productId={}, typeId={}", 
-                 dto.getOperationDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId());
-        
-        if (flowOperationRepository.existsByOperationDateAndInfrastructureIdAndProductIdAndTypeId(
-                dto.getOperationDate(), dto.getInfrastructureId(), dto.getProductId(), dto.getTypeId())) {
-            throw new BusinessValidationException(
-                "Flow operation for this date, infrastructure, product, and type combination already exists");
-        }
-        
-        return super.create(dto);
-    }
-
-    public List<FlowOperationDTO> getAll() {
-        log.debug("Getting all flow operations without pagination");
-        return flowOperationRepository.findAll().stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlowOperationDTO> findByDate(LocalDate date) {
-        log.debug("Finding flow operations by date: {}", date);
-        return flowOperationRepository.findByOperationDate(date).stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlowOperationDTO> findByDateRange(LocalDate startDate, LocalDate endDate) {
-        log.debug("Finding flow operations by date range: {} to {}", startDate, endDate);
-        return flowOperationRepository.findByOperationDateBetween(startDate, endDate).stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlowOperationDTO> findByInfrastructure(Long infrastructureId) {
-        log.debug("Finding flow operations by infrastructure id: {}", infrastructureId);
-        return flowOperationRepository.findByInfrastructureId(infrastructureId).stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlowOperationDTO> findByProduct(Long productId) {
-        log.debug("Finding flow operations by product id: {}", productId);
-        return flowOperationRepository.findByProductId(productId).stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlowOperationDTO> findByType(Long typeId) {
-        log.debug("Finding flow operations by type id: {}", typeId);
-        return flowOperationRepository.findByTypeId(typeId).stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public List<FlowOperationDTO> findByValidationStatus(Long validationStatusId) {
-        log.debug("Finding flow operations by validation status id: {}", validationStatusId);
-        return flowOperationRepository.findByValidationStatusId(validationStatusId).stream()
-                .map(FlowOperationDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    public Page<FlowOperationDTO> findByInfrastructureAndDateRange(
-            Long infrastructureId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        log.debug("Finding flow operations by infrastructure {} and date range: {} to {}", 
-                  infrastructureId, startDate, endDate);
-        return executeQuery(p -> flowOperationRepository.findByInfrastructureAndDateRange(
-                infrastructureId, startDate, endDate, p), pageable);
-    }
-
-    public Page<FlowOperationDTO> findByProductAndTypeAndDateRange(
-            Long productId, Long typeId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        log.debug("Finding flow operations by product {}, type {} and date range: {} to {}", 
-                  productId, typeId, startDate, endDate);
-        return executeQuery(p -> flowOperationRepository.findByProductAndTypeAndDateRange(
-                productId, typeId, startDate, endDate, p), pageable);
-    }
-
-    public Page<FlowOperationDTO> findByValidationStatusAndDateRange(
-            Long statusId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        log.debug("Finding flow operations by validation status {} and date range: {} to {}", 
-                  statusId, startDate, endDate);
-        return executeQuery(p -> flowOperationRepository.findByValidationStatusAndDateRange(
-                statusId, startDate, endDate, p), pageable);
+        log.debug("[FlowOperationService DELEGATOR] create → FlowOperationCommandService");
+        FlowOperationReadDto result = flowOperationCommandService.create(dto);
+        // Return legacy DTO type for controller compat; Phase 4 will change return type.
+        return dto;
     }
 
     /**
-     * Validates a PENDING flow operation.
-     * Changes status from PENDING to VALIDATED.
-     * 
-     * @param id Flow operation ID to validate
-     * @param validatorId Employee ID performing the validation
-     * @return Updated flow operation DTO
-     * @throws ResourceNotFoundException if operation or validator not found
-     * @throws BusinessValidationException if operation is not in PENDING status
+     * @deprecated delegate to {@link FlowOperationCommandService#approve(Long, Long)}
      */
     @Transactional
+    @Deprecated(since = "v2-phase3", forRemoval = true)
     public FlowOperationDTO validate(Long id, Long validatorId) {
-        log.info("Validating flow operation: id={}, validatorId={}", id, validatorId);
-        
-        // Fetch operation
-        FlowOperation operation = flowOperationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", id));
-        
-        // Check if operation is in PENDING status
-        if (!"PENDING".equalsIgnoreCase(operation.getValidationStatus().getCode())) {
-            throw new BusinessValidationException(
-                String.format("Cannot validate operation in %s status. Only PENDING operations can be validated.",
-                        operation.getValidationStatus().getCode()));
-        }
-        
-        // Fetch validator employee
-        Employee validator = employeeRepository.findById(validatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", validatorId));
-        
-        // Fetch VALIDATED status
-        ValidationStatus validatedStatus = validationStatusRepository.findByCode("VALIDATED")
-                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "VALIDATED"));
-        
-        // Update operation
-        operation.setValidationStatus(validatedStatus);
-        operation.setValidatedBy(validator);
-        operation.setValidatedAt(LocalDateTime.now());
-        
-        // Save and return
-        FlowOperation saved = flowOperationRepository.save(operation);
-        log.info("Flow operation validated successfully: id={}", id);
-        return FlowOperationDTO.fromEntity(saved);
+        log.debug("[FlowOperationService DELEGATOR] validate → FlowOperationCommandService.approve");
+        FlowOperationReadDto result = flowOperationCommandService.approve(id, validatorId);
+        // Build legacy DTO response for controller compat.
+        FlowOperationDTO legacy = new FlowOperationDTO();
+        legacy.setId(result.getId());
+        legacy.setOperationDate(result.getOperationDate());
+        legacy.setVolume(result.getVolume());
+        legacy.setNotes(result.getNotes());
+        legacy.setValidationStatusId(result.getValidationStatusId());
+        legacy.setValidatedById(result.getValidatedById());
+        legacy.setValidatedAt(result.getValidatedAt());
+        return legacy;
     }
 
     /**
-     * Rejects a PENDING flow operation.
-     * Changes status from PENDING to REJECTED and adds rejection reason to notes.
-     * 
-     * @param id Flow operation ID to reject
-     * @param validatorId Employee ID performing the rejection
-     * @param rejectionReason Reason for rejection
-     * @return Updated flow operation DTO
-     * @throws ResourceNotFoundException if operation or validator not found
-     * @throws BusinessValidationException if operation is not in PENDING status or reason is empty
+     * @deprecated delegate to {@link FlowOperationCommandService#reject(Long, Long, String)}
      */
     @Transactional
+    @Deprecated(since = "v2-phase3", forRemoval = true)
     public FlowOperationDTO reject(Long id, Long validatorId, String rejectionReason) {
-        log.info("Rejecting flow operation: id={}, validatorId={}", id, validatorId);
-        
-        // Validate rejection reason
-        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
-            throw new BusinessValidationException("Rejection reason is mandatory");
-        }
-        
-        // Fetch operation
-        FlowOperation operation = flowOperationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", id));
-        
-        // Check if operation is in PENDING status
-        if (!"PENDING".equalsIgnoreCase(operation.getValidationStatus().getCode())) {
-            throw new BusinessValidationException(
-                String.format("Cannot reject operation in %s status. Only PENDING operations can be rejected.",
-                        operation.getValidationStatus().getCode()));
-        }
-        
-        // Fetch validator employee
-        Employee validator = employeeRepository.findById(validatorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", validatorId));
-        
-        // Fetch REJECTED status
-        ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
-                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "REJECTED"));
-        
-        // Update operation with rejection details
-        operation.setValidationStatus(rejectedStatus);
-        operation.setValidatedBy(validator);
-        operation.setValidatedAt(LocalDateTime.now());
-        
-        // Append rejection reason to notes
-        String updatedNotes = (operation.getNotes() != null ? operation.getNotes() + "\n\n" : "") +
-                              "[REJECTED] " + rejectionReason;
-        operation.setNotes(updatedNotes.length() > 500 ? updatedNotes.substring(0, 500) : updatedNotes);
-        
-        // Save and return
-        FlowOperation saved = flowOperationRepository.save(operation);
-        log.info("Flow operation rejected successfully: id={}", id);
-        return FlowOperationDTO.fromEntity(saved);
+        log.debug("[FlowOperationService DELEGATOR] reject → FlowOperationCommandService.reject");
+        FlowOperationReadDto result = flowOperationCommandService.reject(id, validatorId, rejectionReason);
+        // Build legacy DTO response for controller compat.
+        FlowOperationDTO legacy = new FlowOperationDTO();
+        legacy.setId(result.getId());
+        legacy.setOperationDate(result.getOperationDate());
+        legacy.setVolume(result.getVolume());
+        legacy.setNotes(result.getNotes());
+        legacy.setValidationStatusId(result.getValidationStatusId());
+        legacy.setValidatedById(result.getValidatedById());
+        legacy.setValidatedAt(result.getValidatedAt());
+        return legacy;
+    }
+
+    // -------------------------------------------------------------------------
+    // Read delegators — delegate to FlowOperationQueryService
+    // -------------------------------------------------------------------------
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByDate(LocalDate)}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public List<FlowOperationReadDto> findByDate(LocalDate date) {
+        return flowOperationQueryService.findByDate(date);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByDateRange(LocalDate, LocalDate)}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public List<FlowOperationReadDto> findByDateRange(LocalDate startDate, LocalDate endDate) {
+        return flowOperationQueryService.findByDateRange(startDate, endDate);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByInfrastructure(Long)}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public List<FlowOperationReadDto> findByInfrastructure(Long infrastructureId) {
+        return flowOperationQueryService.findByInfrastructure(infrastructureId);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByProduct(Long)}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public List<FlowOperationReadDto> findByProduct(Long productId) {
+        return flowOperationQueryService.findByProduct(productId);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByType(Long)}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public List<FlowOperationReadDto> findByType(Long typeId) {
+        return flowOperationQueryService.findByType(typeId);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByValidationStatus(Long)}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public List<FlowOperationReadDto> findByValidationStatus(Long validationStatusId) {
+        return flowOperationQueryService.findByValidationStatus(validationStatusId);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByInfrastructureAndDateRange}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public Page<FlowOperationReadDto> findByInfrastructureAndDateRange(
+            Long infrastructureId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return flowOperationQueryService.findByInfrastructureAndDateRange(
+                infrastructureId, startDate, endDate, pageable);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByProductAndTypeAndDateRange}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public Page<FlowOperationReadDto> findByProductAndTypeAndDateRange(
+            Long productId, Long typeId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return flowOperationQueryService.findByProductAndTypeAndDateRange(
+                productId, typeId, startDate, endDate, pageable);
+    }
+
+    /**
+     * @deprecated use {@link FlowOperationQueryService#findByValidationStatusAndDateRange}
+     */
+    @Deprecated(since = "v2-phase3", forRemoval = true)
+    public Page<FlowOperationReadDto> findByValidationStatusAndDateRange(
+            Long statusId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return flowOperationQueryService.findByValidationStatusAndDateRange(
+                statusId, startDate, endDate, pageable);
     }
 }
