@@ -1,6 +1,6 @@
 /**
- * 
- * 	@Author		: HyFlo v2 Model
+ *
+ * 	@Author		: HyFlo v2
  *
  * 	@Name		: PipelineRiskScore
  * 	@CreatedOn	: 03-25-2026
@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.flow.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +26,6 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,9 +34,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Risk score associated with a specific pipeline segment for a given time window.
+ * Stores a risk score computed for a pipeline segment by the risk engine.
+ * Each record is a point-in-time snapshot enabling trend analysis.
  */
-@Schema(description = "Risk score associated with a pipeline segment")
+@Schema(description = "Risk score snapshot for a pipeline segment computed by the risk engine")
 @Setter
 @Getter
 @ToString
@@ -44,56 +45,40 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "PipelineRiskScore")
-@Table(name = "T_02_03_10")
+@Table(name = "T_03_02_01")
 public class PipelineRiskScore extends GenericModel {
 
-    @Schema(
-            description = "Pipeline segment this risk score applies to",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotNull(message = "Pipeline segment is mandatory")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_02_03_10_FK_01"), nullable = false)
-    private PipelineSegment pipelineSegment;
-
-    @Schema(
-            description = "Timestamp when this risk score was calculated",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotNull(message = "Calculation timestamp is mandatory")
-    @Column(name = "F_02", nullable = false)
-    private LocalDateTime calculatedAt;
-
-    @Schema(
-            description = "Timestamp until which this risk score is considered valid",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Column(name = "F_03")
-    private LocalDateTime validUntil;
-
-    @Schema(
-            description = "Risk score (0-100, higher means higher risk)",
-            example = "82.5",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotNull(message = "Risk score is mandatory")
-    @Column(name = "F_04", precision = 5, scale = 2, nullable = false)
+    @Schema(description = "Composite risk score (0.0 - 1.0)", example = "0.74")
+    @Column(name = "F_01", precision = 5, scale = 4, nullable = false)
     private BigDecimal riskScore;
 
-    @Schema(
-            description = "Name or version of the model used to compute this score",
-            example = "SEGMENT_RISK_V1",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            maxLength = 100
-    )
+    @Schema(description = "Pressure-related risk component (0.0 - 1.0)", example = "0.68")
+    @Column(name = "F_02", precision = 5, scale = 4)
+    private BigDecimal pressureRisk;
+
+    @Schema(description = "Flow-related risk component (0.0 - 1.0)", example = "0.55")
+    @Column(name = "F_03", precision = 5, scale = 4)
+    private BigDecimal flowRisk;
+
+    @Schema(description = "Age/corrosion risk component (0.0 - 1.0)", example = "0.80")
+    @Column(name = "F_04", precision = 5, scale = 4)
+    private BigDecimal ageCorrosionRisk;
+
+    @Schema(description = "Name of the risk model used", example = "COMPOSITE_RISK_V1")
     @Column(name = "F_05", length = 100)
     private String modelName;
 
-    @Schema(
-            description = "Optional details about the inputs or assumptions used",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Column(name = "F_06", columnDefinition = "TEXT")
+    @Schema(description = "Additional details or contributing factors")
+    @Column(name = "F_06", length = 2000)
     private String details;
+
+    @Schema(description = "Timestamp when the risk score was calculated")
+    @Column(name = "F_07", nullable = false)
+    private LocalDateTime calculatedAt;
+
+    @Schema(description = "FK to the scored pipeline segment")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_03_02_01_FK_01"), nullable = false)
+    private PipelineSegment pipelineSegment;
 }

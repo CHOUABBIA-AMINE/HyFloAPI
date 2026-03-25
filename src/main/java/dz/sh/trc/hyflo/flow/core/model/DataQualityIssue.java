@@ -1,6 +1,6 @@
 /**
- * 
- * 	@Author		: HyFlo v2 Model
+ *
+ * 	@Author		: HyFlo v2
  *
  * 	@Name		: DataQualityIssue
  * 	@CreatedOn	: 03-25-2026
@@ -17,8 +17,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.flow.common.model.DataSource;
-import dz.sh.trc.hyflo.flow.common.model.QualityFlag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,9 +25,6 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -38,9 +33,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Data quality evaluation associated with a reading or derived reading.
+ * Records a data quality issue flagged against a flow reading
+ * by the smart validation engine.
  */
-@Schema(description = "Data quality evaluation associated with a reading or derived reading")
+@Schema(description = "Data quality issue identified on a flow reading by the validation engine")
 @Setter
 @Getter
 @ToString
@@ -48,76 +44,38 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "DataQualityIssue")
-@Table(name = "T_03_03_10")
+@Table(name = "T_04_02_02")
 public class DataQualityIssue extends GenericModel {
 
-    @Schema(
-            description = "Direct reading evaluated for data quality (if applicable)",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_10_FK_01"))
-    private FlowReading reading;
-
-    @Schema(
-            description = "Derived reading evaluated for data quality (if applicable)",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_02", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_10_FK_02"))
-    private DerivedFlowReading derivedReading;
-
-    @Schema(
-            description = "Quality flag assigned (OK, SUSPECT, BAD, etc.)",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_03", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_10_FK_03"))
-    private QualityFlag qualityFlag;
-
-    @Schema(
-            description = "Numerical quality score (0-1 or 0-100 depending on convention)",
-            example = "0.85",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Column(name = "F_04", precision = 5, scale = 3)
-    private BigDecimal score;
-
-    @Schema(
-            description = "Classification of the data quality issue (e.g., MISSING_VALUE, OUTLIER, INCONSISTENT)",
-            example = "OUTLIER",
-            requiredMode = Schema.RequiredMode.REQUIRED,
-            maxLength = 100
-    )
-    @NotBlank(message = "Issue type is mandatory")
-    @Size(max = 100, message = "Issue type must not exceed 100 characters")
-    @Column(name = "F_05", length = 100, nullable = false)
+    @Schema(description = "Type of quality issue", example = "OUT_OF_RANGE")
+    @Column(name = "F_01", length = 100, nullable = false)
     private String issueType;
 
-    @Schema(
-            description = "Human-readable details about detected data quality issues",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @Column(name = "F_06", columnDefinition = "TEXT")
+    @Schema(description = "Quality score for the reading (0.0 - 1.0)", example = "0.43")
+    @Column(name = "F_02", precision = 5, scale = 4)
+    private BigDecimal qualityScore;
+
+    @Schema(description = "Detailed explanation of the issue detected")
+    @Column(name = "F_03", length = 2000)
     private String details;
 
-    @Schema(
-            description = "Timestamp when data quality evaluation was performed",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotNull(message = "Evaluation time is mandatory")
-    @Column(name = "F_07", nullable = false)
-    private LocalDateTime evaluatedAt;
+    @Schema(description = "Whether the operator acknowledged the issue")
+    @Column(name = "F_04")
+    private Boolean acknowledged;
 
-    @Schema(
-            description = "Data source for this quality evaluation (AI assisted)",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
+    @Schema(description = "Timestamp when the issue was raised")
+    @Column(name = "F_05", nullable = false)
+    private LocalDateTime raisedAt;
+
+    @Schema(description = "FK to the source FlowReading")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_10_FK_04"))
-    private DataSource dataSource;
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_04_02_02_FK_01"))
+    private FlowReading reading;
+
+    @Schema(description = "FK to the source DerivedFlowReading (if applicable)")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_04_02_02_FK_02"))
+    private DerivedFlowReading derivedReading;
 }

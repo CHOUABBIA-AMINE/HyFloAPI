@@ -1,6 +1,6 @@
 /**
- * 
- * 	@Author		: HyFlo v2 DTO
+ *
+ * 	@Author		: HyFlo v2
  *
  * 	@Name		: FlowReadingReadDto
  * 	@CreatedOn	: 03-25-2026
@@ -17,66 +17,92 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
-/**
- * Read DTO for exposing flow readings without leaking JPA entities.
- */
-@Schema(description = "Read DTO for flow readings")
-@Setter
-@Getter
-@ToString
+@Schema(description = "Read DTO for an operational flow reading")
+@Data
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FlowReadingReadDto {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FlowReadingReadDto extends GenericDTO<FlowReading> {
 
-    @Schema(description = "Technical identifier of the reading")
-    private Long id;
-
-    @Schema(description = "Reading date")
+    @Schema(description = "Date of the reading", example = "2026-03-20")
     private LocalDate readingDate;
 
-    @Schema(description = "Pressure measurement in bar")
-    private BigDecimal pressure;
+    @Schema(description = "Measured flow volume in m³", example = "12500.5000")
+    private BigDecimal volumeM3;
 
-    @Schema(description = "Temperature measurement in degrees Celsius")
-    private BigDecimal temperature;
+    @Schema(description = "Measured flow volume in MSCF", example = "441.4500")
+    private BigDecimal volumeMscf;
 
-    @Schema(description = "Flow rate in m³/h or bpd")
-    private BigDecimal flowRate;
+    @Schema(description = "Inlet pressure in bar", example = "68.5000")
+    private BigDecimal inletPressureBar;
 
-    @Schema(description = "Total contained volume in cubic meters")
-    private BigDecimal containedVolume;
+    @Schema(description = "Outlet pressure in bar", example = "65.2000")
+    private BigDecimal outletPressureBar;
 
-    @Schema(description = "Timestamp when this reading was recorded")
-    private LocalDateTime recordedAt;
+    @Schema(description = "Temperature in Celsius", example = "22.3000")
+    private BigDecimal temperatureCelsius;
 
-    @Schema(description = "Timestamp when this reading was validated")
-    private LocalDateTime validatedAt;
-
-    @Schema(description = "Additional notes about this reading")
+    @Schema(description = "Operator notes")
     private String notes;
 
-    @Schema(description = "Identifier of the employee who recorded this reading")
-    private Long recordedById;
+    @Schema(description = "Submission timestamp")
+    private LocalDateTime submittedAt;
 
-    @Schema(description = "Identifier of the employee who validated this reading")
-    private Long validatedById;
+    @Schema(description = "Validation timestamp")
+    private LocalDateTime validatedAt;
 
-    @Schema(description = "Identifier of the validation status reference")
-    private Long validationStatusId;
-
-    @Schema(description = "Identifier of the pipeline where this reading was taken")
+    @Schema(description = "ID of the parent pipeline")
     private Long pipelineId;
 
-    @Schema(description = "Identifier of the reading slot reference")
-    private Long readingSlotId;
+    @Schema(description = "Code of the parent pipeline", example = "GZ1-HASSI-ARZEW")
+    private String pipelineCode;
 
-    @Schema(description = "Identifier of the workflow instance governing this reading (if any)")
-    private Long workflowInstanceId;
+    @Schema(description = "ID of the validation status")
+    private Long validationStatusId;
+
+    @Schema(description = "Code of the validation status", example = "APPROVED")
+    private String validationStatusCode;
+
+    @Override
+    public FlowReading toEntity() {
+        throw new UnsupportedOperationException("Use FlowReadingCommandService for write operations");
+    }
+
+    @Override
+    public void updateEntity(FlowReading entity) {
+        throw new UnsupportedOperationException("Use FlowReadingCommandService for update operations");
+    }
+
+    public static FlowReadingReadDto fromEntity(FlowReading entity) {
+        if (entity == null) return null;
+        return FlowReadingReadDto.builder()
+                .id(entity.getId())
+                .readingDate(entity.getReadingDate())
+                .volumeM3(entity.getVolumeM3())
+                .volumeMscf(entity.getVolumeMscf())
+                .inletPressureBar(entity.getInletPressureBar())
+                .outletPressureBar(entity.getOutletPressureBar())
+                .temperatureCelsius(entity.getTemperatureCelsius())
+                .notes(entity.getNotes())
+                .submittedAt(entity.getSubmittedAt())
+                .validatedAt(entity.getValidatedAt())
+                .pipelineId(entity.getPipeline() != null ? entity.getPipeline().getId() : null)
+                .pipelineCode(entity.getPipeline() != null ? entity.getPipeline().getCode() : null)
+                .validationStatusId(entity.getValidationStatus() != null ? entity.getValidationStatus().getId() : null)
+                .validationStatusCode(entity.getValidationStatus() != null ? entity.getValidationStatus().getCode() : null)
+                .build();
+    }
 }
