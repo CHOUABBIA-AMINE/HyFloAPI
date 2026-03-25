@@ -4,6 +4,7 @@
  *
  * 	@Name		: DataQualityIssueController
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: Phase 4/5 bridge — Commit 36.3
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -40,7 +41,15 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST Controller for DataQualityIssue.
+ *
+ * @deprecated Since HyFlo v2 Phase 4.
+ *             Backing service lacks intelligence CQRS separation.
+ *             A dedicated DataQualityIssueV2Controller will be introduced in Phase 5
+ *             backed by proper query service interfaces aligned with the
+ *             hyflo-intelligence module.
+ *             Scheduled for removal in Phase 8 cleanup.
  */
+@Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
 @RequestMapping("/flow/core/quality-issue")
 @Slf4j

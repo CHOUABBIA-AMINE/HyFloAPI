@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowForecastController
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 02-16-2026
+ * 	@UpdatedOn	: Phase 4/5 bridge — Commit 36.3
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -37,6 +37,17 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * REST Controller for FlowForecast.
+ *
+ * @deprecated Since HyFlo v2 Phase 4.
+ *             FlowForecastService uses fat DTO FlowForecastDTO without CQRS separation.
+ *             A dedicated FlowForecastV2Controller will be introduced in Phase 5
+ *             backed by FlowForecastCommandService and FlowForecastQueryService interfaces,
+ *             using proper command/read DTO split.
+ *             Scheduled for removal in Phase 8 cleanup.
+ */
+@Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
 @RequestMapping("/flow/core/forecast")
 @Tag(name = "Flow Forecast Management", description = "APIs for managing and analyzing flow forecasts and predictions")

@@ -4,6 +4,7 @@
  *
  * 	@Name		: FlowAnomalyController
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: Phase 4/5 bridge — Commit 36.3
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -40,7 +41,14 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * REST Controller for FlowAnomaly.
+ *
+ * @deprecated Since HyFlo v2 Phase 4.
+ *             Backing services are deprecated and lack CQRS separation.
+ *             A dedicated FlowAnomalyV2Controller will be introduced in Phase 5
+ *             backed by proper intelligence service interfaces.
+ *             Scheduled for removal in Phase 8 cleanup.
  */
+@Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
 @RequestMapping("/flow/core/anomaly")
 @Slf4j
