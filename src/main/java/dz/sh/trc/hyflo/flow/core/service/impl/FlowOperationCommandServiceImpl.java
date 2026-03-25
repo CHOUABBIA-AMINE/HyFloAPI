@@ -4,6 +4,7 @@
  *
  *  @Name       : FlowOperationCommandServiceImpl
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : Phase 4/5 bridge — Commit 37
  *
  *  @Type       : Class
  *  @Layer      : Service (Command Implementation)
@@ -17,6 +18,11 @@
  *  FlowOperationService and correctly placed here.
  *
  *  Commit 26.2 — post-Phase 3 corrective
+ *  Commit 37   — create/update migrated from FlowOperationDTO
+ *                to FlowOperationCommandDto.
+ *                create() no longer reads validationStatusId from DTO:
+ *                PENDING status is resolved internally via
+ *                ValidationStatusRepository.findByCode("PENDING").
  *
  **/
 
@@ -31,8 +37,8 @@ import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
 import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDto;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowOperationMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
@@ -57,6 +63,7 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>Uniqueness: date + infrastructure + product + type must be unique per create</li>
  *   <li>State guard: only PENDING operations may be updated or deleted</li>
  *   <li>Workflow update: approve/reject update the linked WorkflowInstance if present</li>
+ *   <li>Status purity: PENDING status resolved from DB on create; never set from operator DTO</li>
  * </ul>
  */
 @Service
@@ -75,7 +82,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
     // =====================================================================
 
     @Override
-    public FlowOperationReadDto create(FlowOperationDTO dto) {
+    public FlowOperationReadDto create(FlowOperationCommandDto dto) {
         log.info("[FlowOperationCommandService] create: date={}, infraId={}, productId={}, typeId={}",
                 dto.getOperationDate(), dto.getInfrastructureId(),
                 dto.getProductId(), dto.getTypeId());
@@ -87,6 +94,10 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
                     "Flow operation for this date, infrastructure, product, and type combination already exists");
         }
 
+        // Resolve PENDING status server-side — never accepted from operator input
+        ValidationStatus pendingStatus = validationStatusRepository.findByCode("PENDING")
+                .orElseThrow(() -> new ResourceNotFoundException("ValidationStatus", "PENDING"));
+
         FlowOperation entity = FlowOperationMapper.toNewEntity(
                 dto.getOperationDate(),
                 dto.getVolume(),
@@ -95,7 +106,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
                 dto.getProductId(),
                 dto.getTypeId(),
                 dto.getRecordedById(),
-                dto.getValidationStatusId());
+                pendingStatus.getId());
 
         FlowOperation saved = flowOperationRepository.save(entity);
         log.info("[FlowOperationCommandService] created id={}", saved.getId());
@@ -107,7 +118,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
     // =====================================================================
 
     @Override
-    public FlowOperationReadDto update(Long id, FlowOperationDTO dto) {
+    public FlowOperationReadDto update(Long id, FlowOperationCommandDto dto) {
         log.info("[FlowOperationCommandService] update id={}", id);
 
         FlowOperation entity = flowOperationRepository.findById(id)
@@ -118,6 +129,26 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
         if (dto.getOperationDate() != null) entity.setOperationDate(dto.getOperationDate());
         if (dto.getVolume() != null)        entity.setVolume(dto.getVolume());
         if (dto.getNotes() != null)         entity.setNotes(dto.getNotes());
+
+        // FK updates from command DTO (operator-controlled fields only)
+        if (dto.getInfrastructureId() != null) {
+            dz.sh.trc.hyflo.network.core.model.Infrastructure infra =
+                new dz.sh.trc.hyflo.network.core.model.Infrastructure();
+            infra.setId(dto.getInfrastructureId());
+            entity.setInfrastructure(infra);
+        }
+        if (dto.getProductId() != null) {
+            dz.sh.trc.hyflo.network.common.model.Product product =
+                new dz.sh.trc.hyflo.network.common.model.Product();
+            product.setId(dto.getProductId());
+            entity.setProduct(product);
+        }
+        if (dto.getTypeId() != null) {
+            dz.sh.trc.hyflo.flow.type.model.OperationType type =
+                new dz.sh.trc.hyflo.flow.type.model.OperationType();
+            type.setId(dto.getTypeId());
+            entity.setType(type);
+        }
 
         FlowOperation saved = flowOperationRepository.save(entity);
         return FlowOperationMapper.toReadDto(saved);

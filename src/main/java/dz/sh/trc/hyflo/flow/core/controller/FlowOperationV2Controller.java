@@ -4,6 +4,7 @@
  *
  *  @Name       : FlowOperationV2Controller
  *  @CreatedOn  : Phase 4 — Commit 31
+ *  @UpdatedOn  : Phase 4/5 bridge — Commit 37
  *
  *  @Type       : Class
  *  @Layer      : Controller
@@ -13,17 +14,19 @@
  *                Implements full CQRS split:
  *                  FlowOperationCommandService  — writes (create, update, delete, approve, reject)
  *                  FlowOperationQueryService    — reads  (all query methods)
- *                No entity exposure. No legacy FlowReadingDTO in active v2 paths.
- *                Command body: FlowOperationDTO (Phase 3 compat — command DTO migration Phase 5).
+ *                No entity exposure. No fat DTO in v2 write paths.
+ *                Command body: FlowOperationCommandDto (Commit 37 migration).
  *                Response body: FlowOperationReadDto exclusively.
  *
  *  Phase 4 — Commit 31
+ *  Commit 37  — @RequestBody migrated from FlowOperationDTO to
+ *                FlowOperationCommandDto on POST and PUT endpoints.
  *
- *  Service method signatures (confirmed Commit 26.2):
+ *  Service method signatures (Commit 37):
  *
  *  Command:
- *    create(FlowOperationDTO)                                -> FlowOperationReadDto
- *    update(Long, FlowOperationDTO)                         -> FlowOperationReadDto
+ *    create(FlowOperationCommandDto)                        -> FlowOperationReadDto
+ *    update(Long, FlowOperationCommandDto)                  -> FlowOperationReadDto
  *    delete(Long)                                            -> void
  *    approve(Long id, Long validatorId)                     -> FlowOperationReadDto
  *    reject(Long id, Long validatorId, String reason)       -> FlowOperationReadDto
@@ -45,8 +48,8 @@
 
 package dz.sh.trc.hyflo.flow.core.controller;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
 import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDto;
 import dz.sh.trc.hyflo.flow.core.service.FlowOperationCommandService;
 import dz.sh.trc.hyflo.flow.core.service.FlowOperationQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -203,14 +206,15 @@ public class FlowOperationV2Controller {
     @PostMapping
     @PreAuthorize("hasAuthority('FLOW:WRITE')")
     @Operation(summary = "Create a new flow operation",
-               description = "Records a new hydrocarbon transport operation. Enforces date+infrastructure+product+type uniqueness.")
+               description = "Records a new hydrocarbon transport operation. Enforces date+infrastructure+product+type uniqueness. "
+                           + "PENDING validation status is assigned server-side.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Operation created"),
         @ApiResponse(responseCode = "400", description = "Invalid data or uniqueness violation"),
         @ApiResponse(responseCode = "404", description = "Referenced infrastructure, product or type not found")
     })
     public ResponseEntity<FlowOperationReadDto> create(
-            @Valid @RequestBody FlowOperationDTO dto) {
+            @Valid @RequestBody FlowOperationCommandDto dto) {
         log.debug("POST /api/v2/flow/operations - create");
         return ResponseEntity.status(HttpStatus.CREATED).body(commandService.create(dto));
     }
@@ -225,7 +229,7 @@ public class FlowOperationV2Controller {
     })
     public ResponseEntity<FlowOperationReadDto> update(
             @PathVariable Long id,
-            @Valid @RequestBody FlowOperationDTO dto) {
+            @Valid @RequestBody FlowOperationCommandDto dto) {
         log.debug("PUT /api/v2/flow/operations/{}", id);
         return ResponseEntity.ok(commandService.update(id, dto));
     }

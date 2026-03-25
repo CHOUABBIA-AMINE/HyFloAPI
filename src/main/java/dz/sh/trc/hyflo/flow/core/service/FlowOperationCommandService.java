@@ -4,6 +4,7 @@
  *
  *  @Name       : FlowOperationCommandService
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : Phase 4/5 bridge — Commit 37
  *
  *  @Type       : Interface
  *  @Layer      : Service (Command)
@@ -13,13 +14,15 @@
  *  Separates write operations from read operations per CQRS pattern.
  *
  *  Commit 26.2 — post-Phase 3 corrective
+ *  Commit 37   — create/update signatures migrated from FlowOperationDTO
+ *                to FlowOperationCommandDto (write-only command DTO).
  *
  **/
 
 package dz.sh.trc.hyflo.flow.core.service;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationDTO;
 import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDto;
 
 /**
  * Command service contract for {@link dz.sh.trc.hyflo.flow.core.model.FlowOperation}.
@@ -34,29 +37,35 @@ import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
  *
  * <h3>Return contract</h3>
  * All methods return {@link FlowOperationReadDto} — never raw entities.
- * Input uses {@link FlowOperationDTO} for backward compatibility
- * with existing controller layer (Phase 4 will migrate to command DTOs).
+ * Input uses {@link FlowOperationCommandDto} for write-only command operations
+ * (Commit 37 migration from fat FlowOperationDTO in v2 path).
+ *
+ * <h3>DTO separation</h3>
+ * • {@link FlowOperationCommandDto}  — write path (v2 controller create/update)
+ * • {@link FlowOperationReadDto}     — read path (all responses)
+ * • Legacy {@code FlowOperationDTO}  — retained ONLY for legacy FlowOperationController
  */
 public interface FlowOperationCommandService {
 
     /**
      * Create a new flow operation.
      * Enforces date+infrastructure+product+type uniqueness invariant.
+     * PENDING validation status is resolved internally.
      *
-     * @param dto command DTO from controller (legacy DTO for Phase 3 compat)
+     * @param dto write-only command DTO from v2 controller
      * @return created operation as read DTO
      */
-    FlowOperationReadDto create(FlowOperationDTO dto);
+    FlowOperationReadDto create(FlowOperationCommandDto dto);
 
     /**
      * Update an existing flow operation.
      * Only PENDING operations may be updated.
      *
      * @param id  operation ID
-     * @param dto patch DTO
+     * @param dto write-only command DTO with updated fields
      * @return updated operation as read DTO
      */
-    FlowOperationReadDto update(Long id, FlowOperationDTO dto);
+    FlowOperationReadDto update(Long id, FlowOperationCommandDto dto);
 
     /**
      * Delete a flow operation.
