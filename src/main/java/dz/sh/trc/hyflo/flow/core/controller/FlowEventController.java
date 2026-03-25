@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowEventController
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 02-16-2026
+ * 	@UpdatedOn	: Phase 4/5 bridge — Commit 36.3
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -37,6 +37,19 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * REST Controller for FlowEvent.
+ *
+ * @deprecated Since HyFlo v2 Phase 4.
+ *             FlowEventService uses fat DTO FlowEventDTO without CQRS separation.
+ *             A dedicated FlowEventV2Controller will be introduced in Phase 5
+ *             backed by FlowEventCommandService and FlowEventQueryService interfaces,
+ *             using proper command/read DTO split aligned with the
+ *             hyflo-intelligence module refactor.
+ *             Scheduled for removal in Phase 8 cleanup.
+ *             Do not add endpoints to this controller.
+ */
+@Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
 @RequestMapping("/flow/core/event")
 @Tag(name = "Flow Event Management", description = "APIs for managing operational events affecting flow systems")
