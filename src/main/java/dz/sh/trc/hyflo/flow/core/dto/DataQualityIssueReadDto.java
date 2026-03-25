@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: DataQualityIssueReadDto
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : DataQualityIssueReadDto
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-25-2026 - Phase 2: removed fromEntity() — mapper owns mapping
  *
- * 	@Type		: Class
- * 	@Layer		: DTO
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : DTO / Query
+ *  @Package    : Flow / Core
  *
  **/
 
@@ -39,13 +40,13 @@ public class DataQualityIssueReadDto extends GenericDTO<DataQualityIssue> {
     @Schema(description = "Type of quality issue", example = "OUT_OF_RANGE")
     private String issueType;
 
-    @Schema(description = "Quality score (0.0 – 1.0)", example = "0.4300")
+    @Schema(description = "Quality score (0.0 \u2013 1.0)", example = "0.4300")
     private BigDecimal qualityScore;
 
     @Schema(description = "Detailed explanation of the issue")
     private String details;
 
-    @Schema(description = "Whether the operator acknowledged the issue")
+    @Schema(description = "Whether the operator acknowledged this issue")
     private Boolean acknowledged;
 
     @Schema(description = "Timestamp when the issue was raised")
@@ -57,6 +58,9 @@ public class DataQualityIssueReadDto extends GenericDTO<DataQualityIssue> {
     @Schema(description = "ID of the source derived reading")
     private Long derivedReadingId;
 
+    // ---- NO fromEntity / mapping logic ----
+    // All mapping is owned by DataQualityIssueMapper.
+
     @Override
     public DataQualityIssue toEntity() {
         throw new UnsupportedOperationException("Use intelligence engine for quality issue creation");
@@ -65,19 +69,5 @@ public class DataQualityIssueReadDto extends GenericDTO<DataQualityIssue> {
     @Override
     public void updateEntity(DataQualityIssue entity) {
         throw new UnsupportedOperationException("Use intelligence engine for quality issue updates");
-    }
-
-    public static DataQualityIssueReadDto fromEntity(DataQualityIssue entity) {
-        if (entity == null) return null;
-        return DataQualityIssueReadDto.builder()
-                .id(entity.getId())
-                .issueType(entity.getIssueType())
-                .qualityScore(entity.getQualityScore())
-                .details(entity.getDetails())
-                .acknowledged(entity.getAcknowledged())
-                .raisedAt(entity.getRaisedAt())
-                .readingId(entity.getReading() != null ? entity.getReading().getId() : null)
-                .derivedReadingId(entity.getDerivedReading() != null ? entity.getDerivedReading().getId() : null)
-                .build();
     }
 }
