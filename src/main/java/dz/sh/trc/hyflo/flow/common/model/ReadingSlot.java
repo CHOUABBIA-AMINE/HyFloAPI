@@ -22,9 +22,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -32,7 +29,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Schema(description = "Validation status for flow data approval and quality control workflow")
+/**
+ * Defines a named operational time slot for flow readings.
+ * Each slot has a start and end time (e.g., SLOT_1: 06:00-08:00).
+ * The composite unique constraint on (code, startTime) prevents duplicate slot definitions.
+ */
+@Schema(description = "Operational time slot for scoping flow readings to a defined measurement window")
 @Setter
 @Getter
 @ToString
@@ -40,67 +42,65 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "ReadingSlot")
-@Table(name = "T_03_02_07", uniqueConstraints = {@UniqueConstraint(name = "T_03_02_07_UK_01", columnNames = {"F_01", "F_02"})})
+@Table(name = "T_03_02_07", uniqueConstraints = {
+        @UniqueConstraint(name = "T_03_02_07_UK_01", columnNames = {"F_01", "F_02"})
+})
 public class ReadingSlot extends GenericModel {
-    
-	@Schema(
-    		description = "Slot Code",
-    		requiredMode = Schema.RequiredMode.REQUIRED,
-    		maxLength = 20
+
+    @Schema(
+            description = "Slot code",
+            example = "SLOT_1",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            maxLength = 20
     )
-    @NotBlank
-    @Size(max = 20)
     @Column(name = "F_01", length = 20, nullable = false)
-    private String code; // e.g., "SLOT_1", "SLOT_2"
-    
+    private String code;
+
     @Schema(
-    		description = "Start time of the slot",
-    		requiredMode = Schema.RequiredMode.REQUIRED
+            description = "Start time of the slot",
+            example = "06:00",
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NotNull
     @Column(name = "F_02", nullable = false)
-    private LocalTime startTime; // e.g., 06:00
-    
+    private LocalTime startTime;
+
     @Schema(
-    		description = "End time of the slot",
-    		requiredMode = Schema.RequiredMode.REQUIRED
+            description = "End time of the slot",
+            example = "08:00",
+            requiredMode = Schema.RequiredMode.REQUIRED
     )
-    @NotNull
     @Column(name = "F_03", nullable = false)
-    private LocalTime endTime; // e.g., 08:00
-    
+    private LocalTime endTime;
+
     @Schema(
-    		description = "Designation in Arabic",
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-    		maxLength = 100
+            description = "Designation in Arabic",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 100
     )
-    @Size(max = 100)
     @Column(name = "F_04", length = 100)
     private String designationAr;
-    
+
     @Schema(
-    		description = "Designation in French",
-    		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-    		maxLength = 100
+            description = "Designation in English",
+            example = "Morning Early",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 100
     )
-    @NotBlank
-    @Size(max = 100)
     @Column(name = "F_05", length = 100)
-    private String designationEn; // e.g., "Morning Early"
-    
+    private String designationEn;
+
     @Schema(
-    		description = "Designation in French",
-    		requiredMode = Schema.RequiredMode.REQUIRED,
-    		maxLength = 100
+            description = "Designation in French",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            maxLength = 100
     )
-    @Size(max = 100)
     @Column(name = "F_06", length = 100)
     private String designationFr;
-    
+
     @Schema(
-    		description = "optional or mandatory",
-    		requiredMode = Schema.RequiredMode.REQUIRED
+            description = "Display order for UI sorting",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @Column(name = "F_07")
-    private Integer displayOrder; // For UI sorting
+    private Integer displayOrder;
 }

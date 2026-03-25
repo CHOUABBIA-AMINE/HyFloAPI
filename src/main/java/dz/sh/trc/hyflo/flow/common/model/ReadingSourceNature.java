@@ -20,8 +20,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -53,8 +51,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED,
             maxLength = 50
     )
-    @NotBlank(message = "Reading source nature code is mandatory")
-    @Size(min = 2, max = 50, message = "Code must be between 2 and 50 characters")
     @Column(name = "F_01", length = 50, nullable = false)
     private String code;
 
@@ -64,7 +60,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 100
     )
-    @Size(max = 100, message = "Arabic designation must not exceed 100 characters")
     @Column(name = "F_02", length = 100)
     private String designationAr;
 
@@ -74,7 +69,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 100
     )
-    @Size(max = 100, message = "English designation must not exceed 100 characters")
     @Column(name = "F_03", length = 100)
     private String designationEn;
 
@@ -84,8 +78,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED,
             maxLength = 100
     )
-    @NotBlank(message = "French designation is mandatory")
-    @Size(max = 100, message = "French designation must not exceed 100 characters")
     @Column(name = "F_04", length = 100, nullable = false)
     private String designationFr;
 
@@ -94,7 +86,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 255
     )
-    @Size(max = 255, message = "Arabic description must not exceed 255 characters")
     @Column(name = "F_05", length = 255)
     private String descriptionAr;
 
@@ -103,7 +94,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 255
     )
-    @Size(max = 255, message = "English description must not exceed 255 characters")
     @Column(name = "F_06", length = 255)
     private String descriptionEn;
 
@@ -112,7 +102,6 @@ public class ReadingSourceNature extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 255
     )
-    @Size(max = 255, message = "French description must not exceed 255 characters")
     @Column(name = "F_07", length = 255)
     private String descriptionFr;
 
