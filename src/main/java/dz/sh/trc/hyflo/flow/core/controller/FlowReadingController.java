@@ -1,13 +1,22 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowReadingController
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : FlowReadingController
+ *  @CreatedOn  : 03-25-2026
  *
- * 	@Type		: Class
- * 	@Layer		: Controller
- * 	@Package	: Flow / Core
+ *  @Type       : Class
+ *  @Layer      : Controller
+ *  @Package    : Flow / Core
+ *
+ *  @Deprecated Phase 4 — Commit 27
+ *  This controller is superseded by FlowReadingV2Controller at /api/v2/flow/readings.
+ *  Active v2 endpoints are served from FlowReadingV2Controller.
+ *  This class is retained only for:
+ *  - Transitional compile safety
+ *  - Legacy client backward-compatibility during migration window
+ *  Scheduled for removal: Phase 8 cleanup.
+ *  DO NOT add new endpoints here.
  *
  **/
 
@@ -41,12 +50,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * REST Controller for FlowReading.
+ * @deprecated Superseded by FlowReadingV2Controller. Retained for transitional compile safety.
+ * Scheduled for removal in Phase 8 cleanup.
  */
+@Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
 @RequestMapping("/flow/core/reading")
 @Slf4j
-@Tag(name = "Flow Readings", description = "APIs for querying operational flow readings")
+@Tag(name = "Flow Readings (Legacy)", description = "[DEPRECATED] Use /api/v2/flow/readings instead.")
 @SecurityRequirement(name = "bearer-auth")
 public class FlowReadingController extends GenericController<FlowReadingReadDto, Long> {
 
@@ -59,7 +70,7 @@ public class FlowReadingController extends GenericController<FlowReadingReadDto,
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get flow reading by ID")
+    @Operation(summary = "[DEPRECATED] Get flow reading by ID — use /api/v2/flow/readings/{id}")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Flow reading found", content = @Content(schema = @Schema(implementation = FlowReadingReadDto.class))),
         @ApiResponse(responseCode = "404", description = "Flow reading not found"),
@@ -71,7 +82,7 @@ public class FlowReadingController extends GenericController<FlowReadingReadDto,
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all flow readings (paginated)")
+    @Operation(summary = "[DEPRECATED] Get all flow readings (paginated) — use /api/v2/flow/readings")
     public ResponseEntity<Page<FlowReadingReadDto>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -82,14 +93,14 @@ public class FlowReadingController extends GenericController<FlowReadingReadDto,
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all flow readings (unpaginated)")
+    @Operation(summary = "[DEPRECATED] Get all flow readings (unpaginated)")
     public ResponseEntity<List<FlowReadingReadDto>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Search flow readings")
+    @Operation(summary = "[DEPRECATED] Search flow readings")
     public ResponseEntity<Page<FlowReadingReadDto>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
@@ -101,7 +112,7 @@ public class FlowReadingController extends GenericController<FlowReadingReadDto,
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Count flow readings")
+    @Operation(summary = "[DEPRECATED] Count flow readings")
     public ResponseEntity<Long> count() {
         return super.count();
     }
@@ -113,20 +124,20 @@ public class FlowReadingController extends GenericController<FlowReadingReadDto,
 
     @GetMapping("/pipeline/{pipelineId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get flow readings by pipeline ID")
+    @Operation(summary = "[DEPRECATED] Get flow readings by pipeline ID — use /api/v2/flow/readings/pipeline/{pipelineId}")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Flow readings retrieved successfully"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<List<FlowReadingReadDto>> getByPipelineId(
             @Parameter(description = "Pipeline ID", required = true) @PathVariable Long pipelineId) {
-        log.debug("GET /flow/core/reading/pipeline/{} - Getting readings by pipeline", pipelineId);
+        log.debug("GET /flow/core/reading/pipeline/{} - legacy endpoint", pipelineId);
         return success(flowReadingService.getByPipelineId(pipelineId));
     }
 
     @GetMapping("/date-range")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get flow readings by date range")
+    @Operation(summary = "[DEPRECATED] Get flow readings by date range — use /api/v2/flow/readings/date-range")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Flow readings retrieved successfully"),
         @ApiResponse(responseCode = "403", description = "Access denied")
@@ -136,18 +147,18 @@ public class FlowReadingController extends GenericController<FlowReadingReadDto,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "End date (yyyy-MM-dd)", required = true)
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        log.debug("GET /flow/core/reading/date-range - from={} to={}", from, to);
+        log.debug("GET /flow/core/reading/date-range - legacy endpoint", from, to);
         return success(flowReadingService.getByDateRange(from, to));
     }
 
     @GetMapping("/pipeline/{pipelineId}/date-range")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get flow readings by pipeline ID and date range")
+    @Operation(summary = "[DEPRECATED] Get flow readings by pipeline and date range — use /api/v2/flow/readings/pipeline/{pipelineId}/range")
     public ResponseEntity<List<FlowReadingReadDto>> getByPipelineAndDateRange(
             @PathVariable Long pipelineId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        log.debug("GET /flow/core/reading/pipeline/{}/date-range from={} to={}", pipelineId, from, to);
+        log.debug("GET /flow/core/reading/pipeline/{}/date-range - legacy endpoint", pipelineId);
         return success(flowReadingService.getByPipelineAndDateRange(pipelineId, from, to));
     }
 }
