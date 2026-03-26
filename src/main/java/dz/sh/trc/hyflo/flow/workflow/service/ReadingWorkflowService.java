@@ -5,6 +5,7 @@
  *  @Name       : ReadingWorkflowService
  *  @CreatedOn  : 02-10-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 21/22: v2 mapper, WorkflowInstance truth, derived generation
+ *  @UpdatedOn  : 03-26-2026 — H1: removed deprecated validate() stub and FlowReadingDTO.fromEntity() path
  *
  *  @Type       : Class
  *  @Layer      : Service
@@ -16,6 +17,7 @@
  *                Returns FlowReadingReadDto — NEVER FlowReadingDTO (deprecated legacy).
  *
  *  Phase 3 — Commit 21 + Commit 22
+ *  Phase H1 — validate() stub fully removed; no more DTO self-mapping in any path.
  *
  **/
 
@@ -65,6 +67,8 @@ import lombok.extern.slf4j.Slf4j;
  *   SegmentDistributionService.generateDerivedReadings() is triggered inside approve()
  *   AFTER reading is saved and event is published.
  *   Generation failure is non-fatal — approval remains authoritative.
+ *
+ * H1: validate() deprecated stub removed. All callers must use approve().
  */
 @Service
 @RequiredArgsConstructor
@@ -83,7 +87,7 @@ public class ReadingWorkflowService {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // =====================================================================
-    //  APPROVE (Commit 21) — formerly "validate"
+    //  APPROVE (Commit 21) — sole approval entry point
     // =====================================================================
 
     /**
@@ -225,25 +229,6 @@ public class ReadingWorkflowService {
                 LocalDateTime.now().format(DATETIME_FORMATTER)));
 
         return FlowReadingMapper.toReadDto(saved);
-    }
-
-    // =====================================================================
-    //  BACKWARD COMPAT STUB — kept so existing controllers compile
-    //  TODO(Phase 4): migrate controller to approve()
-    // =====================================================================
-
-    /**
-     * @deprecated Since v2. Use {@link #approve(Long, Long)} instead.
-     *             Retained as compile-safe stub for Phase 4 controller migration.
-     */
-    @Deprecated(since = "v2", forRemoval = true)
-    @Transactional
-    public dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO validate(Long id, Long validatedById) {
-        log.warn("DEPRECATED: validate() called — delegating to approve(). Migrate to approve() in Phase 4.");
-        FlowReadingReadDto result = approve(id, validatedById);
-        // Re-fetch to return legacy DTO for backward compat — remove in Phase 4
-        FlowReading entity = flowReadingRepository.findById(result.getId()).orElseThrow();
-        return dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO.fromEntity(entity);
     }
 
     // =====================================================================
