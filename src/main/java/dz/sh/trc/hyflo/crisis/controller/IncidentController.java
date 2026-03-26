@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: IncidentController
- * 	@CreatedOn	: 03-25-2026
+ *  @Name       : IncidentController
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Removed GenericController inheritance; inject IIncidentQueryService
  *
- * 	@Type		: Class
- * 	@Layer		: Controller
- * 	@Package	: Crisis
+ *  @Type       : Class
+ *  @Layer      : Controller
+ *  @Package    : Crisis
  *
  **/
 
@@ -16,7 +17,9 @@ package dz.sh.trc.hyflo.crisis.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,9 +28,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.crisis.dto.IncidentReadDto;
-import dz.sh.trc.hyflo.crisis.service.IncidentService;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
+import dz.sh.trc.hyflo.crisis.service.IIncidentQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,38 +38,39 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * REST Controller for Incident.
+ * REST Controller for Incident — read-only endpoints.
  */
 @RestController
 @RequestMapping("/crisis/incident")
+@RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Incidents", description = "APIs for querying hydrocarbon transport incidents")
 @SecurityRequirement(name = "bearer-auth")
-public class IncidentController extends GenericController<IncidentReadDto, Long> {
+public class IncidentController {
 
-    private final IncidentService incidentService;
+    private final IIncidentQueryService incidentService;
 
-    public IncidentController(IncidentService incidentService) {
-        super(incidentService, "Incident");
-        this.incidentService = incidentService;
-    }
+    // ========== READ ==========
 
-    @Override
+    @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get incident by ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Incident found", content = @Content(schema = @Schema(implementation = IncidentReadDto.class))),
+        @ApiResponse(responseCode = "200", description = "Incident found",
+                content = @Content(schema = @Schema(implementation = IncidentReadDto.class))),
         @ApiResponse(responseCode = "404", description = "Incident not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<IncidentReadDto> getById(@PathVariable Long id) {
-        return super.getById(id);
+        log.debug("GET /crisis/incident/{}", id);
+        return ResponseEntity.ok(incidentService.getById(id));
     }
 
-    @Override
+    @GetMapping
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all incidents (paginated)")
     public ResponseEntity<Page<IncidentReadDto>> getAll(
@@ -75,17 +78,22 @@ public class IncidentController extends GenericController<IncidentReadDto, Long>
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        return super.getAll(page, size, sortBy, sortDir);
+        log.debug("GET /crisis/incident?page={}&size={}", page, size);
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDir)
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return ResponseEntity.ok(incidentService.getAll(pageable));
     }
 
-    @Override
+    @GetMapping("/all")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all incidents (unpaginated)")
-    public ResponseEntity<List<IncidentReadDto>> getAll() {
-        return super.getAll();
+    public ResponseEntity<List<IncidentReadDto>> getAllUnpaginated() {
+        log.debug("GET /crisis/incident/all");
+        return ResponseEntity.ok(incidentService.getAll());
     }
 
-    @Override
+    @GetMapping("/search")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Search incidents")
     public ResponseEntity<Page<IncidentReadDto>> search(
@@ -94,20 +102,22 @@ public class IncidentController extends GenericController<IncidentReadDto, Long>
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        return super.search(q, page, size, sortBy, sortDir);
+        log.debug("GET /crisis/incident/search?q={}", q);
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDir)
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return ResponseEntity.ok(incidentService.searchByQuery(q, pageable));
     }
 
-    @Override
+    @GetMapping("/count")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Count incidents")
     public ResponseEntity<Long> count() {
-        return super.count();
+        log.debug("GET /crisis/incident/count");
+        return ResponseEntity.ok(incidentService.count());
     }
 
-    @Override
-    protected Page<IncidentReadDto> searchByQuery(String query, Pageable pageable) {
-        return incidentService.searchByQuery(query, pageable);
-    }
+    // ========== CUSTOM QUERIES ==========
 
     @GetMapping("/active")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
@@ -118,7 +128,7 @@ public class IncidentController extends GenericController<IncidentReadDto, Long>
     })
     public ResponseEntity<List<IncidentReadDto>> getActiveIncidents() {
         log.debug("GET /crisis/incident/active");
-        return success(incidentService.getActiveIncidents());
+        return ResponseEntity.ok(incidentService.getActiveIncidents());
     }
 
     @GetMapping("/segment/{segmentId}")
@@ -127,6 +137,6 @@ public class IncidentController extends GenericController<IncidentReadDto, Long>
     public ResponseEntity<List<IncidentReadDto>> getBySegmentId(
             @Parameter(description = "Segment ID", required = true) @PathVariable Long segmentId) {
         log.debug("GET /crisis/incident/segment/{}", segmentId);
-        return success(incidentService.getByPipelineSegmentId(segmentId));
+        return ResponseEntity.ok(incidentService.getByPipelineSegmentId(segmentId));
     }
 }

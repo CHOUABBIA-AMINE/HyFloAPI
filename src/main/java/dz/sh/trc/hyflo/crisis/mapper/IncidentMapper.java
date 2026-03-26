@@ -15,7 +15,6 @@ package dz.sh.trc.hyflo.crisis.mapper;
 
 import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
 import dz.sh.trc.hyflo.crisis.model.Incident;
-import dz.sh.trc.hyflo.general.organization.model.Employee;
 
 public final class IncidentMapper {
 
@@ -26,32 +25,21 @@ public final class IncidentMapper {
 
         return IncidentReadDto.builder()
                 .id(entity.getId())
-                .incidentTypeCode(entity.getIncidentType() != null
-                        ? entity.getIncidentType().getCode() : null)
-                .severityLevel(entity.getSeverityLevel())
-                .status(entity.getStatus())
+                .incidentTypeCode(null)  // not on entity — reserved for future join
+                .severityLevel(entity.getSeverity() != null
+                        ? entity.getSeverity().getCode() : null)
+                .status(null)           // not on entity — reserved for future field
                 .description(entity.getDescription())
-                .declaredAt(entity.getDeclaredAt())
+                .declaredAt(entity.getOccurredAt())
                 .resolvedAt(entity.getResolvedAt())
-                .pipelineId(entity.getPipeline() != null
-                        ? entity.getPipeline().getId() : null)
-                .pipelineCode(entity.getPipeline() != null
-                        ? entity.getPipeline().getCode() : null)
+                .pipelineId(null)       // not on entity — reserved for future join
+                .pipelineCode(null)
                 .pipelineSegmentId(entity.getPipelineSegment() != null
                         ? entity.getPipelineSegment().getId() : null)
                 .pipelineSegmentCode(entity.getPipelineSegment() != null
                         ? entity.getPipelineSegment().getCode() : null)
-                .declaredById(entity.getDeclaredBy() != null
-                        ? entity.getDeclaredBy().getId() : null)
-                .declaredByFullName(entity.getDeclaredBy() != null
-                        ? buildFullName(entity.getDeclaredBy()) : null)
+                .declaredById(null)     // not on entity — reserved for future join
+                .declaredByFullName(null)
                 .build();
-    }
-
-    private static String buildFullName(Employee e) {
-        if (e == null) return null;
-        String first = e.getFirstName() != null ? e.getFirstName() : "";
-        String last  = e.getLastName()  != null ? e.getLastName()  : "";
-        return (first + " " + last).trim();
     }
 }
