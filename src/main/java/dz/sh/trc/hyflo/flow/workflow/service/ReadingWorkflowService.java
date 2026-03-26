@@ -5,7 +5,8 @@
  *  @Name       : ReadingWorkflowService
  *  @CreatedOn  : 02-10-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 21/22: v2 mapper, WorkflowInstance truth, derived generation
- *  @UpdatedOn  : 03-26-2026 — H1: Remove deprecated validate() stub and FlowReadingDTO.fromEntity() path
+ *  @UpdatedOn  : 03-26-2026 — H1: Remove deprecated validate() stub
+ *  @UpdatedOn  : 03-26-2026 — H4: Use asyncGenerateDerivedReadings() for non-blocking approval
  *
  *  @Type       : Class
  *  @Layer      : Service
@@ -14,10 +15,10 @@
  *  @Description: Orchestrates flow reading lifecycle transitions.
  *                WorkflowInstance is the source of truth for state.
  *                ValidationStatus is maintained as a compatibility projection.
- *                Returns FlowReadingReadDto — NEVER FlowReadingDTO (legacy self-mapping removed).
+ *                Returns FlowReadingReadDto — NEVER FlowReadingDTO.
  *
  *  Phase 3 — Commit 21 + Commit 22
- *  Phase 4 — H1: validate() stub removed. All callers must use approve(Long, Long).
+ *  Phase 4 — H1: validate() removed | H4: async derived generation
  *
  **/
 
@@ -25,7 +26,6 @@ package dz.sh.trc.hyflo.flow.workflow.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
@@ -57,17 +56,17 @@ import lombok.extern.slf4j.Slf4j;
  * ValidationStatus is maintained as a compatibility projection only.
  *
  * Returns FlowReadingReadDto exclusively.
- * FlowReadingDTO.fromEntity() (v1 self-mapping) has been fully removed — H1.
+ * FlowReadingDTO.fromEntity() (v1 self-mapping) fully removed — H1.
+ *
+ * H4: Derived reading generation is now fully asynchronous.
+ *   SegmentDistributionService.asyncGenerateDerivedReadings() runs on 'taskExecutor'.
+ *   The HTTP approval thread returns immediately after reading save + event publish.
+ *   Generation failures are caught inside the async method and logged without re-throw.
  *
  * State transitions managed:
  *   SUBMITTED → APPROVED  (approve)
  *   SUBMITTED → REJECTED  (reject)
  *   REJECTED  → SUBMITTED (resubmit — stub for future Phase 4+)
- *
- * Commit 22 integration:
- *   SegmentDistributionService.generateDerivedReadings() is triggered inside approve()
- *   AFTER reading is saved and event is published.
- *   Generation failure is non-fatal — approval remains authoritative.
  */
 @Service
 @RequiredArgsConstructor
@@ -86,7 +85,7 @@ public class ReadingWorkflowService {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // =====================================================================
-    //  APPROVE (Commit 21) — formerly "validate"
+    //  APPROVE
     // =====================================================================
 
     /**
@@ -98,7 +97,7 @@ public class ReadingWorkflowService {
      * - WorkflowInstance.lastActorId and updatedAt updated (source of truth)
      * - ValidationStatus updated to APPROVED (compatibility projection)
      * - ReadingValidatedEvent published
-     * - SegmentDistributionService.generateDerivedReadings() triggered (Commit 22)
+     * - asyncGenerateDerivedReadings() triggered on taskExecutor (H4 — non-blocking)
      *
      * @param id          Reading ID
      * @param approvedById Employee ID of the approver
@@ -123,7 +122,6 @@ public class ReadingWorkflowService {
             workflowInstanceRepository.save(wf);
         }
 
-        // Compatibility projection — ValidationStatus
         ValidationStatus approvedStatus = validationStatusRepository.findByCode("APPROVED")
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Validation status APPROVED not configured."));
@@ -136,27 +134,19 @@ public class ReadingWorkflowService {
         log.info("Flow reading ID: {} approved by employee ID: {}", id, approvedById);
 
         // Publish event
-        String originalRecorder = buildActorName(saved.getRecordedBy());
         eventPublisher.publishEvent(ReadingValidatedEvent.create(
                 saved.getId(),
                 buildActorName(approver),
-                originalRecorder,
+                buildActorName(saved.getRecordedBy()),
                 buildReadingIdentifier(saved),
                 null,
                 LocalDateTime.now().format(DATETIME_FORMATTER)));
 
-        // Commit 22 — Trigger derived reading generation AFTER approval
-        // Non-fatal: generation failure never rolls back the approval
-        try {
-            List<DerivedFlowReadingReadDto> derived =
-                    segmentDistributionService.generateDerivedReadings(saved);
-            log.info("Generated {} derived readings for approved reading ID: {}",
-                    derived.size(), saved.getId());
-        } catch (Exception e) {
-            log.error("Derived reading generation failed for reading ID: {}. "
-                    + "Approval remains valid. Manual regeneration may be needed.",
-                    saved.getId(), e);
-        }
+        // H4: Trigger derived reading generation ASYNCHRONOUSLY on taskExecutor thread pool.
+        // The HTTP thread returns immediately. Generation failure is caught and logged inside
+        // asyncGenerateDerivedReadings() without re-throwing.
+        segmentDistributionService.asyncGenerateDerivedReadings(saved);
+        log.debug("Async derived reading generation triggered for reading ID: {}", saved.getId());
 
         return FlowReadingMapper.toReadDto(saved);
     }
@@ -172,7 +162,7 @@ public class ReadingWorkflowService {
      *
      * @param id              Reading ID
      * @param rejectedById    Employee ID of the rejector
-     * @param rejectionReason Reason for rejection (appended to audit notes)
+     * @param rejectionReason Reason for rejection
      * @return FlowReadingReadDto with REJECTED status
      */
     @Transactional
@@ -185,7 +175,6 @@ public class ReadingWorkflowService {
 
         guardAgainstInvalidTransition(reading, "REJECTED");
 
-        // Update WorkflowInstance — source of truth
         if (reading.getWorkflowInstance() != null) {
             WorkflowInstance wf = workflowInstanceRepository
                     .findById(reading.getWorkflowInstance().getId())
@@ -195,7 +184,6 @@ public class ReadingWorkflowService {
             workflowInstanceRepository.save(wf);
         }
 
-        // Compatibility projection
         ValidationStatus rejectedStatus = validationStatusRepository.findByCode("REJECTED")
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Validation status REJECTED not configured."));
@@ -204,7 +192,6 @@ public class ReadingWorkflowService {
         reading.setValidatedBy(rejector);
         reading.setValidatedAt(LocalDateTime.now());
 
-        // Append rejection audit trail to notes
         String rejectionNote = String.format(
                 "\n\n=== REJECTION ===\nRejected by: %s %s (%s)\nDate: %s\nReason: %s",
                 rejector.getFirstNameLt(),
@@ -218,7 +205,6 @@ public class ReadingWorkflowService {
         FlowReading saved = flowReadingRepository.save(reading);
         log.info("Flow reading ID: {} rejected by employee ID: {}", id, rejectedById);
 
-        // No derived reading action on rejection (Commit 22 rule)
         eventPublisher.publishEvent(ReadingRejectedEvent.create(
                 saved.getId(),
                 buildActorName(rejector),
@@ -234,11 +220,6 @@ public class ReadingWorkflowService {
     //  Guards and Helpers
     // =====================================================================
 
-    /**
-     * Guard against invalid state transitions.
-     * APPROVED readings cannot be re-approved or directly rejected.
-     * Use resubmit workflow (future) to move from APPROVED back into SUBMITTED.
-     */
     private void guardAgainstInvalidTransition(FlowReading reading, String targetStateCode) {
         if (reading.getValidationStatus() == null) return;
         String current = reading.getValidationStatus().getCode();
@@ -274,7 +255,8 @@ public class ReadingWorkflowService {
             return FlowReadingIdentifierBuilder.buildIdentifier(
                     reading.getPipeline(), reading.getReadingDate(), reading.getReadingSlot());
         } catch (Exception e) {
-            log.warn("Identifier build failed for reading ID: {}, using fallback", reading.getId(), e);
+            log.warn("Identifier build failed for reading ID: {}, using fallback",
+                    reading.getId(), e);
             return "Reading#" + reading.getId();
         }
     }

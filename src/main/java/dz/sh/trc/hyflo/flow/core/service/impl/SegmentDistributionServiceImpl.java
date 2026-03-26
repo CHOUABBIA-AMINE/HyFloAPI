@@ -4,6 +4,7 @@
  *
  *  @Name       : SegmentDistributionServiceImpl
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 — H4: add @Async asyncGenerateDerivedReadings()
  *
  *  @Type       : Class
  *  @Layer      : Service (Internal Orchestration Implementation)
@@ -21,6 +22,7 @@
  *                  before persisting new batch — safe on repeat approval.
  *
  *  Phase 3 — Commit 19
+ *  Phase 4 — H4: async wrapper method added
  *
  **/
 
@@ -29,8 +31,10 @@ package dz.sh.trc.hyflo.flow.core.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +59,11 @@ import lombok.extern.slf4j.Slf4j;
  * Idempotency: rebuildForSourceReading() deletes existing derived readings
  *   before persisting new batch — safe on repeat approval.
  *
+ * H4: asyncGenerateDerivedReadings() executes on 'taskExecutor' thread pool
+ *   so the approval HTTP thread is freed after state persistence.
+ *
  * Phase 3 — Commit 19
+ * Phase 4 — H4
  */
 @Service
 @RequiredArgsConstructor
@@ -80,7 +88,6 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
             return List.of();
         }
 
-        // Compute total pipeline length for proportional weight
         double totalLength = segments.stream()
                 .mapToDouble(s -> s.getLengthKm() != null
                         ? s.getLengthKm().doubleValue() : 0.0)
@@ -110,6 +117,30 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
         log.info("Generated {} derived readings for source reading ID: {}",
                 result.size(), sourceReading.getId());
         return result;
+    }
+
+    /**
+     * H4: Async entry point for derived reading generation.
+     * Runs on 'taskExecutor' thread pool — does not block the approval HTTP thread.
+     * Failure is logged but does NOT propagate to the caller.
+     */
+    @Override
+    @Async("taskExecutor")
+    public CompletableFuture<List<DerivedFlowReadingReadDto>> asyncGenerateDerivedReadings(
+            FlowReading sourceReading) {
+        log.info("[ASYNC] Starting derived reading generation for reading ID: {} on thread: {}",
+                sourceReading.getId(), Thread.currentThread().getName());
+        try {
+            List<DerivedFlowReadingReadDto> result = generateDerivedReadings(sourceReading);
+            log.info("[ASYNC] Derived reading generation complete: {} records for reading ID: {}",
+                    result.size(), sourceReading.getId());
+            return CompletableFuture.completedFuture(result);
+        } catch (Exception e) {
+            log.error("[ASYNC] Derived reading generation FAILED for reading ID: {}. "
+                    + "Approval remains valid. Manual regeneration may be needed.",
+                    sourceReading.getId(), e);
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     private DerivedFlowReadingCommandDto buildDerivedCommand(
