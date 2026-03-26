@@ -4,12 +4,14 @@
  *
  *  @Name       : EmployeeQueryServiceImpl
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Phase 4:
+ *                  - findByDepartmentId → findByJob_StructureId (correct repo method)
+ *                  - searchByAnyField(query) → searchByAnyField(query, pageable)
+ *                  - search() returns Page<EmployeeReadDto> to match interface
  *
  *  @Type       : Class
  *  @Layer      : Service / Impl
  *  @Package    : General / Organization
- *
- *  Phase 3 — Commit 24
  *
  **/
 
@@ -36,8 +38,6 @@ import lombok.extern.slf4j.Slf4j;
  *
  * Uses EmployeeMapper from Phase 2.
  * Returns EmployeeReadDto — no raw entity exposure.
- *
- * Phase 3 — Commit 24
  */
 @Service
 @RequiredArgsConstructor
@@ -61,17 +61,16 @@ public class EmployeeQueryServiceImpl implements EmployeeQueryService {
 
     @Override
     public List<EmployeeReadDto> getByDepartment(Long departmentId) {
-        return employeeRepository.findByDepartmentId(departmentId)
+        // Repository method: findByJob_StructureId (not findByDepartmentId)
+        return employeeRepository.findByJob_StructureId(departmentId)
                 .stream()
                 .map(EmployeeMapper::toReadDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<EmployeeReadDto> search(String query) {
-        return employeeRepository.searchByAnyField(query)
-                .stream()
-                .map(EmployeeMapper::toReadDto)
-                .collect(Collectors.toList());
+    public Page<EmployeeReadDto> search(String query, Pageable pageable) {
+        return employeeRepository.searchByAnyField(query, pageable)
+                .map(EmployeeMapper::toReadDto);
     }
 }
