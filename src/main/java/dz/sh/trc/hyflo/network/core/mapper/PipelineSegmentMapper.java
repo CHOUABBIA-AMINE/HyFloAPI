@@ -4,8 +4,8 @@
  *
  *  @Name       : PipelineSegmentMapper
  *  @CreatedOn  : 03-25-2026
- *  @UpdatedOn  : 03-26-2026 - Phase A: Align all entity field access to actual
- *                             PipelineSegment model.
+ *  @UpdatedOn  : 03-26-2026 - Phase A: Align all entity field access to actual PipelineSegment model.
+ *  @UpdatedOn  : 03-26-2026 - Phase 5: Add updateEntity() method for patch/update operations.
  *
  *  @Type       : Class (Utility / Static Mapper)
  *  @Layer      : Mapper
@@ -15,13 +15,13 @@
  *    Infrastructure : code, name, installationDate, commissioningDate,
  *                     decommissioningDate, operationalStatus, owner (Structure)
  *    PipelineSegment: diameter, length, thickness, roughness,
- *                     startPoint, endPoint,          ← NOT startKm / endKm
+ *                     startPoint, endPoint,
  *                     constructionMaterial (Alloy),
  *                     exteriorCoating (Alloy),
  *                     interiorCoating  (Alloy),
  *                     pipeline (Pipeline),
- *                     departureFacility (Facility),  ← NOT departureNode
- *                     arrivalFacility   (Facility),  ← NOT arrivalNode
+ *                     departureFacility (Facility),
+ *                     arrivalFacility   (Facility),
  *                     coordinates, terrainType,
  *                     environmentSensitivity,
  *                     corrosionIndex, criticality
@@ -29,9 +29,6 @@
  *  CommandDto note:
  *    PipelineSegmentCommandDto keeps field names startKm/endKm and
  *    departureNodeId/arrivalNodeId — those are DTO-level names only.
- *    The mapper reads them from the DTO and writes to the entity using
- *    the real entity setters (setStartPoint / setEndPoint /
- *    setDepartureFacility / setArrivalFacility).
  **/
 
 package dz.sh.trc.hyflo.network.core.mapper;
@@ -60,7 +57,6 @@ public final class PipelineSegmentMapper {
                 .code(entity.getCode())
                 .name(entity.getName())
                 .length(entity.getLength())
-                // startPoint / endPoint  (entity)  → startKm / endKm  (DTO label)
                 .startKm(entity.getStartPoint())
                 .endKm(entity.getEndPoint())
                 .pipelineId(entity.getPipeline() != null
@@ -77,7 +73,6 @@ public final class PipelineSegmentMapper {
                         ? entity.getConstructionMaterial().getId() : null)
                 .constructionMaterialCode(entity.getConstructionMaterial() != null
                         ? entity.getConstructionMaterial().getCode() : null)
-                // departureFacility / arrivalFacility (entity) → departureNode / arrivalNode (DTO label)
                 .departureNodeId(entity.getDepartureFacility() != null
                         ? entity.getDepartureFacility().getId() : null)
                 .departureNodeCode(entity.getDepartureFacility() != null
@@ -100,7 +95,6 @@ public final class PipelineSegmentMapper {
         entity.setCode(dto.getCode());
         entity.setName(dto.getName());
         entity.setLength(dto.getLength());
-        // DTO startKm / endKm → entity startPoint / endPoint
         entity.setStartPoint(dto.getStartKm());
         entity.setEndPoint(dto.getEndKm());
 
@@ -119,7 +113,6 @@ public final class PipelineSegmentMapper {
             a.setId(dto.getConstructionMaterialId());
             entity.setConstructionMaterial(a);
         }
-        // DTO departureNodeId / arrivalNodeId → entity departureFacility / arrivalFacility
         if (dto.getDepartureNodeId() != null) {
             Facility f = new Facility();
             f.setId(dto.getDepartureNodeId());
@@ -132,5 +125,45 @@ public final class PipelineSegmentMapper {
         }
 
         return entity;
+    }
+
+    // =====================================================================
+    // PipelineSegmentCommandDto → update existing PipelineSegment entity (patch)
+    // =====================================================================
+
+    public static void updateEntity(PipelineSegmentCommandDto dto, PipelineSegment entity) {
+        if (dto == null || entity == null) return;
+
+        if (dto.getCode()    != null) entity.setCode(dto.getCode());
+        if (dto.getName()    != null) entity.setName(dto.getName());
+        if (dto.getLength()  != null) entity.setLength(dto.getLength());
+        if (dto.getStartKm() != null) entity.setStartPoint(dto.getStartKm());
+        if (dto.getEndKm()   != null) entity.setEndPoint(dto.getEndKm());
+
+        if (dto.getPipelineId() != null) {
+            Pipeline p = new Pipeline();
+            p.setId(dto.getPipelineId());
+            entity.setPipeline(p);
+        }
+        if (dto.getOperationalStatusId() != null) {
+            OperationalStatus s = new OperationalStatus();
+            s.setId(dto.getOperationalStatusId());
+            entity.setOperationalStatus(s);
+        }
+        if (dto.getConstructionMaterialId() != null) {
+            Alloy a = new Alloy();
+            a.setId(dto.getConstructionMaterialId());
+            entity.setConstructionMaterial(a);
+        }
+        if (dto.getDepartureNodeId() != null) {
+            Facility f = new Facility();
+            f.setId(dto.getDepartureNodeId());
+            entity.setDepartureFacility(f);
+        }
+        if (dto.getArrivalNodeId() != null) {
+            Facility f = new Facility();
+            f.setId(dto.getArrivalNodeId());
+            entity.setArrivalFacility(f);
+        }
     }
 }
