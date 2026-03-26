@@ -4,12 +4,12 @@
  *
  *  @Name       : EmployeeCommandServiceImpl
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Phase 4: fix log getter names (DTO has getFirstName/getLastName)
+ *                             Remove setActive(false) — no active field on Employee/Person entity
  *
  *  @Type       : Class
  *  @Layer      : Service / Impl
  *  @Package    : General / Organization
- *
- *  Phase 3 — Commit 24
  *
  **/
 
@@ -33,8 +33,6 @@ import lombok.extern.slf4j.Slf4j;
  *
  * Uses EmployeeMapper from Phase 2.
  * Returns EmployeeReadDto — no raw entity exposure.
- *
- * Phase 3 — Commit 24
  */
 @Service
 @RequiredArgsConstructor
@@ -46,7 +44,7 @@ public class EmployeeCommandServiceImpl implements EmployeeCommandService {
 
     @Override
     public EmployeeReadDto createEmployee(EmployeeCommandDto command) {
-        log.info("Creating employee: {} {}", command.getFirstNameLt(), command.getLastNameLt());
+        log.info("Creating employee: {} {}", command.getFirstName(), command.getLastName());
         Employee entity = EmployeeMapper.toEntity(command);
         return EmployeeMapper.toReadDto(employeeRepository.save(entity));
     }
@@ -65,7 +63,8 @@ public class EmployeeCommandServiceImpl implements EmployeeCommandService {
         log.info("Deactivating employee ID: {}", id);
         Employee existing = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + id));
-        existing.setActive(false);
+        // NOTE: Employee/Person entity has no 'active' field.
+        // TODO: Add boolean active field to Person entity to enable soft-delete.
         employeeRepository.save(existing);
     }
 }
