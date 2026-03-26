@@ -5,7 +5,7 @@
  *  @Name       : ReadingWorkflowService
  *  @CreatedOn  : 02-10-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 21/22: v2 mapper, WorkflowInstance truth, derived generation
- *  @UpdatedOn  : 03-26-2026 — H1: removed deprecated validate() stub and FlowReadingDTO.fromEntity() path
+ *  @UpdatedOn  : 03-26-2026 — H1: Remove deprecated validate() stub and FlowReadingDTO.fromEntity() path
  *
  *  @Type       : Class
  *  @Layer      : Service
@@ -14,10 +14,10 @@
  *  @Description: Orchestrates flow reading lifecycle transitions.
  *                WorkflowInstance is the source of truth for state.
  *                ValidationStatus is maintained as a compatibility projection.
- *                Returns FlowReadingReadDto — NEVER FlowReadingDTO (deprecated legacy).
+ *                Returns FlowReadingReadDto — NEVER FlowReadingDTO (legacy self-mapping removed).
  *
  *  Phase 3 — Commit 21 + Commit 22
- *  Phase H1 — validate() stub fully removed; no more DTO self-mapping in any path.
+ *  Phase 4 — H1: validate() stub removed. All callers must use approve(Long, Long).
  *
  **/
 
@@ -56,7 +56,8 @@ import lombok.extern.slf4j.Slf4j;
  * WorkflowInstance is the source of truth for state.
  * ValidationStatus is maintained as a compatibility projection only.
  *
- * Returns FlowReadingReadDto exclusively — no legacy FlowReadingDTO.fromEntity().
+ * Returns FlowReadingReadDto exclusively.
+ * FlowReadingDTO.fromEntity() (v1 self-mapping) has been fully removed — H1.
  *
  * State transitions managed:
  *   SUBMITTED → APPROVED  (approve)
@@ -67,8 +68,6 @@ import lombok.extern.slf4j.Slf4j;
  *   SegmentDistributionService.generateDerivedReadings() is triggered inside approve()
  *   AFTER reading is saved and event is published.
  *   Generation failure is non-fatal — approval remains authoritative.
- *
- * H1: validate() deprecated stub removed. All callers must use approve().
  */
 @Service
 @RequiredArgsConstructor
@@ -87,7 +86,7 @@ public class ReadingWorkflowService {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // =====================================================================
-    //  APPROVE (Commit 21) — sole approval entry point
+    //  APPROVE (Commit 21) — formerly "validate"
     // =====================================================================
 
     /**
