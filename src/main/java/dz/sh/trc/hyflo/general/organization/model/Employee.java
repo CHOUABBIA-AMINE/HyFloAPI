@@ -6,7 +6,8 @@
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *	@UpdatedOn	: 02-10-2026 - Added getFullNameLt() and getFullNameAr() helper methods
- *	@UpdatedOn	: 03-26-2026 - Added role ManyToOne field required by EmployeeMapper
+ *	@UpdatedOn	: 03-26-2026 - Role field: corrected import to system.security.model.Role
+ *	                            (removed duplicate general.organization.model.Role)
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -16,6 +17,7 @@
 
 package dz.sh.trc.hyflo.general.organization.model;
 
+import dz.sh.trc.hyflo.system.security.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,6 +39,10 @@ import lombok.ToString;
 /**
  * Represents SONATRACH employees extending Person with employment details.
  * Links personnel to specific job positions within the organizational structure.
+ *
+ * The {@code role} field references {@link Role} from the system.security module,
+ * which is the authoritative RBAC role entity (table T_00_02_03).
+ * No duplicate Role entity exists in general.organization.
  */
 @Schema(description = "SONATRACH employee with employment details, job assignment, and registration number")
 @Setter
@@ -70,7 +76,8 @@ public class Employee extends Person {
 	private Job job;
 
 	@Schema(
-		description = "Functional role governing the employee's permissions within HyFlo",
+		description = "Functional RBAC role governing the employee's permissions within HyFlo. "
+				    + "Resolved through system.security.model.Role (T_00_02_03).",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne(fetch = FetchType.LAZY)

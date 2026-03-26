@@ -6,6 +6,7 @@
  * 	@CreatedOn	: 02-10-2026
  * 	@UpdatedOn	: 02-16-2026 - Enhanced with comprehensive OpenAPI documentation
  * 	@UpdatedOn	: 02-16-2026 - Simplified to single-line descriptions
+ * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2)
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -32,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
@@ -62,7 +63,7 @@ public class FlowMonitoringController {
 
     @Operation(
         summary = "Get pending validations",
-        description = "Retrieves all readings in SUBMITTED status awaiting validation for a specific structure. Useful for supervisors to monitor their validation workload."
+        description = "Retrieves all readings in SUBMITTED status awaiting validation for a specific structure."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved pending validations"),
@@ -71,7 +72,7 @@ public class FlowMonitoringController {
     })
     @GetMapping("/pending-validations")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<Page<FlowReadingDTO>> getPendingValidations(
+    public ResponseEntity<Page<FlowReadingReadDto>> getPendingValidations(
             @Parameter(description = "Structure ID", required = true, example = "12")
             @RequestParam Long structureId,
             @Parameter(description = "Page number", example = "0")
@@ -80,12 +81,12 @@ public class FlowMonitoringController {
             @RequestParam(defaultValue = "20") int size) {
         log.info("GET /flow/intelligence/monitoring/pending-validations - Structure: {}", structureId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("recordedAt").ascending());
-        return ResponseEntity.ok(monitoringService.findPendingValidationsByStructure(structureId, pageable));
+        return ResponseEntity.ok(monitoringService.findPendingValidations(structureId, pageable));
     }
 
     @Operation(
         summary = "Get overdue readings",
-        description = "Identifies readings that are past their slot deadline and not yet validated. Critical for tracking SLA compliance and operational delays."
+        description = "Identifies readings past their slot deadline and not yet validated."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved overdue readings"),
@@ -93,7 +94,7 @@ public class FlowMonitoringController {
     })
     @GetMapping("/overdue-readings")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<Page<FlowReadingDTO>> getOverdueReadings(
+    public ResponseEntity<Page<FlowReadingReadDto>> getOverdueReadings(
             @Parameter(description = "Structure ID", required = true, example = "12")
             @RequestParam Long structureId,
             @Parameter(description = "Reference date (defaults to today)", example = "2026-02-16")
@@ -103,14 +104,15 @@ public class FlowMonitoringController {
             @Parameter(description = "Page size", example = "20")
             @RequestParam(defaultValue = "20") int size) {
         LocalDate targetDate = asOfDate != null ? asOfDate : LocalDate.now();
-        log.info("GET /flow/intelligence/monitoring/overdue-readings - Structure: {}, Date: {}", structureId, targetDate);
+        log.info("GET /flow/intelligence/monitoring/overdue-readings - Structure: {}, Date: {}",
+                structureId, targetDate);
         Pageable pageable = PageRequest.of(page, size, Sort.by("readingDate").descending());
-        return ResponseEntity.ok(monitoringService.findOverdueReadingsByStructure(structureId, targetDate, pageable));
+        return ResponseEntity.ok(monitoringService.findOverdueReadings(structureId, targetDate, pageable));
     }
 
     @Operation(
         summary = "Get daily completion statistics",
-        description = "Returns aggregated KPI statistics for reading completion grouped by date. Includes submission rates, validation rates, and completion percentages for management dashboards."
+        description = "Returns aggregated KPI statistics for reading completion grouped by date."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved daily statistics"),
@@ -120,19 +122,21 @@ public class FlowMonitoringController {
     @GetMapping("/daily-statistics")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
     public ResponseEntity<List<DailyCompletionStatisticsDTO>> getDailyStatistics(
-            @Parameter(description = "Structure ID", required = true, example = "12")
-            @RequestParam Long structureId,
-            @Parameter(description = "Start date (inclusive)", required = true, example = "2026-02-01")
+            @Parameter(description = "Pipeline ID", required = true, example = "5")
+            @RequestParam Long pipelineId,
+            @Parameter(description = "Start date", required = true, example = "2026-02-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "End date (inclusive, max 90 days from start)", required = true, example = "2026-02-16")
+            @Parameter(description = "End date", required = true, example = "2026-02-28")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        log.info("GET /flow/intelligence/monitoring/daily-statistics - Structure: {}, Range: {} to {}", structureId, startDate, endDate);
-        return ResponseEntity.ok(monitoringService.getDailyCompletionStatistics(structureId, startDate, endDate));
+        log.info("GET /flow/intelligence/monitoring/daily-statistics - Pipeline: {}, {} to {}",
+                pipelineId, startDate, endDate);
+        return ResponseEntity.ok(
+                monitoringService.getDailyCompletionStatistics(pipelineId, startDate, endDate));
     }
 
     @Operation(
-        summary = "Get validator workload distribution",
-        description = "Analyzes validation workload across validators showing total validations, approvals, rejections, and performance metrics. Useful for workload balancing and capacity planning."
+        summary = "Get validator workload",
+        description = "Returns distribution of pending validation work across all validators."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved validator workload"),
@@ -140,59 +144,52 @@ public class FlowMonitoringController {
     })
     @GetMapping("/validator-workload")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<List<ValidatorWorkloadDTO>> getValidatorWorkload(
-            @Parameter(description = "Structure ID", required = true, example = "12")
-            @RequestParam Long structureId,
-            @Parameter(description = "Start date", required = true, example = "2026-02-01")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "End date", required = true, example = "2026-02-16")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        log.info("GET /flow/intelligence/monitoring/validator-workload - Structure: {}, Range: {} to {}", structureId, startDate, endDate);
-        return ResponseEntity.ok(monitoringService.getValidatorWorkloadDistribution(structureId, startDate, endDate));
+    public ResponseEntity<List<ValidatorWorkloadDTO>> getValidatorWorkload() {
+        log.info("GET /flow/intelligence/monitoring/validator-workload");
+        return ResponseEntity.ok(monitoringService.getValidatorWorkload());
     }
 
     @Operation(
-        summary = "Get submission trends",
-        description = "Analyzes submission patterns over time with configurable aggregation (HOUR, DAY, WEEK, MONTH). Useful for identifying peak hours, shift performance, and operational patterns."
+        summary = "Get submission trend",
+        description = "Returns daily submission counts over a date range for trend analysis."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved submission trends"),
-        @ApiResponse(responseCode = "400", description = "Invalid groupBy parameter"),
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved submission trend"),
+        @ApiResponse(responseCode = "400", description = "Invalid date range (max 90 days)"),
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
-    @GetMapping("/submission-trends")
+    @GetMapping("/submission-trend")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<List<SubmissionTrendDTO>> getSubmissionTrends(
-            @Parameter(description = "Structure ID", required = true, example = "12")
-            @RequestParam Long structureId,
+    public ResponseEntity<List<SubmissionTrendDTO>> getSubmissionTrend(
             @Parameter(description = "Start date", required = true, example = "2026-02-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "End date", required = true, example = "2026-02-16")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @Parameter(description = "Aggregation level: HOUR, DAY, WEEK, or MONTH", example = "DAY")
-            @RequestParam(defaultValue = "DAY") String groupBy) {
-        log.info("GET /flow/intelligence/monitoring/submission-trends - Structure: {}, Range: {} to {}, GroupBy: {}", structureId, startDate, endDate, groupBy);
-        return ResponseEntity.ok(monitoringService.getSubmissionTrends(structureId, startDate, endDate, groupBy));
+            @Parameter(description = "End date", required = true, example = "2026-02-28")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        log.info("GET /flow/intelligence/monitoring/submission-trend - {} to {}", startDate, endDate);
+        return ResponseEntity.ok(monitoringService.getSubmissionTrend(startDate, endDate));
     }
 
     @Operation(
-        summary = "Get pipeline coverage",
-        description = "Calculates reading coverage percentage for each pipeline over a date range. Shows which pipelines consistently submit readings vs those with gaps. Critical for data quality monitoring."
+        summary = "Get pipeline coverage detail",
+        description = "Returns per-slot coverage detail for a pipeline over a date range."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved pipeline coverage"),
+        @ApiResponse(responseCode = "400", description = "Invalid date range (max 90 days)"),
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
     @GetMapping("/pipeline-coverage")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<List<PipelineCoverageDetailDTO>> getPipelineCoverageByDateRange(
-            @Parameter(description = "Structure ID", required = true, example = "12")
-            @RequestParam Long structureId,
+    public ResponseEntity<List<PipelineCoverageDetailDTO>> getPipelineCoverage(
+            @Parameter(description = "Pipeline ID", required = true, example = "5")
+            @RequestParam Long pipelineId,
             @Parameter(description = "Start date", required = true, example = "2026-02-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @Parameter(description = "End date", required = true, example = "2026-02-16")
+            @Parameter(description = "End date", required = true, example = "2026-02-28")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        log.info("GET /flow/intelligence/monitoring/pipeline-coverage - Structure: {}, Range: {} to {}", structureId, startDate, endDate);
-        return ResponseEntity.ok(monitoringService.getPipelineCoverageByDateRange(structureId, startDate, endDate));
+        log.info("GET /flow/intelligence/monitoring/pipeline-coverage - Pipeline: {}, {} to {}",
+                pipelineId, startDate, endDate);
+        return ResponseEntity.ok(
+                monitoringService.getPipelineCoverageDetail(pipelineId, startDate, endDate));
     }
 }
