@@ -4,11 +4,14 @@
  *
  * 	@Name		: FlowReading
  * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-26-2026 — H6: Add @Version for optimistic locking
  *
  * 	@Type		: Class
  * 	@Layer		: Model
  * 	@Package	: Flow / Core
+ *
+ *  H6 — Optimistic locking: @Version field added to prevent concurrent
+ *       approval race conditions in ReadingWorkflowService.approve().
  *
  **/
 
@@ -31,6 +34,7 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -53,6 +57,14 @@ import lombok.ToString;
  * {@link DataSource} (F_13) records the origin of the measurement
  * (e.g., MANUAL, SCADA, CALCULATED, AI_ASSISTED). Required for data quality
  * scoring and analytical read models.
+ *
+ * <h3>Optimistic locking (H6)</h3>
+ * {@code version} (F_14) is a JPA {@code @Version} field.
+ * It prevents concurrent approval race conditions between the
+ * {@code guardAgainstInvalidTransition()} check and the final save
+ * in {@code ReadingWorkflowService.approve()} and {@code reject()}.
+ * Any concurrent modification will throw {@code OptimisticLockException},
+ * which is handled by {@code GlobalExceptionHandler}.
  */
 @Schema(description = "Operational flow reading recorded by a transport operator")
 @Setter
@@ -66,7 +78,7 @@ import lombok.ToString;
 public class FlowReading extends GenericModel {
 
     // ------------------------------------------------------------------
-    // F_01..F_09 — Measurement fields (unchanged)
+    // F_01..F_09 — Measurement fields
     // ------------------------------------------------------------------
 
     @Schema(description = "Date of the reading", example = "2026-03-20")
@@ -106,7 +118,7 @@ public class FlowReading extends GenericModel {
     private LocalDateTime validatedAt;
 
     // ------------------------------------------------------------------
-    // F_10, F_11 — Core references (unchanged)
+    // F_10, F_11 — Core references
     // ------------------------------------------------------------------
 
     @Schema(description = "FK to pipeline (canonical network/core ownership)")
@@ -149,4 +161,23 @@ public class FlowReading extends GenericModel {
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_04_01_01_FK_04"))
     private DataSource dataSource;
+
+    // ------------------------------------------------------------------
+    // F_14 — Optimistic locking (H6)
+    // ------------------------------------------------------------------
+
+    /**
+     * JPA optimistic lock version counter.
+     *
+     * Incremented automatically by Hibernate on every UPDATE.
+     * Prevents concurrent approval/rejection race conditions:
+     * if two requests attempt to approve the same reading simultaneously,
+     * one will receive an {@code ObjectOptimisticLockingFailureException},
+     * handled by {@code GlobalExceptionHandler} as HTTP 409 Conflict.
+     *
+     * Mapped to column F_14 to preserve the existing column naming convention.
+     */
+    @Version
+    @Column(name = "F_14")
+    private Long version;
 }
