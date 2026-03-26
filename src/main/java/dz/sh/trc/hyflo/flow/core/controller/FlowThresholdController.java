@@ -6,14 +6,17 @@
  * 	@CreatedOn	: 02-03-2026
  * 	@UpdatedOn	: 02-03-2026
  * 	@UpdatedOn	: 02-16-2026 - Enhanced with comprehensive OpenAPI documentation
+ * 	@UpdatedOn	: 03-26-2026 - H10: Marked @Deprecated(forRemoval=true)
  *
  * 	@Type		: Controller
  * 	@Layer		: Controller
  * 	@Package	: Flow / Core
  *
- * 	@Description:
- * 	REST controller for managing pipeline operating thresholds.
- * 	Provides CRUD operations, activation/deactivation, and search capabilities.
+ *  @Deprecated Phase 4 — H10
+ *  This controller is superseded by FlowThresholdV2Controller at /api/v2/flow/thresholds.
+ *  Retained only for transitional compile safety and legacy client backward-compatibility.
+ *  Scheduled for removal: Phase 8 cleanup.
+ *  DO NOT add new endpoints here.
  *
  **/
 
@@ -49,420 +52,184 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @deprecated Superseded by FlowThresholdV2Controller (/api/v2/flow/thresholds).
+ * Retained for transitional compile safety. Scheduled for removal in Phase 8 cleanup.
+ */
+@Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
 @RequestMapping("/flow/core/threshold")
-@Tag(name = "Flow Threshold Management", description = "APIs for managing pipeline operating thresholds with activation control and compliance tracking")
+@Tag(name = "Flow Threshold Management (Legacy)", description = "[DEPRECATED] Use /api/v2/flow/thresholds instead.")
 @SecurityRequirement(name = "bearer-auth")
 @RequiredArgsConstructor
 public class FlowThresholdController {
-    
+
     private final FlowThresholdService flowThresholdService;
-    
-    // ========== CREATE ==========
-    
+
     @PostMapping
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:WRITE')")
-    @Operation(
-        summary = "Create threshold",
-        description = "Create a new operating threshold for a pipeline. " +
-            "If active=true, will deactivate any existing active threshold for the same pipeline."
-    )
+    @Operation(summary = "[DEPRECATED] Create threshold — use /api/v2/flow/thresholds")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Threshold created successfully", 
+        @ApiResponse(responseCode = "201", description = "Threshold created successfully",
                      content = @Content(schema = @Schema(implementation = FlowThresholdDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input data - validation failed"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "404", description = "Pipeline not found"),
-        @ApiResponse(responseCode = "409", description = "Validation conflict - duplicate or invalid threshold configuration"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:WRITE authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:WRITE authority")
     })
     public ResponseEntity<FlowThresholdDTO> createThreshold(
-        @Parameter(description = "Threshold configuration data", required = true)
-        @Valid @RequestBody FlowThresholdDTO dto
-    ) {
-        FlowThresholdDTO created = flowThresholdService.createThreshold(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        @Valid @RequestBody FlowThresholdDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(flowThresholdService.createThreshold(dto));
     }
-    
-    // ========== READ ==========
-    
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(summary = "Get threshold by ID", description = "Retrieves a specific threshold by its identifier")
+    @Operation(summary = "[DEPRECATED] Get threshold by ID — use /api/v2/flow/thresholds/{id}")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Threshold found", 
+        @ApiResponse(responseCode = "200", description = "Threshold found",
                      content = @Content(schema = @Schema(implementation = FlowThresholdDTO.class))),
         @ApiResponse(responseCode = "404", description = "Threshold not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority")
     })
-    public ResponseEntity<FlowThresholdDTO> getThresholdById(
-        @Parameter(description = "Threshold ID", required = true, example = "1")
-        @PathVariable Long id
-    ) {
-        FlowThresholdDTO threshold = flowThresholdService.getThresholdById(id);
-        return ResponseEntity.ok(threshold);
+    public ResponseEntity<FlowThresholdDTO> getThresholdById(@PathVariable Long id) {
+        return ResponseEntity.ok(flowThresholdService.getThresholdById(id));
     }
-    
+
     @GetMapping("/pipeline/{pipelineId}/active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get active threshold for pipeline",
-        description = "Retrieves the currently active threshold for a specific pipeline"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Active threshold found", 
-                     content = @Content(schema = @Schema(implementation = FlowThresholdDTO.class))),
-        @ApiResponse(responseCode = "404", description = "No active threshold found for this pipeline"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<FlowThresholdDTO> getActiveThresholdByPipelineId(
-        @Parameter(description = "Pipeline ID", required = true, example = "101")
-        @PathVariable Long pipelineId
-    ) {
+    @Operation(summary = "[DEPRECATED] Get active threshold for pipeline")
+    public ResponseEntity<FlowThresholdDTO> getActiveThresholdByPipelineId(@PathVariable Long pipelineId) {
         return flowThresholdService.getActiveThresholdByPipelineId(pipelineId)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @GetMapping("/pipeline/{pipelineId}")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get all thresholds for pipeline",
-        description = "Retrieves all thresholds (active and inactive) for a specific pipeline"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Thresholds retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<List<FlowThresholdDTO>> getThresholdsByPipelineId(
-        @Parameter(description = "Pipeline ID", required = true, example = "101")
-        @PathVariable Long pipelineId
-    ) {
-        List<FlowThresholdDTO> thresholds = flowThresholdService.getThresholdsByPipelineId(pipelineId);
-        return ResponseEntity.ok(thresholds);
+    @Operation(summary = "[DEPRECATED] Get all thresholds for pipeline")
+    public ResponseEntity<List<FlowThresholdDTO>> getThresholdsByPipelineId(@PathVariable Long pipelineId) {
+        return ResponseEntity.ok(flowThresholdService.getThresholdsByPipelineId(pipelineId));
     }
-    
+
     @GetMapping("/structure/{structureId}/active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get active thresholds by structure",
-        description = "Retrieves all active thresholds for pipelines managed by a structure (station, terminal, manifold)"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Thresholds retrieved successfully"),
-        @ApiResponse(responseCode = "404", description = "Structure not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<List<FlowThresholdDTO>> getActiveThresholdsByStructureId(
-        @Parameter(description = "Structure ID", required = true, example = "5")
-        @PathVariable Long structureId
-    ) {
-        List<FlowThresholdDTO> thresholds = flowThresholdService.getActiveThresholdsByStructureId(structureId);
-        return ResponseEntity.ok(thresholds);
+    @Operation(summary = "[DEPRECATED] Get active thresholds by structure")
+    public ResponseEntity<List<FlowThresholdDTO>> getActiveThresholdsByStructureId(@PathVariable Long structureId) {
+        return ResponseEntity.ok(flowThresholdService.getActiveThresholdsByStructureId(structureId));
     }
-    
+
     @GetMapping
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get all thresholds (paginated)",
-        description = "Retrieves all thresholds with pagination and sorting"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Thresholds retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid pagination or sorting parameters"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Get all thresholds (paginated)")
     public ResponseEntity<Page<FlowThresholdDTO>> getAllThresholds(
-        @Parameter(description = "Page number (0-indexed)", example = "0")
         @RequestParam(defaultValue = "0") int page,
-        
-        @Parameter(description = "Page size", example = "20")
         @RequestParam(defaultValue = "20") int size,
-        
-        @Parameter(description = "Sort field", example = "id")
         @RequestParam(required = false) String sortBy,
-        
-        @Parameter(description = "Sort direction (ASC/DESC)", example = "ASC")
-        @RequestParam(defaultValue = "ASC") String sortDirection
-    ) {
-        Page<FlowThresholdDTO> thresholds = flowThresholdService.getAllThresholds(
-            page, size, sortBy, sortDirection
-        );
-        return ResponseEntity.ok(thresholds);
+        @RequestParam(defaultValue = "ASC") String sortDirection) {
+        return ResponseEntity.ok(flowThresholdService.getAllThresholds(page, size, sortBy, sortDirection));
     }
-    
+
     @GetMapping("/active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get all active thresholds (paginated)",
-        description = "Retrieves only active thresholds with pagination"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Active thresholds retrieved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Get all active thresholds (paginated)")
     public ResponseEntity<Page<FlowThresholdDTO>> getActiveThresholds(
-        @Parameter(description = "Page number (0-indexed)", example = "0")
         @RequestParam(defaultValue = "0") int page,
-        
-        @Parameter(description = "Page size", example = "20")
-        @RequestParam(defaultValue = "20") int size
-    ) {
-        Page<FlowThresholdDTO> thresholds = flowThresholdService.getActiveThresholds(page, size);
-        return ResponseEntity.ok(thresholds);
+        @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(flowThresholdService.getActiveThresholds(page, size));
     }
-    
+
     @GetMapping("/active/all")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get all active thresholds",
-        description = "Retrieves all active thresholds without pagination"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Active thresholds retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Get all active thresholds")
     public ResponseEntity<List<FlowThresholdDTO>> getAllActiveThresholds() {
-        List<FlowThresholdDTO> thresholds = flowThresholdService.getAllActiveThresholds();
-        return ResponseEntity.ok(thresholds);
+        return ResponseEntity.ok(flowThresholdService.getAllActiveThresholds());
     }
-    
+
     @GetMapping("/inactive/all")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get all inactive thresholds",
-        description = "Retrieves all inactive thresholds without pagination"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Inactive thresholds retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Get all inactive thresholds")
     public ResponseEntity<List<FlowThresholdDTO>> getAllInactiveThresholds() {
-        List<FlowThresholdDTO> thresholds = flowThresholdService.getAllInactiveThresholds();
-        return ResponseEntity.ok(thresholds);
+        return ResponseEntity.ok(flowThresholdService.getAllInactiveThresholds());
     }
-    
+
     @GetMapping("/search/code/{pipelineCode}")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Search by pipeline code",
-        description = "Find thresholds by exact pipeline code match"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Search completed successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Search by pipeline code")
     public ResponseEntity<List<FlowThresholdDTO>> searchByPipelineCode(
         @Parameter(description = "Pipeline code", required = true, example = "OZ-24-101")
-        @PathVariable String pipelineCode
-    ) {
-        List<FlowThresholdDTO> thresholds = flowThresholdService.searchByPipelineCode(pipelineCode);
-        return ResponseEntity.ok(thresholds);
+        @PathVariable String pipelineCode) {
+        return ResponseEntity.ok(flowThresholdService.searchByPipelineCode(pipelineCode));
     }
-    
+
     @GetMapping("/search/pattern")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Search by pipeline code pattern",
-        description = "Find thresholds by pipeline code pattern (e.g., 'OZ%' for all OZ pipelines)"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Search completed successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid search pattern"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Search by pipeline code pattern")
     public ResponseEntity<List<FlowThresholdDTO>> searchByPipelineCodePattern(
-        @Parameter(description = "Pipeline code pattern", required = true, example = "OZ%")
-        @RequestParam String pattern
-    ) {
-        List<FlowThresholdDTO> thresholds = flowThresholdService.searchByPipelineCodePattern(pattern);
-        return ResponseEntity.ok(thresholds);
+        @RequestParam String pattern) {
+        return ResponseEntity.ok(flowThresholdService.searchByPipelineCodePattern(pattern));
     }
-    
-    // ========== OPERATIONAL QUERIES ==========
-    
+
     @GetMapping("/compliance/missing")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get pipelines without thresholds",
-        description = "Find active pipelines that lack threshold configuration (compliance check)"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Pipeline IDs retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Get pipelines without thresholds")
     public ResponseEntity<List<Long>> getPipelinesWithoutThresholds() {
-        List<Long> pipelineIds = flowThresholdService.getPipelinesWithoutThresholds();
-        return ResponseEntity.ok(pipelineIds);
+        return ResponseEntity.ok(flowThresholdService.getPipelinesWithoutThresholds());
     }
-    
+
     @GetMapping("/compliance/missing-active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Get pipelines without active thresholds",
-        description = "Find active pipelines that lack an active threshold configuration"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Pipeline IDs retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Get pipelines without active thresholds")
     public ResponseEntity<List<Long>> getPipelinesWithoutActiveThresholds() {
-        List<Long> pipelineIds = flowThresholdService.getPipelinesWithoutActiveThresholds();
-        return ResponseEntity.ok(pipelineIds);
+        return ResponseEntity.ok(flowThresholdService.getPipelinesWithoutActiveThresholds());
     }
-    
+
     @GetMapping("/compliance/missing/count")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Count pipelines without thresholds",
-        description = "Get count of active pipelines lacking threshold configuration"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Count retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Count pipelines without thresholds")
     public ResponseEntity<Long> countPipelinesWithoutThresholds() {
-        long count = flowThresholdService.countPipelinesWithoutThresholds();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(flowThresholdService.countPipelinesWithoutThresholds());
     }
-    
+
     @GetMapping("/count/active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Count active thresholds",
-        description = "Get total count of active thresholds"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Count retrieved successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Count active thresholds")
     public ResponseEntity<Long> countActiveThresholds() {
-        long count = flowThresholdService.countActiveThresholds();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(flowThresholdService.countActiveThresholds());
     }
-    
+
     @GetMapping("/pipeline/{pipelineId}/has-active")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:READ')")
-    @Operation(
-        summary = "Check if pipeline has active threshold",
-        description = "Check whether a pipeline has an active threshold configured"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Check completed successfully"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:READ authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<Boolean> hasActiveThreshold(
-        @Parameter(description = "Pipeline ID", required = true, example = "101")
-        @PathVariable Long pipelineId
-    ) {
-        boolean hasActive = flowThresholdService.hasActiveThreshold(pipelineId);
-        return ResponseEntity.ok(hasActive);
+    @Operation(summary = "[DEPRECATED] Check if pipeline has active threshold")
+    public ResponseEntity<Boolean> hasActiveThreshold(@PathVariable Long pipelineId) {
+        return ResponseEntity.ok(flowThresholdService.hasActiveThreshold(pipelineId));
     }
-    
-    // ========== UPDATE ==========
-    
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:WRITE')")
-    @Operation(
-        summary = "Update threshold",
-        description = "Update an existing threshold. If setting active=true, will deactivate other active thresholds for the same pipeline."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Threshold updated successfully", 
-                     content = @Content(schema = @Schema(implementation = FlowThresholdDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input data - validation failed"),
-        @ApiResponse(responseCode = "404", description = "Threshold not found"),
-        @ApiResponse(responseCode = "409", description = "Validation conflict - duplicate or invalid threshold configuration"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:WRITE authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+    @Operation(summary = "[DEPRECATED] Update threshold — use /api/v2/flow/thresholds/{id}")
     public ResponseEntity<FlowThresholdDTO> updateThreshold(
-        @Parameter(description = "Threshold ID", required = true, example = "1")
         @PathVariable Long id,
-        
-        @Parameter(description = "Updated threshold data", required = true)
-        @Valid @RequestBody FlowThresholdDTO dto
-    ) {
-        FlowThresholdDTO updated = flowThresholdService.updateThreshold(id, dto);
-        return ResponseEntity.ok(updated);
+        @Valid @RequestBody FlowThresholdDTO dto) {
+        return ResponseEntity.ok(flowThresholdService.updateThreshold(id, dto));
     }
-    
+
     @PatchMapping("/{id}/activate")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:MANAGE')")
-    @Operation(
-        summary = "Activate threshold",
-        description = "Activate a threshold. Will deactivate any other active threshold for the same pipeline."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Threshold activated successfully", 
-                     content = @Content(schema = @Schema(implementation = FlowThresholdDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Threshold not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:MANAGE authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<FlowThresholdDTO> activateThreshold(
-        @Parameter(description = "Threshold ID", required = true, example = "1")
-        @PathVariable Long id
-    ) {
-        FlowThresholdDTO activated = flowThresholdService.activateThreshold(id);
-        return ResponseEntity.ok(activated);
+    @Operation(summary = "[DEPRECATED] Activate threshold")
+    public ResponseEntity<FlowThresholdDTO> activateThreshold(@PathVariable Long id) {
+        return ResponseEntity.ok(flowThresholdService.activateThreshold(id));
     }
-    
+
     @PatchMapping("/{id}/deactivate")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:MANAGE')")
-    @Operation(
-        summary = "Deactivate threshold",
-        description = "Deactivate a threshold without deleting it (preserves configuration for audit trail)"
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Threshold deactivated successfully", 
-                     content = @Content(schema = @Schema(implementation = FlowThresholdDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Threshold not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:MANAGE authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<FlowThresholdDTO> deactivateThreshold(
-        @Parameter(description = "Threshold ID", required = true, example = "1")
-        @PathVariable Long id
-    ) {
-        FlowThresholdDTO deactivated = flowThresholdService.deactivateThreshold(id);
-        return ResponseEntity.ok(deactivated);
+    @Operation(summary = "[DEPRECATED] Deactivate threshold")
+    public ResponseEntity<FlowThresholdDTO> deactivateThreshold(@PathVariable Long id) {
+        return ResponseEntity.ok(flowThresholdService.deactivateThreshold(id));
     }
-    
-    // ========== DELETE ==========
-    
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('FLOW_THRESHOLD:MANAGE')")
-    @Operation(
-        summary = "Delete threshold",
-        description = "Permanently delete a threshold. WARNING: This is irreversible. Consider deactivation instead."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Threshold deleted successfully"),
-        @ApiResponse(responseCode = "404", description = "Threshold not found"),
-        @ApiResponse(responseCode = "403", description = "Access denied - requires FLOW_THRESHOLD:MANAGE authority"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<Void> deleteThreshold(
-        @Parameter(description = "Threshold ID", required = true, example = "1")
-        @PathVariable Long id
-    ) {
+    @Operation(summary = "[DEPRECATED] Delete threshold — use /api/v2/flow/thresholds/{id}")
+    public ResponseEntity<Void> deleteThreshold(@PathVariable Long id) {
         flowThresholdService.deleteThreshold(id);
         return ResponseEntity.noContent().build();
     }
