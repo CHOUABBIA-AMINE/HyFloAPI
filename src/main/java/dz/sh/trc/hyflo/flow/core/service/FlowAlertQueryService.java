@@ -4,6 +4,7 @@
  *
  *  @Name       : FlowAlertQueryService
  *  @CreatedOn  : 03-26-2026
+ *  @UpdatedOn  : 03-26-2026 — remove unused private buildPageable()
  *
  *  @Type       : Class
  *  @Layer      : Service (Query)
@@ -22,9 +23,7 @@ import dz.sh.trc.hyflo.flow.core.repository.FlowAlertRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,12 +99,5 @@ public class FlowAlertQueryService {
             Long pipelineId, LocalDateTime start, LocalDateTime end, Pageable pageable) {
         return flowAlertRepository.findByPipelineAndTimeRange(pipelineId, start, end, pageable)
                 .map(FlowAlertMapper::toReadDto);
-    }
-
-    private Pageable buildPageable(int page, int size, String sortBy, String direction) {
-        Sort sort = "desc".equalsIgnoreCase(direction)
-                ? Sort.by(sortBy).descending()
-                : Sort.by(sortBy).ascending();
-        return PageRequest.of(page, size, sort);
     }
 }
