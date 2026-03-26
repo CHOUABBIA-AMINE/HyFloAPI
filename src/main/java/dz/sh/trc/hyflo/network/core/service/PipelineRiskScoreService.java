@@ -4,6 +4,7 @@
  *
  * 	@Name		: PipelineRiskScoreService
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-26-2026 - Phase 1: searchByQuery protected → public
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -68,7 +69,7 @@ public class PipelineRiskScoreService extends GenericService<PipelineRiskScore, 
     }
 
     @Override
-    protected Page<PipelineRiskScoreReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<PipelineRiskScoreReadDto> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
