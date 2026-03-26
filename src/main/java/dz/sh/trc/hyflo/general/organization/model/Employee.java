@@ -1,11 +1,12 @@
 /**
- *	
+ *
  *	@Author		: MEDJERAB Abir
  *
  *	@Name		: Employee
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 01-02-2026
  *	@UpdatedOn	: 02-10-2026 - Added getFullNameLt() and getFullNameAr() helper methods
+ *	@UpdatedOn	: 03-26-2026 - Added role ManyToOne field required by EmployeeMapper
  *
  *	@Type		: Class
  *	@Layer		: Model
@@ -67,17 +68,19 @@ public class Employee extends Person {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="F_15", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_04_FK_01"), nullable=false)
 	private Job job;
-	
+
+	@Schema(
+		description = "Functional role governing the employee's permissions within HyFlo",
+		requiredMode = Schema.RequiredMode.NOT_REQUIRED
+	)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="F_16", referencedColumnName="F_00", foreignKey=@ForeignKey(name="T_01_03_04_FK_02"), nullable=true)
+	private Role role;
+
 	// ========== HELPER METHODS ==========
-	
+
 	/**
 	 * Get employee's full name in Latin script.
-	 * Format: "FirstName LastName" (e.g., "Amine CHOUABBIA")
-	 * 
-	 * This helper method simplifies name concatenation throughout the codebase,
-	 * replacing manual string concatenation like: firstName + " " + lastName
-	 * 
-	 * @return Full name in Latin script, or empty string if both names are null
 	 */
 	public String getFullNameLt() {
 		if (getFirstNameLt() == null && getLastNameLt() == null) {
@@ -91,17 +94,9 @@ public class Employee extends Person {
 		}
 		return getFirstNameLt() + " " + getLastNameLt();
 	}
-	
+
 	/**
 	 * Get employee's full name in Arabic script.
-	 * Format: "FirstName LastName" (e.g., "أمين شعبية")
-	 * 
-	 * This helper method simplifies name concatenation throughout the codebase,
-	 * replacing manual string concatenation like: firstNameAr + " " + lastNameAr
-	 * 
-	 * Note: Arabic names may be null if not provided during registration.
-	 * 
-	 * @return Full name in Arabic script, or empty string if both names are null
 	 */
 	public String getFullNameAr() {
 		if (getFirstNameAr() == null && getLastNameAr() == null) {
@@ -115,5 +110,4 @@ public class Employee extends Person {
 		}
 		return getFirstNameAr() + " " + getLastNameAr();
 	}
-	
 }
