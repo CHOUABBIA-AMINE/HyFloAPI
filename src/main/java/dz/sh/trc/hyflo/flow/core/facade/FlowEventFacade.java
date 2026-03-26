@@ -4,6 +4,8 @@
  *
  *  @Name       : FlowEventFacade
  *  @CreatedOn  : 03-26-2026
+ *  @UpdatedOn  : 03-26-2026 — fix: Severity/EventStatus have no getCode();
+ *                             use getDesignationFr() instead
  *
  *  @Type       : Class
  *  @Layer      : Facade (Service)
@@ -21,6 +23,11 @@
  *                entity (which for pipeline events is the pipeline itself).
  *                The facade parameter pipelineId is used directly as
  *                infrastructureId for the query delegation.
+ *
+ *                Mapping note:
+ *                - Severity has no code field: designationFr used as severityCode.
+ *                - EventStatus has no code field: designationFr used as eventTypeCode.
+ *                - AlertStatus (separate class) does have a code field.
  *
  **/
 
@@ -69,8 +76,6 @@ public class FlowEventFacade implements IFlowEventFacade {
             Long pipelineId, LocalDateTime start, LocalDateTime end) {
         log.debug("FlowEventFacade.findByPipelineAndTimeRange pipelineId={}, start={}, end={}",
                 pipelineId, start, end);
-        // FlowEvent.infrastructure.id corresponds to the owning entity PK.
-        // For pipeline-scoped events, pipelineId == infrastructureId.
         return eventRepository
                 .findByInfrastructureIdAndEventTimestampBetween(pipelineId, start, end)
                 .stream()
@@ -94,9 +99,13 @@ public class FlowEventFacade implements IFlowEventFacade {
     /**
      * Map FlowEvent entity to FlowEventFacadeDto.
      *
-     * severityCode: mapped from severity.code if severity is present.
-     * eventTypeCode: mapped from status.code as a best-effort classification.
-     * pipelineId: mapped from infrastructure.id (pipeline-scoped events).
+     * severityCode  — Severity entity has no code field; mapped from designationFr
+     *                 (the required non-null field). Example: "Critique", "Élevé".
+     *
+     * eventTypeCode — EventStatus entity has no code field; mapped from designationFr.
+     *                 Example: "Ouvert", "Fermé".
+     *
+     * pipelineId    — mapped from infrastructure.id (pipeline-scoped events).
      */
     private FlowEventFacadeDto toDto(FlowEvent event) {
         return FlowEventFacadeDto.builder()
@@ -107,9 +116,9 @@ public class FlowEventFacade implements IFlowEventFacade {
                         ? event.getRelatedReading().getId() : null)
                 .eventTimestamp(event.getEventTimestamp())
                 .severityCode(event.getSeverity() != null
-                        ? event.getSeverity().getCode() : null)
+                        ? event.getSeverity().getDesignationFr() : null)
                 .eventTypeCode(event.getStatus() != null
-                        ? event.getStatus().getCode() : null)
+                        ? event.getStatus().getDesignationFr() : null)
                 .description(event.getDescription())
                 .build();
     }
