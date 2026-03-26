@@ -85,7 +85,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class FlowReadingFacade {
+public class FlowReadingFacade implements IFlowReadingFacade {
 
     private final FlowReadingRepository flowReadingRepository;
     private final ReadingSlotRepository readingSlotRepository;
@@ -105,6 +105,7 @@ public class FlowReadingFacade {
      * @param pipelineId Pipeline ID
      * @return Latest reading DTO or empty if no readings exist
      */
+    @Override
     public Optional<FlowReadingDTO> findLatestByPipeline(Long pipelineId) {
         log.debug("Finding latest flow reading for pipeline: {}", pipelineId);
         return flowReadingRepository.findTopByPipelineIdOrderByRecordedAtDesc(pipelineId)
@@ -123,6 +124,7 @@ public class FlowReadingFacade {
      * @param readingDate Date to query
      * @return List of reading DTOs for that date (max 12, one per slot)
      */
+    @Override
     public List<FlowReadingDTO> findByPipelineAndDate(Long pipelineId, LocalDate readingDate) {
         log.debug("Finding flow readings for pipeline {} on date {}", pipelineId, readingDate);
         return flowReadingRepository.findByPipelineIdAndReadingDate(pipelineId, readingDate)
@@ -144,6 +146,7 @@ public class FlowReadingFacade {
      * @param endDate End of date range
      * @return Chronologically ordered reading DTOs
      */
+    @Override
     public List<FlowReadingDTO> findByPipelineAndDateRangeOrdered(
             Long pipelineId, LocalDate startDate, LocalDate endDate) {
         log.debug("Finding ordered flow readings for pipeline {} between {} and {}", 
@@ -167,6 +170,7 @@ public class FlowReadingFacade {
      * 
      * @return All 12 reading slots (S01-S12) ordered by displayOrder
      */
+    @Override
     public List<ReadingSlot> findAllSlotsOrdered() {
         log.debug("Finding all reading slots ordered by display order");
         return readingSlotRepository.findAllByOrderByDisplayOrder();
@@ -191,6 +195,7 @@ public class FlowReadingFacade {
      * @param pageable Pagination parameters
      * @return Paginated reading DTOs awaiting validation
      */
+    @Override
     public Page<FlowReadingDTO> findPendingValidationsByStructure(
             Long structureId, Pageable pageable) {
         log.debug("Finding pending validations for structure: {}", structureId);
@@ -231,6 +236,7 @@ public class FlowReadingFacade {
      * @param pageable Pagination parameters
      * @return Paginated overdue reading DTOs
      */
+    @Override
     public Page<FlowReadingDTO> findOverdueReadingsByStructure(
             Long structureId, 
             LocalDate asOfDate, 

@@ -75,7 +75,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class PipelineFacade {
+public class PipelineFacade implements IPipelineFacade {
 
     private final PipelineRepository pipelineRepository;
 
@@ -101,6 +101,7 @@ public class PipelineFacade {
      * @param pipelineId Pipeline ID
      * @return PipelineDTO with full details or empty if not found
      */
+    @Override
     public Optional<PipelineDTO> findById(Long pipelineId) {
         log.debug("Finding pipeline by ID: {}", pipelineId);
         return pipelineRepository.findById(pipelineId)
@@ -118,6 +119,7 @@ public class PipelineFacade {
      * @param pipelineId Pipeline ID
      * @return true if pipeline exists, false otherwise
      */
+    @Override
     public boolean existsById(Long pipelineId) {
         log.debug("Checking if pipeline exists: {}", pipelineId);
         return pipelineRepository.existsById(pipelineId);
@@ -134,6 +136,7 @@ public class PipelineFacade {
      * @param managerId Structure (organization unit) ID
      * @return List of pipeline DTOs managed by the structure
      */
+    @Override
     public List<PipelineDTO> findByManagerId(Long managerId) {
         log.debug("Finding pipelines by manager ID: {}", managerId);
         return pipelineRepository.findByManagerId(managerId)
