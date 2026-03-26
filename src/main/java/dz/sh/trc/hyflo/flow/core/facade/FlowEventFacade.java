@@ -3,15 +3,14 @@
  *  @Author     : HyFlo v2
  *
  *  @Name       : FlowEventFacade
- *  @CreatedOn  : 03-26-2026 — H2: implements IFlowEventFacade, bridges flow/intelligence to flow/core
+ *  @CreatedOn  : 03-26-2026 — H2
  *
  *  @Type       : Class
  *  @Layer      : Facade
  *  @Package    : Flow / Core
  *
- *  @Description: Concrete implementation of IFlowEventFacade.
- *                Delegates to FlowEventRepository. Lives in flow/core.
- *                Injected into flow/intelligence only through IFlowEventFacade interface.
+ *  @Description: Implements IFlowEventFacade to provide flow/intelligence with
+ *                read-only access to FlowEvent data without exposing FlowEventRepository.
  *
  **/
 
@@ -29,6 +28,10 @@ import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowEventFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Facade implementation providing cross-module read access to FlowEvent data.
+ * Registered as a Spring bean; injected into flow/intelligence services.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -38,14 +41,17 @@ public class FlowEventFacade implements IFlowEventFacade {
     private final FlowEventRepository flowEventRepository;
 
     @Override
-    public List<FlowEvent> findByPipelineAndTimeRange(Long pipelineId, LocalDateTime start, LocalDateTime end) {
-        log.debug("FlowEventFacade: findByPipelineAndTimeRange pipelineId={} {} to {}", pipelineId, start, end);
-        return flowEventRepository.findByPipelineAndTimeRange(pipelineId, start, end);
+    public List<FlowEvent> findByPipelineAndTimeRange(
+            Long pipelineId, LocalDateTime start, LocalDateTime end) {
+        log.debug("FlowEventFacade.findByPipelineAndTimeRange pipelineId={} from={} to={}",
+                pipelineId, start, end);
+        return flowEventRepository.findByPipelineIdAndEventTimestampBetween(pipelineId, start, end);
     }
 
     @Override
-    public List<FlowEvent> findByFlowReading(Long flowReadingId) {
-        log.debug("FlowEventFacade: findByFlowReading flowReadingId={}", flowReadingId);
-        return flowEventRepository.findByFlowReadingId(flowReadingId);
+    public List<FlowEvent> findBySeverity(Long pipelineId, String severityCode) {
+        log.debug("FlowEventFacade.findBySeverity pipelineId={} severity={}",
+                pipelineId, severityCode);
+        return flowEventRepository.findByPipelineIdAndSeverityCode(pipelineId, severityCode);
     }
 }
