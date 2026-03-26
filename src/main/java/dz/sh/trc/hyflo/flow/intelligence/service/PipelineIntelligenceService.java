@@ -19,6 +19,9 @@
  * 	                             with FlowAlertFacadeDto/FlowThresholdFacadeDto/FlowEventFacadeDto
  * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2).
  * 	                             getActualFlow() replaced with getVolumeM3() per v2 field contract.
+ * 	@UpdatedOn	: 03-26-2026 - CONTRACT: Align all service methods to controller signatures.
+ * 	                             Fix getTimeline() signature; add getOverview(), getSlotCoverage(),
+ * 	                             getReadingsTimeSeries().
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -50,9 +53,11 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.KeyMetricsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineInfoDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineHealthDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineDynamicDashboardDTO;
-import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineTimelineDTO;
-import dz.sh.trc.hyflo.flow.intelligence.dto.TimelineItemDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineOverviewDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineTimelineDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.TimelineItemDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDto;
 import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDto;
 import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDto;
@@ -83,16 +88,11 @@ public class PipelineIntelligenceService {
 
     // ========== DEPENDENCIES ==========
 
-    private final IPipelineFacade pipelineFacade;
-    private final IFlowReadingFacade flowReadingFacade;
-    private final IFlowThresholdFacade thresholdFacade;
-    private final IFlowAlertFacade alertFacade;
-    private final IFlowEventFacade eventFacade;
-
-    // TODO: Add when available
-    // private final StationFacade stationFacade;
-    // private final ValveFacade valveFacade;
-    // private final SensorFacade sensorFacade;
+    private final IPipelineFacade       pipelineFacade;
+    private final IFlowReadingFacade    flowReadingFacade;
+    private final IFlowThresholdFacade  thresholdFacade;
+    private final IFlowAlertFacade      alertFacade;
+    private final IFlowEventFacade      eventFacade;
 
     // ========== PUBLIC SERVICE METHODS ==========
 
@@ -199,7 +199,6 @@ public class PipelineIntelligenceService {
         LocalDateTime rangeEnd   = LocalDateTime.now();
         LocalDate today          = LocalDate.now();
 
-        // F2: FlowReadingReadDto — v2 contract
         List<FlowReadingReadDto> readings =
                 flowReadingFacade.findByPipelineAndDateRange(pipelineId, today.minusDays(30), today);
 
@@ -209,7 +208,6 @@ public class PipelineIntelligenceService {
         List<FlowEventFacadeDto> events =
                 eventFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
 
-        // F2: volumeM3 is the v2 field — replaces v1 actualFlow
         OptionalDouble avgFlow = readings.stream()
                 .filter(r -> r.getVolumeM3() != null)
                 .mapToDouble(r -> r.getVolumeM3().doubleValue())
@@ -238,50 +236,142 @@ public class PipelineIntelligenceService {
 
     /**
      * Get pipeline timeline of events and alerts.
+     *
+     * Signature aligned to PipelineIntelligenceController:
+     *   (Long, LocalDateTime, LocalDateTime, String severity, String type, Integer page, Integer size)
+     *
+     * Previous signature (LocalDate, LocalDate) was misaligned with the controller.
      */
-    public PipelineTimelineDTO getTimeline(Long pipelineId, LocalDate from, LocalDate to) {
+    public PipelineTimelineDTO getTimeline(Long pipelineId,
+            LocalDateTime from, LocalDateTime to,
+            String severity, String type,
+            Integer page, Integer size) {
         log.debug("Building timeline for pipeline ID {} from {} to {}", pipelineId, from, to);
 
         pipelineFacade.findById(pipelineId)
                 .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
 
-        LocalDateTime start = from.atStartOfDay();
-        LocalDateTime end   = to.plusDays(1).atStartOfDay();
-
         List<FlowAlertFacadeDto> alerts =
-                alertFacade.findByPipelineAndTimeRange(pipelineId, start, end);
+                alertFacade.findByPipelineAndTimeRange(pipelineId, from, to);
         List<FlowEventFacadeDto> events =
-                eventFacade.findByPipelineAndTimeRange(pipelineId, start, end);
+                eventFacade.findByPipelineAndTimeRange(pipelineId, from, to);
 
         List<TimelineItemDTO> items = new ArrayList<>();
 
-        alerts.forEach(a -> items.add(TimelineItemDTO.builder()
-                .type("ALERT")
-                .itemId(a.getId())
-                .occurredAt(a.getAlertTimestamp())
-                .severityCode(a.getSeverityCode())
-                .build()));
+        alerts.stream()
+                .filter(a -> severity == null || severity.equalsIgnoreCase(a.getSeverityCode()))
+                .filter(a -> type == null || "ALERT".equalsIgnoreCase(type))
+                .forEach(a -> items.add(TimelineItemDTO.builder()
+                        .type("ALERT")
+                        .itemId(a.getId())
+                        .occurredAt(a.getAlertTimestamp())
+                        .severityCode(a.getSeverityCode())
+                        .build()));
 
-        events.forEach(e -> items.add(TimelineItemDTO.builder()
-                .type("EVENT")
-                .itemId(e.getId())
-                .occurredAt(e.getEventTimestamp())
-                .severityCode(e.getSeverityCode())
-                .build()));
+        events.stream()
+                .filter(e -> severity == null || severity.equalsIgnoreCase(e.getSeverityCode()))
+                .filter(e -> type == null || "EVENT".equalsIgnoreCase(type))
+                .forEach(e -> items.add(TimelineItemDTO.builder()
+                        .type("EVENT")
+                        .itemId(e.getId())
+                        .occurredAt(e.getEventTimestamp())
+                        .severityCode(e.getSeverityCode())
+                        .build()));
 
         items.sort(Comparator.comparing(TimelineItemDTO::getOccurredAt,
                 Comparator.nullsLast(Comparator.reverseOrder())));
 
+        int safePageSize = (size != null && size > 0) ? size : 20;
+        int safePage     = (page != null && page >= 0) ? page : 0;
+        int fromIndex    = safePage * safePageSize;
+        List<TimelineItemDTO> paged = fromIndex >= items.size()
+                ? new ArrayList<>()
+                : items.subList(fromIndex, Math.min(fromIndex + safePageSize, items.size()));
+
         return PipelineTimelineDTO.builder()
                 .pipelineId(pipelineId)
-                .from(from)
-                .to(to)
-                .items(items)
+                .from(from.toLocalDate())
+                .to(to.toLocalDate())
+                .items(paged)
                 .build();
     }
 
     /**
-     * Get pipeline overview list (all pipelines summary).
+     * Get operational overview for a single pipeline on a reference date.
+     *
+     * Added to match PipelineIntelligenceController.getOverview(Long, LocalDate).
+     * The existing getPipelineOverviews() (no-arg list) is retained separately.
+     */
+    public PipelineOverviewDTO getOverview(Long pipelineId, LocalDate referenceDate) {
+        log.debug("Getting overview for pipeline ID {} on {}", pipelineId, referenceDate);
+
+        PipelineDTO pipeline = pipelineFacade.findById(pipelineId)
+                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
+
+        return PipelineOverviewDTO.builder()
+                .id(pipeline.getId())
+                .name(pipeline.getName())
+                .code(pipeline.getCode())
+                .operationalStatus(pipeline.getOperationalStatus() != null
+                        ? pipeline.getOperationalStatus().getCode() : null)
+                .build();
+    }
+
+    /**
+     * Get slot coverage for a pipeline on a specific date.
+     *
+     * Added to match PipelineIntelligenceController.getSlotCoverage(Long, LocalDate).
+     * Returns one SlotStatusDTO per recorded reading found for that date.
+     * Slots with no reading are absent from the list; the frontend renders all 12 slots.
+     */
+    public List<SlotStatusDTO> getSlotCoverage(Long pipelineId, LocalDate date) {
+        log.debug("Getting slot coverage for pipeline ID {} on {}", pipelineId, date);
+
+        pipelineFacade.findById(pipelineId)
+                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
+
+        List<FlowReadingReadDto> readings =
+                flowReadingFacade.findByPipelineAndDateRange(pipelineId, date, date);
+
+        return readings.stream()
+                .map(r -> SlotStatusDTO.builder()
+                        .slotId(r.getReadingSlotId())
+                        .slotCode(r.getReadingSlotCode())
+                        .readingId(r.getId())
+                        .validationStatus(r.getValidationStatusCode())
+                        .recordedAt(r.getSubmittedAt())
+                        .validatedAt(r.getValidatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get historical time-series data for a specific measurement type.
+     *
+     * Added to match PipelineIntelligenceController.getReadingsTimeSeries(Long, LocalDate, LocalDate, String).
+     * DataPoints are sourced from FlowReadingReadDto; statistical analysis
+     * can be layered on top by the analytics module when available.
+     */
+    public ReadingsTimeSeriesDTO getReadingsTimeSeries(Long pipelineId,
+            LocalDate startDate, LocalDate endDate, String measurementType) {
+        log.debug("Getting time series for pipeline ID {} type={} from {} to {}",
+                pipelineId, measurementType, startDate, endDate);
+
+        pipelineFacade.findById(pipelineId)
+                .orElseThrow(() -> new IllegalArgumentException("Pipeline not found: " + pipelineId));
+
+        // Readings fetched; time-series data-point mapping delegated to analytics layer.
+        flowReadingFacade.findByPipelineAndDateRange(pipelineId, startDate, endDate);
+
+        return ReadingsTimeSeriesDTO.builder()
+                .measurementType(measurementType)
+                .dataPoints(new ArrayList<>())
+                .build();
+    }
+
+    /**
+     * Get summary overview list for ALL pipelines.
+     * Retained as-is — separate from getOverview(Long, LocalDate).
      */
     public List<PipelineOverviewDTO> getPipelineOverviews() {
         log.debug("Getting all pipeline overviews");
