@@ -5,6 +5,7 @@
  * 	@Name		: PipelineRiskScoreService
  * 	@CreatedOn	: 03-25-2026
  * 	@UpdatedOn	: 03-26-2026 - Phase 1: searchByQuery protected → public
+ * 	@UpdatedOn	: 03-26-2026 - Phase 7: remove @Override from searchByQuery
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -68,7 +69,6 @@ public class PipelineRiskScoreService extends GenericService<PipelineRiskScore, 
         throw new UnsupportedOperationException("Use risk engine for risk score updates");
     }
 
-    @Override
     public Page<PipelineRiskScoreReadDto> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);

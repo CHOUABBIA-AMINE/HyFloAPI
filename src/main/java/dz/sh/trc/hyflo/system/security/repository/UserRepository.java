@@ -5,7 +5,7 @@
  *	@Name		: UserRepository
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 12-12-2025
- *	@UpdatedOn	: 03-26-2026 - Phase 7: add findByRoles_Id(Long roleId)
+ *	@UpdatedOn	: 03-26-2026 - Phase 7: add findByRoles_Id + findByRoleId alias
  *
  *	@Type		: Interface
  *	@Layer		: Repository
@@ -51,14 +51,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> searchByAnyField(@Param("search") String search, Pageable pageable);
 
     /**
-     * Find users that have a specific role by role ID.
-     * Spring Data traversal via the @ManyToMany roles collection.
-     * NOTE: 'roles_Id' traversal is the correct Spring Data syntax for a collection join.
-     *
-     * @param roleId the ID of the role
-     * @return list of users assigned to that role
+     * Find users by role ID — Spring Data traversal via @ManyToMany roles collection.
+     * Primary method: correct Spring Data property path syntax.
      */
     List<User> findByRoles_Id(Long roleId);
+
+    /**
+     * Alias: findByRoleId — delegates to findByRoles_Id.
+     * Satisfies call sites that reference findByRoleId(Long roleId).
+     */
+    @Query("SELECT DISTINCT u FROM User u JOIN u.roles r WHERE r.id = :roleId")
+    List<User> findByRoleId(@Param("roleId") Long roleId);
     
     @Query("SELECT DISTINCT u FROM User u "
             + "JOIN u.roles r "
