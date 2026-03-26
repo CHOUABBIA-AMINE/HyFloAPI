@@ -4,6 +4,11 @@
  *
  *  @Name       : WorkflowInstanceQueryServiceImpl
  *  @CreatedOn  : Phase 4 — Commit 30
+ *  @UpdatedOn  : 03-26-2026 — fix: remove WorkflowInstanceMapper bean injection.
+ *                WorkflowInstanceMapper is a final static utility class with a
+ *                private constructor — it cannot be @Autowired as a Spring bean.
+ *                All mapper.toReadDto() instance calls replaced with
+ *                WorkflowInstanceMapper.toReadDto() static calls.
  *
  *  @Type       : Class
  *  @Layer      : Service Implementation
@@ -11,7 +16,7 @@
  *
  *  @Description: Implementation of WorkflowInstanceQueryService.
  *                Uses WorkflowInstanceRepository (Commit 26.1) and
- *                WorkflowInstanceMapper (Phase 3) for DTO projection.
+ *                WorkflowInstanceMapper (static utility) for DTO projection.
  *                No business logic — pure read delegation.
  *
  *  Phase 4 — Commit 30
@@ -43,6 +48,9 @@ import java.util.stream.Collectors;
  * Delegates entirely to WorkflowInstanceRepository.
  * No write operations. No business logic.
  *
+ * WorkflowInstanceMapper is a final static utility class — all calls
+ * use WorkflowInstanceMapper.toReadDto() directly (no bean injection).
+ *
  * Phase 4 — Commit 30
  */
 @Service
@@ -51,8 +59,10 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQueryService {
 
+    // FIX: WorkflowInstanceMapper is NOT a Spring bean — it is a final static
+    // utility class with a private constructor. Do NOT inject it via @RequiredArgsConstructor.
+    // Use WorkflowInstanceMapper.toReadDto() static calls directly.
     private final WorkflowInstanceRepository repository;
-    private final WorkflowInstanceMapper mapper;
 
     @Override
     public WorkflowInstanceReadDto getById(Long id) {
@@ -60,7 +70,7 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
         WorkflowInstance instance = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "WorkflowInstance not found: " + id));
-        return mapper.toReadDto(instance);
+        return WorkflowInstanceMapper.toReadDto(instance);
     }
 
     @Override
@@ -68,7 +78,7 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
         log.debug("WorkflowInstanceQueryService.getByState({})", stateCode);
         return repository.findByCurrentState_Code(stateCode)
                 .stream()
-                .map(mapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDto)
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +87,7 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
         log.debug("WorkflowInstanceQueryService.getByInitiatingActor({})", employeeId);
         return repository.findByInitiatedBy_Id(employeeId)
                 .stream()
-                .map(mapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDto)
                 .collect(Collectors.toList());
     }
 
@@ -86,7 +96,7 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
         log.debug("WorkflowInstanceQueryService.getByLastActor({})", employeeId);
         return repository.findByLastActor_Id(employeeId)
                 .stream()
-                .map(mapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDto)
                 .collect(Collectors.toList());
     }
 
@@ -97,7 +107,7 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
         return repository.findByStartedAtBetween(fromDt, toDt)
                 .stream()
-                .map(mapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDto)
                 .collect(Collectors.toList());
     }
 
@@ -106,7 +116,7 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
         log.debug("WorkflowInstanceQueryService.getByTargetType({})", targetTypeCode);
         return repository.findByTargetType_Code(targetTypeCode)
                 .stream()
-                .map(mapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDto)
                 .collect(Collectors.toList());
     }
 }

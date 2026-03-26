@@ -4,6 +4,11 @@
  *
  *  @Name       : FlowReadingQueryServiceImpl
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 — fix: getByPipelineAndSlot() — remove call to
+ *                              findByPipelineIdAndReadingSlotId() which no longer
+ *                              exists in FlowReadingRepository (FlowReading has no
+ *                              readingSlot FK). Delegates to findByPipelineId() until
+ *                              a readingSlot FK is added to the FlowReading entity.
  *
  *  @Type       : Class
  *  @Layer      : Service (Query Implementation)
@@ -90,9 +95,25 @@ public class FlowReadingQueryServiceImpl implements FlowReadingQueryService {
                 .stream().map(FlowReadingMapper::toReadDto).collect(Collectors.toList());
     }
 
+    /**
+     * Returns all readings for the given pipeline.
+     *
+     * NOTE: FlowReading currently has no readingSlot FK — the slotId parameter
+     * is accepted for API compatibility but not applied at DB level.
+     * Slot-based filtering will be activated once a readingSlot FK is added
+     * to the FlowReading entity (tracked as a TODO in FlowReadingRepository).
+     *
+     * @param pipelineId the pipeline to query
+     * @param slotId     reserved — not yet applied to the query
+     */
     @Override
     public List<FlowReadingReadDto> getByPipelineAndSlot(Long pipelineId, Long slotId) {
-        return flowReadingRepository.findByPipelineIdAndReadingSlotId(pipelineId, slotId)
+        log.debug("getByPipelineAndSlot(pipelineId={}, slotId={}) — slot filter not yet active "
+                + "(FlowReading has no readingSlot FK); returning all readings for pipeline.",
+                pipelineId, slotId);
+        // TODO: replace with findByPipelineIdAndReadingSlotId() once readingSlot FK
+        //       is added to FlowReading entity.
+        return flowReadingRepository.findByPipelineId(pipelineId)
                 .stream().map(FlowReadingMapper::toReadDto).collect(Collectors.toList());
     }
 
