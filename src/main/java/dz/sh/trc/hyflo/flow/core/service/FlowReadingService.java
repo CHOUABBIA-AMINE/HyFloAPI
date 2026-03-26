@@ -5,18 +5,25 @@
  *  @Name       : FlowReadingService
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 17: converted to transitional delegator (Phase 3)
+ *  @UpdatedOn  : 03-26-2026 — F3: @Service removed — no longer registered as Spring bean.
+ *                             Retained as compile-time delegator only.
  *
  *  @Type       : Class
- *  @Layer      : Service (Transitional — Legacy Compatibility)
+ *  @Layer      : Service (Transitional — Compile Compatibility Only — NOT a Spring bean)
  *  @Package    : Flow / Core
  *
  *  @Description: Transitional delegator retained for controller compilation compatibility.
  *                All read logic delegates to FlowReadingQueryService.
  *                All write operations throw UnsupportedOperationException.
- *                To be removed in Phase 4 during controller migration.
+ *
+ *                F3: @Service annotation removed — this class is NO LONGER registered
+ *                as a Spring bean. Controllers that still inject it will fail to start
+ *                until migrated to FlowReadingCommandService / FlowReadingQueryService.
+ *
+ *                To be deleted in Phase 4 after controller migration is complete.
  *
  *  @Deprecated since v2, forRemoval = true
- *  TODO(Phase 4): remove after controller migration to FlowReadingCommandService / FlowReadingQueryService
+ *  TODO(Phase 4): delete after controller migration to FlowReadingCommandService / FlowReadingQueryService
  *
  **/
 
@@ -28,7 +35,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
@@ -41,14 +47,17 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Transitional delegator — retained for controller compilation compatibility.
  *
+ * F3: @Service removed — this class is no longer a Spring bean.
+ * Any controller still injecting this type will cause an ApplicationContext
+ * startup failure, which is the intended forcing function for Phase 4 migration.
+ *
  * All read logic delegates to FlowReadingQueryService.
  * All write operations throw UnsupportedOperationException —
  * use FlowReadingCommandService instead.
  *
- * @deprecated since v2 — to be removed in Phase 4 controller migration.
- * TODO(Phase 4): migrate controller to FlowReadingCommandService / FlowReadingQueryService
+ * @deprecated since v2 — to be deleted in Phase 4 controller migration.
+ * TODO(Phase 4): delete this file after controller migration is complete.
  */
-@Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
@@ -91,7 +100,7 @@ public class FlowReadingService extends GenericService<FlowReading, FlowReadingR
     }
 
     // =====================================================================
-    // Transitional delegates — controllers can call these until Phase 4
+    // Transitional delegates — kept for compile compatibility until Phase 4
     // =====================================================================
 
     public List<FlowReadingReadDto> getByPipelineId(Long pipelineId) {
