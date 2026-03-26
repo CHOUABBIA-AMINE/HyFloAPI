@@ -4,11 +4,28 @@
  *
  *  @Name       : PipelineMapper
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Phase A: Fix Structure field access.
+ *                             Structure has no getName(); actual fields are
+ *                             code, designationAr, designationEn, designationFr.
+ *                             owner/manager name now reads getDesignationFr().
  *
  *  @Type       : Class (Utility / Static Mapper)
  *  @Layer      : Mapper
  *  @Package    : Network / Core
  *
+ *  Entity source-of-truth:
+ *    Infrastructure (parent): code, name, installationDate, commissioningDate,
+ *                             decommissioningDate, operationalStatus, owner (Structure)
+ *    Pipeline adds           : nominalDiameter, length, nominalThickness,
+ *                             nominalRoughness, designMaxServicePressure,
+ *                             operationalMaxServicePressure, designMinServicePressure,
+ *                             operationalMinServicePressure, designCapacity,
+ *                             operationalCapacity, nominalConstructionMaterial,
+ *                             nominalExteriorCoating, nominalInteriorCoating,
+ *                             pipelineSystem, departureTerminal, arrivalTerminal,
+ *                             manager (Structure), vendors
+ *    Structure              : code, designationAr, designationEn, designationFr
+ *                             — NO getName()
  **/
 
 package dz.sh.trc.hyflo.network.core.mapper;
@@ -62,10 +79,15 @@ public final class PipelineMapper {
                         ? entity.getPipelineSystem().getId() : null)
                 .pipelineSystemCode(entity.getPipelineSystem() != null
                         ? entity.getPipelineSystem().getCode() : null)
+                // Infrastructure.owner (Structure) — Structure has no getName();
+                // designationFr is SONATRACH canonical display name.
                 .ownerId(entity.getOwner() != null ? entity.getOwner().getId() : null)
-                .ownerName(entity.getOwner() != null ? entity.getOwner().getName() : null)
+                .ownerName(entity.getOwner() != null
+                        ? entity.getOwner().getDesignationFr() : null)
+                // Pipeline.manager (Structure) — same fix
                 .managerId(entity.getManager() != null ? entity.getManager().getId() : null)
-                .managerName(entity.getManager() != null ? entity.getManager().getName() : null)
+                .managerName(entity.getManager() != null
+                        ? entity.getManager().getDesignationFr() : null)
                 .build();
     }
 
