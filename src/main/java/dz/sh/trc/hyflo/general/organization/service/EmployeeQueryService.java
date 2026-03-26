@@ -4,12 +4,12 @@
  *
  *  @Name       : EmployeeQueryService
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Phase 4: search signature aligned to repository
+ *                             searchByAnyField(String, Pageable) — returns Page
  *
  *  @Type       : Interface
  *  @Layer      : Service
  *  @Package    : General / Organization
- *
- *  Phase 3 — Commit 24
  *
  **/
 
@@ -26,8 +26,6 @@ import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDto;
  * Query contract for Employee read operations.
  *
  * All methods return EmployeeReadDto — never raw entities.
- *
- * Phase 3 — Commit 24
  */
 public interface EmployeeQueryService {
 
@@ -37,5 +35,5 @@ public interface EmployeeQueryService {
 
     List<EmployeeReadDto> getByDepartment(Long departmentId);
 
-    List<EmployeeReadDto> search(String query);
+    Page<EmployeeReadDto> search(String query, Pageable pageable);
 }
