@@ -17,4 +17,12 @@ public interface IPipelineFacade {
     boolean existsById(Long pipelineId);
 
     List<PipelineDTO> findByManagerId(Long managerId);
+
+    /**
+     * Find all pipelines as DTOs.
+     * Used by PipelineIntelligenceService.getPipelineOverviews().
+     *
+     * @return List of all pipeline DTOs
+     */
+    List<PipelineDTO> findAll();
 }
