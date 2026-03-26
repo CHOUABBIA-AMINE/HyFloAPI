@@ -4,12 +4,11 @@
  *
  *  @Name       : PipelineQueryService
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 — Task 3: search(String) → search(String, Pageable), returns Page
  *
  *  @Type       : Interface
  *  @Layer      : Service
  *  @Package    : Network / Core
- *
- *  Phase 3 — Commit 23
  *
  **/
 
@@ -22,14 +21,6 @@ import org.springframework.data.domain.Pageable;
 
 import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDto;
 
-/**
- * Query contract for Pipeline read operations.
- *
- * Network module owns all pipeline infrastructure truth.
- * All methods return PipelineReadDto — never raw entities.
- *
- * Phase 3 — Commit 23
- */
 public interface PipelineQueryService {
 
     PipelineReadDto getById(Long id);
@@ -38,5 +29,5 @@ public interface PipelineQueryService {
 
     List<PipelineReadDto> getByPipelineSystem(Long systemId);
 
-    List<PipelineReadDto> search(String query);
+    Page<PipelineReadDto> search(String query, Pageable pageable);
 }

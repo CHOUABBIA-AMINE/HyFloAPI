@@ -5,6 +5,7 @@
  *  @Name       : FlowAnomalyService
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 26.3: marked deprecated before Phase 4
+ *  @UpdatedOn  : 03-26-2026 — Task 1: searchByQuery protected → public, remove @Override
  *
  *  @Type       : Class
  *  @Layer      : Service (TRANSITIONAL GENERIC — DO NOT EXTEND)
@@ -31,19 +32,6 @@ import dz.sh.trc.hyflo.flow.core.repository.FlowAnomalyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * <b>TRANSITIONAL — do not bind new code to this class.</b>
- *
- * <p>FlowAnomaly belongs to the intelligence domain. This generic service
- * is a temporary placeholder kept for controller compatibility only.
- *
- * <p>Phase 4 will replace this with a dedicated anomaly command/query service
- * pair inside the intelligence module. Do NOT add business logic here.
- *
- * @deprecated since v2-phase3 — will be replaced by intelligence domain
- *             command/query services in Phase 4. Scheduled for removal
- *             during controller migration.
- */
 @Deprecated(since = "v2-phase3", forRemoval = true)
 @Service
 @RequiredArgsConstructor
@@ -78,15 +66,13 @@ public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyR
         throw new UnsupportedOperationException("Use intelligence engine for anomaly updates");
     }
 
-    @Override
-    protected Page<FlowAnomalyReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<FlowAnomalyReadDto> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
         return flowAnomalyRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
     }
 
-    /** @deprecated use intelligence query service */
     @Deprecated(since = "v2-phase3", forRemoval = true)
     public List<FlowAnomalyReadDto> getByReadingId(Long readingId) {
         log.debug("Getting anomalies for reading ID: {}", readingId);
@@ -94,7 +80,6 @@ public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyR
                 .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
     }
 
-    /** @deprecated use intelligence query service */
     @Deprecated(since = "v2-phase3", forRemoval = true)
     public List<FlowAnomalyReadDto> getByPipelineSegmentId(Long segmentId) {
         log.debug("Getting anomalies for segment ID: {}", segmentId);

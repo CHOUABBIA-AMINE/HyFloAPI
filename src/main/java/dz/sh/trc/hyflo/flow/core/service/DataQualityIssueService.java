@@ -5,6 +5,7 @@
  *  @Name       : DataQualityIssueService
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 26.3: marked deprecated before Phase 4
+ *  @UpdatedOn  : 03-26-2026 — Task 1: searchByQuery protected → public, remove @Override
  *
  *  @Type       : Class
  *  @Layer      : Service (TRANSITIONAL GENERIC — DO NOT EXTEND)
@@ -31,20 +32,6 @@ import dz.sh.trc.hyflo.flow.core.repository.DataQualityIssueRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * <b>TRANSITIONAL — do not bind new code to this class.</b>
- *
- * <p>DataQualityIssue belongs to the intelligence domain. This generic service
- * is a temporary placeholder kept for controller compatibility only.
- *
- * <p>Phase 4 will replace this with a dedicated data quality scoring service
- * inside the intelligence module, aligned with the AI readiness layer.
- * Do NOT add business logic here.
- *
- * @deprecated since v2-phase3 — will be replaced by intelligence domain
- *             data quality command/query services in Phase 4. Scheduled
- *             for removal during controller migration.
- */
 @Deprecated(since = "v2-phase3", forRemoval = true)
 @Service
 @RequiredArgsConstructor
@@ -79,15 +66,13 @@ public class DataQualityIssueService extends GenericService<DataQualityIssue, Da
         throw new UnsupportedOperationException("Use intelligence engine for quality issue updates");
     }
 
-    @Override
-    protected Page<DataQualityIssueReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<DataQualityIssueReadDto> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
         return dataQualityIssueRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
     }
 
-    /** @deprecated use intelligence quality scoring service */
     @Deprecated(since = "v2-phase3", forRemoval = true)
     public List<DataQualityIssueReadDto> getByReadingId(Long readingId) {
         log.debug("Getting data quality issues for reading ID: {}", readingId);

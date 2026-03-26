@@ -4,6 +4,7 @@
  *
  * 	@Name		: ForecastResultReadDto
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-26-2026 — Task 2: add @Builder, @Getter, @Setter, @NoArgsConstructor, @AllArgsConstructor
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,8 +29,9 @@ import lombok.ToString;
  * Read DTO for forecast evaluation results.
  */
 @Schema(description = "Read DTO for forecast evaluation results")
-@Setter
+@Builder
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor

@@ -4,12 +4,11 @@
  *
  *  @Name       : PipelineQueryServiceImpl
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 — Task 3: searchByAnyField(query) → searchByAnyField(query, pageable)
  *
  *  @Type       : Class
  *  @Layer      : Service / Impl
  *  @Package    : Network / Core
- *
- *  Phase 3 — Commit 23
  *
  **/
 
@@ -31,14 +30,6 @@ import dz.sh.trc.hyflo.network.core.service.PipelineQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Query implementation for Pipeline read operations.
- *
- * Uses PipelineMapper from Phase 2.
- * Returns PipelineReadDto — no raw entity exposure.
- *
- * Phase 3 — Commit 23
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -68,10 +59,8 @@ public class PipelineQueryServiceImpl implements PipelineQueryService {
     }
 
     @Override
-    public List<PipelineReadDto> search(String query) {
-        return pipelineRepository.searchByAnyField(query)
-                .stream()
-                .map(PipelineMapper::toReadDto)
-                .collect(Collectors.toList());
+    public Page<PipelineReadDto> search(String query, Pageable pageable) {
+        return pipelineRepository.searchByAnyField(query, pageable)
+                .map(PipelineMapper::toReadDto);
     }
 }
