@@ -43,7 +43,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-auth")
 public class ProductController extends GenericController<ProductDTO, Long> {
 
-    @SuppressWarnings("unused")
 	private final ProductService productService;
 
     public ProductController(ProductService productService) {

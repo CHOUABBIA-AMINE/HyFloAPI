@@ -42,7 +42,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-auth")
 public class AlloyController extends GenericController<AlloyDTO, Long> {
 
-    @SuppressWarnings("unused")
 	private final AlloyService alloyService;
 
     public AlloyController(AlloyService alloyService) {

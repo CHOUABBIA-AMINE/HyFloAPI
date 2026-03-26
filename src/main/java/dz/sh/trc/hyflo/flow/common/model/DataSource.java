@@ -15,7 +15,6 @@
 package dz.sh.trc.hyflo.flow.common.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
-import dz.sh.trc.hyflo.general.organization.model.Employee;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

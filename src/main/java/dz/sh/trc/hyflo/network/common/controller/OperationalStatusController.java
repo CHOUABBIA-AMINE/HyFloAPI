@@ -42,7 +42,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-auth")
 public class OperationalStatusController extends GenericController<OperationalStatusDTO, Long> {
 
-    @SuppressWarnings("unused")
 	private final OperationalStatusService operationalStatusService;
 
     public OperationalStatusController(OperationalStatusService operationalStatusService) {

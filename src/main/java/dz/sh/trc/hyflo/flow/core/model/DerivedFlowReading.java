@@ -116,11 +116,11 @@ public class DerivedFlowReading extends GenericModel {
     private BigDecimal containedVolume;
 
     @Schema(description = "Timestamp when this derived reading was calculated")
-    @Column(name = "F_06_CALC")
+    @Column(name = "F_06")
     private LocalDateTime calculatedAt;
 
     @Schema(description = "Calculation method or model identifier", example = "PROPORTIONAL_LENGTH")
-    @Column(name = "F_07_CALC", length = 100)
+    @Column(name = "F_07", length = 100)
     private String calculationMethod;
 
     // ------------------------------------------------------------------

@@ -59,7 +59,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * No manual bean definitions needed!
  */
 @Configuration
-@EnableJpaRepositories(basePackages = "dz.sh.trc.hyflo")
+@EnableJpaRepositories(basePackages = "dz.sh.trc.hyflo.*")
 @EnableTransactionManagement
 public class DataConfig {
     

@@ -42,7 +42,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-auth")
 public class ZoneController extends GenericController<ZoneDTO, Long> {
 
-    @SuppressWarnings("unused")
 	private final ZoneService zoneService;
 
     public ZoneController(ZoneService zoneService) {

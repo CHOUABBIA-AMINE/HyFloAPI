@@ -113,7 +113,7 @@ public class FileController extends GenericController<FileDTO, Long> {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('FILE:UPLOAD')")
     public ResponseEntity<FileDTO> uploadFile(
-        @Parameter(description = "File to upload", required = true) @RequestParam("file") MultipartFile file,
+        @Parameter(description = "File to upload", required = true) @RequestParam MultipartFile file,
         @Parameter(description = "File type category", example = "DOCUMENT") @RequestParam(required = false) String fileType
     ) {
         log.info("Uploading file: {}", file.getOriginalFilename());

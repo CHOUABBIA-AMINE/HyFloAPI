@@ -42,7 +42,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-auth")
 public class FacilityTypeController extends GenericController<FacilityTypeDTO, Long> {
 
-    @SuppressWarnings("unused")
 	private final FacilityTypeService facilityTypeService;
 
     public FacilityTypeController(FacilityTypeService facilityTypeService) {

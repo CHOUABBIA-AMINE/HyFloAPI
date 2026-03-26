@@ -42,7 +42,6 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-auth")
 public class EquipmentTypeController extends GenericController<EquipmentTypeDTO, Long> {
 
-    @SuppressWarnings("unused")
 	private final EquipmentTypeService equipmentTypeService;
 
     public EquipmentTypeController(EquipmentTypeService equipmentTypeService) {
