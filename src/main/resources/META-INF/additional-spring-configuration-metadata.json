@@ -213,5 +213,10 @@
     "name": "notification.cleanup.retention-days",
     "type": "java.lang.String",
     "description": "A description for 'notification.cleanup.retention-days'"
+  },
+  {
+    "name": "file.upload-dir",
+    "type": "java.lang.String",
+    "description": "A description for 'file.upload-dir'"
   }
 ]}
