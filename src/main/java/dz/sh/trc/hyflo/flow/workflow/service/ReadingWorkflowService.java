@@ -8,18 +8,11 @@
  *  @UpdatedOn  : 03-26-2026 — H1: Remove deprecated validate() stub
  *  @UpdatedOn  : 03-26-2026 — H4: Use asyncGenerateDerivedReadings() for non-blocking approval
  *  @UpdatedOn  : 03-26-2026 — H7: Add Micrometer counters for production observability
+ *  @UpdatedOn  : 03-26-2026 — fix: setLastActorId → setLastActor(Employee)
  *
  *  @Type       : Class
  *  @Layer      : Service
  *  @Package    : Flow / Workflow
- *
- *  @Description: Orchestrates flow reading lifecycle transitions.
- *                WorkflowInstance is the source of truth for state.
- *                ValidationStatus is maintained as a compatibility projection.
- *                Returns FlowReadingReadDto — NEVER FlowReadingDTO.
- *
- *  Phase 3 — Commit 21 + Commit 22
- *  Phase 4 — H1: validate() removed | H4: async derived generation | H7: Micrometer metrics
  *
  **/
 
@@ -53,51 +46,22 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Orchestrates flow reading lifecycle transitions.
- *
- * WorkflowInstance is the source of truth for state.
- * ValidationStatus is maintained as a compatibility projection only.
- *
- * Returns FlowReadingReadDto exclusively.
- * FlowReadingDTO.fromEntity() (v1 self-mapping) fully removed — H1.
- *
- * H4: Derived reading generation is now fully asynchronous.
- *   SegmentDistributionService.asyncGenerateDerivedReadings() runs on 'taskExecutor'.
- *   The HTTP approval thread returns immediately after reading save + event publish.
- *
- * H7: Micrometer counters added for production observability:
- *   reading.approved          — incremented on every successful approval
- *   reading.rejected          — incremented on every successful rejection
- *   derived.generation.success — incremented via CompletableFuture thenRun callback
- *   derived.generation.failure — incremented via CompletableFuture exceptionally callback
- *
- * State transitions managed:
- *   SUBMITTED → APPROVED  (approve)
- *   SUBMITTED → REJECTED  (reject)
- *   REJECTED  → SUBMITTED (resubmit — stub for future Phase 4+)
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
 public class ReadingWorkflowService {
 
-    private final FlowReadingRepository flowReadingRepository;
-    private final ValidationStatusRepository validationStatusRepository;
-    private final WorkflowInstanceRepository workflowInstanceRepository;
-    private final EmployeeRepository employeeRepository;
-    private final ApplicationEventPublisher eventPublisher;
-    private final SegmentDistributionService segmentDistributionService;
-    private final MeterRegistry meterRegistry;
+    private final FlowReadingRepository      flowReadingRepository;
+    private final ValidationStatusRepository  validationStatusRepository;
+    private final WorkflowInstanceRepository  workflowInstanceRepository;
+    private final EmployeeRepository          employeeRepository;
+    private final ApplicationEventPublisher   eventPublisher;
+    private final SegmentDistributionService  segmentDistributionService;
+    private final MeterRegistry              meterRegistry;
 
     private static final DateTimeFormatter DATETIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-    // =====================================================================
-    //  H7 — Micrometer counters (initialised in @PostConstruct for eager
-    //  registration, avoiding first-call latency on high-volume dashboards)
-    // =====================================================================
 
     private Counter approvedCounter;
     private Counter rejectedCounter;
@@ -106,43 +70,22 @@ public class ReadingWorkflowService {
 
     @PostConstruct
     void initMetrics() {
-        approvedCounter = meterRegistry.counter("reading.approved",
-                "module", "workflow");
-        rejectedCounter = meterRegistry.counter("reading.rejected",
-                "module", "workflow");
-        derivedSuccessCounter = meterRegistry.counter("derived.generation.success",
-                "module", "workflow");
-        derivedFailureCounter = meterRegistry.counter("derived.generation.failure",
-                "module", "workflow");
+        approvedCounter      = meterRegistry.counter("reading.approved",          "module", "workflow");
+        rejectedCounter      = meterRegistry.counter("reading.rejected",          "module", "workflow");
+        derivedSuccessCounter = meterRegistry.counter("derived.generation.success", "module", "workflow");
+        derivedFailureCounter = meterRegistry.counter("derived.generation.failure", "module", "workflow");
     }
 
     // =====================================================================
     //  APPROVE
     // =====================================================================
 
-    /**
-     * Approve a submitted flow reading.
-     *
-     * Workflow transition: SUBMITTED → APPROVED
-     *
-     * Side effects:
-     * - WorkflowInstance.lastActorId and updatedAt updated (source of truth)
-     * - ValidationStatus updated to APPROVED (compatibility projection)
-     * - ReadingValidatedEvent published
-     * - asyncGenerateDerivedReadings() triggered on taskExecutor (H4 — non-blocking)
-     * - reading.approved counter incremented (H7)
-     * - derived.generation.success / derived.generation.failure counter updated asynchronously (H7)
-     *
-     * @param id          Reading ID
-     * @param approvedById Employee ID of the approver
-     * @return FlowReadingReadDto with APPROVED status
-     */
     @Transactional
     public FlowReadingReadDto approve(Long id, Long approvedById) {
         log.info("Approving flow reading ID: {} by employee ID: {}", id, approvedById);
 
-        FlowReading reading = requireReading(id);
-        Employee approver = requireEmployee(approvedById);
+        FlowReading reading  = requireReading(id);
+        Employee    approver = requireEmployee(approvedById);
 
         guardAgainstInvalidTransition(reading, "APPROVED");
 
@@ -151,7 +94,7 @@ public class ReadingWorkflowService {
             WorkflowInstance wf = workflowInstanceRepository
                     .findById(reading.getWorkflowInstance().getId())
                     .orElse(reading.getWorkflowInstance());
-            wf.setLastActorId(approvedById);
+            wf.setLastActor(approver);           // Employee FK — not a raw Long
             wf.setUpdatedAt(LocalDateTime.now());
             workflowInstanceRepository.save(wf);
         }
@@ -167,10 +110,8 @@ public class ReadingWorkflowService {
         FlowReading saved = flowReadingRepository.save(reading);
         log.info("Flow reading ID: {} approved by employee ID: {}", id, approvedById);
 
-        // H7: increment approval counter
         approvedCounter.increment();
 
-        // Publish event
         eventPublisher.publishEvent(ReadingValidatedEvent.create(
                 saved.getId(),
                 buildActorName(approver),
@@ -179,22 +120,16 @@ public class ReadingWorkflowService {
                 null,
                 LocalDateTime.now().format(DATETIME_FORMATTER)));
 
-        // H4: Trigger derived reading generation ASYNCHRONOUSLY on taskExecutor thread pool.
-        // H7: Attach thenRun/exceptionally callbacks to update derived generation counters.
         segmentDistributionService.asyncGenerateDerivedReadings(saved)
                 .thenRun(() -> {
                     derivedSuccessCounter.increment();
-                    log.debug("[METRICS] derived.generation.success incremented for reading ID: {}",
-                            saved.getId());
+                    log.debug("[METRICS] derived.generation.success for reading ID: {}", saved.getId());
                 })
                 .exceptionally(ex -> {
                     derivedFailureCounter.increment();
-                    log.debug("[METRICS] derived.generation.failure incremented for reading ID: {}",
-                            saved.getId());
+                    log.debug("[METRICS] derived.generation.failure for reading ID: {}", saved.getId());
                     return null;
                 });
-
-        log.debug("Async derived reading generation triggered for reading ID: {}", saved.getId());
 
         return FlowReadingMapper.toReadDto(saved);
     }
@@ -203,25 +138,13 @@ public class ReadingWorkflowService {
     //  REJECT
     // =====================================================================
 
-    /**
-     * Reject a submitted flow reading.
-     *
-     * Workflow transition: SUBMITTED → REJECTED
-     *
-     * H7: reading.rejected counter incremented after successful save.
-     *
-     * @param id              Reading ID
-     * @param rejectedById    Employee ID of the rejector
-     * @param rejectionReason Reason for rejection
-     * @return FlowReadingReadDto with REJECTED status
-     */
     @Transactional
     public FlowReadingReadDto reject(Long id, Long rejectedById, String rejectionReason) {
-        log.info("Rejecting flow reading ID: {} by employee ID: {} with reason: {}",
+        log.info("Rejecting flow reading ID: {} by employee ID: {} reason: {}",
                 id, rejectedById, rejectionReason);
 
-        FlowReading reading = requireReading(id);
-        Employee rejector = requireEmployee(rejectedById);
+        FlowReading reading  = requireReading(id);
+        Employee    rejector = requireEmployee(rejectedById);
 
         guardAgainstInvalidTransition(reading, "REJECTED");
 
@@ -229,7 +152,7 @@ public class ReadingWorkflowService {
             WorkflowInstance wf = workflowInstanceRepository
                     .findById(reading.getWorkflowInstance().getId())
                     .orElse(reading.getWorkflowInstance());
-            wf.setLastActorId(rejectedById);
+            wf.setLastActor(rejector);           // Employee FK — not a raw Long
             wf.setUpdatedAt(LocalDateTime.now());
             workflowInstanceRepository.save(wf);
         }
@@ -255,7 +178,6 @@ public class ReadingWorkflowService {
         FlowReading saved = flowReadingRepository.save(reading);
         log.info("Flow reading ID: {} rejected by employee ID: {}", id, rejectedById);
 
-        // H7: increment rejection counter
         rejectedCounter.increment();
 
         eventPublisher.publishEvent(ReadingRejectedEvent.create(

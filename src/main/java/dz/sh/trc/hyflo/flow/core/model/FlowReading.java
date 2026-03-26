@@ -5,13 +5,12 @@
  * 	@Name		: FlowReading
  * 	@CreatedOn	: 03-25-2026
  * 	@UpdatedOn	: 03-26-2026 — H6: Add @Version for optimistic locking
+ * 	@UpdatedOn	: 03-26-2026 — fix: add readingSlot, recordedBy, validatedBy, recordedAt
+ *                              (fields referenced by workflow, coverage, and mapper layers)
  *
  * 	@Type		: Class
  * 	@Layer		: Model
  * 	@Package	: Flow / Core
- *
- *  H6 — Optimistic locking: @Version field added to prevent concurrent
- *       approval race conditions in ReadingWorkflowService.approve().
  *
  **/
 
@@ -23,8 +22,10 @@ import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.flow.common.model.DataSource;
+import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;
+import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -42,30 +43,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Represents a manual flow reading recorded by an operator for a pipeline.
- * Each record captures measured volume, pressure, temperature and links to
- * the validation lifecycle status.
- *
- * <h3>Workflow binding</h3>
- * {@code FlowReading} holds the FK to its associated {@link WorkflowInstance}
- * (nullable — a reading may exist before a workflow process is opened).
- * This follows the ownership contract established in Commit 03: the domain
- * entity carries the reference; the workflow aggregate remains domain-neutral.
- *
- * <h3>Data provenance</h3>
- * {@link DataSource} (F_13) records the origin of the measurement
- * (e.g., MANUAL, SCADA, CALCULATED, AI_ASSISTED). Required for data quality
- * scoring and analytical read models.
- *
- * <h3>Optimistic locking (H6)</h3>
- * {@code version} (F_14) is a JPA {@code @Version} field.
- * It prevents concurrent approval race conditions between the
- * {@code guardAgainstInvalidTransition()} check and the final save
- * in {@code ReadingWorkflowService.approve()} and {@code reject()}.
- * Any concurrent modification will throw {@code OptimisticLockException},
- * which is handled by {@code GlobalExceptionHandler}.
- */
 @Schema(description = "Operational flow reading recorded by a transport operator")
 @Setter
 @Getter
@@ -134,12 +111,12 @@ public class FlowReading extends GenericModel {
     private ValidationStatus validationStatus;
 
     // ------------------------------------------------------------------
-    // F_12 — Workflow binding (domain entity owns FK per Commit 03 contract)
+    // F_12 — Workflow binding
     // ------------------------------------------------------------------
 
     @Schema(
-            description = "FK to the workflow instance governing the validation lifecycle of this reading. " +
-                    "Null when no workflow process has been opened yet.",
+            description = "FK to the workflow instance governing the validation lifecycle. "
+                    + "Null when no workflow process has been opened yet.",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
@@ -152,9 +129,7 @@ public class FlowReading extends GenericModel {
     // ------------------------------------------------------------------
 
     @Schema(
-            description = "FK to the data source classifying the origin of this reading " +
-                    "(e.g., MANUAL, SCADA, CALCULATED, AI_ASSISTED). " +
-                    "Null when source has not yet been classified.",
+            description = "FK to the data source (MANUAL, SCADA, CALCULATED, AI_ASSISTED).",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
@@ -166,18 +141,58 @@ public class FlowReading extends GenericModel {
     // F_14 — Optimistic locking (H6)
     // ------------------------------------------------------------------
 
-    /**
-     * JPA optimistic lock version counter.
-     *
-     * Incremented automatically by Hibernate on every UPDATE.
-     * Prevents concurrent approval/rejection race conditions:
-     * if two requests attempt to approve the same reading simultaneously,
-     * one will receive an {@code ObjectOptimisticLockingFailureException},
-     * handled by {@code GlobalExceptionHandler} as HTTP 409 Conflict.
-     *
-     * Mapped to column F_14 to preserve the existing column naming convention.
-     */
     @Version
     @Column(name = "F_14")
     private Long version;
+
+    // ------------------------------------------------------------------
+    // F_15 — Reading slot (measurement period)
+    // ------------------------------------------------------------------
+
+    @Schema(
+            description = "FK to the reading slot defining the measurement period (e.g., S1 06:00–12:00). "
+                    + "Null when the reading is not tied to a specific shift slot.",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_15", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_04_01_01_FK_05"))
+    private ReadingSlot readingSlot;
+
+    // ------------------------------------------------------------------
+    // F_16 — Recorded by (operator who entered the reading)
+    // ------------------------------------------------------------------
+
+    @Schema(
+            description = "FK to the employee who recorded (entered) this reading.",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_16", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_04_01_01_FK_06"))
+    private Employee recordedBy;
+
+    // ------------------------------------------------------------------
+    // F_17 — Validated by (validator/approver who approved or rejected)
+    // ------------------------------------------------------------------
+
+    @Schema(
+            description = "FK to the employee who approved or rejected this reading.",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_17", referencedColumnName = "F_00",
+            foreignKey = @ForeignKey(name = "T_04_01_01_FK_07"))
+    private Employee validatedBy;
+
+    // ------------------------------------------------------------------
+    // F_18 — Recorded at (timestamp when operator entered the reading)
+    // ------------------------------------------------------------------
+
+    @Schema(
+            description = "Timestamp when the reading was first recorded (entered) by the operator.",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED
+    )
+    @Column(name = "F_18")
+    private LocalDateTime recordedAt;
 }
