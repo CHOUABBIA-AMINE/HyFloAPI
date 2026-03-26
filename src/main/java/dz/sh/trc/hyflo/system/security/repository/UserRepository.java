@@ -5,6 +5,7 @@
  *	@Name		: UserRepository
  *	@CreatedOn	: 06-26-2025
  *	@UpdatedOn	: 12-12-2025
+ *	@UpdatedOn	: 03-26-2026 - Phase 7: add findByRoles_Id(Long roleId)
  *
  *	@Type		: Interface
  *	@Layer		: Repository
@@ -39,7 +40,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     Boolean existsByEmail(String email);
     
-    //@PreAuthorize("hasRole('ADMIN')")
     Page<User> findAll(Pageable page);
     
     @EntityGraph(attributePaths = {"roles"})
@@ -49,33 +49,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR "
             + "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<User> searchByAnyField(@Param("search") String search, Pageable pageable);
-    
-    //
-    //@Query("SELECT u FROM User u WHERE u.id = :id")
-    //Optional<User> findByIdForAuthentication(Long id);
-    
+
     /**
-     * Find all enabled users who have a specific role (by role name)
-     * This query joins User -> roles -> name to find users with the given role
-     * Only returns enabled users
-     * 
-     * @param roleName Role name (e.g., "ROLE_VALIDATOR", "ROLE_READER")
-     * @return List of users with the specified role
+     * Find users that have a specific role by role ID.
+     * Uses Spring Data derived query on User.roles join table.
+     *
+     * @param roleId the ID of the role
+     * @return list of users assigned to that role
      */
+    List<User> findByRoles_Id(Long roleId);
+    
     @Query("SELECT DISTINCT u FROM User u "
             + "JOIN u.roles r "
             + "WHERE r.name = :roleName "
             + "AND u.enabled = true")
     List<User> findEnabledUsersByRoleName(@Param("roleName") String roleName);
     
-    /**
-     * Find all enabled users who have a specific role through groups
-     * This query joins User -> groups -> roles -> name
-     * Only returns enabled users
-     * 
-     * @param roleName Role name
-     * @return List of users with the specified role (via groups)
-     */
     @Query("SELECT DISTINCT u FROM User u "
             + "JOIN u.groups g "
             + "JOIN g.roles r "
@@ -83,13 +72,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "AND u.enabled = true")
     List<User> findEnabledUsersByRoleNameViaGroups(@Param("roleName") String roleName);
     
-    /**
-     * Find all enabled users who have a specific role either directly or through groups
-     * Combines both direct role assignments and group-based role assignments
-     * 
-     * @param roleName Role name (e.g., "ROLE_VALIDATOR")
-     * @return List of users with the specified role (direct or via groups)
-     */
     @Query("SELECT DISTINCT u FROM User u "
             + "LEFT JOIN u.roles r "
             + "LEFT JOIN u.groups g "
