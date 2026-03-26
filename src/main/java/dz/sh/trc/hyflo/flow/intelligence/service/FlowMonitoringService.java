@@ -8,6 +8,7 @@
  * 	@UpdatedOn	: 02-10-2026 - Phase 1 refactoring: Eliminated direct repository access
  * 	@UpdatedOn	: 02-10-2026 - Phase 4 refactoring: Added date range validation
  * 	@UpdatedOn	: 02-10-2026 - Phase 2: Facades return DTOs, no conversion needed
+ * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2)
  *
  * 	@Type		: Class
  * 	@Layer		: Service
@@ -17,22 +18,17 @@
  * 	              Extracted from FlowReadingService to separate concerns.
  *
  * 	@Refactoring: Phase 1 - Removed direct FlowReadingRepository dependency.
- * 	              Now uses FlowReadingFacade and IntelligenceQueryRepository exclusively.
- * 	              
- * 	              Benefits:
- * 	              - Enforces module boundaries (no direct core repository access)
- * 	              - Improves testability (mock facade instead of repository)
- * 	              - Clear separation: facade for queries, repository for analytics
- * 	
- * 	@Refactoring: Phase 4 - Performance Optimization:
- * 	              - Added date range validation (max 90 days)
- * 	              - Prevents performance issues with large result sets
- * 	              - Validates input parameters before executing expensive queries
+ * 	              Now uses IFlowReadingFacade and IntelligenceQueryRepository exclusively.
  *
- * 	@Refactoring: Phase 2 - Facades now return DTOs directly:
- * 	              - Removed .map(FlowReadingDTO::fromEntity) calls
- * 	              - Facades handle entity→DTO conversion
- * 	              - Service works exclusively with DTOs
+ * 	@Refactoring: Phase 4 - Performance Optimization:
+ * 	              Added date range validation (max 90 days).
+ *
+ * 	@Refactoring: Phase 2 - Facades return DTOs directly:
+ * 	              Removed .map(FlowReadingDTO::fromEntity) calls.
+ *
+ * 	@Refactoring: F2 - IFlowReadingFacade now returns FlowReadingReadDto (v2).
+ * 	              FlowReadingDTO (v1) import removed. All Page<FlowReadingReadDto>
+ * 	              and List<FlowReadingReadDto> updated accordingly.
  *
  **/
 
@@ -49,7 +45,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
@@ -62,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service providing operational monitoring and analytics for flow readings.
- * 
+ *
  * This service handles:
  * - Pending validations tracking (via facade)
  * - Overdue readings detection (via facade)
@@ -70,16 +66,15 @@ import lombok.extern.slf4j.Slf4j;
  * - Validator workload distribution (via IntelligenceQueryRepository)
  * - Submission trend analysis (via IntelligenceQueryRepository)
  * - Pipeline coverage reporting (via IntelligenceQueryRepository)
- * 
+ *
  * Architecture Pattern:
- * - Uses FlowReadingFacade for simple queries (enforces module boundary)
+ * - Uses IFlowReadingFacade for simple queries (enforces module boundary)
  * - Uses IntelligenceQueryRepository for complex analytics (native SQL)
  * - NO direct access to FlowReadingRepository (core module)
  * - NO entity dependencies (works exclusively with DTOs)
- * 
- * Performance:
- * - Date range validation enforced (max 90 days for analytics)
- * - JOIN FETCH used in repository queries to prevent N+1 issues
+ *
+ * F2: IFlowReadingFacade now returns FlowReadingReadDto (v2).
+ * All references to FlowReadingDTO (v1) have been removed.
  */
 @Service
 @RequiredArgsConstructor
@@ -87,20 +82,139 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class FlowMonitoringService {
 
-    // ========== DEPENDENCIES (Phase 1 Refactored) ==========
-    
+    // ========== DEPENDENCIES ==========
+
     /**
-     * Facade for accessing core flow reading queries
-     * REFACTORED (Phase 1): Now using facade instead of direct FlowReadingRepository access
-     * REFACTORED (Phase 2): Facade now returns DTOs instead of entities
+     * Facade for accessing core flow reading queries.
+     * F2: now returns FlowReadingReadDto (v2) — no FlowReadingDTO (v1) in this module.
      */
     private final IFlowReadingFacade flowReadingFacade;
-    
+
     /**
-     * Repository for complex analytics queries
-     * NEW: Dedicated repository for intelligence-specific queries
+     * Repository for complex analytics queries.
      */
     private final IntelligenceQueryRepository intelligenceQueryRepository;
 
-    // ... rest of class unchanged ...
+    // ========== PENDING VALIDATIONS ==========
+
+    /**
+     * Find readings pending validation for a structure, paginated.
+     *
+     * @param structureId the structure ID
+     * @param pageable    pagination parameters
+     * @return page of v2 read DTOs
+     */
+    public Page<FlowReadingReadDto> findPendingValidations(Long structureId, Pageable pageable) {
+        log.debug("Finding pending validations for structure ID {}", structureId);
+        return flowReadingFacade.findPendingValidationsByStructure(structureId, pageable);
+    }
+
+    /**
+     * Count pending validations for a structure.
+     *
+     * @param structureId the structure ID
+     * @return count of pending readings
+     */
+    public long countPendingValidations(Long structureId) {
+        log.debug("Counting pending validations for structure ID {}", structureId);
+        return flowReadingFacade
+                .findPendingValidationsByStructure(structureId, Pageable.unpaged())
+                .getTotalElements();
+    }
+
+    // ========== OVERDUE READINGS ==========
+
+    /**
+     * Find overdue readings for a structure, paginated.
+     *
+     * @param structureId the structure ID
+     * @param asOfDate    the reference date
+     * @param pageable    pagination parameters
+     * @return page of v2 read DTOs
+     */
+    public Page<FlowReadingReadDto> findOverdueReadings(
+            Long structureId, LocalDate asOfDate, Pageable pageable) {
+        log.debug("Finding overdue readings for structure ID {} as of {}", structureId, asOfDate);
+        return flowReadingFacade.findOverdueReadingsByStructure(
+                structureId, asOfDate, DateTimeUtils.currentDateTime(), pageable);
+    }
+
+    // ========== ANALYTICS ==========
+
+    /**
+     * Get daily completion statistics for a pipeline over a date range.
+     * Max range: 90 days.
+     *
+     * @param pipelineId the pipeline ID
+     * @param startDate  range start
+     * @param endDate    range end
+     * @return list of daily completion stats
+     */
+    public List<DailyCompletionStatisticsDTO> getDailyCompletionStatistics(
+            Long pipelineId, LocalDate startDate, LocalDate endDate) {
+        validateDateRange(startDate, endDate);
+        log.debug("Getting daily completion statistics for pipeline {} from {} to {}",
+                pipelineId, startDate, endDate);
+        return intelligenceQueryRepository.getDailyCompletionStatistics(
+                pipelineId, startDate, endDate);
+    }
+
+    /**
+     * Get validator workload distribution.
+     *
+     * @return list of validator workload DTOs
+     */
+    public List<ValidatorWorkloadDTO> getValidatorWorkload() {
+        log.debug("Getting validator workload distribution");
+        return intelligenceQueryRepository.getValidatorWorkload();
+    }
+
+    /**
+     * Get submission trend over a date range.
+     * Max range: 90 days.
+     *
+     * @param startDate range start
+     * @param endDate   range end
+     * @return list of submission trend DTOs
+     */
+    public List<SubmissionTrendDTO> getSubmissionTrend(LocalDate startDate, LocalDate endDate) {
+        validateDateRange(startDate, endDate);
+        log.debug("Getting submission trend from {} to {}", startDate, endDate);
+        return intelligenceQueryRepository.getSubmissionTrend(startDate, endDate);
+    }
+
+    /**
+     * Get pipeline coverage detail for a specific pipeline and date range.
+     * Max range: 90 days.
+     *
+     * @param pipelineId the pipeline ID
+     * @param startDate  range start
+     * @param endDate    range end
+     * @return list of coverage detail DTOs
+     */
+    public List<PipelineCoverageDetailDTO> getPipelineCoverageDetail(
+            Long pipelineId, LocalDate startDate, LocalDate endDate) {
+        validateDateRange(startDate, endDate);
+        log.debug("Getting pipeline coverage detail for pipeline {} from {} to {}",
+                pipelineId, startDate, endDate);
+        return intelligenceQueryRepository.getPipelineCoverageDetail(
+                pipelineId, startDate, endDate);
+    }
+
+    // ========== PRIVATE HELPERS ==========
+
+    /**
+     * Validate that a date range does not exceed 90 days.
+     *
+     * @param startDate range start
+     * @param endDate   range end
+     * @throws IllegalArgumentException if the range exceeds 90 days
+     */
+    private void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days > 90) {
+            throw new IllegalArgumentException(
+                    "Date range cannot exceed 90 days. Requested: " + days + " days.");
+        }
+    }
 }

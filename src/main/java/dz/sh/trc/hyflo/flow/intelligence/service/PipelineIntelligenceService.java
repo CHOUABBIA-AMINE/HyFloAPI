@@ -16,18 +16,17 @@
  * 	@UpdatedOn	: 03-26-2026 - H2: Replace FlowThresholdRepository/FlowAlertRepository/FlowEventRepository
  * 	                             with IFlowThresholdFacade/IFlowAlertFacade/IFlowEventFacade
  * 	@UpdatedOn	: 03-26-2026 - F1: Replace FlowAlert/FlowThreshold/FlowEvent entity imports
- * 	                             with FlowAlertFacadeDto/FlowThresholdFacadeDto/FlowEventFacadeDto.
- * 	                             Zero flow/core/model.* imports remain.
+ * 	                             with FlowAlertFacadeDto/FlowThresholdFacadeDto/FlowEventFacadeDto
+ * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2).
+ * 	                             getActualFlow() replaced with getVolumeM3() per v2 field contract.
  *
  * 	@Type		: Class
  * 	@Layer		: Service
  * 	@Package	: Flow / Intelligence
  *
- * 	@Enhancement: Phase 6 - Replace Map<String, BigDecimal> with typed KeyMetricsDTO.
- * 	@BugFix: Phase 7 - Add null safety for optional pipeline fields
  * 	@Refactor: H2 - All flow/core repository accesses replaced by facade interfaces
- * 	@Refactor: F1 - All flow/core entity type references replaced by facade DTO projections.
- * 	           Module boundary now enforced at the Java type level.
+ * 	@Refactor: F1 - All flow/core entity type references replaced by facade DTO projections
+ * 	@Refactor: F2 - IFlowReadingFacade now returns FlowReadingReadDto; v1 FlowReadingDTO eliminated
  *
  **/
 
@@ -40,12 +39,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
 import dz.sh.trc.hyflo.flow.intelligence.dto.KeyMetricsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineInfoDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineHealthDTO;
@@ -70,13 +70,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * H2: All flow/core repository dependencies replaced by facade interfaces.
  * F1: All flow/core entity type references replaced by facade DTO projections.
- *
- * Module boundary is now enforced at the Java type level:
- *   - IFlowAlertFacade    → returns FlowAlertFacadeDto
- *   - IFlowThresholdFacade → returns FlowThresholdFacadeDto
- *   - IFlowEventFacade    → returns FlowEventFacadeDto
+ * F2: IFlowReadingFacade now returns FlowReadingReadDto — v1 FlowReadingDTO fully eliminated.
  *
  * No class from dz.sh.trc.hyflo.flow.core.model is imported here.
+ * No v1 FlowReadingDTO is imported here.
  */
 @Service
 @Transactional(readOnly = true)
@@ -88,9 +85,9 @@ public class PipelineIntelligenceService {
 
     private final IPipelineFacade pipelineFacade;
     private final IFlowReadingFacade flowReadingFacade;
-    private final IFlowThresholdFacade thresholdFacade;   // H2 + F1: DTO-returning facade
-    private final IFlowAlertFacade alertFacade;           // H2 + F1: DTO-returning facade
-    private final IFlowEventFacade eventFacade;           // H2 + F1: DTO-returning facade
+    private final IFlowThresholdFacade thresholdFacade;
+    private final IFlowAlertFacade alertFacade;
+    private final IFlowEventFacade eventFacade;
 
     // TODO: Add when available
     // private final StationFacade stationFacade;
@@ -148,9 +145,6 @@ public class PipelineIntelligenceService {
 
     /**
      * Get pipeline health metrics.
-     *
-     * F1: uses List<FlowAlertFacadeDto> and List<FlowThresholdFacadeDto> —
-     * no FlowAlert or FlowThreshold entity types referenced.
      */
     public PipelineHealthDTO getPipelineHealth(Long pipelineId) {
         log.debug("Getting pipeline health for ID {}", pipelineId);
@@ -161,11 +155,8 @@ public class PipelineIntelligenceService {
         LocalDateTime rangeStart = LocalDate.now().minusDays(30).atStartOfDay();
         LocalDateTime rangeEnd   = LocalDateTime.now();
 
-        // F1: FlowAlertFacadeDto — no flow/core entity import
         List<FlowAlertFacadeDto> recentAlerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
-
-        // F1: FlowThresholdFacadeDto — no flow/core entity import
         List<FlowThresholdFacadeDto> thresholds = thresholdFacade.findByPipeline(pipelineId);
 
         int alertCount    = recentAlerts.size();
@@ -195,8 +186,8 @@ public class PipelineIntelligenceService {
     /**
      * Get operational dashboard for a pipeline.
      *
-     * F1: uses FlowAlertFacadeDto, FlowThresholdFacadeDto, FlowEventFacadeDto —
-     * no flow/core entity types referenced.
+     * F2: readings are now List<FlowReadingReadDto>.
+     * Average flow computed from volumeM3 (v2 field) instead of actualFlow (v1 field).
      */
     public PipelineDynamicDashboardDTO getDashboard(Long pipelineId) {
         log.debug("Building dashboard for pipeline ID {}", pipelineId);
@@ -208,24 +199,20 @@ public class PipelineIntelligenceService {
         LocalDateTime rangeEnd   = LocalDateTime.now();
         LocalDate today          = LocalDate.now();
 
-        // Readings — FlowReadingDTO from IFlowReadingFacade (pre-existing contract)
-        List<FlowReadingDTO> readings =
+        // F2: FlowReadingReadDto — v2 contract
+        List<FlowReadingReadDto> readings =
                 flowReadingFacade.findByPipelineAndDateRange(pipelineId, today.minusDays(30), today);
 
-        // F1: FlowAlertFacadeDto — no flow/core entity import
         List<FlowAlertFacadeDto> alerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
-
-        // F1: FlowThresholdFacadeDto — no flow/core entity import
         List<FlowThresholdFacadeDto> thresholds = thresholdFacade.findByPipeline(pipelineId);
-
-        // F1: FlowEventFacadeDto — no flow/core entity import
         List<FlowEventFacadeDto> events =
                 eventFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
 
+        // F2: volumeM3 is the v2 field — replaces v1 actualFlow
         OptionalDouble avgFlow = readings.stream()
-                .filter(r -> r.getActualFlow() != null)
-                .mapToDouble(r -> r.getActualFlow().doubleValue())
+                .filter(r -> r.getVolumeM3() != null)
+                .mapToDouble(r -> r.getVolumeM3().doubleValue())
                 .average();
 
         BigDecimal avgFlowValue = avgFlow.isPresent()
@@ -251,9 +238,6 @@ public class PipelineIntelligenceService {
 
     /**
      * Get pipeline timeline of events and alerts.
-     *
-     * F1: uses FlowAlertFacadeDto and FlowEventFacadeDto —
-     * no flow/core entity types referenced.
      */
     public PipelineTimelineDTO getTimeline(Long pipelineId, LocalDate from, LocalDate to) {
         log.debug("Building timeline for pipeline ID {} from {} to {}", pipelineId, from, to);
@@ -264,11 +248,8 @@ public class PipelineIntelligenceService {
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end   = to.plusDays(1).atStartOfDay();
 
-        // F1: FlowAlertFacadeDto — no flow/core entity import
         List<FlowAlertFacadeDto> alerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, start, end);
-
-        // F1: FlowEventFacadeDto — no flow/core entity import
         List<FlowEventFacadeDto> events =
                 eventFacade.findByPipelineAndTimeRange(pipelineId, start, end);
 
