@@ -5,6 +5,7 @@
  *  @Name       : FlowReadingRepository
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 17/25: added Phase 3 service-support query methods
+ *  @UpdatedOn  : 03-26-2026 — derived method names now resolve: readingSlot added to FlowReading
  *
  *  @Type       : Interface
  *  @Layer      : Repository
@@ -33,6 +34,9 @@ import dz.sh.trc.hyflo.flow.core.model.FlowReading;
  * Methods added in Phase 3 (Commit 17/25) support:
  * - Command/query service split (FlowReadingQueryServiceImpl)
  * - Segment distribution and workflow orchestration
+ *
+ * readingSlot was added to FlowReading (F_15, FK_05) to support
+ * slot-scoped query methods below.
  */
 @Repository
 public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> {
@@ -58,7 +62,7 @@ public interface FlowReadingRepository extends JpaRepository<FlowReading, Long> 
     /** Used by FlowReadingQueryServiceImpl.getByPipelineAndSlot() */
     List<FlowReading> findByPipelineIdAndReadingSlotId(Long pipelineId, Long readingSlotId);
 
-    /** Used by FlowReadingQueryServiceImpl.getLatestByPipeline() with sorted pageable */
+    /** Used by FlowReadingQueryServiceImpl.getAll(Pageable) with sorted pageable */
     Page<FlowReading> findByPipelineId(Long pipelineId, Pageable pageable);
 
     /** Exact slot+date lookup per pipeline — uniqueness support */
