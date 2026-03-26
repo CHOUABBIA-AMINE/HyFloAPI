@@ -4,6 +4,7 @@
  *
  *  @Name       : IncidentImpactReadDto
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Aligned fields with real IncidentImpact entity
  *
  *  @Type       : Class
  *  @Layer      : DTO / Query
@@ -14,7 +15,7 @@
 package dz.sh.trc.hyflo.crisis.dto.query;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -42,26 +43,20 @@ public class IncidentImpactReadDto {
     @Schema(description = "ID of the parent incident")
     private Long incidentId;
 
-    @Schema(description = "Impact category", example = "VOLUME_LOSS")
-    private String impactCategory;
+    @Schema(description = "Impact level classification", example = "CRITICAL")
+    private String impactLevel;
 
-    @Schema(description = "Estimated volume loss in m\u00b3", example = "1500.0000")
-    private BigDecimal estimatedVolumeLossM3;
+    @Schema(description = "Estimated economic loss (local currency)", example = "1500000.00")
+    private BigDecimal estimatedLoss;
 
-    @Schema(description = "Duration of operational disruption in hours", example = "6.50")
-    private BigDecimal disruptionDurationHours;
+    @Schema(description = "Total downtime in minutes", example = "180")
+    private Long downtimeMinutes;
 
-    @Schema(description = "Financial impact estimate in USD", example = "250000.00")
-    private BigDecimal financialImpactUsd;
+    @Schema(description = "IDs of affected pipelines")
+    private List<Long> affectedPipelineIds;
 
-    @Schema(description = "Timestamp when impact was assessed")
-    private LocalDateTime assessedAt;
-
-    @Schema(description = "ID of the employee who assessed the impact")
-    private Long assessedById;
-
-    @Schema(description = "Full name of the employee who assessed the impact")
-    private String assessedByFullName;
+    @Schema(description = "IDs of affected pipeline segments")
+    private List<Long> affectedSegmentIds;
 
     // ---- NO fromEntity / mapping logic ----
     // All mapping is owned by IncidentImpactMapper.

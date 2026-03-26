@@ -4,6 +4,7 @@
  *
  *  @Name       : IncidentImpactMapper
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 - Corrected to map real IncidentImpact entity fields
  *
  *  @Type       : Class (Utility / Static Mapper)
  *  @Layer      : Mapper
@@ -13,9 +14,12 @@
 
 package dz.sh.trc.hyflo.crisis.mapper;
 
+import java.util.stream.Collectors;
+
 import dz.sh.trc.hyflo.crisis.dto.query.IncidentImpactReadDto;
 import dz.sh.trc.hyflo.crisis.model.IncidentImpact;
-import dz.sh.trc.hyflo.general.organization.model.Employee;
+import dz.sh.trc.hyflo.network.core.model.Pipeline;
+import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
 
 public final class IncidentImpactMapper {
 
@@ -26,22 +30,23 @@ public final class IncidentImpactMapper {
 
         return IncidentImpactReadDto.builder()
                 .id(entity.getId())
-                .incidentId(entity.getIncident() != null ? entity.getIncident().getId() : null)
-                .impactCategory(entity.getImpactCategory())
-                .estimatedVolumeLossM3(entity.getEstimatedVolumeLossM3())
-                .disruptionDurationHours(entity.getDisruptionDurationHours())
-                .financialImpactUsd(entity.getFinancialImpactUsd())
-                .assessedAt(entity.getAssessedAt())
-                .assessedById(entity.getAssessedBy() != null ? entity.getAssessedBy().getId() : null)
-                .assessedByFullName(entity.getAssessedBy() != null
-                        ? buildFullName(entity.getAssessedBy()) : null)
+                .incidentId(entity.getIncident() != null
+                        ? entity.getIncident().getId() : null)
+                .impactLevel(entity.getImpactLevel())
+                .estimatedLoss(entity.getEstimatedLoss())
+                .downtimeMinutes(entity.getDowntimeMinutes())
+                .affectedPipelineIds(
+                        entity.getAffectedPipelines() != null
+                                ? entity.getAffectedPipelines().stream()
+                                        .map(Pipeline::getId)
+                                        .collect(Collectors.toList())
+                                : null)
+                .affectedSegmentIds(
+                        entity.getAffectedSegments() != null
+                                ? entity.getAffectedSegments().stream()
+                                        .map(PipelineSegment::getId)
+                                        .collect(Collectors.toList())
+                                : null)
                 .build();
-    }
-
-    private static String buildFullName(Employee e) {
-        if (e == null) return null;
-        String first = e.getFirstName() != null ? e.getFirstName() : "";
-        String last  = e.getLastName()  != null ? e.getLastName()  : "";
-        return (first + " " + last).trim();
     }
 }
