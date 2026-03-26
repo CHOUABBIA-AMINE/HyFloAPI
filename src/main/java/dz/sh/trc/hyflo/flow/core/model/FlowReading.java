@@ -5,7 +5,6 @@
  * 	@Name		: FlowReading
  * 	@CreatedOn	: 03-25-2026
  * 	@UpdatedOn	: 03-26-2026 — H6: Add @Version for optimistic locking
- * 	@UpdatedOn	: 03-26-2026 — fix: add readingSlot @ManyToOne (F_15)
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -13,12 +12,6 @@
  *
  *  H6 — Optimistic locking: @Version field added to prevent concurrent
  *       approval race conditions in ReadingWorkflowService.approve().
- *
- *  fix — readingSlot: operator records a reading for a specific time slot
- *        (e.g., SLOT_1 06:00-08:00). Required by FlowReadingRepository
- *        derived query methods findByPipelineIdAndReadingSlotId and
- *        findByPipelineIdAndReadingSlotIdAndReadingDate.
- *        Nullable for backward compatibility with existing rows.
  *
  **/
 
@@ -30,7 +23,6 @@ import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.flow.common.model.DataSource;
-import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
@@ -73,11 +65,6 @@ import lombok.ToString;
  * in {@code ReadingWorkflowService.approve()} and {@code reject()}.
  * Any concurrent modification will throw {@code OptimisticLockException},
  * which is handled by {@code GlobalExceptionHandler}.
- *
- * <h3>Time-slot scoping</h3>
- * {@code readingSlot} (F_15) records the operational time window in which
- * the operator captured this reading (e.g., SLOT_1 06:00-08:00).
- * Nullable for backward compatibility; new readings should always carry a slot.
  */
 @Schema(description = "Operational flow reading recorded by a transport operator")
 @Setter
@@ -193,19 +180,4 @@ public class FlowReading extends GenericModel {
     @Version
     @Column(name = "F_14")
     private Long version;
-
-    // ------------------------------------------------------------------
-    // F_15 — Time-slot scoping
-    // ------------------------------------------------------------------
-
-    @Schema(
-            description = "FK to the operational time slot in which this reading was recorded " +
-                    "(e.g., SLOT_1 06:00-08:00). Nullable for backward compatibility; " +
-                    "new readings should always carry a slot.",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED
-    )
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_15", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_01_01_FK_05"))
-    private ReadingSlot readingSlot;
 }
