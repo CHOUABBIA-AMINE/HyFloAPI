@@ -6,6 +6,7 @@
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-26-2026 — H4: add @Async asyncGenerateDerivedReadings()
  *  @UpdatedOn  : 03-26-2026 — H5: publish DerivedReadingGenerationFailedEvent on async failure
+ *  @UpdatedOn  : 03-26-2026 — fix: getLengthKm() → getLength() (PipelineSegment field is 'length')
  *
  *  @Type       : Class
  *  @Layer      : Service (Internal Orchestration Implementation)
@@ -57,8 +58,8 @@ import lombok.extern.slf4j.Slf4j;
  *
  * Proportional distribution strategy:
  *   Each segment receives a proportional share of total pipeline volume
- *   based on segment length / total pipeline length.
- *   Falls back to equal distribution if segment lengths are not configured.
+ *   based on segment.getLength() / totalLength.
+ *   Falls back to equal distribution if total length is zero.
  *
  * Idempotency: rebuildForSourceReading() deletes existing derived readings
  *   before persisting new batch — safe on repeat approval.
@@ -93,9 +94,9 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
             return List.of();
         }
 
+        // FIX: PipelineSegment.length is type Double, field name is 'length' (not 'lengthKm')
         double totalLength = segments.stream()
-                .mapToDouble(s -> s.getLengthKm() != null
-                        ? s.getLengthKm().doubleValue() : 0.0)
+                .mapToDouble(s -> s.getLength() != null ? s.getLength() : 0.0)
                 .sum();
 
         boolean useEqualDistribution = totalLength == 0.0;
@@ -110,8 +111,8 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
                         sourceReading,
                         segment,
                         useEqualDistribution ? equalShare
-                                : (segment.getLengthKm() != null
-                                        ? segment.getLengthKm().doubleValue() / totalLength
+                                : (segment.getLength() != null
+                                        ? segment.getLength() / totalLength
                                         : equalShare)))
                 .collect(Collectors.toList());
 

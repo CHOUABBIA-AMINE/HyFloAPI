@@ -4,6 +4,11 @@
  *
  *  @Name       : WorkflowInstanceMapper
  *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-26-2026 — fix: buildFullName() getFirstName()/getLastName() →
+ *                              getFirstNameLt()/getLastNameLt() (Person fields are
+ *                              bilingual-suffixed; no plain firstName/lastName exists)
+ *              — fix: currentStateLabel: getLabel() → getDesignationFr()
+ *                              (WorkflowState has designationFr, not label)
  *
  *  @Type       : Class (Utility / Static Mapper)
  *  @Layer      : Mapper
@@ -41,8 +46,9 @@ public final class WorkflowInstanceMapper {
                         ? entity.getCurrentState().getId() : null)
                 .currentStateCode(entity.getCurrentState() != null
                         ? entity.getCurrentState().getCode() : null)
+                // FIX: WorkflowState has no getLabel() — field is designationFr
                 .currentStateLabel(entity.getCurrentState() != null
-                        ? entity.getCurrentState().getLabel() : null)
+                        ? entity.getCurrentState().getDesignationFr() : null)
                 .startedAt(entity.getStartedAt())
                 .completedAt(entity.getCompletedAt())
                 .initiatedById(entity.getInitiatedBy() != null
@@ -96,10 +102,18 @@ public final class WorkflowInstanceMapper {
     // Private helpers
     // =====================================================================
 
+    /**
+     * Build full name in Latin script from an Employee.
+     *
+     * FIX: Person fields are bilingual-suffixed.
+     *   - Latin first name: getFirstNameLt()
+     *   - Latin last  name: getLastNameLt()
+     * There are no plain getFirstName() / getLastName() methods on Person/Employee.
+     */
     private static String buildFullName(Employee employee) {
         if (employee == null) return null;
-        String first = employee.getFirstName() != null ? employee.getFirstName() : "";
-        String last  = employee.getLastName()  != null ? employee.getLastName()  : "";
+        String first = employee.getFirstNameLt() != null ? employee.getFirstNameLt() : "";
+        String last  = employee.getLastNameLt()  != null ? employee.getLastNameLt()  : "";
         return (first + " " + last).trim();
     }
 }
