@@ -52,7 +52,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find users that have a specific role by role ID.
-     * Uses Spring Data derived query on User.roles join table.
+     * Spring Data traversal via the @ManyToMany roles collection.
+     * NOTE: 'roles_Id' traversal is the correct Spring Data syntax for a collection join.
      *
      * @param roleId the ID of the role
      * @return list of users assigned to that role
