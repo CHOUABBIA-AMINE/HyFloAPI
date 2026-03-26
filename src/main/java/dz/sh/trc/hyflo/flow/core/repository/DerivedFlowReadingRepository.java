@@ -5,6 +5,7 @@
  *  @Name       : DerivedFlowReadingRepository
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-25-2026 — Commit 18/25: added Phase 3 service-support query methods
+ *  @UpdatedOn  : 03-26-2026 — fix JPQL d.readingSlotId → d.readingSlot.id
  *
  *  @Type       : Interface
  *  @Layer      : Repository
@@ -63,11 +64,14 @@ public interface DerivedFlowReadingRepository extends JpaRepository<DerivedFlowR
     boolean existsBySourceReadingIdAndPipelineSegmentId(
             Long sourceReadingId, Long pipelineSegmentId);
 
-    /** Exact source+segment+slot lookup for uniqueness enforcement */
+    /**
+     * Exact source+segment+slot lookup for uniqueness enforcement.
+     * readingSlot is a @ManyToOne — navigate via d.readingSlot.id (not d.readingSlotId).
+     */
     @Query("SELECT d FROM DerivedFlowReading d "
             + "WHERE d.sourceReading.id = :sourceReadingId "
             + "AND d.pipelineSegment.id = :segmentId "
-            + "AND d.readingSlotId = :slotId")
+            + "AND d.readingSlot.id = :slotId")
     Optional<DerivedFlowReading> findBySourceAndSegmentAndSlot(
             @Param("sourceReadingId") Long sourceReadingId,
             @Param("segmentId") Long segmentId,
