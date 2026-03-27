@@ -4,8 +4,7 @@
  *
  * 	@Name		: FlowAlertRepository
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.repository → flow.intelligence.repository
- *                             Entity reference updated to flow.intelligence.model.FlowAlert
+ * 	@MovedOn	: 03-28-2026 — refactor: flow.core.repository → flow.intelligence.repository
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -41,24 +40,24 @@ public interface FlowAlertRepository extends JpaRepository<FlowAlert, Long> {
     List<FlowAlert> findByStatusIdAndAlertTimestampBetween(Long statusId, LocalDateTime startTime, LocalDateTime endTime);
 
     @Query("SELECT fa FROM FlowAlert fa WHERE "
-            + "fa.status.id = :statusId AND "
-            + "fa.alertTimestamp BETWEEN :startTime AND :endTime "
-            + "ORDER BY fa.alertTimestamp DESC")
+         + "fa.status.id = :statusId AND "
+         + "fa.alertTimestamp BETWEEN :startTime AND :endTime "
+         + "ORDER BY fa.alertTimestamp DESC")
     Page<FlowAlert> findByStatusAndTimeRange(
-            @Param("statusId") Long statusId,
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime,
-            Pageable pageable);
+        @Param("statusId") Long statusId,
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        Pageable pageable);
 
     @Query("SELECT fa FROM FlowAlert fa WHERE "
-            + "fa.threshold.pipeline.id = :pipelineId AND "
-            + "fa.alertTimestamp BETWEEN :startTime AND :endTime "
-            + "ORDER BY fa.alertTimestamp DESC")
+         + "fa.threshold.pipeline.id = :pipelineId AND "
+         + "fa.alertTimestamp BETWEEN :startTime AND :endTime "
+         + "ORDER BY fa.alertTimestamp DESC")
     Page<FlowAlert> findByPipelineAndTimeRange(
-            @Param("pipelineId") Long pipelineId,
-            @Param("startTime") LocalDateTime startTime,
-            @Param("endTime") LocalDateTime endTime,
-            Pageable pageable);
+        @Param("pipelineId") Long pipelineId,
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        Pageable pageable);
 
     @Query("SELECT fa FROM FlowAlert fa WHERE fa.acknowledgedAt IS NULL ORDER BY fa.alertTimestamp DESC")
     Page<FlowAlert> findUnacknowledged(Pageable pageable);
@@ -67,8 +66,7 @@ public interface FlowAlertRepository extends JpaRepository<FlowAlert, Long> {
     Page<FlowAlert> findUnresolved(Pageable pageable);
 
     @Query("SELECT fa FROM FlowAlert fa WHERE "
-            + "fa.threshold.pipeline.id = :pipelineId AND "
-            + "fa.resolvedAt IS NULL "
-            + "ORDER BY fa.alertTimestamp DESC")
+         + "fa.threshold.pipeline.id = :pipelineId AND fa.resolvedAt IS NULL "
+         + "ORDER BY fa.alertTimestamp DESC")
     Page<FlowAlert> findUnresolvedByPipeline(@Param("pipelineId") Long pipelineId, Pageable pageable);
 }

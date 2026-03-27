@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowForecastRepository
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.repository → flow.intelligence.repository
+ * 	@MovedOn	: 03-28-2026 — refactor: flow.core.repository → flow.intelligence.repository
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
@@ -39,48 +39,44 @@ public interface FlowForecastRepository extends JpaRepository<FlowForecast, Long
     List<FlowForecast> findByInfrastructureIdAndForecastDateBetween(Long infrastructureId, LocalDate startDate, LocalDate endDate);
 
     Optional<FlowForecast> findByForecastDateAndInfrastructureIdAndProductIdAndOperationTypeId(
-            LocalDate forecastDate, Long infrastructureId, Long productId, Long operationTypeId);
+        LocalDate forecastDate, Long infrastructureId, Long productId, Long operationTypeId);
 
     boolean existsByForecastDateAndInfrastructureIdAndProductIdAndOperationTypeId(
-            LocalDate forecastDate, Long infrastructureId, Long productId, Long operationTypeId);
+        LocalDate forecastDate, Long infrastructureId, Long productId, Long operationTypeId);
 
     boolean existsByForecastDateAndInfrastructureIdAndProductIdAndOperationTypeIdAndIdNot(
-            LocalDate forecastDate, Long infrastructureId, Long productId, Long operationTypeId, Long id);
+        LocalDate forecastDate, Long infrastructureId, Long productId, Long operationTypeId, Long id);
 
     @Query("SELECT ff FROM FlowForecast ff WHERE "
-            + "ff.infrastructure.id = :infrastructureId AND "
-            + "ff.forecastDate BETWEEN :startDate AND :endDate "
-            + "ORDER BY ff.forecastDate ASC")
+         + "ff.infrastructure.id = :infrastructureId AND "
+         + "ff.forecastDate BETWEEN :startDate AND :endDate "
+         + "ORDER BY ff.forecastDate ASC")
     Page<FlowForecast> findByInfrastructureAndDateRange(
-            @Param("infrastructureId") Long infrastructureId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            Pageable pageable);
+        @Param("infrastructureId") Long infrastructureId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate,
+        Pageable pageable);
 
     @Query("SELECT ff FROM FlowForecast ff WHERE "
-            + "ff.product.id = :productId AND "
-            + "ff.operationType.id = :operationTypeId AND "
-            + "ff.forecastDate BETWEEN :startDate AND :endDate "
-            + "ORDER BY ff.forecastDate ASC")
+         + "ff.product.id = :productId AND "
+         + "ff.operationType.id = :operationTypeId AND "
+         + "ff.forecastDate BETWEEN :startDate AND :endDate "
+         + "ORDER BY ff.forecastDate ASC")
     Page<FlowForecast> findByProductAndOperationTypeAndDateRange(
-            @Param("productId") Long productId,
-            @Param("operationTypeId") Long operationTypeId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            Pageable pageable);
+        @Param("productId") Long productId,
+        @Param("operationTypeId") Long operationTypeId,
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate,
+        Pageable pageable);
 
     @Query("SELECT ff FROM FlowForecast ff WHERE "
-            + "ff.actualVolume IS NOT NULL AND "
-            + "ff.forecastDate BETWEEN :startDate AND :endDate "
-            + "ORDER BY ff.accuracy DESC")
+         + "ff.actualVolume IS NOT NULL AND ff.forecastDate BETWEEN :startDate AND :endDate "
+         + "ORDER BY ff.accuracy DESC")
     Page<FlowForecast> findCompletedByDateRange(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            Pageable pageable);
+        @Param("startDate") LocalDate startDate,
+        @Param("endDate") LocalDate endDate,
+        Pageable pageable);
 
-    @Query("SELECT ff FROM FlowForecast ff WHERE "
-            + "ff.actualVolume IS NULL AND "
-            + "ff.forecastDate >= :today "
-            + "ORDER BY ff.forecastDate ASC")
+    @Query("SELECT ff FROM FlowForecast ff WHERE ff.actualVolume IS NULL AND ff.forecastDate >= :today ORDER BY ff.forecastDate ASC")
     Page<FlowForecast> findPending(@Param("today") LocalDate today, Pageable pageable);
 }
