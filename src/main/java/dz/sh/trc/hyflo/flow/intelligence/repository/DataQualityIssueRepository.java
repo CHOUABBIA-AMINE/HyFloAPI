@@ -4,7 +4,7 @@
  *
  * 	@Name		: DataQualityIssueRepository
  * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.repository to flow.intelligence.repository
+ * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.repository → flow.intelligence.repository
  *
  * 	@Type		: Interface
  * 	@Layer		: Repository
