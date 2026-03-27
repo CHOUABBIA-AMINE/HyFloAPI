@@ -4,8 +4,7 @@
  *
  *  @Name       : FlowThresholdQueryServiceImpl
  *  @CreatedOn  : 03-26-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service.impl → flow.common.service.impl
- *                             All imports updated to flow.common.* (model, repository, dto, service)
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.service.impl → flow.common.service.impl
  *
  *  @Type       : Class
  *  @Layer      : Service Implementation (Query)
@@ -48,8 +47,8 @@ public class FlowThresholdQueryServiceImpl implements FlowThresholdQueryService 
 
     @Override
     public Page<FlowThresholdDTO> getAllThresholds(int page, int size, String sortBy, String sortDirection) {
-        Sort.Direction direction = "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return repository.findAll(PageRequest.of(page, size, Sort.by(direction, sortBy)))
+        Sort.Direction dir = "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return repository.findAll(PageRequest.of(page, size, Sort.by(dir, sortBy)))
                 .map(FlowThresholdDTO::fromEntity);
     }
 

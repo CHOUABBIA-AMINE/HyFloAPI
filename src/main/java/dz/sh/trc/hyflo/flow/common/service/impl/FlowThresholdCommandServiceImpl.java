@@ -4,8 +4,7 @@
  *
  *  @Name       : FlowThresholdCommandServiceImpl
  *  @CreatedOn  : 03-26-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service.impl → flow.common.service.impl
- *                             All imports updated to flow.common.* (model, repository, dto, service)
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.service.impl → flow.common.service.impl
  *
  *  @Type       : Class
  *  @Layer      : Service Implementation (Command)
@@ -39,11 +38,10 @@ public class FlowThresholdCommandServiceImpl implements FlowThresholdCommandServ
 
     @Override
     public FlowThresholdDTO createThreshold(FlowThresholdDTO dto) {
-        log.info("createThreshold for pipelineId={}, active={}", dto.getPipelineId(), dto.getActive());
+        log.info("createThreshold pipelineId={}, active={}", dto.getPipelineId(), dto.getActive());
         validateRanges(dto);
         Pipeline pipeline = pipelineRepository.findById(dto.getPipelineId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Pipeline not found: " + dto.getPipelineId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Pipeline not found: " + dto.getPipelineId()));
         if (Boolean.TRUE.equals(dto.getActive())) {
             deactivateCurrentActiveForPipeline(dto.getPipelineId());
         }
@@ -60,17 +58,14 @@ public class FlowThresholdCommandServiceImpl implements FlowThresholdCommandServ
         log.info("updateThreshold id={}", id);
         validateRanges(dto);
         FlowThreshold entity = thresholdRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "FlowThreshold not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("FlowThreshold not found: " + id));
         boolean wasInactive = !Boolean.TRUE.equals(entity.getActive());
         boolean nowActive   = Boolean.TRUE.equals(dto.getActive());
         if (wasInactive && nowActive) {
             deactivateCurrentActiveForPipeline(entity.getPipeline().getId());
         }
         applyDtoToEntity(dto, entity);
-        FlowThreshold saved = thresholdRepository.save(entity);
-        log.info("updateThreshold: saved id={}", saved.getId());
-        return FlowThresholdDTO.fromEntity(saved);
+        return FlowThresholdDTO.fromEntity(thresholdRepository.save(entity));
     }
 
     @Override
@@ -86,29 +81,25 @@ public class FlowThresholdCommandServiceImpl implements FlowThresholdCommandServ
     public FlowThresholdDTO activateThreshold(Long id) {
         log.info("activateThreshold id={}", id);
         FlowThreshold entity = thresholdRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "FlowThreshold not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("FlowThreshold not found: " + id));
         if (Boolean.TRUE.equals(entity.getActive())) {
             return FlowThresholdDTO.fromEntity(entity);
         }
         deactivateCurrentActiveForPipeline(entity.getPipeline().getId());
         entity.setActive(true);
-        FlowThreshold saved = thresholdRepository.save(entity);
-        return FlowThresholdDTO.fromEntity(saved);
+        return FlowThresholdDTO.fromEntity(thresholdRepository.save(entity));
     }
 
     @Override
     public FlowThresholdDTO deactivateThreshold(Long id) {
         log.info("deactivateThreshold id={}", id);
         FlowThreshold entity = thresholdRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "FlowThreshold not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("FlowThreshold not found: " + id));
         if (!Boolean.TRUE.equals(entity.getActive())) {
             return FlowThresholdDTO.fromEntity(entity);
         }
         entity.setActive(false);
-        FlowThreshold saved = thresholdRepository.save(entity);
-        return FlowThresholdDTO.fromEntity(saved);
+        return FlowThresholdDTO.fromEntity(thresholdRepository.save(entity));
     }
 
     private void deactivateCurrentActiveForPipeline(Long pipelineId) {

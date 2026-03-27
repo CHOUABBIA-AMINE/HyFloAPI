@@ -4,8 +4,7 @@
  *
  *  @Name       : FlowThresholdQueryService
  *  @CreatedOn  : 03-26-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service → flow.common.service
- *                             DTO import updated to flow.common.dto.FlowThresholdDTO
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.service → flow.common.service
  *
  *  @Type       : Interface
  *  @Layer      : Service (Query)

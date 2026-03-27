@@ -4,8 +4,7 @@
  *
  *  @Name       : FlowThresholdCommandService
  *  @CreatedOn  : 03-26-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service → flow.common.service
- *                             DTO import updated to flow.common.dto.FlowThresholdDTO
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.service → flow.common.service
  *
  *  @Type       : Interface
  *  @Layer      : Service (Command)
@@ -24,12 +23,8 @@ import dz.sh.trc.hyflo.flow.common.dto.FlowThresholdDTO;
 public interface FlowThresholdCommandService {
 
     FlowThresholdDTO createThreshold(FlowThresholdDTO dto);
-
     FlowThresholdDTO updateThreshold(Long id, FlowThresholdDTO dto);
-
     void deleteThreshold(Long id);
-
     FlowThresholdDTO activateThreshold(Long id);
-
     FlowThresholdDTO deactivateThreshold(Long id);
 }
