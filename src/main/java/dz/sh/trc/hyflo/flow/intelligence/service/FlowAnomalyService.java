@@ -1,15 +1,15 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: FlowAnomalyService
- * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.service to flow.intelligence.service
- *                             Updated to use flow.intelligence.repository and flow.intelligence.dto
+ *  @Name       : FlowAnomalyService
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service → flow.intelligence.service
+ *                             Updated all imports to flow.intelligence.*
  *
- * 	@Type		: Class
- * 	@Layer		: Service
- * 	@Package	: Flow / Intelligence
+ *  @Type       : Class
+ *  @Layer      : Service
+ *  @Package    : Flow / Intelligence
  *
  **/
 
@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.flow.intelligence.dto.FlowAnomalyReadDTO;
+import dz.sh.trc.hyflo.flow.intelligence.mapper.FlowIntelligenceReadMapper;
 import dz.sh.trc.hyflo.flow.intelligence.model.FlowAnomaly;
 import dz.sh.trc.hyflo.flow.intelligence.repository.FlowAnomalyRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,62 +36,52 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class FlowAnomalyService {
+public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyReadDTO, Long> {
 
     private final FlowAnomalyRepository flowAnomalyRepository;
 
-    public FlowAnomalyReadDTO getById(Long id) {
-        return flowAnomalyRepository.findById(id)
-                .map(this::toDTO)
-                .orElseThrow(() -> new ResourceNotFoundException("FlowAnomaly not found: " + id));
+    @Override
+    protected JpaRepository<FlowAnomaly, Long> getRepository() {
+        return flowAnomalyRepository;
     }
 
-    public Page<FlowAnomalyReadDTO> getAll(int page, int size, String sortBy, String sortDir) {
-        Sort.Direction direction = "DESC".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return flowAnomalyRepository.findAll(PageRequest.of(page, size, Sort.by(direction, sortBy)))
-                .map(this::toDTO);
+    @Override
+    protected String getEntityName() {
+        return "FlowAnomaly";
     }
 
-    public List<FlowAnomalyReadDTO> getAll() {
-        return flowAnomalyRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    @Override
+    protected FlowAnomalyReadDTO toDTO(FlowAnomaly entity) {
+        return FlowIntelligenceReadMapper.toAnomalyDTO(entity);
     }
 
-    public long count() {
-        return flowAnomalyRepository.count();
+    @Override
+    protected FlowAnomaly toEntity(FlowAnomalyReadDTO dto) {
+        throw new UnsupportedOperationException("Use intelligence engine for anomaly creation");
+    }
+
+    @Override
+    protected void updateEntityFromDTO(FlowAnomaly entity, FlowAnomalyReadDTO dto) {
+        throw new UnsupportedOperationException("Use intelligence engine for anomaly updates");
     }
 
     public Page<FlowAnomalyReadDTO> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
-            return flowAnomalyRepository.findAll(pageable).map(this::toDTO);
+            return getAll(pageable);
         }
-        return flowAnomalyRepository.searchByAnyField(query, pageable).map(this::toDTO);
+        return flowAnomalyRepository.searchByAnyField(query, pageable)
+                .map(FlowIntelligenceReadMapper::toAnomalyDTO);
     }
 
     public List<FlowAnomalyReadDTO> getByReadingId(Long readingId) {
-        log.debug("getByReadingId({})", readingId);
+        log.debug("Getting anomalies for reading ID: {}", readingId);
         return flowAnomalyRepository.findByReadingId(readingId)
-                .stream().map(this::toDTO).collect(Collectors.toList());
+                .stream().map(FlowIntelligenceReadMapper::toAnomalyDTO).collect(Collectors.toList());
     }
 
     public List<FlowAnomalyReadDTO> getByPipelineSegmentId(Long segmentId) {
-        log.debug("getByPipelineSegmentId({})", segmentId);
+        log.debug("Getting anomalies for segment ID: {}", segmentId);
         return flowAnomalyRepository.findByPipelineSegmentId(segmentId)
-                .stream().map(this::toDTO).collect(Collectors.toList());
-    }
-
-    private FlowAnomalyReadDTO toDTO(FlowAnomaly entity) {
-        return FlowAnomalyReadDTO.builder()
-                .id(entity.getId())
-                .anomalyType(entity.getAnomalyType())
-                .severityScore(entity.getSeverityScore())
-                .confidenceScore(entity.getConfidenceScore())
-                .modelName(entity.getModelName())
-                .explanation(entity.getExplanation())
-                .detectedAt(entity.getDetectedAt())
-                .readingId(entity.getReading() != null ? entity.getReading().getId() : null)
-                .derivedReadingId(entity.getDerivedReading() != null ? entity.getDerivedReading().getId() : null)
-                .pipelineSegmentId(entity.getPipelineSegment() != null ? entity.getPipelineSegment().getId() : null)
-                .pipelineSegmentCode(entity.getPipelineSegment() != null ? entity.getPipelineSegment().getCode() : null)
-                .build();
+                .stream().map(FlowIntelligenceReadMapper::toAnomalyDTO).collect(Collectors.toList());
     }
 }

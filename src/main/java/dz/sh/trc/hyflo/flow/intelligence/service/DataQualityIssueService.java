@@ -1,15 +1,15 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: DataQualityIssueService
- * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.service to flow.intelligence.service
- *                             Updated to use flow.intelligence.repository and flow.intelligence.dto
+ *  @Name       : DataQualityIssueService
+ *  @CreatedOn  : 03-25-2026
+ *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service → flow.intelligence.service
+ *                             Updated all imports to flow.intelligence.*
  *
- * 	@Type		: Class
- * 	@Layer		: Service
- * 	@Package	: Flow / Intelligence
+ *  @Type       : Class
+ *  @Layer      : Service
+ *  @Package    : Flow / Intelligence
  *
  **/
 
@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.flow.intelligence.dto.DataQualityIssueReadDTO;
+import dz.sh.trc.hyflo.flow.intelligence.mapper.FlowIntelligenceReadMapper;
 import dz.sh.trc.hyflo.flow.intelligence.model.DataQualityIssue;
 import dz.sh.trc.hyflo.flow.intelligence.repository.DataQualityIssueRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,53 +36,46 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class DataQualityIssueService {
+public class DataQualityIssueService extends GenericService<DataQualityIssue, DataQualityIssueReadDTO, Long> {
 
     private final DataQualityIssueRepository dataQualityIssueRepository;
 
-    public DataQualityIssueReadDTO getById(Long id) {
-        return dataQualityIssueRepository.findById(id)
-                .map(this::toDTO)
-                .orElseThrow(() -> new ResourceNotFoundException("DataQualityIssue not found: " + id));
+    @Override
+    protected JpaRepository<DataQualityIssue, Long> getRepository() {
+        return dataQualityIssueRepository;
     }
 
-    public Page<DataQualityIssueReadDTO> getAll(int page, int size, String sortBy, String sortDir) {
-        Sort.Direction direction = "DESC".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return dataQualityIssueRepository.findAll(PageRequest.of(page, size, Sort.by(direction, sortBy)))
-                .map(this::toDTO);
+    @Override
+    protected String getEntityName() {
+        return "DataQualityIssue";
     }
 
-    public List<DataQualityIssueReadDTO> getAll() {
-        return dataQualityIssueRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    @Override
+    protected DataQualityIssueReadDTO toDTO(DataQualityIssue entity) {
+        return FlowIntelligenceReadMapper.toQualityIssueDTO(entity);
     }
 
-    public long count() {
-        return dataQualityIssueRepository.count();
+    @Override
+    protected DataQualityIssue toEntity(DataQualityIssueReadDTO dto) {
+        throw new UnsupportedOperationException("Use intelligence engine for quality issue creation");
+    }
+
+    @Override
+    protected void updateEntityFromDTO(DataQualityIssue entity, DataQualityIssueReadDTO dto) {
+        throw new UnsupportedOperationException("Use intelligence engine for quality issue updates");
     }
 
     public Page<DataQualityIssueReadDTO> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
-            return dataQualityIssueRepository.findAll(pageable).map(this::toDTO);
+            return getAll(pageable);
         }
-        return dataQualityIssueRepository.searchByAnyField(query, pageable).map(this::toDTO);
+        return dataQualityIssueRepository.searchByAnyField(query, pageable)
+                .map(FlowIntelligenceReadMapper::toQualityIssueDTO);
     }
 
     public List<DataQualityIssueReadDTO> getByReadingId(Long readingId) {
-        log.debug("getByReadingId({})", readingId);
+        log.debug("Getting data quality issues for reading ID: {}", readingId);
         return dataQualityIssueRepository.findByReadingId(readingId)
-                .stream().map(this::toDTO).collect(Collectors.toList());
-    }
-
-    private DataQualityIssueReadDTO toDTO(DataQualityIssue entity) {
-        return DataQualityIssueReadDTO.builder()
-                .id(entity.getId())
-                .issueType(entity.getIssueType())
-                .qualityScore(entity.getQualityScore())
-                .details(entity.getDetails())
-                .acknowledged(entity.getAcknowledged())
-                .raisedAt(entity.getRaisedAt())
-                .readingId(entity.getReading() != null ? entity.getReading().getId() : null)
-                .derivedReadingId(entity.getDerivedReading() != null ? entity.getDerivedReading().getId() : null)
-                .build();
+                .stream().map(FlowIntelligenceReadMapper::toQualityIssueDTO).collect(Collectors.toList());
     }
 }
