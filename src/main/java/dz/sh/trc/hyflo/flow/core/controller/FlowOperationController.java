@@ -74,7 +74,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/flow/operations")
+@RequestMapping("/flow/operation")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Flow Operations v2",

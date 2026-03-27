@@ -47,7 +47,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/flow/workflow/instances")
+@RequestMapping("/flow/workflow/instances")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Workflow Instances",

@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Deprecated(since = "v2-phase4", forRemoval = true)
 @RestController
-@RequestMapping("/flow/core/quality-issue")
+@RequestMapping("/flow/core/qualityIssue")
 @Slf4j
 @Tag(name = "Data Quality Issues", description = "APIs for querying data quality evaluations")
 @SecurityRequirement(name = "bearer-auth")

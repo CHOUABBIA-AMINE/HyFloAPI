@@ -40,7 +40,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/flow/derived-readings")
+@RequestMapping("/flow/derivedReading")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Derived Flow Readings",

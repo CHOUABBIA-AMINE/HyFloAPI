@@ -46,7 +46,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/flow/readings")
+@RequestMapping("/flow/reading")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Flow Readings v2", description = "Operational flow reading management — direct pipeline readings lifecycle (v2 explicit contract)")

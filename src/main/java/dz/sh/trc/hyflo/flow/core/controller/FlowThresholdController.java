@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v2/flow/thresholds")
+@RequestMapping("/flow/threshold")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Flow Thresholds v2",
