@@ -4,7 +4,8 @@
  *
  * 	@Name		: FlowThreshold
  * 	@CreatedOn	: 01-21-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.common.model
+ * 	@UpdatedOn	: 03-25-2026
+ * 	@MovedOn	: 03-28-2026 — refactor: flow.core.model → flow.common.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -37,6 +38,7 @@ import lombok.ToString;
 /**
  * Operating thresholds for pipeline monitoring and alerting.
  * Defines safe operating ranges for pressure, temperature, and flow rates.
+ * Moved to flow.common as a shared reference entity per HyFlo v2 architecture.
  */
 @Schema(description = "Pipeline operating thresholds for monitoring and automated alerting")
 @Setter

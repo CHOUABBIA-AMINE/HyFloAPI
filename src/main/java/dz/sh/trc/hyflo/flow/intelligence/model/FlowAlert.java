@@ -4,8 +4,8 @@
  *
  * 	@Name		: FlowAlert
  * 	@CreatedOn	: 01-21-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.intelligence.model
- *                             FK FlowThreshold updated to flow.common.model.FlowThreshold
+ * 	@UpdatedOn	: 03-25-2026
+ * 	@MovedOn	: 03-28-2026 — refactor: flow.core.model → flow.intelligence.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -42,6 +42,7 @@ import lombok.ToString;
 /**
  * Automated alert triggered when flow readings breach defined thresholds.
  * Supports acknowledgment and resolution workflow.
+ * FK to FlowThreshold now references flow.common.model.FlowThreshold.
  */
 @Schema(description = "Automated alert for threshold breaches requiring operator attention and resolution")
 @Setter
@@ -83,11 +84,11 @@ public class FlowAlert extends GenericModel {
     private String message;
 
     @Schema(description = "Timestamp when alert was acknowledged by operator",
-            example = "2026-01-22T00:50:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_05")
     private LocalDateTime acknowledgedAt;
 
-    @Schema(description = "Timestamp when alert was resolved", example = "2026-01-22T01:30:00",
+    @Schema(description = "Timestamp when alert was resolved",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_06")
     private LocalDateTime resolvedAt;
@@ -103,7 +104,7 @@ public class FlowAlert extends GenericModel {
     @Column(name = "F_08", nullable = false)
     private Boolean notificationSent;
 
-    @Schema(description = "Timestamp when notification was sent", example = "2026-01-22T00:45:30",
+    @Schema(description = "Timestamp when notification was sent",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_09")
     private LocalDateTime notificationSentAt;
@@ -115,7 +116,7 @@ public class FlowAlert extends GenericModel {
             foreignKey = @ForeignKey(name = "T_03_03_05_FK_04"))
     private Employee resolvedBy;
 
-    @Schema(description = "Flow threshold that was breached (flow.common.model.FlowThreshold)",
+    @Schema(description = "Flow threshold (flow.common) that was breached",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",
