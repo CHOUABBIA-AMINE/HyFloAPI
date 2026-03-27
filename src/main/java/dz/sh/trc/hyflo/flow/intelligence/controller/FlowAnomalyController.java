@@ -3,15 +3,12 @@
  *  @Author     : HyFlo v2
  *
  *  @Name       : FlowAnomalyController
- *  @CreatedOn  : 03-28-2026
+ *  @CreatedOn  : 03-25-2026
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.controller → flow.intelligence.controller
  *
  *  @Type       : Class
  *  @Layer      : Controller
  *  @Package    : Flow / Intelligence
- *
- *  @Description: REST controller for flow anomalies.
- *                Exposed at /flow/intelligence/anomaly per HyFlo v2 architecture.
- *                Replaces deprecated flow.core.controller.FlowAnomalyController.
  *
  **/
 
@@ -19,6 +16,9 @@ package dz.sh.trc.hyflo.flow.intelligence.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 import dz.sh.trc.hyflo.flow.intelligence.dto.FlowAnomalyReadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.service.FlowAnomalyService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -41,54 +40,42 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Flow Intelligence — Anomalies",
-     description = "Query flow anomalies detected by the intelligence engine")
+     description = "Query anomalies detected by the intelligence engine")
 @SecurityRequirement(name = "bearer-auth")
 public class FlowAnomalyController {
 
-    private final FlowAnomalyService flowAnomalyService;
-
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get anomaly by ID")
-    public ResponseEntity<FlowAnomalyReadDTO> getById(
-            @Parameter(description = "Anomaly ID") @PathVariable Long id) {
-        log.debug("GET /flow/intelligence/anomaly/{}", id);
-        return ResponseEntity.ok(flowAnomalyService.findById(id));
-    }
+    private final FlowAnomalyService anomalyService;
 
     @GetMapping
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "List all anomalies (paginated)")
-    public ResponseEntity<?> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        log.debug("GET /flow/intelligence/anomaly page={} size={}", page, size);
-        return ResponseEntity.ok(flowAnomalyService.findAll(
-                org.springframework.data.domain.PageRequest.of(
-                        page, size,
-                        "desc".equalsIgnoreCase(sortDir)
-                                ? org.springframework.data.domain.Sort.Direction.DESC
-                                : org.springframework.data.domain.Sort.Direction.ASC,
-                        sortBy)));
+    public ResponseEntity<Page<FlowAnomalyReadDTO>> getAll(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(anomalyService.getAll(pageable));
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
+    @Operation(summary = "Search anomalies by keyword")
+    public ResponseEntity<Page<FlowAnomalyReadDTO>> search(
+            @RequestParam(required = false) String query,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(anomalyService.searchByQuery(query, pageable));
     }
 
     @GetMapping("/reading/{readingId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get anomalies by reading ID")
+    @Operation(summary = "Get anomalies by source reading ID")
     public ResponseEntity<List<FlowAnomalyReadDTO>> getByReadingId(
-            @Parameter(description = "Reading ID", required = true) @PathVariable Long readingId) {
-        log.debug("GET /flow/intelligence/anomaly/reading/{}", readingId);
-        return ResponseEntity.ok(flowAnomalyService.getByReadingId(readingId));
+            @PathVariable Long readingId) {
+        return ResponseEntity.ok(anomalyService.getByReadingId(readingId));
     }
 
     @GetMapping("/segment/{segmentId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get anomalies by pipeline segment ID")
     public ResponseEntity<List<FlowAnomalyReadDTO>> getBySegmentId(
-            @Parameter(description = "Segment ID", required = true) @PathVariable Long segmentId) {
-        log.debug("GET /flow/intelligence/anomaly/segment/{}", segmentId);
-        return ResponseEntity.ok(flowAnomalyService.getByPipelineSegmentId(segmentId));
+            @PathVariable Long segmentId) {
+        return ResponseEntity.ok(anomalyService.getByPipelineSegmentId(segmentId));
     }
 }

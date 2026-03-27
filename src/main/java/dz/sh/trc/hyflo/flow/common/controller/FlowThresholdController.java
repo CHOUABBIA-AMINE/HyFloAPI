@@ -4,13 +4,14 @@
  *
  *  @Name       : FlowThresholdController
  *  @CreatedOn  : 03-26-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.controller → flow.common.controller
- *                             Mapping updated: /flow/threshold → /flow/common/threshold
- *                             All imports updated to flow.common.*
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.controller → flow.common.controller
  *
  *  @Type       : Class
  *  @Layer      : Controller
  *  @Package    : Flow / Common
+ *
+ *  @Description: REST controller for FlowThreshold CRUD and lifecycle.
+ *                Moved to /flow/common/threshold per HyFlo v2 endpoint normalization.
  *
  **/
 
@@ -32,7 +33,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +51,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Flow Common — Thresholds",
-     description = "Pipeline operating threshold management (create, update, activate, deactivate, query)")
+     description = "Pipeline operating threshold configuration and lifecycle management")
 @SecurityRequirement(name = "bearer-auth")
 public class FlowThresholdController {
 
@@ -57,12 +66,11 @@ public class FlowThresholdController {
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get threshold by ID")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Threshold found"),
-            @ApiResponse(responseCode = "404", description = "Threshold not found")
+        @ApiResponse(responseCode = "200", description = "Threshold found"),
+        @ApiResponse(responseCode = "404", description = "Threshold not found")
     })
     public ResponseEntity<FlowThresholdDTO> getById(
             @Parameter(description = "Threshold ID") @PathVariable Long id) {
-        log.debug("GET /flow/common/threshold/{}", id);
         return ResponseEntity.ok(queryService.getThresholdById(id));
     }
 
@@ -70,83 +78,57 @@ public class FlowThresholdController {
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "List all thresholds (paginated)")
     public ResponseEntity<Page<FlowThresholdDTO>> getAll(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        return ResponseEntity.ok(queryService.getAllThresholds(page, size, sortBy, sortDir));
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        return ResponseEntity.ok(queryService.getAllThresholds(page, size, sortBy, sortDirection));
     }
 
     @GetMapping("/active")
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "List all active thresholds (paginated)")
     public ResponseEntity<Page<FlowThresholdDTO>> getActive(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(queryService.getActiveThresholds(page, size));
     }
 
-    @GetMapping("/active/all")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all active thresholds (unpaginated)")
-    public ResponseEntity<List<FlowThresholdDTO>> getAllActive() {
-        return ResponseEntity.ok(queryService.getAllActiveThresholds());
-    }
-
-    @GetMapping("/inactive/all")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all inactive thresholds (unpaginated)")
-    public ResponseEntity<List<FlowThresholdDTO>> getAllInactive() {
-        return ResponseEntity.ok(queryService.getAllInactiveThresholds());
-    }
-
     @GetMapping("/pipeline/{pipelineId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all thresholds for a pipeline")
-    public ResponseEntity<List<FlowThresholdDTO>> getByPipeline(@PathVariable Long pipelineId) {
+    @Operation(summary = "Get all thresholds for a pipeline (active + historical)")
+    public ResponseEntity<List<FlowThresholdDTO>> getByPipeline(
+            @PathVariable Long pipelineId) {
         return ResponseEntity.ok(queryService.getThresholdsByPipelineId(pipelineId));
     }
 
     @GetMapping("/pipeline/{pipelineId}/active")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get the active threshold for a pipeline")
-    public ResponseEntity<Optional<FlowThresholdDTO>> getActiveByPipeline(@PathVariable Long pipelineId) {
+    @Operation(summary = "Get active threshold for a pipeline")
+    public ResponseEntity<Optional<FlowThresholdDTO>> getActivForPipeline(
+            @PathVariable Long pipelineId) {
         return ResponseEntity.ok(queryService.getActiveThresholdByPipelineId(pipelineId));
     }
 
     @GetMapping("/structure/{structureId}/active")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get active thresholds for all pipelines managed by a structure")
-    public ResponseEntity<List<FlowThresholdDTO>> getActiveByStructure(@PathVariable Long structureId) {
+    @Operation(summary = "Get active thresholds for all pipelines under a structure")
+    public ResponseEntity<List<FlowThresholdDTO>> getActiveByStructure(
+            @PathVariable Long structureId) {
         return ResponseEntity.ok(queryService.getActiveThresholdsByStructureId(structureId));
     }
 
-    @GetMapping("/search")
+    @GetMapping("/coverage/missing")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Search thresholds by pipeline code")
-    public ResponseEntity<List<FlowThresholdDTO>> searchByPipelineCode(
-            @RequestParam String pipelineCode) {
-        return ResponseEntity.ok(queryService.searchByPipelineCode(pipelineCode));
-    }
-
-    @GetMapping("/search/pattern")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Search thresholds by pipeline code pattern (LIKE)")
-    public ResponseEntity<List<FlowThresholdDTO>> searchByPattern(@RequestParam String pattern) {
-        return ResponseEntity.ok(queryService.searchByPipelineCodePattern(pattern));
-    }
-
-    @GetMapping("/coverage/pipelines-without")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get pipeline IDs without any threshold")
-    public ResponseEntity<List<Long>> getPipelinesWithoutThresholds() {
+    @Operation(summary = "Get pipeline IDs with no threshold configured")
+    public ResponseEntity<List<Long>> getMissingCoverage() {
         return ResponseEntity.ok(queryService.getPipelinesWithoutThresholds());
     }
 
-    @GetMapping("/coverage/pipelines-without-active")
+    @GetMapping("/coverage/missing-active")
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get pipeline IDs without an active threshold")
-    public ResponseEntity<List<Long>> getPipelinesWithoutActive() {
+    @Operation(summary = "Get pipeline IDs with no ACTIVE threshold")
+    public ResponseEntity<List<Long>> getMissingActiveCoverage() {
         return ResponseEntity.ok(queryService.getPipelinesWithoutActiveThresholds());
     }
 
@@ -156,63 +138,50 @@ public class FlowThresholdController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('THRESHOLD:WRITE')")
-    @Operation(summary = "Create a new threshold",
-               description = "Creates a threshold for a pipeline. If active=true, deactivates the existing active threshold.")
+    @Operation(summary = "Create a new threshold for a pipeline")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Threshold created"),
-            @ApiResponse(responseCode = "400", description = "Validation error"),
-            @ApiResponse(responseCode = "404", description = "Pipeline not found")
+        @ApiResponse(responseCode = "201", description = "Threshold created"),
+        @ApiResponse(responseCode = "400", description = "Invalid range configuration"),
+        @ApiResponse(responseCode = "404", description = "Pipeline not found")
     })
     public ResponseEntity<FlowThresholdDTO> create(
             @Valid @RequestBody FlowThresholdDTO dto) {
-        log.debug("POST /flow/common/threshold - create");
+        log.info("POST /flow/common/threshold — create for pipelineId={}", dto.getPipelineId());
         return ResponseEntity.status(HttpStatus.CREATED).body(commandService.createThreshold(dto));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('THRESHOLD:WRITE')")
     @Operation(summary = "Update an existing threshold")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Threshold updated"),
-            @ApiResponse(responseCode = "400", description = "Validation error"),
-            @ApiResponse(responseCode = "404", description = "Threshold not found")
-    })
     public ResponseEntity<FlowThresholdDTO> update(
             @PathVariable Long id,
             @Valid @RequestBody FlowThresholdDTO dto) {
-        log.debug("PUT /flow/common/threshold/{}", id);
+        log.info("PUT /flow/common/threshold/{}", id);
         return ResponseEntity.ok(commandService.updateThreshold(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('THRESHOLD:DELETE')")
-    @Operation(summary = "Delete a threshold (hard delete)",
-               description = "Hard delete. Prefer deactivate for audit trail preservation.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Threshold deleted"),
-            @ApiResponse(responseCode = "404", description = "Threshold not found")
-    })
+    @Operation(summary = "Hard-delete a threshold (prefer deactivate)")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        log.debug("DELETE /flow/common/threshold/{}", id);
+        log.warn("DELETE /flow/common/threshold/{}", id);
         commandService.deleteThreshold(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/activate")
+    @PostMapping("/{id}/activate")
     @PreAuthorize("hasAuthority('THRESHOLD:WRITE')")
-    @Operation(summary = "Activate a threshold",
-               description = "Activates the specified threshold. Deactivates the currently active threshold for the same pipeline.")
+    @Operation(summary = "Activate a threshold (deactivates the current active threshold for same pipeline)")
     public ResponseEntity<FlowThresholdDTO> activate(@PathVariable Long id) {
-        log.debug("PATCH /flow/common/threshold/{}/activate", id);
+        log.info("POST /flow/common/threshold/{}/activate", id);
         return ResponseEntity.ok(commandService.activateThreshold(id));
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PostMapping("/{id}/deactivate")
     @PreAuthorize("hasAuthority('THRESHOLD:WRITE')")
-    @Operation(summary = "Deactivate a threshold",
-               description = "Deactivates the specified threshold.")
+    @Operation(summary = "Deactivate a threshold")
     public ResponseEntity<FlowThresholdDTO> deactivate(@PathVariable Long id) {
-        log.debug("PATCH /flow/common/threshold/{}/deactivate", id);
+        log.info("POST /flow/common/threshold/{}/deactivate", id);
         return ResponseEntity.ok(commandService.deactivateThreshold(id));
     }
 }

@@ -4,10 +4,10 @@
  *
  *  @Name       : SegmentDistributionService
  *  @CreatedOn  : 03-25-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.service → flow.workflow.service
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.service → flow.workflow.service
  *
  *  @Type       : Interface
- *  @Layer      : Service (Internal Orchestration)
+ *  @Layer      : Service (Workflow Orchestration)
  *  @Package    : Flow / Workflow
  *
  *  @Description: Internal orchestration service for distributing an approved FlowReading
@@ -25,17 +25,15 @@ import java.util.concurrent.CompletableFuture;
 import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 
+/**
+ * Internal orchestration service for distributing an approved FlowReading
+ * into per-segment DerivedFlowReading records.
+ * Moved to flow.workflow per HyFlo v2 architecture.
+ */
 public interface SegmentDistributionService {
 
-    /**
-     * Generate DerivedFlowReading for every active PipelineSegment synchronously.
-     */
     List<DerivedFlowReadingReadDTO> generateDerivedReadings(FlowReading sourceReading);
 
-    /**
-     * Asynchronous entry point for derived reading generation.
-     * Executes on the configured taskExecutor thread pool.
-     */
     CompletableFuture<List<DerivedFlowReadingReadDTO>> asyncGenerateDerivedReadings(
             FlowReading sourceReading);
 }

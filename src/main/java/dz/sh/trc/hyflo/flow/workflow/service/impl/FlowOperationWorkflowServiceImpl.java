@@ -3,16 +3,16 @@
  *  @Author     : HyFlo v2
  *
  *  @Name       : FlowOperationWorkflowServiceImpl
- *  @CreatedOn  : 03-28-2026
+ *  @CreatedOn  : 03-28-2026 — extracted from FlowOperationCommandServiceImpl (workflow refactor)
  *
  *  @Type       : Class
  *  @Layer      : Service Implementation (Workflow)
  *  @Package    : Flow / Workflow
  *
- *  @Description: Implements FlowOperationWorkflowService.
- *                Approve/reject logic extracted from FlowOperationCommandServiceImpl.
- *                Delegates to FlowOperationCommandService.approve/reject
- *                to keep state-machine logic in one place and avoid duplication.
+ *  @Description: Implements approve and reject for FlowOperation.
+ *                Delegates to FlowOperationCommandService for the actual approve/reject logic
+ *                to avoid duplicating business rules.
+ *                This class owns the workflow layer; core service owns the state-transition logic.
  *
  **/
 
@@ -27,12 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Workflow facade for FlowOperation lifecycle transitions.
- *
- * Delegates to FlowOperationCommandService which already contains
- * the full approve/reject state-machine implementation.
- * This layer enforces clean module separation: workflow concerns
- * are now routed through flow.workflow, not flow.core controllers.
+ * Workflow service implementation for FlowOperation lifecycle transitions.
+ * Delegates to FlowOperationCommandService.approve() and .reject().
+ * Workflow layer owns the HTTP-facing contract; core layer owns the business invariants.
  */
 @Service
 @RequiredArgsConstructor
@@ -44,14 +41,13 @@ public class FlowOperationWorkflowServiceImpl implements FlowOperationWorkflowSe
 
     @Override
     public FlowOperationReadDTO approve(Long id, Long validatorId) {
-        log.info("[WorkflowService] approve operationId={} validatorId={}", id, validatorId);
+        log.info("[workflow] approve operationId={} validatorId={}", id, validatorId);
         return commandService.approve(id, validatorId);
     }
 
     @Override
-    public FlowOperationReadDTO reject(Long id, Long validatorId, String rejectionReason) {
-        log.info("[WorkflowService] reject operationId={} validatorId={} reason={}",
-                id, validatorId, rejectionReason);
-        return commandService.reject(id, validatorId, rejectionReason);
+    public FlowOperationReadDTO reject(Long id, Long validatorId, String reason) {
+        log.info("[workflow] reject operationId={} validatorId={} reason={}", id, validatorId, reason);
+        return commandService.reject(id, validatorId, reason);
     }
 }
