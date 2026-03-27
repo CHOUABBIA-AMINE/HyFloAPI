@@ -1,12 +1,10 @@
 /**
  *
- *	@Author		: MEDJERAB Abir, CHOUABBIA Amine
+ *	@Author		: MEDJERAB Abir
  *
  * 	@Name		: PipelineIntelligenceController
  * 	@CreatedOn	: 02-07-2026
- * 	@UpdatedOn	: 02-14-2026
- * 	@UpdatedOn	: 02-16-2026 - Enhanced with comprehensive OpenAPI documentation
- * 	@UpdatedOn	: 02-16-2026 - Simplified to single-line descriptions
+ * 	@UpdatedOn	: 02-16-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Controller

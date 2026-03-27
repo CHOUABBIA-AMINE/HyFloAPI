@@ -1,9 +1,10 @@
 /**
  *
- *  @Author     : HyFlo v2
+ * 	@Author		: MEDJERAB Abir
  *
  *  @Name       : SlotCoverageController
- *  @CreatedOn  : Phase 4 — Commit 32
+ * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-25-2026
  *
  *  @Type       : Class
  *  @Layer      : Controller
@@ -48,7 +49,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api/v2/flow/slot-coverage")
+@RequestMapping("/flow/slotCoverage")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Slot Coverage",

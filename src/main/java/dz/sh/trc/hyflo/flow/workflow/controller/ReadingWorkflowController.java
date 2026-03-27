@@ -42,7 +42,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v2/flow/workflow")
+@RequestMapping("/flow/workflow")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Reading Workflow v2",

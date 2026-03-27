@@ -1,9 +1,10 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ * 	@Author		: MEDJERAB Abir
  *
  * 	@Name		: WorkflowState
  * 	@CreatedOn	: 03-25-2026
+ * 	@UpdatedOn	: 03-25-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Model

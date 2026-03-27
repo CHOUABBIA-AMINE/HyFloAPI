@@ -1,12 +1,10 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ * 	@Author		: MEDJERAB Abir
  *
  * 	@Name		: WorkflowInstance
  * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-26-2026 — fix: add updatedAt (F_09)
- *                              ReadingWorkflowService calls wf.setUpdatedAt(LocalDateTime.now())
- *                              but GenericModel only provides id — no timestamp fields.
+ * 	@UpdatedOn	: 03-25-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Model
