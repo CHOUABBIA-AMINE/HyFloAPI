@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowAnomaly
  * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model to flow.intelligence.model
+ * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.intelligence.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -71,7 +71,7 @@ public class FlowAnomaly extends GenericModel {
     @Column(name = "F_05", length = 2000)
     private String explanation;
 
-    @Schema(description = "Detection timestamp")
+    @Schema(description = "Timestamp when anomaly was detected")
     @Column(name = "F_06", nullable = false)
     private LocalDateTime detectedAt;
 
@@ -87,7 +87,7 @@ public class FlowAnomaly extends GenericModel {
             foreignKey = @ForeignKey(name = "T_04_02_01_FK_02"))
     private DerivedFlowReading derivedReading;
 
-    @Schema(description = "FK to the affected PipelineSegment")
+    @Schema(description = "FK to the affected pipeline segment")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_09", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_04_02_01_FK_03"))

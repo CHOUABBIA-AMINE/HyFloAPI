@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowThreshold
  * 	@CreatedOn	: 01-21-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model to flow.common.model
+ * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.common.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model

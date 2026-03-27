@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowForecast
  * 	@CreatedOn	: 01-21-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model to flow.intelligence.model
+ * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.intelligence.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model

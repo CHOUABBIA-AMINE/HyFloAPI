@@ -4,8 +4,8 @@
  *
  * 	@Name		: FlowAlert
  * 	@CreatedOn	: 01-21-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model to flow.intelligence.model
- *                             FlowThreshold FK updated to flow.common.model.FlowThreshold
+ * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.intelligence.model
+ *                             FK FlowThreshold updated to flow.common.model.FlowThreshold
  *
  * 	@Type		: Class
  * 	@Layer		: Model
@@ -87,8 +87,8 @@ public class FlowAlert extends GenericModel {
     @Column(name = "F_05")
     private LocalDateTime acknowledgedAt;
 
-    @Schema(description = "Timestamp when alert was resolved",
-            example = "2026-01-22T01:30:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Timestamp when alert was resolved", example = "2026-01-22T01:30:00",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_06")
     private LocalDateTime resolvedAt;
 
@@ -103,8 +103,8 @@ public class FlowAlert extends GenericModel {
     @Column(name = "F_08", nullable = false)
     private Boolean notificationSent;
 
-    @Schema(description = "Timestamp when notification was sent",
-            example = "2026-01-22T00:45:30", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @Schema(description = "Timestamp when notification was sent", example = "2026-01-22T00:45:30",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_09")
     private LocalDateTime notificationSentAt;
 
@@ -115,7 +115,7 @@ public class FlowAlert extends GenericModel {
             foreignKey = @ForeignKey(name = "T_03_03_05_FK_04"))
     private Employee resolvedBy;
 
-    @Schema(description = "Flow threshold that was breached",
+    @Schema(description = "Flow threshold that was breached (flow.common.model.FlowThreshold)",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",

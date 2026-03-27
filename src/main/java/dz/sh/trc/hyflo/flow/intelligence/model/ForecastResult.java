@@ -1,10 +1,10 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ * 	@Author		: HyFlo v2 Model
  *
  * 	@Name		: ForecastResult
  * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model to flow.intelligence.model
+ * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.model → flow.intelligence.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model
