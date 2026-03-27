@@ -4,15 +4,15 @@
  *
  *  @Name       : FlowThresholdDTO
  *  @CreatedOn  : 03-26-2026
- *  @UpdatedOn  : 03-28-2026 — refactor: moved from flow.core.dto → flow.common.dto
- *                             Entity import updated to flow.common.model.FlowThreshold
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.dto → flow.common.dto
  *
  *  @Type       : Class
- *  @Layer      : DTO (canonical — read + write)
+ *  @Layer      : DTO
  *  @Package    : Flow / Common
  *
- *  @Description: Combined read/write DTO for FlowThreshold.
- *                Canonical DTO — not split per HyFlo v2 DTO convention.
+ *  @Description: Canonical single DTO for FlowThreshold (read + write).
+ *                Per HyFlo v2 DTO rule: one canonical DTO per entity.
+ *                DO NOT split into command/read variants.
  *
  **/
 

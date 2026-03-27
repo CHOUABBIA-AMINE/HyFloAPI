@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : MEDJERAB Abir
  *
- * 	@Name		: FlowAlertReadDTO
- * 	@CreatedOn	: 03-28-2026 — extracted from flow.core.dto, relocated to flow.intelligence.dto
+ *  @Name       : FlowAlertReadDTO
+ *  @CreatedOn  : 01-23-2026
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.dto → flow.intelligence.dto
  *
- * 	@Type		: Class
- * 	@Layer		: DTO (Read)
- * 	@Package	: Flow / Intelligence
+ *  @Type       : Class
+ *  @Layer      : DTO (Read)
+ *  @Package    : Flow / Intelligence
  *
  **/
 
@@ -23,7 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Schema(description = "Read DTO for a flow alert triggered by a threshold breach")
+@Schema(description = "Read DTO for a flow alert")
 @Data
 @Builder
 @NoArgsConstructor
@@ -31,45 +32,21 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FlowAlertReadDTO {
 
-    @Schema(description = "Record identifier")
     private Long id;
-
-    @Schema(description = "Threshold identifier that was breached")
     private Long thresholdId;
-
-    @Schema(description = "Pipeline name associated with the threshold")
-    private String pipelineName;
-
-    @Schema(description = "Flow reading identifier that triggered the alert")
+    private String thresholdPipelineCode;
     private Long flowReadingId;
-
-    @Schema(description = "Alert message describing the issue")
     private String message;
-
-    @Schema(description = "Actual measured value that triggered the alert")
     private BigDecimal actualValue;
-
-    @Schema(description = "Threshold value that was breached")
     private BigDecimal thresholdValue;
-
-    @Schema(description = "Timestamp when alert was triggered")
     private LocalDateTime alertTimestamp;
-
-    @Schema(description = "Current alert status")
-    private String status;
-
-    @Schema(description = "Whether notification was sent to operators")
-    private Boolean notificationSent;
-
-    @Schema(description = "Timestamp when notification was sent")
-    private LocalDateTime notificationSentAt;
-
-    @Schema(description = "Timestamp when alert was acknowledged")
     private LocalDateTime acknowledgedAt;
-
-    @Schema(description = "Timestamp when alert was resolved")
     private LocalDateTime resolvedAt;
-
-    @Schema(description = "Resolution notes")
     private String resolutionNotes;
+    private Boolean notificationSent;
+    private LocalDateTime notificationSentAt;
+    private Long statusId;
+    private String statusName;
+    private Long resolvedById;
+    private Long acknowledgedById;
 }

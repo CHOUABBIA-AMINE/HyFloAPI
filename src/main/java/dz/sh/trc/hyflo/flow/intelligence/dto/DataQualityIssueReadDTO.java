@@ -3,7 +3,8 @@
  *  @Author     : HyFlo v2
  *
  *  @Name       : DataQualityIssueReadDTO
- *  @CreatedOn  : 03-28-2026
+ *  @CreatedOn  : 03-25-2026
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.dto → flow.intelligence.dto
  *
  *  @Type       : Class
  *  @Layer      : DTO (Read)

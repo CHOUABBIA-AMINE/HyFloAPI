@@ -1,13 +1,14 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: ForecastResultReadDTO
- * 	@CreatedOn	: 03-28-2026 — extracted from flow.core.dto, relocated to flow.intelligence.dto
+ *  @Name       : ForecastResultReadDTO
+ *  @CreatedOn  : 03-25-2026
+ *  @MovedOn    : 03-28-2026 — refactor: flow.core.dto → flow.intelligence.dto
  *
- * 	@Type		: Class
- * 	@Layer		: DTO (Read)
- * 	@Package	: Flow / Intelligence
+ *  @Type       : Class
+ *  @Layer      : DTO (Read)
+ *  @Package    : Flow / Intelligence
  *
  **/
 
@@ -31,24 +32,11 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ForecastResultReadDTO {
 
-    @Schema(description = "Record identifier")
     private Long id;
-
-    @Schema(description = "Forecast identifier being evaluated")
     private Long forecastId;
-
-    @Schema(description = "Actual volume realized over the forecast period", example = "27250.50")
     private BigDecimal actualVolume;
-
-    @Schema(description = "Absolute error between forecast and actual volume", example = "250.50")
     private BigDecimal absoluteError;
-
-    @Schema(description = "Percentage error between forecast and actual volume", example = "0.92")
     private BigDecimal percentageError;
-
-    @Schema(description = "Evaluation window or aggregation level", example = "DAILY")
     private String evaluationWindow;
-
-    @Schema(description = "Timestamp when this evaluation was computed")
     private LocalDateTime evaluatedAt;
 }
