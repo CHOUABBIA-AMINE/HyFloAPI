@@ -35,9 +35,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Defines the operating threshold envelope for a pipeline.
- * Only one active threshold is permitted per pipeline at any time.
- * Business invariant enforced by FlowThresholdCommandService.
+ * Operating thresholds for pipeline monitoring and alerting.
+ * Defines safe operating ranges for pressure, temperature, and flow rates.
  */
 @Schema(description = "Pipeline operating thresholds for monitoring and automated alerting")
 @Setter
@@ -75,12 +74,12 @@ public class FlowThreshold extends GenericModel {
     @Column(name = "F_04", precision = 8, scale = 4, nullable = false)
     private BigDecimal temperatureMax;
 
-    @Schema(description = "Minimum acceptable flow rate (m\u00b3/h)", example = "500.0",
+    @Schema(description = "Minimum acceptable flow rate (m\u00b3/h or bpd)", example = "500.0",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "F_05", precision = 10, scale = 4, nullable = false)
     private BigDecimal flowRateMin;
 
-    @Schema(description = "Maximum acceptable flow rate (m\u00b3/h)", example = "2000.0",
+    @Schema(description = "Maximum acceptable flow rate (m\u00b3/h or bpd)", example = "2000.0",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "F_06", precision = 10, scale = 4, nullable = false)
     private BigDecimal flowRateMax;
@@ -95,17 +94,17 @@ public class FlowThreshold extends GenericModel {
     @Column(name = "F_08", precision = 15, scale = 4, nullable = false)
     private BigDecimal containedVolumeMax;
 
-    @Schema(description = "Alert tolerance percentage (\u00b1%)", example = "5.0",
-            requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Alert tolerance percentage for threshold breaches (e.g., 5.0 for \u00b15%)",
+            example = "5.0", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "F_09", precision = 7, scale = 4, nullable = false)
     private BigDecimal alertTolerance;
 
-    @Schema(description = "Whether this threshold configuration is currently active", example = "true",
-            requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Indicates if this threshold configuration is currently active",
+            example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "F_10", nullable = false)
     private Boolean active;
 
-    @Schema(description = "Pipeline this threshold applies to",
+    @Schema(description = "Pipeline to which these thresholds apply",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",

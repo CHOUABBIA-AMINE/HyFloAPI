@@ -83,16 +83,17 @@ public class FlowAlert extends GenericModel {
     private String message;
 
     @Schema(description = "Timestamp when alert was acknowledged by operator",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            example = "2026-01-22T00:50:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_05")
     private LocalDateTime acknowledgedAt;
 
     @Schema(description = "Timestamp when alert was resolved",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            example = "2026-01-22T01:30:00", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_06")
     private LocalDateTime resolvedAt;
 
     @Schema(description = "Notes describing the resolution action taken",
+            example = "Adjusted valve to reduce pressure. System stabilized.",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED, maxLength = 1000)
     @Column(name = "F_07", length = 1000)
     private String resolutionNotes;
@@ -103,7 +104,7 @@ public class FlowAlert extends GenericModel {
     private Boolean notificationSent;
 
     @Schema(description = "Timestamp when notification was sent",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+            example = "2026-01-22T00:45:30", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @Column(name = "F_09")
     private LocalDateTime notificationSentAt;
 

@@ -71,7 +71,7 @@ public class FlowAnomaly extends GenericModel {
     @Column(name = "F_05", length = 2000)
     private String explanation;
 
-    @Schema(description = "Timestamp when the anomaly was detected")
+    @Schema(description = "Detection timestamp")
     @Column(name = "F_06", nullable = false)
     private LocalDateTime detectedAt;
 
