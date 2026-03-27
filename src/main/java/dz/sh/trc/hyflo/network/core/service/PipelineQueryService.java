@@ -19,15 +19,15 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDto;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDTO;
 
 public interface PipelineQueryService {
 
-    PipelineReadDto getById(Long id);
+    PipelineReadDTO getById(Long id);
 
-    Page<PipelineReadDto> getAll(Pageable pageable);
+    Page<PipelineReadDTO> getAll(Pageable pageable);
 
-    List<PipelineReadDto> getByPipelineSystem(Long systemId);
+    List<PipelineReadDTO> getByPipelineSystem(Long systemId);
 
-    Page<PipelineReadDto> search(String query, Pageable pageable);
+    Page<PipelineReadDTO> search(String query, Pageable pageable);
 }

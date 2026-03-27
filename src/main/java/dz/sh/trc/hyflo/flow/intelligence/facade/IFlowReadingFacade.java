@@ -4,7 +4,7 @@
  *
  *  @Name       : IFlowReadingFacade
  *  @CreatedOn  : 03-25-2026
- *  @UpdatedOn  : 03-26-2026 — F2: replace FlowReadingDTO (v1) with FlowReadingReadDto (v2)
+ *  @UpdatedOn  : 03-26-2026 — F2: replace FlowReadingDTO (v1) with FlowReadingReadDTO (v2)
  *                             in all method return types.
  *
  *  @Type       : Interface
@@ -13,7 +13,7 @@
  *
  *  @Description: Abstraction for flow reading queries exposed to the intelligence layer.
  *
- *                F2: all return types migrated from v1 FlowReadingDTO to v2 FlowReadingReadDto.
+ *                F2: all return types migrated from v1 FlowReadingDTO to v2 FlowReadingReadDTO.
  *                Implemented by FlowReadingFacade in flow/core.
  *
  **/
@@ -29,14 +29,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 
 /**
  * Abstraction for flow reading queries exposed to the intelligence layer.
  *
  * Implemented by {@link FlowReadingFacade} in flow/core.
  *
- * F2: all method signatures migrated from FlowReadingDTO (v1) to FlowReadingReadDto (v2).
+ * F2: all method signatures migrated from FlowReadingDTO (v1) to FlowReadingReadDTO (v2).
  * No v1 DTO types remain in this interface contract.
  */
 public interface IFlowReadingFacade {
@@ -47,7 +47,7 @@ public interface IFlowReadingFacade {
      * @param pipelineId the pipeline ID
      * @return optional v2 read DTO
      */
-    Optional<FlowReadingReadDto> findLatestByPipeline(Long pipelineId);
+    Optional<FlowReadingReadDTO> findLatestByPipeline(Long pipelineId);
 
     /**
      * Find all readings for a pipeline on a specific date.
@@ -56,7 +56,7 @@ public interface IFlowReadingFacade {
      * @param readingDate the target date
      * @return list of v2 read DTOs
      */
-    List<FlowReadingReadDto> findByPipelineAndDate(Long pipelineId, LocalDate readingDate);
+    List<FlowReadingReadDTO> findByPipelineAndDate(Long pipelineId, LocalDate readingDate);
 
     /**
      * Find all readings for a pipeline within a date range, ordered by date ascending.
@@ -66,7 +66,7 @@ public interface IFlowReadingFacade {
      * @param endDate    range end (inclusive)
      * @return ordered list of v2 read DTOs
      */
-    List<FlowReadingReadDto> findByPipelineAndDateRangeOrdered(
+    List<FlowReadingReadDTO> findByPipelineAndDateRangeOrdered(
             Long pipelineId, LocalDate startDate, LocalDate endDate);
 
     /**
@@ -78,7 +78,7 @@ public interface IFlowReadingFacade {
      * @param endDate    range end (inclusive)
      * @return ordered list of v2 read DTOs
      */
-    List<FlowReadingReadDto> findByPipelineAndDateRange(
+    List<FlowReadingReadDTO> findByPipelineAndDateRange(
             Long pipelineId, LocalDate startDate, LocalDate endDate);
 
     /**
@@ -95,7 +95,7 @@ public interface IFlowReadingFacade {
      * @param pageable    pagination parameters
      * @return page of v2 read DTOs
      */
-    Page<FlowReadingReadDto> findPendingValidationsByStructure(Long structureId, Pageable pageable);
+    Page<FlowReadingReadDTO> findPendingValidationsByStructure(Long structureId, Pageable pageable);
 
     /**
      * Find overdue readings for a structure, paginated.
@@ -106,6 +106,6 @@ public interface IFlowReadingFacade {
      * @param pageable        pagination parameters
      * @return page of v2 read DTOs
      */
-    Page<FlowReadingReadDto> findOverdueReadingsByStructure(
+    Page<FlowReadingReadDTO> findOverdueReadingsByStructure(
             Long structureId, LocalDate asOfDate, LocalDateTime currentDateTime, Pageable pageable);
 }

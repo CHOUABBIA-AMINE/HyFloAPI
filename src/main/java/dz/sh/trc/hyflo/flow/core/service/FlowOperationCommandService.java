@@ -15,14 +15,14 @@
  *
  *  Commit 26.2 — post-Phase 3 corrective
  *  Commit 37   — create/update signatures migrated from FlowOperationDTO
- *                to FlowOperationCommandDto (write-only command DTO).
+ *                to FlowOperationCommandDTO (write-only command DTO).
  *
  **/
 
 package dz.sh.trc.hyflo.flow.core.service;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDTO;
 
 /**
  * Command service contract for {@link dz.sh.trc.hyflo.flow.core.model.FlowOperation}.
@@ -36,13 +36,13 @@ import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDto;
  * </ul>
  *
  * <h3>Return contract</h3>
- * All methods return {@link FlowOperationReadDto} — never raw entities.
- * Input uses {@link FlowOperationCommandDto} for write-only command operations
+ * All methods return {@link FlowOperationReadDTO} — never raw entities.
+ * Input uses {@link FlowOperationCommandDTO} for write-only command operations
  * (Commit 37 migration from fat FlowOperationDTO in v2 path).
  *
  * <h3>DTO separation</h3>
- * • {@link FlowOperationCommandDto}  — write path (v2 controller create/update)
- * • {@link FlowOperationReadDto}     — read path (all responses)
+ * • {@link FlowOperationCommandDTO}  — write path (v2 controller create/update)
+ * • {@link FlowOperationReadDTO}     — read path (all responses)
  * • Legacy {@code FlowOperationDTO}  — retained ONLY for legacy FlowOperationController
  */
 public interface FlowOperationCommandService {
@@ -55,7 +55,7 @@ public interface FlowOperationCommandService {
      * @param dto write-only command DTO from v2 controller
      * @return created operation as read DTO
      */
-    FlowOperationReadDto create(FlowOperationCommandDto dto);
+    FlowOperationReadDTO create(FlowOperationCommandDTO dto);
 
     /**
      * Update an existing flow operation.
@@ -65,7 +65,7 @@ public interface FlowOperationCommandService {
      * @param dto write-only command DTO with updated fields
      * @return updated operation as read DTO
      */
-    FlowOperationReadDto update(Long id, FlowOperationCommandDto dto);
+    FlowOperationReadDTO update(Long id, FlowOperationCommandDTO dto);
 
     /**
      * Delete a flow operation.
@@ -84,7 +84,7 @@ public interface FlowOperationCommandService {
      * @param validatorId employee performing the approval
      * @return updated operation as read DTO
      */
-    FlowOperationReadDto approve(Long id, Long validatorId);
+    FlowOperationReadDTO approve(Long id, Long validatorId);
 
     /**
      * Reject a PENDING flow operation.
@@ -97,5 +97,5 @@ public interface FlowOperationCommandService {
      * @param rejectionReason mandatory rejection reason
      * @return updated operation as read DTO
      */
-    FlowOperationReadDto reject(Long id, Long validatorId, String rejectionReason);
+    FlowOperationReadDTO reject(Long id, Long validatorId, String rejectionReason);
 }

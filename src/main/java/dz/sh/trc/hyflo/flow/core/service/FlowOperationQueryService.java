@@ -24,7 +24,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDTO;
 
 /**
  * Query service contract for {@link dz.sh.trc.hyflo.flow.core.model.FlowOperation}.
@@ -37,7 +37,7 @@ import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
  * </ul>
  *
  * <h3>Return contract</h3>
- * All methods return {@link FlowOperationReadDto} or collections thereof.
+ * All methods return {@link FlowOperationReadDTO} or collections thereof.
  * No raw entities are ever exposed.
  */
 public interface FlowOperationQueryService {
@@ -49,7 +49,7 @@ public interface FlowOperationQueryService {
      * @return operation as read DTO
      * @throws dz.sh.trc.hyflo.exception.ResourceNotFoundException if not found
      */
-    FlowOperationReadDto findById(Long id);
+    FlowOperationReadDTO findById(Long id);
 
     /**
      * List all flow operations (paginated).
@@ -57,7 +57,7 @@ public interface FlowOperationQueryService {
      * @param pageable pagination/sort parameters
      * @return page of read DTOs
      */
-    Page<FlowOperationReadDto> findAll(Pageable pageable);
+    Page<FlowOperationReadDTO> findAll(Pageable pageable);
 
     /**
      * Find all flow operations for a specific date.
@@ -65,7 +65,7 @@ public interface FlowOperationQueryService {
      * @param date operation date
      * @return list of read DTOs
      */
-    List<FlowOperationReadDto> findByDate(LocalDate date);
+    List<FlowOperationReadDTO> findByDate(LocalDate date);
 
     /**
      * Find all flow operations within a date range (inclusive).
@@ -74,7 +74,7 @@ public interface FlowOperationQueryService {
      * @param endDate   end of range
      * @return list of read DTOs
      */
-    List<FlowOperationReadDto> findByDateRange(LocalDate startDate, LocalDate endDate);
+    List<FlowOperationReadDTO> findByDateRange(LocalDate startDate, LocalDate endDate);
 
     /**
      * Find all flow operations for a specific infrastructure.
@@ -82,7 +82,7 @@ public interface FlowOperationQueryService {
      * @param infrastructureId infrastructure ID
      * @return list of read DTOs
      */
-    List<FlowOperationReadDto> findByInfrastructure(Long infrastructureId);
+    List<FlowOperationReadDTO> findByInfrastructure(Long infrastructureId);
 
     /**
      * Find all flow operations for a specific product.
@@ -90,7 +90,7 @@ public interface FlowOperationQueryService {
      * @param productId product ID
      * @return list of read DTOs
      */
-    List<FlowOperationReadDto> findByProduct(Long productId);
+    List<FlowOperationReadDTO> findByProduct(Long productId);
 
     /**
      * Find all flow operations of a specific type.
@@ -98,7 +98,7 @@ public interface FlowOperationQueryService {
      * @param typeId operation type ID
      * @return list of read DTOs
      */
-    List<FlowOperationReadDto> findByType(Long typeId);
+    List<FlowOperationReadDTO> findByType(Long typeId);
 
     /**
      * Find all flow operations with a specific validation status.
@@ -106,7 +106,7 @@ public interface FlowOperationQueryService {
      * @param validationStatusId validation status ID
      * @return list of read DTOs
      */
-    List<FlowOperationReadDto> findByValidationStatus(Long validationStatusId);
+    List<FlowOperationReadDTO> findByValidationStatus(Long validationStatusId);
 
     /**
      * Find flow operations by infrastructure and date range (paginated).
@@ -117,7 +117,7 @@ public interface FlowOperationQueryService {
      * @param pageable         pagination parameters
      * @return page of read DTOs
      */
-    Page<FlowOperationReadDto> findByInfrastructureAndDateRange(
+    Page<FlowOperationReadDTO> findByInfrastructureAndDateRange(
             Long infrastructureId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     /**
@@ -130,7 +130,7 @@ public interface FlowOperationQueryService {
      * @param pageable   pagination parameters
      * @return page of read DTOs
      */
-    Page<FlowOperationReadDto> findByProductAndTypeAndDateRange(
+    Page<FlowOperationReadDTO> findByProductAndTypeAndDateRange(
             Long productId, Long typeId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     /**
@@ -142,6 +142,6 @@ public interface FlowOperationQueryService {
      * @param pageable  pagination parameters
      * @return page of read DTOs
      */
-    Page<FlowOperationReadDto> findByValidationStatusAndDateRange(
+    Page<FlowOperationReadDTO> findByValidationStatusAndDateRange(
             Long statusId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 }

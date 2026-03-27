@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.system.security.dto.query.UserReadDto;
+import dz.sh.trc.hyflo.system.security.dto.query.UserReadDTO;
 import dz.sh.trc.hyflo.system.security.mapper.UserMapper;
 import dz.sh.trc.hyflo.system.security.repository.UserRepository;
 import dz.sh.trc.hyflo.system.security.service.UserQueryService;
@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
  * Query implementation for User read operations.
  *
  * Uses UserMapper from Phase 2.
- * Returns UserReadDto — no raw entity exposure.
+ * Returns UserReadDTO — no raw entity exposure.
  *
  * Phase 3 — Commit 24
  */
@@ -48,30 +48,30 @@ public class UserQueryServiceImpl implements UserQueryService {
     private final UserRepository userRepository;
 
     @Override
-    public UserReadDto getById(Long id) {
+    public UserReadDTO getById(Long id) {
         return userRepository.findById(id)
-                .map(UserMapper::toReadDto)
+                .map(UserMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
     }
 
     @Override
-    public UserReadDto getByUsername(String username) {
+    public UserReadDTO getByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(UserMapper::toReadDto)
+                .map(UserMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "User not found by username: " + username));
     }
 
     @Override
-    public Page<UserReadDto> getAll(Pageable pageable) {
-        return userRepository.findAll(pageable).map(UserMapper::toReadDto);
+    public Page<UserReadDTO> getAll(Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserMapper::toReadDTO);
     }
 
     @Override
-    public List<UserReadDto> getByRole(Long roleId) {
+    public List<UserReadDTO> getByRole(Long roleId) {
         return userRepository.findByRoleId(roleId)
                 .stream()
-                .map(UserMapper::toReadDto)
+                .map(UserMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 }

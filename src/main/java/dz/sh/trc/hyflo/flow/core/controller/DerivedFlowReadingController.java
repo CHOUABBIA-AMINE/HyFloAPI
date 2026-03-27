@@ -21,7 +21,7 @@
 
 package dz.sh.trc.hyflo.flow.core.controller;
 
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.service.DerivedFlowReadingQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -59,7 +59,7 @@ public class DerivedFlowReadingController {
         @ApiResponse(responseCode = "404", description = "Derived reading not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<DerivedFlowReadingReadDto> getById(
+    public ResponseEntity<DerivedFlowReadingReadDTO> getById(
             @Parameter(description = "Derived reading ID") @PathVariable Long id) {
         log.debug("GET /api/v2/flow/derived-readings/{}", id);
         return ResponseEntity.ok(queryService.getById(id));
@@ -73,7 +73,7 @@ public class DerivedFlowReadingController {
         @ApiResponse(responseCode = "200", description = "Derived readings returned"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<List<DerivedFlowReadingReadDto>> getBySourceReading(
+    public ResponseEntity<List<DerivedFlowReadingReadDTO>> getBySourceReading(
             @Parameter(description = "Source FlowReading ID") @PathVariable Long sourceReadingId) {
         log.debug("GET /api/v2/flow/derived-readings/source/{}", sourceReadingId);
         return ResponseEntity.ok(queryService.getBySourceReading(sourceReadingId));
@@ -87,7 +87,7 @@ public class DerivedFlowReadingController {
         @ApiResponse(responseCode = "200", description = "Derived readings returned"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<List<DerivedFlowReadingReadDto>> getBySegment(
+    public ResponseEntity<List<DerivedFlowReadingReadDTO>> getBySegment(
             @Parameter(description = "Pipeline segment ID") @PathVariable Long segmentId) {
         log.debug("GET /api/v2/flow/derived-readings/segment/{}", segmentId);
         return ResponseEntity.ok(queryService.getBySegment(segmentId));
@@ -101,7 +101,7 @@ public class DerivedFlowReadingController {
         @ApiResponse(responseCode = "200", description = "Derived readings returned"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<List<DerivedFlowReadingReadDto>> getBySegmentAndDateRange(
+    public ResponseEntity<List<DerivedFlowReadingReadDTO>> getBySegmentAndDateRange(
             @PathVariable Long segmentId,
             @Parameter(description = "Start date (inclusive), format: yyyy-MM-dd")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -119,7 +119,7 @@ public class DerivedFlowReadingController {
         @ApiResponse(responseCode = "200", description = "Derived readings returned"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<List<DerivedFlowReadingReadDto>> getByDateRange(
+    public ResponseEntity<List<DerivedFlowReadingReadDTO>> getByDateRange(
             @Parameter(description = "Start date (inclusive), format: yyyy-MM-dd")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "End date (inclusive), format: yyyy-MM-dd")

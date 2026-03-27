@@ -15,22 +15,22 @@
 
 package dz.sh.trc.hyflo.system.security.service;
 
-import dz.sh.trc.hyflo.system.security.dto.command.UserCommandDto;
-import dz.sh.trc.hyflo.system.security.dto.query.UserReadDto;
+import dz.sh.trc.hyflo.system.security.dto.command.UserCommandDTO;
+import dz.sh.trc.hyflo.system.security.dto.query.UserReadDTO;
 
 /**
  * Command contract for User write operations.
  *
- * All methods return UserReadDto — never raw entities.
+ * All methods return UserReadDTO — never raw entities.
  * Password encoding handled by implementation — callers pass raw password.
  *
  * Phase 3 — Commit 24
  */
 public interface UserCommandService {
 
-    UserReadDto createUser(UserCommandDto command);
+    UserReadDTO createUser(UserCommandDTO command);
 
-    UserReadDto updateUser(Long id, UserCommandDto command);
+    UserReadDTO updateUser(Long id, UserCommandDTO command);
 
     /**
      * Deactivate a user account (soft disable).

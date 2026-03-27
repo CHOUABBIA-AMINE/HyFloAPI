@@ -13,17 +13,17 @@
 
 package dz.sh.trc.hyflo.crisis.mapper;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDTO;
 import dz.sh.trc.hyflo.crisis.model.Incident;
 
 public final class IncidentMapper {
 
     private IncidentMapper() {}
 
-    public static IncidentReadDto toReadDto(Incident entity) {
+    public static IncidentReadDTO toReadDTO(Incident entity) {
         if (entity == null) return null;
 
-        return IncidentReadDto.builder()
+        return IncidentReadDTO.builder()
                 .id(entity.getId())
                 .incidentTypeCode(null)  // not on entity — reserved for future join
                 .severityLevel(entity.getSeverity() != null

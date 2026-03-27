@@ -13,17 +13,17 @@
 
 package dz.sh.trc.hyflo.flow.core.mapper;
 
-import dz.sh.trc.hyflo.flow.core.dto.ForecastResultReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.ForecastResultReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.ForecastResult;
 
 public final class ForecastResultMapper {
 
     private ForecastResultMapper() {}
 
-    public static ForecastResultReadDto toReadDto(ForecastResult entity) {
+    public static ForecastResultReadDTO toReadDTO(ForecastResult entity) {
         if (entity == null) return null;
 
-        return ForecastResultReadDto.builder()
+        return ForecastResultReadDTO.builder()
                 .id(entity.getId())
                 .forecastId(entity.getForecast() != null ? entity.getForecast().getId() : null)
                 .actualVolume(entity.getActualVolume())

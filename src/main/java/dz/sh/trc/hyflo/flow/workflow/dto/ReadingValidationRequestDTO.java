@@ -4,7 +4,7 @@
  *
  * 	@Name		: ReadingValidationRequestDTO
  * 	@CreatedOn	: 01-23-2026
- * 	@UpdatedOn	: 03-26-2026 — replace FlowReadingDTO (deleted) with FlowReadingReadDto
+ * 	@UpdatedOn	: 03-26-2026 — replace FlowReadingDTO (deleted) with FlowReadingReadDTO
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.flow.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.general.organization.dto.EmployeeDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
  * Workflow command DTO for validating (approving/rejecting) flow readings.
  *
  * The {@code reading} field is informational only — populated by the backend
- * for confirmation display purposes. Uses FlowReadingReadDto (v2).
+ * for confirmation display purposes. Uses FlowReadingReadDTO (v2).
  */
 @Data
 @Builder
@@ -46,7 +46,7 @@ public class ReadingValidationRequestDTO {
     private Long readingId;
 
     @Schema(description = "Flow reading details (for confirmation/display purposes)")
-    private FlowReadingReadDto reading;
+    private FlowReadingReadDTO reading;
 
     @NotNull(message = "Validation action is required")
     @Schema(description = "Validation action", example = "APPROVE",

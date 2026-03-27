@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.system.security.dto.command.UserCommandDto;
-import dz.sh.trc.hyflo.system.security.dto.query.UserReadDto;
+import dz.sh.trc.hyflo.system.security.dto.command.UserCommandDTO;
+import dz.sh.trc.hyflo.system.security.dto.query.UserReadDTO;
 import dz.sh.trc.hyflo.system.security.mapper.UserMapper;
 import dz.sh.trc.hyflo.system.security.model.User;
 import dz.sh.trc.hyflo.system.security.repository.UserRepository;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * Command implementation for User write operations.
  *
  * Uses UserMapper from Phase 2.
- * Returns UserReadDto — no raw entity exposure.
+ * Returns UserReadDTO — no raw entity exposure.
  *
  * Phase 3 — Commit 24
  */
@@ -45,19 +45,19 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserRepository userRepository;
 
     @Override
-    public UserReadDto createUser(UserCommandDto command) {
+    public UserReadDTO createUser(UserCommandDTO command) {
         log.info("Creating user: {}", command.getUsername());
         User entity = UserMapper.toEntity(command);
-        return UserMapper.toReadDto(userRepository.save(entity));
+        return UserMapper.toReadDTO(userRepository.save(entity));
     }
 
     @Override
-    public UserReadDto updateUser(Long id, UserCommandDto command) {
+    public UserReadDTO updateUser(Long id, UserCommandDTO command) {
         log.info("Updating user ID: {}", id);
         User existing = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
         UserMapper.updateEntity(command, existing);
-        return UserMapper.toReadDto(userRepository.save(existing));
+        return UserMapper.toReadDTO(userRepository.save(existing));
     }
 
     @Override

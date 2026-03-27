@@ -19,7 +19,7 @@
  *
  *  Commit 26.2 — post-Phase 3 corrective
  *  Commit 37   — create/update migrated from FlowOperationDTO
- *                to FlowOperationCommandDto.
+ *                to FlowOperationCommandDTO.
  *                create() no longer reads validationStatusId from DTO:
  *                PENDING status is resolved internally via
  *                ValidationStatusRepository.findByCode("PENDING").
@@ -37,8 +37,8 @@ import dz.sh.trc.hyflo.exception.BusinessValidationException;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowOperationCommandDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowOperationMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
@@ -82,7 +82,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
     // =====================================================================
 
     @Override
-    public FlowOperationReadDto create(FlowOperationCommandDto dto) {
+    public FlowOperationReadDTO create(FlowOperationCommandDTO dto) {
         log.info("[FlowOperationCommandService] create: date={}, infraId={}, productId={}, typeId={}",
                 dto.getOperationDate(), dto.getInfrastructureId(),
                 dto.getProductId(), dto.getTypeId());
@@ -110,7 +110,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
 
         FlowOperation saved = flowOperationRepository.save(entity);
         log.info("[FlowOperationCommandService] created id={}", saved.getId());
-        return FlowOperationMapper.toReadDto(saved);
+        return FlowOperationMapper.toReadDTO(saved);
     }
 
     // =====================================================================
@@ -118,7 +118,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
     // =====================================================================
 
     @Override
-    public FlowOperationReadDto update(Long id, FlowOperationCommandDto dto) {
+    public FlowOperationReadDTO update(Long id, FlowOperationCommandDTO dto) {
         log.info("[FlowOperationCommandService] update id={}", id);
 
         FlowOperation entity = flowOperationRepository.findById(id)
@@ -151,7 +151,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
         }
 
         FlowOperation saved = flowOperationRepository.save(entity);
-        return FlowOperationMapper.toReadDto(saved);
+        return FlowOperationMapper.toReadDTO(saved);
     }
 
     // =====================================================================
@@ -175,7 +175,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
     // =====================================================================
 
     @Override
-    public FlowOperationReadDto approve(Long id, Long validatorId) {
+    public FlowOperationReadDTO approve(Long id, Long validatorId) {
         log.info("[FlowOperationCommandService] approve id={}, validatorId={}", id, validatorId);
 
         FlowOperation operation = flowOperationRepository.findById(id)
@@ -206,7 +206,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
 
         FlowOperation saved = flowOperationRepository.save(operation);
         log.info("[FlowOperationCommandService] approved id={}", id);
-        return FlowOperationMapper.toReadDto(saved);
+        return FlowOperationMapper.toReadDTO(saved);
     }
 
     // =====================================================================
@@ -214,7 +214,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
     // =====================================================================
 
     @Override
-    public FlowOperationReadDto reject(Long id, Long validatorId, String rejectionReason) {
+    public FlowOperationReadDTO reject(Long id, Long validatorId, String rejectionReason) {
         log.info("[FlowOperationCommandService] reject id={}, validatorId={}", id, validatorId);
 
         if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
@@ -254,7 +254,7 @@ public class FlowOperationCommandServiceImpl implements FlowOperationCommandServ
 
         FlowOperation saved = flowOperationRepository.save(operation);
         log.info("[FlowOperationCommandService] rejected id={}", id);
-        return FlowOperationMapper.toReadDto(saved);
+        return FlowOperationMapper.toReadDTO(saved);
     }
 
     // =====================================================================

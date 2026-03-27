@@ -20,22 +20,22 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.system.security.dto.query.UserReadDto;
+import dz.sh.trc.hyflo.system.security.dto.query.UserReadDTO;
 
 /**
  * Query contract for User read operations.
  *
- * All methods return UserReadDto — never raw entities.
+ * All methods return UserReadDTO — never raw entities.
  *
  * Phase 3 — Commit 24
  */
 public interface UserQueryService {
 
-    UserReadDto getById(Long id);
+    UserReadDTO getById(Long id);
 
-    UserReadDto getByUsername(String username);
+    UserReadDTO getByUsername(String username);
 
-    Page<UserReadDto> getAll(Pageable pageable);
+    Page<UserReadDTO> getAll(Pageable pageable);
 
-    List<UserReadDto> getByRole(Long roleId);
+    List<UserReadDTO> getByRole(Long roleId);
 }

@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDto;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDTO;
 import dz.sh.trc.hyflo.network.core.mapper.PipelineSegmentMapper;
 import dz.sh.trc.hyflo.network.core.repository.PipelineSegmentRepository;
 import dz.sh.trc.hyflo.network.core.service.PipelineSegmentQueryService;
@@ -39,29 +39,29 @@ public class PipelineSegmentQueryServiceImpl implements PipelineSegmentQueryServ
     private final PipelineSegmentRepository pipelineSegmentRepository;
 
     @Override
-    public PipelineSegmentReadDto getById(Long id) {
+    public PipelineSegmentReadDTO getById(Long id) {
         return pipelineSegmentRepository.findById(id)
-                .map(PipelineSegmentMapper::toReadDto)
+                .map(PipelineSegmentMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "PipelineSegment not found: " + id));
     }
 
     @Override
-    public Page<PipelineSegmentReadDto> getAll(Pageable pageable) {
-        return pipelineSegmentRepository.findAll(pageable).map(PipelineSegmentMapper::toReadDto);
+    public Page<PipelineSegmentReadDTO> getAll(Pageable pageable) {
+        return pipelineSegmentRepository.findAll(pageable).map(PipelineSegmentMapper::toReadDTO);
     }
 
     @Override
-    public List<PipelineSegmentReadDto> getByPipeline(Long pipelineId) {
+    public List<PipelineSegmentReadDTO> getByPipeline(Long pipelineId) {
         return pipelineSegmentRepository.findByPipelineId(pipelineId)
                 .stream()
-                .map(PipelineSegmentMapper::toReadDto)
+                .map(PipelineSegmentMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Page<PipelineSegmentReadDto> search(String query, Pageable pageable) {
+    public Page<PipelineSegmentReadDTO> search(String query, Pageable pageable) {
         return pipelineSegmentRepository.searchByAnyField(query, pageable)
-                .map(PipelineSegmentMapper::toReadDto);
+                .map(PipelineSegmentMapper::toReadDTO);
     }
 }

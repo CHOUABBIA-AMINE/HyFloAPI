@@ -15,8 +15,8 @@
 
 package dz.sh.trc.hyflo.network.core.service;
 
-import dz.sh.trc.hyflo.network.core.dto.command.PipelineSegmentCommandDto;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDto;
+import dz.sh.trc.hyflo.network.core.dto.command.PipelineSegmentCommandDTO;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDTO;
 
 /**
  * Command contract for PipelineSegment write operations.
@@ -25,9 +25,9 @@ import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDto;
  */
 public interface PipelineSegmentCommandService {
 
-    PipelineSegmentReadDto createSegment(PipelineSegmentCommandDto command);
+    PipelineSegmentReadDTO createSegment(PipelineSegmentCommandDTO command);
 
-    PipelineSegmentReadDto updateSegment(Long id, PipelineSegmentCommandDto command);
+    PipelineSegmentReadDTO updateSegment(Long id, PipelineSegmentCommandDTO command);
 
     void deleteSegment(Long id);
 }

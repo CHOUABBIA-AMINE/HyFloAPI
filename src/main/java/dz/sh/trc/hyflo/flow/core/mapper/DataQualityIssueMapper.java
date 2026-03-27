@@ -13,17 +13,17 @@
 
 package dz.sh.trc.hyflo.flow.core.mapper;
 
-import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.DataQualityIssue;
 
 public final class DataQualityIssueMapper {
 
     private DataQualityIssueMapper() {}
 
-    public static DataQualityIssueReadDto toReadDto(DataQualityIssue entity) {
+    public static DataQualityIssueReadDTO toReadDTO(DataQualityIssue entity) {
         if (entity == null) return null;
 
-        return DataQualityIssueReadDto.builder()
+        return DataQualityIssueReadDTO.builder()
                 .id(entity.getId())
                 .issueType(entity.getIssueType())
                 .qualityScore(entity.getQualityScore())

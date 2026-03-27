@@ -29,7 +29,7 @@ package dz.sh.trc.hyflo.flow.core.service;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 
 /**
@@ -56,7 +56,7 @@ public interface SegmentDistributionService {
      * @param sourceReading the approved FlowReading entity
      * @return list of generated derived reading DTOs
      */
-    List<DerivedFlowReadingReadDto> generateDerivedReadings(FlowReading sourceReading);
+    List<DerivedFlowReadingReadDTO> generateDerivedReadings(FlowReading sourceReading);
 
     /**
      * H4: Asynchronous entry point for derived reading generation.
@@ -67,6 +67,6 @@ public interface SegmentDistributionService {
      * @param sourceReading the approved FlowReading entity
      * @return CompletableFuture that completes when generation is done or fails
      */
-    CompletableFuture<List<DerivedFlowReadingReadDto>> asyncGenerateDerivedReadings(
+    CompletableFuture<List<DerivedFlowReadingReadDTO>> asyncGenerateDerivedReadings(
             FlowReading sourceReading);
 }

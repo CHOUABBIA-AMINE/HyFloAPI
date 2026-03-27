@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.flow.core.dto.FlowAnomalyReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAnomalyReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowCoreReadMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowAnomaly;
 import dz.sh.trc.hyflo.flow.core.repository.FlowAnomalyRepository;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyReadDto, Long> {
+public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyReadDTO, Long> {
 
     private final FlowAnomalyRepository flowAnomalyRepository;
 
@@ -52,38 +52,38 @@ public class FlowAnomalyService extends GenericService<FlowAnomaly, FlowAnomalyR
     }
 
     @Override
-    protected FlowAnomalyReadDto toDTO(FlowAnomaly entity) {
-        return FlowCoreReadMapper.toDto(entity);
+    protected FlowAnomalyReadDTO toDTO(FlowAnomaly entity) {
+        return FlowCoreReadMapper.toDTO(entity);
     }
 
     @Override
-    protected FlowAnomaly toEntity(FlowAnomalyReadDto dto) {
+    protected FlowAnomaly toEntity(FlowAnomalyReadDTO dto) {
         throw new UnsupportedOperationException("Use intelligence engine for anomaly creation");
     }
 
     @Override
-    protected void updateEntityFromDTO(FlowAnomaly entity, FlowAnomalyReadDto dto) {
+    protected void updateEntityFromDTO(FlowAnomaly entity, FlowAnomalyReadDTO dto) {
         throw new UnsupportedOperationException("Use intelligence engine for anomaly updates");
     }
 
-    public Page<FlowAnomalyReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<FlowAnomalyReadDTO> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
-        return flowAnomalyRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
+        return flowAnomalyRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDTO);
     }
 
     @Deprecated(since = "v2-phase3", forRemoval = true)
-    public List<FlowAnomalyReadDto> getByReadingId(Long readingId) {
+    public List<FlowAnomalyReadDTO> getByReadingId(Long readingId) {
         log.debug("Getting anomalies for reading ID: {}", readingId);
         return flowAnomalyRepository.findByReadingId(readingId)
-                .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
+                .stream().map(FlowCoreReadMapper::toDTO).collect(Collectors.toList());
     }
 
     @Deprecated(since = "v2-phase3", forRemoval = true)
-    public List<FlowAnomalyReadDto> getByPipelineSegmentId(Long segmentId) {
+    public List<FlowAnomalyReadDTO> getByPipelineSegmentId(Long segmentId) {
         log.debug("Getting anomalies for segment ID: {}", segmentId);
         return flowAnomalyRepository.findByPipelineSegmentId(segmentId)
-                .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
+                .stream().map(FlowCoreReadMapper::toDTO).collect(Collectors.toList());
     }
 }

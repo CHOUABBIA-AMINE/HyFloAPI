@@ -26,8 +26,8 @@
  *                     environmentSensitivity,
  *                     corrosionIndex, criticality
  *
- *  CommandDto note:
- *    PipelineSegmentCommandDto keeps field names startKm/endKm and
+ *  CommandDTO note:
+ *    PipelineSegmentCommandDTO keeps field names startKm/endKm and
  *    departureNodeId/arrivalNodeId — those are DTO-level names only.
  **/
 
@@ -35,8 +35,8 @@ package dz.sh.trc.hyflo.network.core.mapper;
 
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.core.dto.command.PipelineSegmentCommandDto;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDto;
+import dz.sh.trc.hyflo.network.core.dto.command.PipelineSegmentCommandDTO;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDTO;
 import dz.sh.trc.hyflo.network.core.model.Facility;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
@@ -46,13 +46,13 @@ public final class PipelineSegmentMapper {
     private PipelineSegmentMapper() {}
 
     // =====================================================================
-    // entity → PipelineSegmentReadDto
+    // entity → PipelineSegmentReadDTO
     // =====================================================================
 
-    public static PipelineSegmentReadDto toReadDto(PipelineSegment entity) {
+    public static PipelineSegmentReadDTO toReadDTO(PipelineSegment entity) {
         if (entity == null) return null;
 
-        return PipelineSegmentReadDto.builder()
+        return PipelineSegmentReadDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
                 .name(entity.getName())
@@ -85,10 +85,10 @@ public final class PipelineSegmentMapper {
     }
 
     // =====================================================================
-    // PipelineSegmentCommandDto → new PipelineSegment entity
+    // PipelineSegmentCommandDTO → new PipelineSegment entity
     // =====================================================================
 
-    public static PipelineSegment toEntity(PipelineSegmentCommandDto dto) {
+    public static PipelineSegment toEntity(PipelineSegmentCommandDTO dto) {
         if (dto == null) return null;
 
         PipelineSegment entity = new PipelineSegment();
@@ -128,10 +128,10 @@ public final class PipelineSegmentMapper {
     }
 
     // =====================================================================
-    // PipelineSegmentCommandDto → update existing PipelineSegment entity (patch)
+    // PipelineSegmentCommandDTO → update existing PipelineSegment entity (patch)
     // =====================================================================
 
-    public static void updateEntity(PipelineSegmentCommandDto dto, PipelineSegment entity) {
+    public static void updateEntity(PipelineSegmentCommandDTO dto, PipelineSegment entity) {
         if (dto == null || entity == null) return;
 
         if (dto.getCode()    != null) entity.setCode(dto.getCode());

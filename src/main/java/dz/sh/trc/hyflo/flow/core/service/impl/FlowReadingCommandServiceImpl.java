@@ -26,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
@@ -60,7 +60,7 @@ public class FlowReadingCommandServiceImpl implements FlowReadingCommandService 
     private final ReadableTargetValidationService readableTargetValidationService;
 
     @Override
-    public FlowReadingReadDto createReading(FlowReadingCommandDto command) {
+    public FlowReadingReadDTO createReading(FlowReadingCommandDTO command) {
         log.info("Creating direct flow reading for pipeline ID: {}", command.getPipelineId());
 
         // Validate pipeline exists (network ownership)
@@ -75,11 +75,11 @@ public class FlowReadingCommandServiceImpl implements FlowReadingCommandService 
 
         FlowReading saved = flowReadingRepository.save(entity);
         log.debug("Saved FlowReading ID: {}", saved.getId());
-        return FlowReadingMapper.toReadDto(saved);
+        return FlowReadingMapper.toReadDTO(saved);
     }
 
     @Override
-    public FlowReadingReadDto updateReading(Long id, FlowReadingCommandDto command) {
+    public FlowReadingReadDTO updateReading(Long id, FlowReadingCommandDTO command) {
         log.info("Updating flow reading ID: {}", id);
 
         FlowReading existing = flowReadingRepository.findById(id)
@@ -95,7 +95,7 @@ public class FlowReadingCommandServiceImpl implements FlowReadingCommandService 
 
         FlowReadingMapper.updateEntity(command, existing);
         FlowReading saved = flowReadingRepository.save(existing);
-        return FlowReadingMapper.toReadDto(saved);
+        return FlowReadingMapper.toReadDTO(saved);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class FlowReadingCommandServiceImpl implements FlowReadingCommandService 
     }
 
     @Override
-    public FlowReadingReadDto submitForWorkflow(Long id, Long submittedById) {
+    public FlowReadingReadDTO submitForWorkflow(Long id, Long submittedById) {
         log.info("Submitting FlowReading ID: {} to workflow by employee: {}", id, submittedById);
 
         FlowReading reading = flowReadingRepository.findById(id)
@@ -136,6 +136,6 @@ public class FlowReadingCommandServiceImpl implements FlowReadingCommandService 
 
         FlowReading saved = flowReadingRepository.save(reading);
         log.info("FlowReading ID: {} submitted to workflow", saved.getId());
-        return FlowReadingMapper.toReadDto(saved);
+        return FlowReadingMapper.toReadDTO(saved);
     }
 }

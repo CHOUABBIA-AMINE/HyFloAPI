@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDTO;
 import dz.sh.trc.hyflo.crisis.service.IIncidentQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -61,11 +61,11 @@ public class IncidentController {
     @Operation(summary = "Get incident by ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Incident found",
-                content = @Content(schema = @Schema(implementation = IncidentReadDto.class))),
+                content = @Content(schema = @Schema(implementation = IncidentReadDTO.class))),
         @ApiResponse(responseCode = "404", description = "Incident not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<IncidentReadDto> getById(@PathVariable Long id) {
+    public ResponseEntity<IncidentReadDTO> getById(@PathVariable Long id) {
         log.debug("GET /crisis/incident/{}", id);
         return ResponseEntity.ok(incidentService.getById(id));
     }
@@ -73,7 +73,7 @@ public class IncidentController {
     @GetMapping
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all incidents (paginated)")
-    public ResponseEntity<Page<IncidentReadDto>> getAll(
+    public ResponseEntity<Page<IncidentReadDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -88,7 +88,7 @@ public class IncidentController {
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all incidents (unpaginated)")
-    public ResponseEntity<List<IncidentReadDto>> getAllUnpaginated() {
+    public ResponseEntity<List<IncidentReadDTO>> getAllUnpaginated() {
         log.debug("GET /crisis/incident/all");
         return ResponseEntity.ok(incidentService.getAll());
     }
@@ -96,7 +96,7 @@ public class IncidentController {
     @GetMapping("/search")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Search incidents")
-    public ResponseEntity<Page<IncidentReadDto>> search(
+    public ResponseEntity<Page<IncidentReadDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -126,7 +126,7 @@ public class IncidentController {
         @ApiResponse(responseCode = "200", description = "Active incidents retrieved"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<List<IncidentReadDto>> getActiveIncidents() {
+    public ResponseEntity<List<IncidentReadDTO>> getActiveIncidents() {
         log.debug("GET /crisis/incident/active");
         return ResponseEntity.ok(incidentService.getActiveIncidents());
     }
@@ -134,7 +134,7 @@ public class IncidentController {
     @GetMapping("/segment/{segmentId}")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get incidents by pipeline segment ID")
-    public ResponseEntity<List<IncidentReadDto>> getBySegmentId(
+    public ResponseEntity<List<IncidentReadDTO>> getBySegmentId(
             @Parameter(description = "Segment ID", required = true) @PathVariable Long segmentId) {
         log.debug("GET /crisis/incident/segment/{}", segmentId);
         return ResponseEntity.ok(incidentService.getByPipelineSegmentId(segmentId));

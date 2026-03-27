@@ -14,17 +14,17 @@
 
 package dz.sh.trc.hyflo.flow.core.mapper;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowEventReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowEventReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowEvent;
 
 public final class FlowEventMapper {
 
     private FlowEventMapper() {}
 
-    public static FlowEventReadDto toReadDto(FlowEvent entity) {
+    public static FlowEventReadDTO toReadDTO(FlowEvent entity) {
         if (entity == null) return null;
 
-        return FlowEventReadDto.builder()
+        return FlowEventReadDTO.builder()
                 .id(entity.getId())
                 .title(entity.getTitle())
                 .description(entity.getDescription())

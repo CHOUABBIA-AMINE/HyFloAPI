@@ -15,7 +15,7 @@
  *                Provides cross-module read access to FlowEvent data
  *                without exposing flow/core entities outside their module.
  *
- *                Maps FlowEvent entities to FlowEventFacadeDto.
+ *                Maps FlowEvent entities to FlowEventFacadeDTO.
  *                Owned by flow/core because it accesses flow/core repositories
  *                and entities.
  *
@@ -35,7 +35,7 @@ package dz.sh.trc.hyflo.flow.core.facade;
 
 import dz.sh.trc.hyflo.flow.core.model.FlowEvent;
 import dz.sh.trc.hyflo.flow.core.repository.FlowEventRepository;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDto;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowEventFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,23 +72,23 @@ public class FlowEventFacade implements IFlowEventFacade {
     // ----------------------------------------------------------------
 
     @Override
-    public List<FlowEventFacadeDto> findByPipelineAndTimeRange(
+    public List<FlowEventFacadeDTO> findByPipelineAndTimeRange(
             Long pipelineId, LocalDateTime start, LocalDateTime end) {
         log.debug("FlowEventFacade.findByPipelineAndTimeRange pipelineId={}, start={}, end={}",
                 pipelineId, start, end);
         return eventRepository
                 .findByInfrastructureIdAndEventTimestampBetween(pipelineId, start, end)
                 .stream()
-                .map(this::toDto)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowEventFacadeDto> findByFlowReading(Long flowReadingId) {
+    public List<FlowEventFacadeDTO> findByFlowReading(Long flowReadingId) {
         log.debug("FlowEventFacade.findByFlowReading flowReadingId={}", flowReadingId);
         return eventRepository.findByRelatedReadingId(flowReadingId)
                 .stream()
-                .map(this::toDto)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -97,7 +97,7 @@ public class FlowEventFacade implements IFlowEventFacade {
     // ================================================================
 
     /**
-     * Map FlowEvent entity to FlowEventFacadeDto.
+     * Map FlowEvent entity to FlowEventFacadeDTO.
      *
      * severityCode  — Severity entity has no code field; mapped from designationFr
      *                 (the required non-null field). Example: "Critique", "Élevé".
@@ -107,8 +107,8 @@ public class FlowEventFacade implements IFlowEventFacade {
      *
      * pipelineId    — mapped from infrastructure.id (pipeline-scoped events).
      */
-    private FlowEventFacadeDto toDto(FlowEvent event) {
-        return FlowEventFacadeDto.builder()
+    private FlowEventFacadeDTO toDTO(FlowEvent event) {
+        return FlowEventFacadeDTO.builder()
                 .id(event.getId())
                 .pipelineId(event.getInfrastructure() != null
                         ? event.getInfrastructure().getId() : null)

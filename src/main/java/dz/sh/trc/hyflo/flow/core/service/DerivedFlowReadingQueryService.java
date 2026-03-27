@@ -10,7 +10,7 @@
  *  @Package    : Flow / Core
  *
  *  @Description: Query contract for DerivedFlowReading read operations.
- *                Returns only DerivedFlowReadingReadDto — never raw entities.
+ *                Returns only DerivedFlowReadingReadDTO — never raw entities.
  *
  *  Phase 3 — Commit 18
  *
@@ -21,7 +21,7 @@ package dz.sh.trc.hyflo.flow.core.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
 
 /**
  * Query contract for DerivedFlowReading read operations.
@@ -30,17 +30,17 @@ import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
  */
 public interface DerivedFlowReadingQueryService {
 
-    DerivedFlowReadingReadDto getById(Long id);
+    DerivedFlowReadingReadDTO getById(Long id);
 
-    List<DerivedFlowReadingReadDto> getBySourceReading(Long sourceReadingId);
+    List<DerivedFlowReadingReadDTO> getBySourceReading(Long sourceReadingId);
 
-    List<DerivedFlowReadingReadDto> getBySegment(Long pipelineSegmentId);
+    List<DerivedFlowReadingReadDTO> getBySegment(Long pipelineSegmentId);
 
-    List<DerivedFlowReadingReadDto> getBySegmentAndDateRange(
+    List<DerivedFlowReadingReadDTO> getBySegmentAndDateRange(
             Long pipelineSegmentId, LocalDate from, LocalDate to);
 
-    List<DerivedFlowReadingReadDto> getBySegmentAndSlot(
+    List<DerivedFlowReadingReadDTO> getBySegmentAndSlot(
             Long pipelineSegmentId, Long readingSlotId);
 
-    List<DerivedFlowReadingReadDto> getByDateRange(LocalDate from, LocalDate to);
+    List<DerivedFlowReadingReadDTO> getByDateRange(LocalDate from, LocalDate to);
 }

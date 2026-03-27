@@ -15,21 +15,21 @@
 
 package dz.sh.trc.hyflo.general.organization.service;
 
-import dz.sh.trc.hyflo.general.organization.dto.command.EmployeeCommandDto;
-import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDto;
+import dz.sh.trc.hyflo.general.organization.dto.command.EmployeeCommandDTO;
+import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDTO;
 
 /**
  * Command contract for Employee write operations.
  *
- * All methods return EmployeeReadDto — never raw entities.
+ * All methods return EmployeeReadDTO — never raw entities.
  *
  * Phase 3 — Commit 24
  */
 public interface EmployeeCommandService {
 
-    EmployeeReadDto createEmployee(EmployeeCommandDto command);
+    EmployeeReadDTO createEmployee(EmployeeCommandDTO command);
 
-    EmployeeReadDto updateEmployee(Long id, EmployeeCommandDto command);
+    EmployeeReadDTO updateEmployee(Long id, EmployeeCommandDTO command);
 
     /**
      * Deactivate an employee (soft disable — does not delete).

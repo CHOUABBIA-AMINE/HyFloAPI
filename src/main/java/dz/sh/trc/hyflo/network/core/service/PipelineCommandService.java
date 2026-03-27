@@ -15,22 +15,22 @@
 
 package dz.sh.trc.hyflo.network.core.service;
 
-import dz.sh.trc.hyflo.network.core.dto.command.PipelineCommandDto;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDto;
+import dz.sh.trc.hyflo.network.core.dto.command.PipelineCommandDTO;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDTO;
 
 /**
  * Command contract for Pipeline write operations.
  *
  * Network module owns the authoritative pipeline infrastructure model.
- * All methods return PipelineReadDto — never raw entities.
+ * All methods return PipelineReadDTO — never raw entities.
  *
  * Phase 3 — Commit 23
  */
 public interface PipelineCommandService {
 
-    PipelineReadDto createPipeline(PipelineCommandDto command);
+    PipelineReadDTO createPipeline(PipelineCommandDTO command);
 
-    PipelineReadDto updatePipeline(Long id, PipelineCommandDto command);
+    PipelineReadDTO updatePipeline(Long id, PipelineCommandDTO command);
 
     void deletePipeline(Long id);
 }

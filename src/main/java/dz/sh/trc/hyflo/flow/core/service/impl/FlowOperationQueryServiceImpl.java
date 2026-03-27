@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowOperationMapper;
 import dz.sh.trc.hyflo.flow.core.repository.FlowOperationRepository;
 import dz.sh.trc.hyflo.flow.core.service.FlowOperationQueryService;
@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * Read-only query service implementation for
  * {@link dz.sh.trc.hyflo.flow.core.model.FlowOperation}.
  *
- * All read methods use {@link FlowOperationMapper#toReadDto} for mapping.
+ * All read methods use {@link FlowOperationMapper#toReadDTO} for mapping.
  * No entity instances are returned to callers.
  */
 @Service
@@ -51,94 +51,94 @@ public class FlowOperationQueryServiceImpl implements FlowOperationQueryService 
     private final FlowOperationRepository flowOperationRepository;
 
     @Override
-    public FlowOperationReadDto findById(Long id) {
+    public FlowOperationReadDTO findById(Long id) {
         log.debug("[FlowOperationQueryService] findById: {}", id);
         return flowOperationRepository.findById(id)
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("FlowOperation", id));
     }
 
     @Override
-    public Page<FlowOperationReadDto> findAll(Pageable pageable) {
+    public Page<FlowOperationReadDTO> findAll(Pageable pageable) {
         log.debug("[FlowOperationQueryService] findAll page={}", pageable.getPageNumber());
         return flowOperationRepository.findAll(pageable)
-                .map(FlowOperationMapper::toReadDto);
+                .map(FlowOperationMapper::toReadDTO);
     }
 
     @Override
-    public List<FlowOperationReadDto> findByDate(LocalDate date) {
+    public List<FlowOperationReadDTO> findByDate(LocalDate date) {
         log.debug("[FlowOperationQueryService] findByDate: {}", date);
         return flowOperationRepository.findByOperationDate(date).stream()
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowOperationReadDto> findByDateRange(LocalDate startDate, LocalDate endDate) {
+    public List<FlowOperationReadDTO> findByDateRange(LocalDate startDate, LocalDate endDate) {
         log.debug("[FlowOperationQueryService] findByDateRange: {} → {}", startDate, endDate);
         return flowOperationRepository.findByOperationDateBetween(startDate, endDate).stream()
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowOperationReadDto> findByInfrastructure(Long infrastructureId) {
+    public List<FlowOperationReadDTO> findByInfrastructure(Long infrastructureId) {
         log.debug("[FlowOperationQueryService] findByInfrastructure: {}", infrastructureId);
         return flowOperationRepository.findByInfrastructureId(infrastructureId).stream()
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowOperationReadDto> findByProduct(Long productId) {
+    public List<FlowOperationReadDTO> findByProduct(Long productId) {
         log.debug("[FlowOperationQueryService] findByProduct: {}", productId);
         return flowOperationRepository.findByProductId(productId).stream()
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowOperationReadDto> findByType(Long typeId) {
+    public List<FlowOperationReadDTO> findByType(Long typeId) {
         log.debug("[FlowOperationQueryService] findByType: {}", typeId);
         return flowOperationRepository.findByTypeId(typeId).stream()
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowOperationReadDto> findByValidationStatus(Long validationStatusId) {
+    public List<FlowOperationReadDTO> findByValidationStatus(Long validationStatusId) {
         log.debug("[FlowOperationQueryService] findByValidationStatus: {}", validationStatusId);
         return flowOperationRepository.findByValidationStatusId(validationStatusId).stream()
-                .map(FlowOperationMapper::toReadDto)
+                .map(FlowOperationMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Page<FlowOperationReadDto> findByInfrastructureAndDateRange(
+    public Page<FlowOperationReadDTO> findByInfrastructureAndDateRange(
             Long infrastructureId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.debug("[FlowOperationQueryService] findByInfrastructureAndDateRange: infra={}, {} → {}",
                 infrastructureId, startDate, endDate);
         return flowOperationRepository
                 .findByInfrastructureAndDateRange(infrastructureId, startDate, endDate, pageable)
-                .map(FlowOperationMapper::toReadDto);
+                .map(FlowOperationMapper::toReadDTO);
     }
 
     @Override
-    public Page<FlowOperationReadDto> findByProductAndTypeAndDateRange(
+    public Page<FlowOperationReadDTO> findByProductAndTypeAndDateRange(
             Long productId, Long typeId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.debug("[FlowOperationQueryService] findByProductAndTypeAndDateRange: product={}, type={}",
                 productId, typeId);
         return flowOperationRepository
                 .findByProductAndTypeAndDateRange(productId, typeId, startDate, endDate, pageable)
-                .map(FlowOperationMapper::toReadDto);
+                .map(FlowOperationMapper::toReadDTO);
     }
 
     @Override
-    public Page<FlowOperationReadDto> findByValidationStatusAndDateRange(
+    public Page<FlowOperationReadDTO> findByValidationStatusAndDateRange(
             Long statusId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         log.debug("[FlowOperationQueryService] findByValidationStatusAndDateRange: status={}", statusId);
         return flowOperationRepository
                 .findByValidationStatusAndDateRange(statusId, startDate, endDate, pageable)
-                .map(FlowOperationMapper::toReadDto);
+                .map(FlowOperationMapper::toReadDTO);
     }
 }

@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDTO;
 import dz.sh.trc.hyflo.crisis.mapper.IncidentSeverityMapper;
 import dz.sh.trc.hyflo.crisis.repository.IncidentSeverityRepository;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
@@ -37,44 +37,44 @@ public class IncidentSeverityService implements IIncidentSeverityQueryService {
     private final IncidentSeverityRepository severityRepository;
 
     @Override
-    public IncidentSeverityReadDto getById(Long id) {
+    public IncidentSeverityReadDTO getById(Long id) {
         return severityRepository.findById(id)
-                .map(IncidentSeverityMapper::toReadDto)
+                .map(IncidentSeverityMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("IncidentSeverity not found: " + id));
     }
 
     @Override
-    public IncidentSeverityReadDto getByCode(String code) {
+    public IncidentSeverityReadDTO getByCode(String code) {
         return severityRepository.findByCode(code)
-                .map(IncidentSeverityMapper::toReadDto)
+                .map(IncidentSeverityMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("IncidentSeverity not found for code: " + code));
     }
 
     @Override
-    public Page<IncidentSeverityReadDto> getAll(Pageable pageable) {
-        return severityRepository.findAll(pageable).map(IncidentSeverityMapper::toReadDto);
+    public Page<IncidentSeverityReadDTO> getAll(Pageable pageable) {
+        return severityRepository.findAll(pageable).map(IncidentSeverityMapper::toReadDTO);
     }
 
     @Override
-    public List<IncidentSeverityReadDto> getAll() {
+    public List<IncidentSeverityReadDTO> getAll() {
         return severityRepository.findAll()
-                .stream().map(IncidentSeverityMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(IncidentSeverityMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<IncidentSeverityReadDto> getAllOrderedByRank() {
+    public List<IncidentSeverityReadDTO> getAllOrderedByRank() {
         log.debug("Getting all incident severities ordered by rank");
         return severityRepository.findAllByOrderByRankAsc()
-                .stream().map(IncidentSeverityMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(IncidentSeverityMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public Page<IncidentSeverityReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<IncidentSeverityReadDTO> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
         return severityRepository.searchByAnyField(query, pageable)
-                .map(IncidentSeverityMapper::toReadDto);
+                .map(IncidentSeverityMapper::toReadDTO);
     }
 
     @Override

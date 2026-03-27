@@ -19,7 +19,7 @@
 
 package dz.sh.trc.hyflo.flow.core.service;
 
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDTO;
 
 /**
  * Validates readable infrastructure targets for direct flow readings.
@@ -47,5 +47,5 @@ public interface ReadableTargetValidationService {
      * 4. If terminalId is present: terminal must exist.
      * 5. At most ONE secondary target may be specified per reading.
      */
-    void validateCommandTarget(FlowReadingCommandDto command);
+    void validateCommandTarget(FlowReadingCommandDTO command);
 }

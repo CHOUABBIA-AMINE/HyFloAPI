@@ -17,7 +17,7 @@
 package dz.sh.trc.hyflo.flow.core.service;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.core.dto.FlowAlertReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAlertReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowAlertMapper;
 import dz.sh.trc.hyflo.flow.core.repository.FlowAlertRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,66 +38,66 @@ public class FlowAlertQueryService {
 
     private final FlowAlertRepository flowAlertRepository;
 
-    public FlowAlertReadDto findById(Long id) {
+    public FlowAlertReadDTO findById(Long id) {
         return flowAlertRepository.findById(id)
-                .map(FlowAlertMapper::toReadDto)
+                .map(FlowAlertMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("FlowAlert", id));
     }
 
-    public Page<FlowAlertReadDto> findAll(Pageable pageable) {
-        return flowAlertRepository.findAll(pageable).map(FlowAlertMapper::toReadDto);
+    public Page<FlowAlertReadDTO> findAll(Pageable pageable) {
+        return flowAlertRepository.findAll(pageable).map(FlowAlertMapper::toReadDTO);
     }
 
-    public List<FlowAlertReadDto> findAll() {
-        return flowAlertRepository.findAll().stream().map(FlowAlertMapper::toReadDto).toList();
+    public List<FlowAlertReadDTO> findAll() {
+        return flowAlertRepository.findAll().stream().map(FlowAlertMapper::toReadDTO).toList();
     }
 
-    public List<FlowAlertReadDto> findByThreshold(Long thresholdId) {
+    public List<FlowAlertReadDTO> findByThreshold(Long thresholdId) {
         return flowAlertRepository.findByThresholdId(thresholdId)
-                .stream().map(FlowAlertMapper::toReadDto).toList();
+                .stream().map(FlowAlertMapper::toReadDTO).toList();
     }
 
-    public List<FlowAlertReadDto> findByFlowReading(Long flowReadingId) {
+    public List<FlowAlertReadDTO> findByFlowReading(Long flowReadingId) {
         return flowAlertRepository.findByFlowReadingId(flowReadingId)
-                .stream().map(FlowAlertMapper::toReadDto).toList();
+                .stream().map(FlowAlertMapper::toReadDTO).toList();
     }
 
-    public List<FlowAlertReadDto> findByStatus(Long statusId) {
+    public List<FlowAlertReadDTO> findByStatus(Long statusId) {
         return flowAlertRepository.findByStatusId(statusId)
-                .stream().map(FlowAlertMapper::toReadDto).toList();
+                .stream().map(FlowAlertMapper::toReadDTO).toList();
     }
 
-    public List<FlowAlertReadDto> findByTimeRange(LocalDateTime start, LocalDateTime end) {
+    public List<FlowAlertReadDTO> findByTimeRange(LocalDateTime start, LocalDateTime end) {
         return flowAlertRepository.findByAlertTimestampBetween(start, end)
-                .stream().map(FlowAlertMapper::toReadDto).toList();
+                .stream().map(FlowAlertMapper::toReadDTO).toList();
     }
 
-    public List<FlowAlertReadDto> findByNotificationSent(Boolean sent) {
+    public List<FlowAlertReadDTO> findByNotificationSent(Boolean sent) {
         return flowAlertRepository.findByNotificationSent(sent)
-                .stream().map(FlowAlertMapper::toReadDto).toList();
+                .stream().map(FlowAlertMapper::toReadDTO).toList();
     }
 
-    public Page<FlowAlertReadDto> findUnacknowledged(Pageable pageable) {
-        return flowAlertRepository.findUnacknowledged(pageable).map(FlowAlertMapper::toReadDto);
+    public Page<FlowAlertReadDTO> findUnacknowledged(Pageable pageable) {
+        return flowAlertRepository.findUnacknowledged(pageable).map(FlowAlertMapper::toReadDTO);
     }
 
-    public Page<FlowAlertReadDto> findUnresolved(Pageable pageable) {
-        return flowAlertRepository.findUnresolved(pageable).map(FlowAlertMapper::toReadDto);
+    public Page<FlowAlertReadDTO> findUnresolved(Pageable pageable) {
+        return flowAlertRepository.findUnresolved(pageable).map(FlowAlertMapper::toReadDTO);
     }
 
-    public Page<FlowAlertReadDto> findUnresolvedByPipeline(Long pipelineId, Pageable pageable) {
-        return flowAlertRepository.findUnresolvedByPipeline(pipelineId, pageable).map(FlowAlertMapper::toReadDto);
+    public Page<FlowAlertReadDTO> findUnresolvedByPipeline(Long pipelineId, Pageable pageable) {
+        return flowAlertRepository.findUnresolvedByPipeline(pipelineId, pageable).map(FlowAlertMapper::toReadDTO);
     }
 
-    public Page<FlowAlertReadDto> findByStatusAndTimeRange(
+    public Page<FlowAlertReadDTO> findByStatusAndTimeRange(
             Long statusId, LocalDateTime start, LocalDateTime end, Pageable pageable) {
         return flowAlertRepository.findByStatusAndTimeRange(statusId, start, end, pageable)
-                .map(FlowAlertMapper::toReadDto);
+                .map(FlowAlertMapper::toReadDTO);
     }
 
-    public Page<FlowAlertReadDto> findByPipelineAndTimeRange(
+    public Page<FlowAlertReadDTO> findByPipelineAndTimeRange(
             Long pipelineId, LocalDateTime start, LocalDateTime end, Pageable pageable) {
         return flowAlertRepository.findByPipelineAndTimeRange(pipelineId, start, end, pageable)
-                .map(FlowAlertMapper::toReadDto);
+                .map(FlowAlertMapper::toReadDTO);
     }
 }

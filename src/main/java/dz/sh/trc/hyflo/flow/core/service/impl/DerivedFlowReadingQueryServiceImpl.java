@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.DerivedFlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.repository.DerivedFlowReadingRepository;
 import dz.sh.trc.hyflo.flow.core.service.DerivedFlowReadingQueryService;
@@ -42,44 +42,44 @@ public class DerivedFlowReadingQueryServiceImpl implements DerivedFlowReadingQue
     private final DerivedFlowReadingRepository derivedFlowReadingRepository;
 
     @Override
-    public DerivedFlowReadingReadDto getById(Long id) {
+    public DerivedFlowReadingReadDTO getById(Long id) {
         return derivedFlowReadingRepository.findById(id)
-                .map(DerivedFlowReadingMapper::toReadDto)
+                .map(DerivedFlowReadingMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "DerivedFlowReading not found: " + id));
     }
 
     @Override
-    public List<DerivedFlowReadingReadDto> getBySourceReading(Long sourceReadingId) {
+    public List<DerivedFlowReadingReadDTO> getBySourceReading(Long sourceReadingId) {
         return derivedFlowReadingRepository.findBySourceReadingId(sourceReadingId)
-                .stream().map(DerivedFlowReadingMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(DerivedFlowReadingMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<DerivedFlowReadingReadDto> getBySegment(Long pipelineSegmentId) {
+    public List<DerivedFlowReadingReadDTO> getBySegment(Long pipelineSegmentId) {
         return derivedFlowReadingRepository.findByPipelineSegmentId(pipelineSegmentId)
-                .stream().map(DerivedFlowReadingMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(DerivedFlowReadingMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<DerivedFlowReadingReadDto> getBySegmentAndDateRange(
+    public List<DerivedFlowReadingReadDTO> getBySegmentAndDateRange(
             Long pipelineSegmentId, LocalDate from, LocalDate to) {
         return derivedFlowReadingRepository
                 .findByPipelineSegmentIdAndReadingDateBetween(pipelineSegmentId, from, to)
-                .stream().map(DerivedFlowReadingMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(DerivedFlowReadingMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<DerivedFlowReadingReadDto> getBySegmentAndSlot(
+    public List<DerivedFlowReadingReadDTO> getBySegmentAndSlot(
             Long pipelineSegmentId, Long readingSlotId) {
         return derivedFlowReadingRepository
                 .findByPipelineSegmentIdAndReadingSlotId(pipelineSegmentId, readingSlotId)
-                .stream().map(DerivedFlowReadingMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(DerivedFlowReadingMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<DerivedFlowReadingReadDto> getByDateRange(LocalDate from, LocalDate to) {
+    public List<DerivedFlowReadingReadDTO> getByDateRange(LocalDate from, LocalDate to) {
         return derivedFlowReadingRepository.findByReadingDateBetween(from, to)
-                .stream().map(DerivedFlowReadingMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(DerivedFlowReadingMapper::toReadDTO).collect(Collectors.toList());
     }
 }

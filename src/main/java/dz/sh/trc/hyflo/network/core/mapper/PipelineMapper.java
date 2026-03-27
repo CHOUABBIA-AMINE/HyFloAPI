@@ -32,8 +32,8 @@ package dz.sh.trc.hyflo.network.core.mapper;
 
 import dz.sh.trc.hyflo.network.common.model.Alloy;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
-import dz.sh.trc.hyflo.network.core.dto.command.PipelineCommandDto;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDto;
+import dz.sh.trc.hyflo.network.core.dto.command.PipelineCommandDTO;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDTO;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSystem;
 import dz.sh.trc.hyflo.network.core.model.Terminal;
@@ -44,13 +44,13 @@ public final class PipelineMapper {
     private PipelineMapper() {}
 
     // =====================================================================
-    // entity → PipelineReadDto
+    // entity → PipelineReadDTO
     // =====================================================================
 
-    public static PipelineReadDto toReadDto(Pipeline entity) {
+    public static PipelineReadDTO toReadDTO(Pipeline entity) {
         if (entity == null) return null;
 
-        return PipelineReadDto.builder()
+        return PipelineReadDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
                 .name(entity.getName())
@@ -92,10 +92,10 @@ public final class PipelineMapper {
     }
 
     // =====================================================================
-    // PipelineCommandDto → new Pipeline entity
+    // PipelineCommandDTO → new Pipeline entity
     // =====================================================================
 
-    public static Pipeline toEntity(PipelineCommandDto dto) {
+    public static Pipeline toEntity(PipelineCommandDTO dto) {
         if (dto == null) return null;
 
         Pipeline entity = new Pipeline();
@@ -165,10 +165,10 @@ public final class PipelineMapper {
     }
 
     // =====================================================================
-    // PipelineCommandDto → update existing Pipeline entity (patch)
+    // PipelineCommandDTO → update existing Pipeline entity (patch)
     // =====================================================================
 
-    public static void updateEntity(PipelineCommandDto dto, Pipeline entity) {
+    public static void updateEntity(PipelineCommandDTO dto, Pipeline entity) {
         if (dto == null || entity == null) return;
 
         if (dto.getCode() != null)                          entity.setCode(dto.getCode());

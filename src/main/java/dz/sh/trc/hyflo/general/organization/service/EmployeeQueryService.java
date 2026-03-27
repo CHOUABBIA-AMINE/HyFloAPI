@@ -20,20 +20,20 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDto;
+import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDTO;
 
 /**
  * Query contract for Employee read operations.
  *
- * All methods return EmployeeReadDto — never raw entities.
+ * All methods return EmployeeReadDTO — never raw entities.
  */
 public interface EmployeeQueryService {
 
-    EmployeeReadDto getById(Long id);
+    EmployeeReadDTO getById(Long id);
 
-    Page<EmployeeReadDto> getAll(Pageable pageable);
+    Page<EmployeeReadDTO> getAll(Pageable pageable);
 
-    List<EmployeeReadDto> getByDepartment(Long departmentId);
+    List<EmployeeReadDTO> getByDepartment(Long departmentId);
 
-    Page<EmployeeReadDto> search(String query, Pageable pageable);
+    Page<EmployeeReadDTO> search(String query, Pageable pageable);
 }

@@ -22,15 +22,15 @@
  *    Job     : code, designationAr, designationEn, designationFr, structure
  *    Role    : name, description, permissions   (NO getCode())
  *
- *  Fields present ONLY in EmployeeReadDto (DTO-level, NOT on entity):
+ *  Fields present ONLY in EmployeeReadDTO (DTO-level, NOT on entity):
  *    firstName, lastName, email, jobTitle, structureId, structureName, active
  *  These are derived/projected below; they are NEVER read from entity directly.
  **/
 
 package dz.sh.trc.hyflo.general.organization.mapper;
 
-import dz.sh.trc.hyflo.general.organization.dto.command.EmployeeCommandDto;
-import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDto;
+import dz.sh.trc.hyflo.general.organization.dto.command.EmployeeCommandDTO;
+import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDTO;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.model.Job;
 import dz.sh.trc.hyflo.system.security.model.Role;
@@ -40,15 +40,15 @@ public final class EmployeeMapper {
     private EmployeeMapper() {}
 
     // =====================================================================
-    // entity → EmployeeReadDto
+    // entity → EmployeeReadDTO
     // =====================================================================
 
-    public static EmployeeReadDto toReadDto(Employee entity) {
+    public static EmployeeReadDTO toReadDTO(Employee entity) {
         if (entity == null) return null;
 
         Job job = entity.getJob();
 
-        return EmployeeReadDto.builder()
+        return EmployeeReadDTO.builder()
                 .id(entity.getId())
                 .registrationNumber(entity.getRegistrationNumber())
                 // Person fields — Latin script is the canonical API name
@@ -70,10 +70,10 @@ public final class EmployeeMapper {
     }
 
     // =====================================================================
-    // EmployeeCommandDto → new Employee entity
+    // EmployeeCommandDTO → new Employee entity
     // =====================================================================
 
-    public static Employee toEntity(EmployeeCommandDto dto) {
+    public static Employee toEntity(EmployeeCommandDTO dto) {
         if (dto == null) return null;
 
         Employee entity = new Employee();
@@ -101,10 +101,10 @@ public final class EmployeeMapper {
     }
 
     // =====================================================================
-    // EmployeeCommandDto → update existing Employee entity (patch)
+    // EmployeeCommandDTO → update existing Employee entity (patch)
     // =====================================================================
 
-    public static void updateEntity(EmployeeCommandDto dto, Employee entity) {
+    public static void updateEntity(EmployeeCommandDTO dto, Employee entity) {
         if (dto == null || entity == null) return;
 
         if (dto.getFirstName() != null) entity.setFirstNameLt(dto.getFirstName());

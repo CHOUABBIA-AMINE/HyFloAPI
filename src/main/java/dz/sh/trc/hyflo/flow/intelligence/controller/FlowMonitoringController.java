@@ -6,7 +6,7 @@
  * 	@CreatedOn	: 02-10-2026
  * 	@UpdatedOn	: 02-16-2026 - Enhanced with comprehensive OpenAPI documentation
  * 	@UpdatedOn	: 02-16-2026 - Simplified to single-line descriptions
- * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2)
+ * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDTO (v2)
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
@@ -72,7 +72,7 @@ public class FlowMonitoringController {
     })
     @GetMapping("/pending-validations")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<Page<FlowReadingReadDto>> getPendingValidations(
+    public ResponseEntity<Page<FlowReadingReadDTO>> getPendingValidations(
             @Parameter(description = "Structure ID", required = true, example = "12")
             @RequestParam Long structureId,
             @Parameter(description = "Page number", example = "0")
@@ -94,7 +94,7 @@ public class FlowMonitoringController {
     })
     @GetMapping("/overdue-readings")
     @PreAuthorize("hasAuthority('FLOW_READING:READ')")
-    public ResponseEntity<Page<FlowReadingReadDto>> getOverdueReadings(
+    public ResponseEntity<Page<FlowReadingReadDTO>> getOverdueReadings(
             @Parameter(description = "Structure ID", required = true, example = "12")
             @RequestParam Long structureId,
             @Parameter(description = "Reference date (defaults to today)", example = "2026-02-16")

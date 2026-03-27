@@ -16,7 +16,7 @@
 package dz.sh.trc.hyflo.flow.core.service;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.core.dto.FlowForecastReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowForecastReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowForecastMapper;
 import dz.sh.trc.hyflo.flow.core.repository.FlowForecastRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,65 +37,65 @@ public class FlowForecastQueryService {
 
     private final FlowForecastRepository flowForecastRepository;
 
-    public FlowForecastReadDto findById(Long id) {
+    public FlowForecastReadDTO findById(Long id) {
         return flowForecastRepository.findById(id)
-                .map(FlowForecastMapper::toReadDto)
+                .map(FlowForecastMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("FlowForecast", id));
     }
 
-    public Page<FlowForecastReadDto> findAll(Pageable pageable) {
-        return flowForecastRepository.findAll(pageable).map(FlowForecastMapper::toReadDto);
+    public Page<FlowForecastReadDTO> findAll(Pageable pageable) {
+        return flowForecastRepository.findAll(pageable).map(FlowForecastMapper::toReadDTO);
     }
 
-    public List<FlowForecastReadDto> findAll() {
-        return flowForecastRepository.findAll().stream().map(FlowForecastMapper::toReadDto).toList();
+    public List<FlowForecastReadDTO> findAll() {
+        return flowForecastRepository.findAll().stream().map(FlowForecastMapper::toReadDTO).toList();
     }
 
-    public List<FlowForecastReadDto> findByForecastDate(LocalDate forecastDate) {
+    public List<FlowForecastReadDTO> findByForecastDate(LocalDate forecastDate) {
         return flowForecastRepository.findByForecastDate(forecastDate)
-                .stream().map(FlowForecastMapper::toReadDto).toList();
+                .stream().map(FlowForecastMapper::toReadDTO).toList();
     }
 
-    public List<FlowForecastReadDto> findByDateRange(LocalDate start, LocalDate end) {
+    public List<FlowForecastReadDTO> findByDateRange(LocalDate start, LocalDate end) {
         return flowForecastRepository.findByForecastDateBetween(start, end)
-                .stream().map(FlowForecastMapper::toReadDto).toList();
+                .stream().map(FlowForecastMapper::toReadDTO).toList();
     }
 
-    public List<FlowForecastReadDto> findByInfrastructure(Long infrastructureId) {
+    public List<FlowForecastReadDTO> findByInfrastructure(Long infrastructureId) {
         return flowForecastRepository.findByInfrastructureId(infrastructureId)
-                .stream().map(FlowForecastMapper::toReadDto).toList();
+                .stream().map(FlowForecastMapper::toReadDTO).toList();
     }
 
-    public List<FlowForecastReadDto> findByProduct(Long productId) {
+    public List<FlowForecastReadDTO> findByProduct(Long productId) {
         return flowForecastRepository.findByProductId(productId)
-                .stream().map(FlowForecastMapper::toReadDto).toList();
+                .stream().map(FlowForecastMapper::toReadDTO).toList();
     }
 
-    public List<FlowForecastReadDto> findByOperationType(Long operationTypeId) {
+    public List<FlowForecastReadDTO> findByOperationType(Long operationTypeId) {
         return flowForecastRepository.findByOperationTypeId(operationTypeId)
-                .stream().map(FlowForecastMapper::toReadDto).toList();
+                .stream().map(FlowForecastMapper::toReadDTO).toList();
     }
 
-    public Page<FlowForecastReadDto> findByInfrastructureAndDateRange(
+    public Page<FlowForecastReadDTO> findByInfrastructureAndDateRange(
             Long infrastructureId, LocalDate start, LocalDate end, Pageable pageable) {
         return flowForecastRepository.findByInfrastructureAndDateRange(infrastructureId, start, end, pageable)
-                .map(FlowForecastMapper::toReadDto);
+                .map(FlowForecastMapper::toReadDTO);
     }
 
-    public Page<FlowForecastReadDto> findByProductAndOperationTypeAndDateRange(
+    public Page<FlowForecastReadDTO> findByProductAndOperationTypeAndDateRange(
             Long productId, Long operationTypeId, LocalDate start, LocalDate end, Pageable pageable) {
         return flowForecastRepository.findByProductAndOperationTypeAndDateRange(
                         productId, operationTypeId, start, end, pageable)
-                .map(FlowForecastMapper::toReadDto);
+                .map(FlowForecastMapper::toReadDTO);
     }
 
-    public Page<FlowForecastReadDto> findCompleted(LocalDate start, LocalDate end, Pageable pageable) {
+    public Page<FlowForecastReadDTO> findCompleted(LocalDate start, LocalDate end, Pageable pageable) {
         return flowForecastRepository.findCompletedByDateRange(start, end, pageable)
-                .map(FlowForecastMapper::toReadDto);
+                .map(FlowForecastMapper::toReadDTO);
     }
 
-    public Page<FlowForecastReadDto> findPending(Pageable pageable) {
+    public Page<FlowForecastReadDTO> findPending(Pageable pageable) {
         return flowForecastRepository.findPending(LocalDate.now(), pageable)
-                .map(FlowForecastMapper::toReadDto);
+                .map(FlowForecastMapper::toReadDTO);
     }
 }

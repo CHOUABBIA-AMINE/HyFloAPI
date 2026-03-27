@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
@@ -81,7 +81,7 @@ public class ReadingWorkflowService {
     // =====================================================================
 
     @Transactional
-    public FlowReadingReadDto approve(Long id, Long approvedById) {
+    public FlowReadingReadDTO approve(Long id, Long approvedById) {
         log.info("Approving flow reading ID: {} by employee ID: {}", id, approvedById);
 
         FlowReading reading  = requireReading(id);
@@ -131,7 +131,7 @@ public class ReadingWorkflowService {
                     return null;
                 });
 
-        return FlowReadingMapper.toReadDto(saved);
+        return FlowReadingMapper.toReadDTO(saved);
     }
 
     // =====================================================================
@@ -139,7 +139,7 @@ public class ReadingWorkflowService {
     // =====================================================================
 
     @Transactional
-    public FlowReadingReadDto reject(Long id, Long rejectedById, String rejectionReason) {
+    public FlowReadingReadDTO reject(Long id, Long rejectedById, String rejectionReason) {
         log.info("Rejecting flow reading ID: {} by employee ID: {} reason: {}",
                 id, rejectedById, rejectionReason);
 
@@ -188,7 +188,7 @@ public class ReadingWorkflowService {
                 rejectionReason,
                 LocalDateTime.now().format(DATETIME_FORMATTER)));
 
-        return FlowReadingMapper.toReadDto(saved);
+        return FlowReadingMapper.toReadDTO(saved);
     }
 
     // =====================================================================

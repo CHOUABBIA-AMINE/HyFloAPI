@@ -22,8 +22,8 @@ package dz.sh.trc.hyflo.flow.core.service;
 
 import java.util.List;
 
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDTO;
 
 /**
  * SYSTEM-INTERNAL write contract for DerivedFlowReading.
@@ -38,7 +38,7 @@ import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDto;
 public interface DerivedFlowReadingCommandService {
 
     /** Create one system-generated derived reading for a segment. */
-    DerivedFlowReadingReadDto createDerivedReading(DerivedFlowReadingCommandDto command);
+    DerivedFlowReadingReadDTO createDerivedReading(DerivedFlowReadingCommandDTO command);
 
     /**
      * Rebuild all derived readings for a given source reading.
@@ -46,8 +46,8 @@ public interface DerivedFlowReadingCommandService {
      * then persists the new batch.
      * Called by SegmentDistributionService on re-approval (idempotent).
      */
-    List<DerivedFlowReadingReadDto> rebuildForSourceReading(
-            Long sourceReadingId, List<DerivedFlowReadingCommandDto> newDerived);
+    List<DerivedFlowReadingReadDTO> rebuildForSourceReading(
+            Long sourceReadingId, List<DerivedFlowReadingCommandDTO> newDerived);
 
     /** Delete all derived readings generated from a given source reading. */
     void deleteBySourceReading(Long sourceReadingId);

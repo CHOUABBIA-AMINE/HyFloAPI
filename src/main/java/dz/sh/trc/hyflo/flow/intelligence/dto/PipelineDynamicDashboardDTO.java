@@ -5,7 +5,7 @@
  * 	@Name		: PipelineDynamicDashboardDTO
  * 	@CreatedOn	: 02-14-2026
  * 	@UpdatedOn	: 02-14-2026 - Replace Map with KeyMetricsDTO
- * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2)
+ * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDTO (v2)
  *
  * 	@Type		: Class
  * 	@Layer		: DTO
@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,7 +51,7 @@ public class PipelineDynamicDashboardDTO {
     // ========== CURRENT READING (Source: FlowReading - latest) ==========
 
     @Schema(description = "[FlowReading.latest] Latest sensor reading with full measurement details")
-    private FlowReadingReadDto latestReading;
+    private FlowReadingReadDTO latestReading;
 
     // ========== KEY METRICS (Source: FlowReading - latest) ==========
 

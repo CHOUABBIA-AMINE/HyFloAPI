@@ -15,9 +15,9 @@
 
 package dz.sh.trc.hyflo.flow.core.mapper;
 
-import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.FlowAnomalyReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAnomalyReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.DataQualityIssue;
 import dz.sh.trc.hyflo.flow.core.model.FlowAnomaly;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
@@ -33,15 +33,15 @@ public final class FlowCoreReadMapper {
 
     private FlowCoreReadMapper() {}
 
-    public static FlowReadingReadDto toDto(FlowReading entity) {
-        return FlowReadingMapper.toReadDto(entity);
+    public static FlowReadingReadDTO toDTO(FlowReading entity) {
+        return FlowReadingMapper.toReadDTO(entity);
     }
 
-    public static FlowAnomalyReadDto toDto(FlowAnomaly entity) {
-        return FlowAnomalyMapper.toReadDto(entity);
+    public static FlowAnomalyReadDTO toDTO(FlowAnomaly entity) {
+        return FlowAnomalyMapper.toReadDTO(entity);
     }
 
-    public static DataQualityIssueReadDto toDto(DataQualityIssue entity) {
-        return DataQualityIssueMapper.toReadDto(entity);
+    public static DataQualityIssueReadDTO toDTO(DataQualityIssue entity) {
+        return DataQualityIssueMapper.toReadDTO(entity);
     }
 }

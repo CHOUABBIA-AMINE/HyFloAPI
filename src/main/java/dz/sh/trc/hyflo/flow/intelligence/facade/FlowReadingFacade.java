@@ -8,8 +8,8 @@
  * 	@CreatedOn	: 02-07-2026
  * 	@UpdatedOn	: 02-10-2026 - Added monitoring methods (Phase 1 refactoring)
  * 	@UpdatedOn	: 02-10-2026 - Phase 2: Return DTOs instead of entities
- * 	@UpdatedOn	: 03-26-2026 - F2: Migrate fromEntity() to FlowReadingMapper.toReadDto()
- *                              All methods now return FlowReadingReadDto (v2).
+ * 	@UpdatedOn	: 03-26-2026 - F2: Migrate fromEntity() to FlowReadingMapper.toReadDTO()
+ *                              All methods now return FlowReadingReadDTO (v2).
  *                              FlowReadingDTO (bridge) import removed.
  *
  * 	@Type		: Class
@@ -44,7 +44,7 @@ import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ReadingSlotRepository;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
  * Facade providing intelligence module with controlled access to flow readings
  * and reading slots, wrapping FlowReadingRepository and ReadingSlotRepository.
  *
- * All entity→DTO conversion delegates to FlowReadingMapper.toReadDto().
+ * All entity→DTO conversion delegates to FlowReadingMapper.toReadDTO().
  * No fromEntity() calls remain in this class.
  *
  * All methods are read-only (@Transactional(readOnly = true)) since
@@ -74,23 +74,23 @@ public class FlowReadingFacade implements IFlowReadingFacade {
     // ========== BASIC QUERY METHODS ==========
 
     @Override
-    public Optional<FlowReadingReadDto> findLatestByPipeline(Long pipelineId) {
+    public Optional<FlowReadingReadDTO> findLatestByPipeline(Long pipelineId) {
         log.debug("Finding latest flow reading for pipeline: {}", pipelineId);
         return flowReadingRepository.findTopByPipelineIdOrderByRecordedAtDesc(pipelineId)
-                .map(FlowReadingMapper::toReadDto);
+                .map(FlowReadingMapper::toReadDTO);
     }
 
     @Override
-    public List<FlowReadingReadDto> findByPipelineAndDate(Long pipelineId, LocalDate readingDate) {
+    public List<FlowReadingReadDTO> findByPipelineAndDate(Long pipelineId, LocalDate readingDate) {
         log.debug("Finding flow readings for pipeline {} on date {}", pipelineId, readingDate);
         return flowReadingRepository.findByPipelineIdAndReadingDate(pipelineId, readingDate)
                 .stream()
-                .map(FlowReadingMapper::toReadDto)
+                .map(FlowReadingMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowReadingReadDto> findByPipelineAndDateRangeOrdered(
+    public List<FlowReadingReadDTO> findByPipelineAndDateRangeOrdered(
             Long pipelineId, LocalDate startDate, LocalDate endDate) {
         log.debug("Finding ordered flow readings for pipeline {} between {} and {}",
                   pipelineId, startDate, endDate);
@@ -98,12 +98,12 @@ public class FlowReadingFacade implements IFlowReadingFacade {
                 .findByPipelineIdAndReadingDateBetweenOrderByReadingDateAscRecordedAtAsc(
                         pipelineId, startDate, endDate)
                 .stream()
-                .map(FlowReadingMapper::toReadDto)
+                .map(FlowReadingMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowReadingReadDto> findByPipelineAndDateRange(
+    public List<FlowReadingReadDTO> findByPipelineAndDateRange(
             Long pipelineId, LocalDate startDate, LocalDate endDate) {
         return findByPipelineAndDateRangeOrdered(pipelineId, startDate, endDate);
     }
@@ -117,7 +117,7 @@ public class FlowReadingFacade implements IFlowReadingFacade {
     // ========== MONITORING QUERY METHODS ==========
 
     @Override
-    public Page<FlowReadingReadDto> findPendingValidationsByStructure(
+    public Page<FlowReadingReadDTO> findPendingValidationsByStructure(
             Long structureId, Pageable pageable) {
         log.debug("Finding pending validations for structure: {}", structureId);
 
@@ -129,16 +129,16 @@ public class FlowReadingFacade implements IFlowReadingFacade {
         Page<FlowReading> entityPage = flowReadingRepository.findByStructureAndValidationStatus(
                 structureId, submittedStatus.getId(), pageable);
 
-        List<FlowReadingReadDto> dtoList = entityPage.getContent()
+        List<FlowReadingReadDTO> dtoList = entityPage.getContent()
                 .stream()
-                .map(FlowReadingMapper::toReadDto)
+                .map(FlowReadingMapper::toReadDTO)
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, pageable, entityPage.getTotalElements());
     }
 
     @Override
-    public Page<FlowReadingReadDto> findOverdueReadingsByStructure(
+    public Page<FlowReadingReadDTO> findOverdueReadingsByStructure(
             Long structureId,
             LocalDate asOfDate,
             LocalDateTime currentDateTime,
@@ -149,9 +149,9 @@ public class FlowReadingFacade implements IFlowReadingFacade {
         Page<FlowReading> entityPage = flowReadingRepository.findOverdueReadingsByStructure(
                 structureId, asOfDate, currentDateTime, pageable);
 
-        List<FlowReadingReadDto> dtoList = entityPage.getContent()
+        List<FlowReadingReadDTO> dtoList = entityPage.getContent()
                 .stream()
-                .map(FlowReadingMapper::toReadDto)
+                .map(FlowReadingMapper::toReadDTO)
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, pageable, entityPage.getTotalElements());

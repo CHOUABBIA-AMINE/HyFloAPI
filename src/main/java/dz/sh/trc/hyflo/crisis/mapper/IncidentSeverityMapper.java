@@ -13,16 +13,16 @@
 
 package dz.sh.trc.hyflo.crisis.mapper;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDTO;
 import dz.sh.trc.hyflo.crisis.model.IncidentSeverity;
 
 public final class IncidentSeverityMapper {
 
     private IncidentSeverityMapper() {}
 
-    public static IncidentSeverityReadDto toReadDto(IncidentSeverity entity) {
+    public static IncidentSeverityReadDTO toReadDTO(IncidentSeverity entity) {
         if (entity == null) return null;
-        return IncidentSeverityReadDto.builder()
+        return IncidentSeverityReadDTO.builder()
                 .id(entity.getId())
                 .code(entity.getCode())
                 .label(entity.getLabel())

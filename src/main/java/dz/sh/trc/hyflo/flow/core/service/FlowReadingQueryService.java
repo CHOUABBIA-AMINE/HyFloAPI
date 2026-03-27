@@ -10,7 +10,7 @@
  *  @Package    : Flow / Core
  *
  *  @Description: Query contract for FlowReading read operations.
- *                Returns only FlowReadingReadDto — never raw entities.
+ *                Returns only FlowReadingReadDTO — never raw entities.
  *                All filtering and pagination belongs here.
  *                No write operations permitted in implementations.
  *
@@ -26,12 +26,12 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 
 /**
  * Query contract for FlowReading read operations.
  *
- * Returns only FlowReadingReadDto — never raw entities.
+ * Returns only FlowReadingReadDTO — never raw entities.
  * All filtering and pagination belongs here.
  * No write operations permitted in implementations.
  *
@@ -39,25 +39,25 @@ import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
  */
 public interface FlowReadingQueryService {
 
-    FlowReadingReadDto getById(Long id);
+    FlowReadingReadDTO getById(Long id);
 
-    Page<FlowReadingReadDto> getAll(Pageable pageable);
+    Page<FlowReadingReadDTO> getAll(Pageable pageable);
 
-    Page<FlowReadingReadDto> search(String query, Pageable pageable);
+    Page<FlowReadingReadDTO> search(String query, Pageable pageable);
 
-    List<FlowReadingReadDto> getByPipeline(Long pipelineId);
+    List<FlowReadingReadDTO> getByPipeline(Long pipelineId);
 
-    List<FlowReadingReadDto> getByDateRange(LocalDate from, LocalDate to);
+    List<FlowReadingReadDTO> getByDateRange(LocalDate from, LocalDate to);
 
-    List<FlowReadingReadDto> getByPipelineAndDateRange(Long pipelineId, LocalDate from, LocalDate to);
+    List<FlowReadingReadDTO> getByPipelineAndDateRange(Long pipelineId, LocalDate from, LocalDate to);
 
-    List<FlowReadingReadDto> getByPipelineAndSlot(Long pipelineId, Long slotId);
+    List<FlowReadingReadDTO> getByPipelineAndSlot(Long pipelineId, Long slotId);
 
-    List<FlowReadingReadDto> getByValidationStatus(Long validationStatusId);
+    List<FlowReadingReadDTO> getByValidationStatus(Long validationStatusId);
 
     /**
      * Return the most recent readings for a pipeline, ordered by readingDate DESC.
      * Used for operational dashboards and quick status overview.
      */
-    List<FlowReadingReadDto> getLatestByPipeline(Long pipelineId, int limit);
+    List<FlowReadingReadDTO> getLatestByPipeline(Long pipelineId, int limit);
 }

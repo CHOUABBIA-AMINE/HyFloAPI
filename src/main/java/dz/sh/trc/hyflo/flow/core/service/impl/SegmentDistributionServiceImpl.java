@@ -42,8 +42,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.service.DerivedFlowReadingCommandService;
 import dz.sh.trc.hyflo.flow.core.service.SegmentDistributionService;
@@ -81,7 +81,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public List<DerivedFlowReadingReadDto> generateDerivedReadings(FlowReading sourceReading) {
+    public List<DerivedFlowReadingReadDTO> generateDerivedReadings(FlowReading sourceReading) {
         Long pipelineId = sourceReading.getPipeline().getId();
         log.info("Generating derived readings for source reading ID: {} on pipeline: {}",
                 sourceReading.getId(), pipelineId);
@@ -106,7 +106,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
                 useEqualDistribution ? "EQUAL" : "PROPORTIONAL_LENGTH",
                 totalLength, segments.size());
 
-        List<DerivedFlowReadingCommandDto> commands = segments.stream()
+        List<DerivedFlowReadingCommandDTO> commands = segments.stream()
                 .map(segment -> buildDerivedCommand(
                         sourceReading,
                         segment,
@@ -116,7 +116,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
                                         : equalShare)))
                 .collect(Collectors.toList());
 
-        List<DerivedFlowReadingReadDto> result =
+        List<DerivedFlowReadingReadDTO> result =
                 derivedFlowReadingCommandService.rebuildForSourceReading(
                         sourceReading.getId(), commands);
 
@@ -134,12 +134,12 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
      */
     @Override
     @Async("taskExecutor")
-    public CompletableFuture<List<DerivedFlowReadingReadDto>> asyncGenerateDerivedReadings(
+    public CompletableFuture<List<DerivedFlowReadingReadDTO>> asyncGenerateDerivedReadings(
             FlowReading sourceReading) {
         log.info("[ASYNC] Starting derived reading generation for reading ID: {} on thread: {}",
                 sourceReading.getId(), Thread.currentThread().getName());
         try {
-            List<DerivedFlowReadingReadDto> result = generateDerivedReadings(sourceReading);
+            List<DerivedFlowReadingReadDTO> result = generateDerivedReadings(sourceReading);
             log.info("[ASYNC] Derived reading generation complete: {} records for reading ID: {}",
                     result.size(), sourceReading.getId());
             return CompletableFuture.completedFuture(result);
@@ -164,7 +164,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
         }
     }
 
-    private DerivedFlowReadingCommandDto buildDerivedCommand(
+    private DerivedFlowReadingCommandDTO buildDerivedCommand(
             FlowReading source, PipelineSegment segment, double weight) {
 
         BigDecimal containedVolume = null;
@@ -174,7 +174,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
                     .setScale(6, java.math.RoundingMode.HALF_UP);
         }
 
-        return DerivedFlowReadingCommandDto.builder()
+        return DerivedFlowReadingCommandDTO.builder()
                 .sourceReadingId(source.getId())
                 .pipelineSegmentId(segment.getId())
                 .readingDate(source.getReadingDate())

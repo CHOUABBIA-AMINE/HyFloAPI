@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.DerivedFlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.DerivedFlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.DerivedFlowReadingRepository;
@@ -42,17 +42,17 @@ public class DerivedFlowReadingCommandServiceImpl implements DerivedFlowReadingC
     private final DerivedFlowReadingRepository derivedFlowReadingRepository;
 
     @Override
-    public DerivedFlowReadingReadDto createDerivedReading(DerivedFlowReadingCommandDto command) {
+    public DerivedFlowReadingReadDTO createDerivedReading(DerivedFlowReadingCommandDTO command) {
         DerivedFlowReading entity = DerivedFlowReadingMapper.toEntity(command);
         DerivedFlowReading saved = derivedFlowReadingRepository.save(entity);
         log.debug("System-created DerivedFlowReading ID: {} for segment: {}",
                 saved.getId(), command.getPipelineSegmentId());
-        return DerivedFlowReadingMapper.toReadDto(saved);
+        return DerivedFlowReadingMapper.toReadDTO(saved);
     }
 
     @Override
-    public List<DerivedFlowReadingReadDto> rebuildForSourceReading(
-            Long sourceReadingId, List<DerivedFlowReadingCommandDto> newDerived) {
+    public List<DerivedFlowReadingReadDTO> rebuildForSourceReading(
+            Long sourceReadingId, List<DerivedFlowReadingCommandDTO> newDerived) {
         log.info("Rebuilding derived readings for source reading ID: {}", sourceReadingId);
 
         // Delete-and-rebuild strategy — prevents partial or duplicate state
@@ -66,7 +66,7 @@ public class DerivedFlowReadingCommandServiceImpl implements DerivedFlowReadingC
         log.info("Rebuilt {} derived readings for source reading ID: {}",
                 saved.size(), sourceReadingId);
         return saved.stream()
-                .map(DerivedFlowReadingMapper::toReadDto)
+                .map(DerivedFlowReadingMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 

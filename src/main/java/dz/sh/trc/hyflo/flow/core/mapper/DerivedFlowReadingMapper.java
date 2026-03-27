@@ -14,8 +14,8 @@
 package dz.sh.trc.hyflo.flow.core.mapper;
 
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
-import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.DerivedFlowReadingCommandDTO;
 import dz.sh.trc.hyflo.flow.core.model.DerivedFlowReading;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
@@ -24,10 +24,10 @@ public final class DerivedFlowReadingMapper {
 
     private DerivedFlowReadingMapper() {}
 
-    public static DerivedFlowReadingReadDto toReadDto(DerivedFlowReading entity) {
+    public static DerivedFlowReadingReadDTO toReadDTO(DerivedFlowReading entity) {
         if (entity == null) return null;
 
-        return DerivedFlowReadingReadDto.builder()
+        return DerivedFlowReadingReadDTO.builder()
                 .id(entity.getId())
                 .readingDate(entity.getReadingDate())
                 .pressure(entity.getPressure())
@@ -53,7 +53,7 @@ public final class DerivedFlowReadingMapper {
                 .build();
     }
 
-    public static DerivedFlowReading toEntity(DerivedFlowReadingCommandDto dto) {
+    public static DerivedFlowReading toEntity(DerivedFlowReadingCommandDTO dto) {
         if (dto == null) return null;
 
         DerivedFlowReading entity = new DerivedFlowReading();

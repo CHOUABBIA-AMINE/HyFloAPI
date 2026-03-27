@@ -20,7 +20,7 @@
 package dz.sh.trc.hyflo.flow.core.mapper;
 
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
-import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowOperation;
 import dz.sh.trc.hyflo.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
@@ -39,17 +39,17 @@ public final class FlowOperationMapper {
     private FlowOperationMapper() {}
 
     // =====================================================================
-    // entity → FlowOperationReadDto
+    // entity → FlowOperationReadDTO
     // =====================================================================
 
     /**
      * Map a {@link FlowOperation} entity to a v2 read DTO.
      * All FK projections are safe null-guarded.
      */
-    public static FlowOperationReadDto toReadDto(FlowOperation entity) {
+    public static FlowOperationReadDTO toReadDTO(FlowOperation entity) {
         if (entity == null) return null;
 
-        return FlowOperationReadDto.builder()
+        return FlowOperationReadDTO.builder()
                 .id(entity.getId())
                 .operationDate(entity.getOperationDate())
                 .volume(entity.getVolume())

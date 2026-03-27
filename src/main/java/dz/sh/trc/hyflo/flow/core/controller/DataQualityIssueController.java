@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDTO;
 import dz.sh.trc.hyflo.flow.core.service.DataQualityIssueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Tag(name = "Data Quality Issues", description = "APIs for querying data quality evaluations")
 @SecurityRequirement(name = "bearer-auth")
-public class DataQualityIssueController extends GenericController<DataQualityIssueReadDto, Long> {
+public class DataQualityIssueController extends GenericController<DataQualityIssueReadDTO, Long> {
 
     private final DataQualityIssueService dataQualityIssueService;
 
@@ -68,18 +68,18 @@ public class DataQualityIssueController extends GenericController<DataQualityIss
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get data quality issue by ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Issue found", content = @Content(schema = @Schema(implementation = DataQualityIssueReadDto.class))),
+        @ApiResponse(responseCode = "200", description = "Issue found", content = @Content(schema = @Schema(implementation = DataQualityIssueReadDTO.class))),
         @ApiResponse(responseCode = "404", description = "Issue not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<DataQualityIssueReadDto> getById(@PathVariable Long id) {
+    public ResponseEntity<DataQualityIssueReadDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get all data quality issues (paginated)")
-    public ResponseEntity<Page<DataQualityIssueReadDto>> getAll(
+    public ResponseEntity<Page<DataQualityIssueReadDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -90,14 +90,14 @@ public class DataQualityIssueController extends GenericController<DataQualityIss
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get all data quality issues (unpaginated)")
-    public ResponseEntity<List<DataQualityIssueReadDto>> getAll() {
+    public ResponseEntity<List<DataQualityIssueReadDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Search data quality issues")
-    public ResponseEntity<Page<DataQualityIssueReadDto>> search(
+    public ResponseEntity<Page<DataQualityIssueReadDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -114,14 +114,14 @@ public class DataQualityIssueController extends GenericController<DataQualityIss
     }
 
     @Override
-    protected Page<DataQualityIssueReadDto> searchByQuery(String query, Pageable pageable) {
+    protected Page<DataQualityIssueReadDTO> searchByQuery(String query, Pageable pageable) {
         return dataQualityIssueService.searchByQuery(query, pageable);
     }
 
     @GetMapping("/reading/{readingId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get data quality issues by reading ID")
-    public ResponseEntity<List<DataQualityIssueReadDto>> getByReadingId(
+    public ResponseEntity<List<DataQualityIssueReadDTO>> getByReadingId(
             @Parameter(description = "Reading ID", required = true) @PathVariable Long readingId) {
         log.debug("GET /flow/core/quality-issue/reading/{}", readingId);
         return success(dataQualityIssueService.getByReadingId(readingId));

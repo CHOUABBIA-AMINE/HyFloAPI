@@ -18,25 +18,25 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDTO;
 
 /**
  * Read-only query contract for IncidentSeverity.
  */
 public interface IIncidentSeverityQueryService {
 
-    IncidentSeverityReadDto getById(Long id);
+    IncidentSeverityReadDTO getById(Long id);
 
-    IncidentSeverityReadDto getByCode(String code);
+    IncidentSeverityReadDTO getByCode(String code);
 
-    Page<IncidentSeverityReadDto> getAll(Pageable pageable);
+    Page<IncidentSeverityReadDTO> getAll(Pageable pageable);
 
-    List<IncidentSeverityReadDto> getAll();
+    List<IncidentSeverityReadDTO> getAll();
 
     /** Returns all severities ordered by rank ascending (rank 1 = highest priority). */
-    List<IncidentSeverityReadDto> getAllOrderedByRank();
+    List<IncidentSeverityReadDTO> getAllOrderedByRank();
 
-    Page<IncidentSeverityReadDto> searchByQuery(String query, Pageable pageable);
+    Page<IncidentSeverityReadDTO> searchByQuery(String query, Pageable pageable);
 
     long count();
 }

@@ -18,8 +18,8 @@
 
 package dz.sh.trc.hyflo.flow.workflow.mapper;
 
-import dz.sh.trc.hyflo.flow.workflow.dto.command.WorkflowInstanceCommandDto;
-import dz.sh.trc.hyflo.flow.workflow.dto.query.WorkflowInstanceReadDto;
+import dz.sh.trc.hyflo.flow.workflow.dto.command.WorkflowInstanceCommandDTO;
+import dz.sh.trc.hyflo.flow.workflow.dto.query.WorkflowInstanceReadDTO;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowState;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowTargetType;
@@ -30,13 +30,13 @@ public final class WorkflowInstanceMapper {
     private WorkflowInstanceMapper() {}
 
     // =====================================================================
-    // entity → WorkflowInstanceReadDto
+    // entity → WorkflowInstanceReadDTO
     // =====================================================================
 
-    public static WorkflowInstanceReadDto toReadDto(WorkflowInstance entity) {
+    public static WorkflowInstanceReadDTO toReadDTO(WorkflowInstance entity) {
         if (entity == null) return null;
 
-        return WorkflowInstanceReadDto.builder()
+        return WorkflowInstanceReadDTO.builder()
                 .id(entity.getId())
                 .targetTypeId(entity.getTargetType() != null
                         ? entity.getTargetType().getId() : null)
@@ -65,10 +65,10 @@ public final class WorkflowInstanceMapper {
     }
 
     // =====================================================================
-    // WorkflowInstanceCommandDto → new WorkflowInstance entity
+    // WorkflowInstanceCommandDTO → new WorkflowInstance entity
     // =====================================================================
 
-    public static WorkflowInstance toEntity(WorkflowInstanceCommandDto dto) {
+    public static WorkflowInstance toEntity(WorkflowInstanceCommandDTO dto) {
         if (dto == null) return null;
 
         WorkflowInstance entity = new WorkflowInstance();

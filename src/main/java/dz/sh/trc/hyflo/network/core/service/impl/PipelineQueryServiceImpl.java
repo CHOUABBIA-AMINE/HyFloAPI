@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDto;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDTO;
 import dz.sh.trc.hyflo.network.core.mapper.PipelineMapper;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import dz.sh.trc.hyflo.network.core.service.PipelineQueryService;
@@ -39,28 +39,28 @@ public class PipelineQueryServiceImpl implements PipelineQueryService {
     private final PipelineRepository pipelineRepository;
 
     @Override
-    public PipelineReadDto getById(Long id) {
+    public PipelineReadDTO getById(Long id) {
         return pipelineRepository.findById(id)
-                .map(PipelineMapper::toReadDto)
+                .map(PipelineMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Pipeline not found: " + id));
     }
 
     @Override
-    public Page<PipelineReadDto> getAll(Pageable pageable) {
-        return pipelineRepository.findAll(pageable).map(PipelineMapper::toReadDto);
+    public Page<PipelineReadDTO> getAll(Pageable pageable) {
+        return pipelineRepository.findAll(pageable).map(PipelineMapper::toReadDTO);
     }
 
     @Override
-    public List<PipelineReadDto> getByPipelineSystem(Long systemId) {
+    public List<PipelineReadDTO> getByPipelineSystem(Long systemId) {
         return pipelineRepository.findByPipelineSystemId(systemId)
                 .stream()
-                .map(PipelineMapper::toReadDto)
+                .map(PipelineMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Page<PipelineReadDto> search(String query, Pageable pageable) {
+    public Page<PipelineReadDTO> search(String query, Pageable pageable) {
         return pipelineRepository.searchByAnyField(query, pageable)
-                .map(PipelineMapper::toReadDto);
+                .map(PipelineMapper::toReadDTO);
     }
 }

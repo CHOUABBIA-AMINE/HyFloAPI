@@ -14,14 +14,14 @@
 
 package dz.sh.trc.hyflo.flow.core.mapper;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowAlertReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAlertReadDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowAlert;
 
 public final class FlowAlertMapper {
 
     private FlowAlertMapper() {}
 
-    public static FlowAlertReadDto toReadDto(FlowAlert entity) {
+    public static FlowAlertReadDTO toReadDTO(FlowAlert entity) {
         if (entity == null) return null;
 
         // FlowThreshold has no name/code field — pipeline code is the correct display identifier
@@ -31,7 +31,7 @@ public final class FlowAlertMapper {
             thresholdLabel = entity.getThreshold().getPipeline().getCode();
         }
 
-        return FlowAlertReadDto.builder()
+        return FlowAlertReadDTO.builder()
                 .id(entity.getId())
                 .thresholdId(entity.getThreshold() != null ? entity.getThreshold().getId() : null)
                 .thresholdName(thresholdLabel)

@@ -8,7 +8,7 @@
  * 	@UpdatedOn	: 02-10-2026 - Phase 1 refactoring: Eliminated direct repository access
  * 	@UpdatedOn	: 02-10-2026 - Phase 4 refactoring: Added date range validation
  * 	@UpdatedOn	: 02-10-2026 - Phase 2: Facades return DTOs, no conversion needed
- * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDto (v2)
+ * 	@UpdatedOn	: 03-26-2026 - F2: Replace FlowReadingDTO (v1) with FlowReadingReadDTO (v2)
  * 	@UpdatedOn	: 03-26-2026 - COMPILE FIX: DateTimeUtils.currentDateTime() → .now();
  * 	                            getDailyCompletionStatistics / getPipelineCoverageDetail:
  * 	                            map List<Object[]> → DTO inline;
@@ -32,9 +32,9 @@
  * 	@Refactoring: Phase 2 - Facades return DTOs directly:
  * 	              Removed .map(FlowReadingDTO::fromEntity) calls.
  *
- * 	@Refactoring: F2 - IFlowReadingFacade now returns FlowReadingReadDto (v2).
- * 	              FlowReadingDTO (v1) import removed. All Page<FlowReadingReadDto>
- * 	              and List<FlowReadingReadDto> updated accordingly.
+ * 	@Refactoring: F2 - IFlowReadingFacade now returns FlowReadingReadDTO (v2).
+ * 	              FlowReadingDTO (v1) import removed. All Page<FlowReadingReadDTO>
+ * 	              and List<FlowReadingReadDTO> updated accordingly.
  *
  **/
 
@@ -51,7 +51,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatisticsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
@@ -79,7 +79,7 @@ import lombok.extern.slf4j.Slf4j;
  * - NO direct access to FlowReadingRepository (core module)
  * - NO entity dependencies (works exclusively with DTOs)
  *
- * F2: IFlowReadingFacade now returns FlowReadingReadDto (v2).
+ * F2: IFlowReadingFacade now returns FlowReadingReadDTO (v2).
  * All references to FlowReadingDTO (v1) have been removed.
  *
  * CONTRACT NOTES (pending controller alignment):
@@ -101,7 +101,7 @@ public class FlowMonitoringService {
 
     /**
      * Facade for accessing core flow reading queries.
-     * F2: now returns FlowReadingReadDto (v2) — no FlowReadingDTO (v1) in this module.
+     * F2: now returns FlowReadingReadDTO (v2) — no FlowReadingDTO (v1) in this module.
      */
     private final IFlowReadingFacade flowReadingFacade;
 
@@ -119,7 +119,7 @@ public class FlowMonitoringService {
      * @param pageable    pagination parameters
      * @return page of v2 read DTOs
      */
-    public Page<FlowReadingReadDto> findPendingValidations(Long structureId, Pageable pageable) {
+    public Page<FlowReadingReadDTO> findPendingValidations(Long structureId, Pageable pageable) {
         log.debug("Finding pending validations for structure ID {}", structureId);
         return flowReadingFacade.findPendingValidationsByStructure(structureId, pageable);
     }
@@ -147,7 +147,7 @@ public class FlowMonitoringService {
      * @param pageable    pagination parameters
      * @return page of v2 read DTOs
      */
-    public Page<FlowReadingReadDto> findOverdueReadings(
+    public Page<FlowReadingReadDTO> findOverdueReadings(
             Long structureId, LocalDate asOfDate, Pageable pageable) {
         log.debug("Finding overdue readings for structure ID {} as of {}", structureId, asOfDate);
         // COMPILE FIX: DateTimeUtils.currentDateTime() does not exist — replaced with .now()

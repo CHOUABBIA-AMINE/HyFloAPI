@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDTO;
 import dz.sh.trc.hyflo.crisis.mapper.IncidentMapper;
 import dz.sh.trc.hyflo.crisis.repository.IncidentRepository;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
@@ -42,43 +42,43 @@ public class IncidentService implements IIncidentQueryService {
     private final IncidentRepository incidentRepository;
 
     @Override
-    public IncidentReadDto getById(Long id) {
+    public IncidentReadDTO getById(Long id) {
         return incidentRepository.findById(id)
-                .map(IncidentMapper::toReadDto)
+                .map(IncidentMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident not found: " + id));
     }
 
     @Override
-    public Page<IncidentReadDto> getAll(Pageable pageable) {
-        return incidentRepository.findAll(pageable).map(IncidentMapper::toReadDto);
+    public Page<IncidentReadDTO> getAll(Pageable pageable) {
+        return incidentRepository.findAll(pageable).map(IncidentMapper::toReadDTO);
     }
 
     @Override
-    public List<IncidentReadDto> getAll() {
+    public List<IncidentReadDTO> getAll() {
         return incidentRepository.findAll()
-                .stream().map(IncidentMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(IncidentMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public Page<IncidentReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<IncidentReadDTO> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
-        return incidentRepository.searchByAnyField(query, pageable).map(IncidentMapper::toReadDto);
+        return incidentRepository.searchByAnyField(query, pageable).map(IncidentMapper::toReadDTO);
     }
 
     @Override
-    public List<IncidentReadDto> getActiveIncidents() {
+    public List<IncidentReadDTO> getActiveIncidents() {
         log.debug("Getting all active incidents");
         return incidentRepository.findByActive(true)
-                .stream().map(IncidentMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(IncidentMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<IncidentReadDto> getByPipelineSegmentId(Long segmentId) {
+    public List<IncidentReadDTO> getByPipelineSegmentId(Long segmentId) {
         log.debug("Getting incidents for segment ID: {}", segmentId);
         return incidentRepository.findByPipelineSegmentId(segmentId)
-                .stream().map(IncidentMapper::toReadDto).collect(Collectors.toList());
+                .stream().map(IncidentMapper::toReadDTO).collect(Collectors.toList());
     }
 
     @Override

@@ -11,7 +11,7 @@
  *
  *  @Description: Command contract for FlowReading write operations.
  *                Handles create / update / delete / workflow attachment.
- *                All methods return FlowReadingReadDto — never raw entities.
+ *                All methods return FlowReadingReadDTO — never raw entities.
  *                Invariant enforcement lives here, not in entities or controllers.
  *
  *  Phase 3 — Commit 16
@@ -20,14 +20,14 @@
 
 package dz.sh.trc.hyflo.flow.core.service;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDTO;
 
 /**
  * Command contract for FlowReading write operations.
  *
  * Handles create / update / delete / workflow attachment.
- * All methods return FlowReadingReadDto — never raw entities.
+ * All methods return FlowReadingReadDTO — never raw entities.
  * Invariant enforcement lives here, not in entities or controllers.
  *
  * Phase 3 — Commit 16
@@ -39,13 +39,13 @@ public interface FlowReadingCommandService {
      * Attaches DataSource and optional WorkflowInstance reference.
      * Validates pipeline exists and readable target type is allowed.
      */
-    FlowReadingReadDto createReading(FlowReadingCommandDto command);
+    FlowReadingReadDTO createReading(FlowReadingCommandDTO command);
 
     /**
      * Update a direct reading that has not yet been submitted to workflow.
      * Rejected or draft readings may be corrected here.
      */
-    FlowReadingReadDto updateReading(Long id, FlowReadingCommandDto command);
+    FlowReadingReadDTO updateReading(Long id, FlowReadingCommandDTO command);
 
     /**
      * Soft-delete or hard-delete a reading.
@@ -59,5 +59,5 @@ public interface FlowReadingCommandService {
      * Attaches or creates WorkflowInstance.
      * Transitions status to SUBMITTED.
      */
-    FlowReadingReadDto submitForWorkflow(Long id, Long submittedById);
+    FlowReadingReadDTO submitForWorkflow(Long id, Long submittedById);
 }

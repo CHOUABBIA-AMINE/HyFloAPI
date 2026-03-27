@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.network.core.dto.command.PipelineCommandDto;
-import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDto;
+import dz.sh.trc.hyflo.network.core.dto.command.PipelineCommandDTO;
+import dz.sh.trc.hyflo.network.core.dto.query.PipelineReadDTO;
 import dz.sh.trc.hyflo.network.core.mapper.PipelineMapper;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * Command implementation for Pipeline write operations.
  *
  * Uses PipelineMapper from Phase 2.
- * Returns PipelineReadDto — no raw entity exposure.
+ * Returns PipelineReadDTO — no raw entity exposure.
  *
  * Phase 3 — Commit 23
  */
@@ -45,19 +45,19 @@ public class PipelineCommandServiceImpl implements PipelineCommandService {
     private final PipelineRepository pipelineRepository;
 
     @Override
-    public PipelineReadDto createPipeline(PipelineCommandDto command) {
+    public PipelineReadDTO createPipeline(PipelineCommandDTO command) {
         log.info("Creating pipeline: {}", command.getCode());
         Pipeline entity = PipelineMapper.toEntity(command);
-        return PipelineMapper.toReadDto(pipelineRepository.save(entity));
+        return PipelineMapper.toReadDTO(pipelineRepository.save(entity));
     }
 
     @Override
-    public PipelineReadDto updatePipeline(Long id, PipelineCommandDto command) {
+    public PipelineReadDTO updatePipeline(Long id, PipelineCommandDTO command) {
         log.info("Updating pipeline ID: {}", id);
         Pipeline existing = pipelineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pipeline not found: " + id));
         PipelineMapper.updateEntity(command, existing);
-        return PipelineMapper.toReadDto(pipelineRepository.save(existing));
+        return PipelineMapper.toReadDTO(pipelineRepository.save(existing));
     }
 
     @Override

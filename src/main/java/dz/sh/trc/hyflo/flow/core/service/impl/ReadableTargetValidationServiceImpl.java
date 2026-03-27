@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.flow.core.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDTO;
 import dz.sh.trc.hyflo.flow.core.service.ReadableTargetValidationService;
 import dz.sh.trc.hyflo.network.core.repository.PipelineSegmentRepository;
 import dz.sh.trc.hyflo.network.core.repository.StationRepository;
@@ -47,7 +47,7 @@ public class ReadableTargetValidationServiceImpl implements ReadableTargetValida
     private final TerminalRepository terminalRepository;
 
     @Override
-    public void validateCommandTarget(FlowReadingCommandDto command) {
+    public void validateCommandTarget(FlowReadingCommandDTO command) {
         int secondaryTargetCount = 0;
 
         if (command.getPipelineSegmentId() != null) {

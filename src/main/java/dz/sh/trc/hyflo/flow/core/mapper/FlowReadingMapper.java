@@ -15,8 +15,8 @@ package dz.sh.trc.hyflo.flow.core.mapper;
 
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
-import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
+import dz.sh.trc.hyflo.flow.core.dto.command.FlowReadingCommandDTO;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
@@ -34,13 +34,13 @@ public final class FlowReadingMapper {
     private FlowReadingMapper() {}
 
     // =====================================================================
-    // entity → FlowReadingReadDto
+    // entity → FlowReadingReadDTO
     // =====================================================================
 
-    public static FlowReadingReadDto toReadDto(FlowReading entity) {
+    public static FlowReadingReadDTO toReadDTO(FlowReading entity) {
         if (entity == null) return null;
 
-        return FlowReadingReadDto.builder()
+        return FlowReadingReadDTO.builder()
                 .id(entity.getId())
                 .readingDate(entity.getReadingDate())
                 .volumeM3(entity.getVolumeM3())
@@ -70,10 +70,10 @@ public final class FlowReadingMapper {
     }
 
     // =====================================================================
-    // FlowReadingCommandDto → new FlowReading entity
+    // FlowReadingCommandDTO → new FlowReading entity
     // =====================================================================
 
-    public static FlowReading toEntity(FlowReadingCommandDto dto) {
+    public static FlowReading toEntity(FlowReadingCommandDTO dto) {
         if (dto == null) return null;
 
         FlowReading entity = new FlowReading();
@@ -116,10 +116,10 @@ public final class FlowReadingMapper {
     }
 
     // =====================================================================
-    // FlowReadingCommandDto → update existing FlowReading entity (patch)
+    // FlowReadingCommandDTO → update existing FlowReading entity (patch)
     // =====================================================================
 
-    public static void updateEntity(FlowReadingCommandDto dto, FlowReading entity) {
+    public static void updateEntity(FlowReadingCommandDTO dto, FlowReading entity) {
         if (dto == null || entity == null) return;
 
         if (dto.getReadingDate() != null)        entity.setReadingDate(dto.getReadingDate());

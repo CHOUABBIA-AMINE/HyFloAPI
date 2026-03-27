@@ -7,7 +7,7 @@
  *  @UpdatedOn  : 03-26-2026 - Phase 4:
  *                  - findByDepartmentId → findByJob_StructureId (correct repo method)
  *                  - searchByAnyField(query) → searchByAnyField(query, pageable)
- *                  - search() returns Page<EmployeeReadDto> to match interface
+ *                  - search() returns Page<EmployeeReadDTO> to match interface
  *
  *  @Type       : Class
  *  @Layer      : Service / Impl
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDto;
+import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDTO;
 import dz.sh.trc.hyflo.general.organization.mapper.EmployeeMapper;
 import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
 import dz.sh.trc.hyflo.general.organization.service.EmployeeQueryService;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  * Query implementation for Employee read operations.
  *
  * Uses EmployeeMapper from Phase 2.
- * Returns EmployeeReadDto — no raw entity exposure.
+ * Returns EmployeeReadDTO — no raw entity exposure.
  */
 @Service
 @RequiredArgsConstructor
@@ -48,29 +48,29 @@ public class EmployeeQueryServiceImpl implements EmployeeQueryService {
     private final EmployeeRepository employeeRepository;
 
     @Override
-    public EmployeeReadDto getById(Long id) {
+    public EmployeeReadDTO getById(Long id) {
         return employeeRepository.findById(id)
-                .map(EmployeeMapper::toReadDto)
+                .map(EmployeeMapper::toReadDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + id));
     }
 
     @Override
-    public Page<EmployeeReadDto> getAll(Pageable pageable) {
-        return employeeRepository.findAll(pageable).map(EmployeeMapper::toReadDto);
+    public Page<EmployeeReadDTO> getAll(Pageable pageable) {
+        return employeeRepository.findAll(pageable).map(EmployeeMapper::toReadDTO);
     }
 
     @Override
-    public List<EmployeeReadDto> getByDepartment(Long departmentId) {
+    public List<EmployeeReadDTO> getByDepartment(Long departmentId) {
         // Repository method: findByJob_StructureId (not findByDepartmentId)
         return employeeRepository.findByJob_StructureId(departmentId)
                 .stream()
-                .map(EmployeeMapper::toReadDto)
+                .map(EmployeeMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Page<EmployeeReadDto> search(String query, Pageable pageable) {
+    public Page<EmployeeReadDTO> search(String query, Pageable pageable) {
         return employeeRepository.searchByAnyField(query, pageable)
-                .map(EmployeeMapper::toReadDto);
+                .map(EmployeeMapper::toReadDTO);
     }
 }

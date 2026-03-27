@@ -18,24 +18,24 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDTO;
 
 /**
  * Read-only query contract for Incident.
  */
 public interface IIncidentQueryService {
 
-    IncidentReadDto getById(Long id);
+    IncidentReadDTO getById(Long id);
 
-    Page<IncidentReadDto> getAll(Pageable pageable);
+    Page<IncidentReadDTO> getAll(Pageable pageable);
 
-    List<IncidentReadDto> getAll();
+    List<IncidentReadDTO> getAll();
 
-    Page<IncidentReadDto> searchByQuery(String query, Pageable pageable);
+    Page<IncidentReadDTO> searchByQuery(String query, Pageable pageable);
 
-    List<IncidentReadDto> getActiveIncidents();
+    List<IncidentReadDTO> getActiveIncidents();
 
-    List<IncidentReadDto> getByPipelineSegmentId(Long segmentId);
+    List<IncidentReadDTO> getByPipelineSegmentId(Long segmentId);
 
     long count();
 

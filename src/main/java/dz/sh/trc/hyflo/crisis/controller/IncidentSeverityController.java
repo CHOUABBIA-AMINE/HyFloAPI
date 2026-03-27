@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentSeverityReadDTO;
 import dz.sh.trc.hyflo.crisis.service.IIncidentSeverityQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,11 +55,11 @@ public class IncidentSeverityController {
     @Operation(summary = "Get severity by ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Severity found",
-                content = @Content(schema = @Schema(implementation = IncidentSeverityReadDto.class))),
+                content = @Content(schema = @Schema(implementation = IncidentSeverityReadDTO.class))),
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<IncidentSeverityReadDto> getById(@PathVariable Long id) {
+    public ResponseEntity<IncidentSeverityReadDTO> getById(@PathVariable Long id) {
         log.debug("GET /crisis/incident-severity/{}", id);
         return ResponseEntity.ok(severityService.getById(id));
     }
@@ -71,7 +71,7 @@ public class IncidentSeverityController {
         @ApiResponse(responseCode = "200", description = "Severity found"),
         @ApiResponse(responseCode = "404", description = "Not found")
     })
-    public ResponseEntity<IncidentSeverityReadDto> getByCode(
+    public ResponseEntity<IncidentSeverityReadDTO> getByCode(
             @Parameter(description = "Severity code, e.g. P1", required = true)
             @PathVariable String code) {
         log.debug("GET /crisis/incident-severity/by-code/{}", code);
@@ -81,7 +81,7 @@ public class IncidentSeverityController {
     @GetMapping
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all severities (paginated)")
-    public ResponseEntity<Page<IncidentSeverityReadDto>> getAll(
+    public ResponseEntity<Page<IncidentSeverityReadDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "rank") String sortBy,
@@ -96,7 +96,7 @@ public class IncidentSeverityController {
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all severities ordered by rank (unpaginated)")
-    public ResponseEntity<List<IncidentSeverityReadDto>> getAllOrderedByRank() {
+    public ResponseEntity<List<IncidentSeverityReadDTO>> getAllOrderedByRank() {
         log.debug("GET /crisis/incident-severity/all");
         return ResponseEntity.ok(severityService.getAllOrderedByRank());
     }
@@ -104,7 +104,7 @@ public class IncidentSeverityController {
     @GetMapping("/search")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Search severities by code or label")
-    public ResponseEntity<Page<IncidentSeverityReadDto>> search(
+    public ResponseEntity<Page<IncidentSeverityReadDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,

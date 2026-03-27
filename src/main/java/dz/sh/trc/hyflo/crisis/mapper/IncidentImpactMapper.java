@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.crisis.mapper;
 
 import java.util.stream.Collectors;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentImpactReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentImpactReadDTO;
 import dz.sh.trc.hyflo.crisis.model.IncidentImpact;
 import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
@@ -25,10 +25,10 @@ public final class IncidentImpactMapper {
 
     private IncidentImpactMapper() {}
 
-    public static IncidentImpactReadDto toReadDto(IncidentImpact entity) {
+    public static IncidentImpactReadDTO toReadDTO(IncidentImpact entity) {
         if (entity == null) return null;
 
-        return IncidentImpactReadDto.builder()
+        return IncidentImpactReadDTO.builder()
                 .id(entity.getId())
                 .incidentId(entity.getIncident() != null
                         ? entity.getIncident().getId() : null)

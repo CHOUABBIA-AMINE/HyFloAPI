@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
-import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.DataQualityIssueReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowCoreReadMapper;
 import dz.sh.trc.hyflo.flow.core.model.DataQualityIssue;
 import dz.sh.trc.hyflo.flow.core.repository.DataQualityIssueRepository;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class DataQualityIssueService extends GenericService<DataQualityIssue, DataQualityIssueReadDto, Long> {
+public class DataQualityIssueService extends GenericService<DataQualityIssue, DataQualityIssueReadDTO, Long> {
 
     private final DataQualityIssueRepository dataQualityIssueRepository;
 
@@ -52,31 +52,31 @@ public class DataQualityIssueService extends GenericService<DataQualityIssue, Da
     }
 
     @Override
-    protected DataQualityIssueReadDto toDTO(DataQualityIssue entity) {
-        return FlowCoreReadMapper.toDto(entity);
+    protected DataQualityIssueReadDTO toDTO(DataQualityIssue entity) {
+        return FlowCoreReadMapper.toDTO(entity);
     }
 
     @Override
-    protected DataQualityIssue toEntity(DataQualityIssueReadDto dto) {
+    protected DataQualityIssue toEntity(DataQualityIssueReadDTO dto) {
         throw new UnsupportedOperationException("Use intelligence engine for quality issue creation");
     }
 
     @Override
-    protected void updateEntityFromDTO(DataQualityIssue entity, DataQualityIssueReadDto dto) {
+    protected void updateEntityFromDTO(DataQualityIssue entity, DataQualityIssueReadDTO dto) {
         throw new UnsupportedOperationException("Use intelligence engine for quality issue updates");
     }
 
-    public Page<DataQualityIssueReadDto> searchByQuery(String query, Pageable pageable) {
+    public Page<DataQualityIssueReadDTO> searchByQuery(String query, Pageable pageable) {
         if (query == null || query.trim().isEmpty()) {
             return getAll(pageable);
         }
-        return dataQualityIssueRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDto);
+        return dataQualityIssueRepository.searchByAnyField(query, pageable).map(FlowCoreReadMapper::toDTO);
     }
 
     @Deprecated(since = "v2-phase3", forRemoval = true)
-    public List<DataQualityIssueReadDto> getByReadingId(Long readingId) {
+    public List<DataQualityIssueReadDTO> getByReadingId(Long readingId) {
         log.debug("Getting data quality issues for reading ID: {}", readingId);
         return dataQualityIssueRepository.findByReadingId(readingId)
-                .stream().map(FlowCoreReadMapper::toDto).collect(Collectors.toList());
+                .stream().map(FlowCoreReadMapper::toDTO).collect(Collectors.toList());
     }
 }

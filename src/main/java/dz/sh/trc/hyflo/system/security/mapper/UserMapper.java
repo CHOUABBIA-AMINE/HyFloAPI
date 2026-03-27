@@ -27,8 +27,8 @@ package dz.sh.trc.hyflo.system.security.mapper;
 
 import dz.sh.trc.hyflo.general.organization.mapper.EmployeeMapper;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
-import dz.sh.trc.hyflo.system.security.dto.command.UserCommandDto;
-import dz.sh.trc.hyflo.system.security.dto.query.UserReadDto;
+import dz.sh.trc.hyflo.system.security.dto.command.UserCommandDTO;
+import dz.sh.trc.hyflo.system.security.dto.query.UserReadDTO;
 import dz.sh.trc.hyflo.system.security.model.User;
 
 public final class UserMapper {
@@ -36,15 +36,15 @@ public final class UserMapper {
     private UserMapper() {}
 
     // =====================================================================
-    // entity → UserReadDto
+    // entity → UserReadDTO
     // =====================================================================
 
-    public static UserReadDto toReadDto(User entity) {
+    public static UserReadDTO toReadDTO(User entity) {
         if (entity == null) return null;
 
         Employee employee = entity.getEmployee();
 
-        return UserReadDto.builder()
+        return UserReadDTO.builder()
                 .id(entity.getId())
                 .username(entity.getUsername())
                 .email(entity.getEmail())
@@ -56,16 +56,16 @@ public final class UserMapper {
                 .roleCode(employee != null && employee.getRole() != null
                         ? employee.getRole().getName() : null)
                 // createdAt / lastLoginAt: NOT on User entity (GenericModel only has id).
-                // Fields left null; UserReadDto is @JsonInclude(NON_NULL) so they are omitted.
+                // Fields left null; UserReadDTO is @JsonInclude(NON_NULL) so they are omitted.
                 .build();
         // NOTE: password is INTENTIONALLY not mapped — never expose credentials.
     }
 
     // =====================================================================
-    // UserCommandDto → new User entity
+    // UserCommandDTO → new User entity
     // =====================================================================
 
-    public static User toEntity(UserCommandDto dto) {
+    public static User toEntity(UserCommandDTO dto) {
         if (dto == null) return null;
 
         User entity = new User();
@@ -84,10 +84,10 @@ public final class UserMapper {
     }
 
     // =====================================================================
-    // UserCommandDto → update existing User entity (patch)
+    // UserCommandDTO → update existing User entity (patch)
     // =====================================================================
 
-    public static void updateEntity(UserCommandDto dto, User entity) {
+    public static void updateEntity(UserCommandDTO dto, User entity) {
         if (dto == null || entity == null) return;
 
         if (dto.getEmail() != null)   entity.setEmail(dto.getEmail());

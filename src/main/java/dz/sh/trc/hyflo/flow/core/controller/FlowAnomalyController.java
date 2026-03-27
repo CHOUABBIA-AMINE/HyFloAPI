@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.flow.core.dto.FlowAnomalyReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowAnomalyReadDTO;
 import dz.sh.trc.hyflo.flow.core.service.FlowAnomalyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Tag(name = "Flow Anomalies", description = "APIs for querying flow anomalies detected by the intelligence engine")
 @SecurityRequirement(name = "bearer-auth")
-public class FlowAnomalyController extends GenericController<FlowAnomalyReadDto, Long> {
+public class FlowAnomalyController extends GenericController<FlowAnomalyReadDTO, Long> {
 
     private final FlowAnomalyService flowAnomalyService;
 
@@ -67,18 +67,18 @@ public class FlowAnomalyController extends GenericController<FlowAnomalyReadDto,
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get anomaly by ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Anomaly found", content = @Content(schema = @Schema(implementation = FlowAnomalyReadDto.class))),
+        @ApiResponse(responseCode = "200", description = "Anomaly found", content = @Content(schema = @Schema(implementation = FlowAnomalyReadDTO.class))),
         @ApiResponse(responseCode = "404", description = "Anomaly not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<FlowAnomalyReadDto> getById(@PathVariable Long id) {
+    public ResponseEntity<FlowAnomalyReadDTO> getById(@PathVariable Long id) {
         return super.getById(id);
     }
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get all anomalies (paginated)")
-    public ResponseEntity<Page<FlowAnomalyReadDto>> getAll(
+    public ResponseEntity<Page<FlowAnomalyReadDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -89,14 +89,14 @@ public class FlowAnomalyController extends GenericController<FlowAnomalyReadDto,
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get all anomalies (unpaginated)")
-    public ResponseEntity<List<FlowAnomalyReadDto>> getAll() {
+    public ResponseEntity<List<FlowAnomalyReadDTO>> getAll() {
         return super.getAll();
     }
 
     @Override
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Search anomalies")
-    public ResponseEntity<Page<FlowAnomalyReadDto>> search(
+    public ResponseEntity<Page<FlowAnomalyReadDTO>> search(
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -113,14 +113,14 @@ public class FlowAnomalyController extends GenericController<FlowAnomalyReadDto,
     }
 
     @Override
-    protected Page<FlowAnomalyReadDto> searchByQuery(String query, Pageable pageable) {
+    protected Page<FlowAnomalyReadDTO> searchByQuery(String query, Pageable pageable) {
         return flowAnomalyService.searchByQuery(query, pageable);
     }
 
     @GetMapping("/reading/{readingId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get anomalies by reading ID")
-    public ResponseEntity<List<FlowAnomalyReadDto>> getByReadingId(
+    public ResponseEntity<List<FlowAnomalyReadDTO>> getByReadingId(
             @Parameter(description = "Reading ID", required = true) @PathVariable Long readingId) {
         log.debug("GET /flow/core/anomaly/reading/{}", readingId);
         return success(flowAnomalyService.getByReadingId(readingId));
@@ -129,7 +129,7 @@ public class FlowAnomalyController extends GenericController<FlowAnomalyReadDto,
     @GetMapping("/segment/{segmentId}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get anomalies by pipeline segment ID")
-    public ResponseEntity<List<FlowAnomalyReadDto>> getBySegmentId(
+    public ResponseEntity<List<FlowAnomalyReadDTO>> getBySegmentId(
             @Parameter(description = "Segment ID", required = true) @PathVariable Long segmentId) {
         log.debug("GET /flow/core/anomaly/segment/{}", segmentId);
         return success(flowAnomalyService.getByPipelineSegmentId(segmentId));

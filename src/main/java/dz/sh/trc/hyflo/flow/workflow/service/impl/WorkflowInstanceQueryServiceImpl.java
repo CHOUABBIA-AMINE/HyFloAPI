@@ -7,8 +7,8 @@
  *  @UpdatedOn  : 03-26-2026 — fix: remove WorkflowInstanceMapper bean injection.
  *                WorkflowInstanceMapper is a final static utility class with a
  *                private constructor — it cannot be @Autowired as a Spring bean.
- *                All mapper.toReadDto() instance calls replaced with
- *                WorkflowInstanceMapper.toReadDto() static calls.
+ *                All mapper.toReadDTO() instance calls replaced with
+ *                WorkflowInstanceMapper.toReadDTO() static calls.
  *
  *  @Type       : Class
  *  @Layer      : Service Implementation
@@ -26,7 +26,7 @@
 package dz.sh.trc.hyflo.flow.workflow.service.impl;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.flow.workflow.dto.query.WorkflowInstanceReadDto;
+import dz.sh.trc.hyflo.flow.workflow.dto.query.WorkflowInstanceReadDTO;
 import dz.sh.trc.hyflo.flow.workflow.mapper.WorkflowInstanceMapper;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.flow.workflow.repository.WorkflowInstanceRepository;
@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  * No write operations. No business logic.
  *
  * WorkflowInstanceMapper is a final static utility class — all calls
- * use WorkflowInstanceMapper.toReadDto() directly (no bean injection).
+ * use WorkflowInstanceMapper.toReadDTO() directly (no bean injection).
  *
  * Phase 4 — Commit 30
  */
@@ -61,62 +61,62 @@ public class WorkflowInstanceQueryServiceImpl implements WorkflowInstanceQuerySe
 
     // FIX: WorkflowInstanceMapper is NOT a Spring bean — it is a final static
     // utility class with a private constructor. Do NOT inject it via @RequiredArgsConstructor.
-    // Use WorkflowInstanceMapper.toReadDto() static calls directly.
+    // Use WorkflowInstanceMapper.toReadDTO() static calls directly.
     private final WorkflowInstanceRepository repository;
 
     @Override
-    public WorkflowInstanceReadDto getById(Long id) {
+    public WorkflowInstanceReadDTO getById(Long id) {
         log.debug("WorkflowInstanceQueryService.getById({})", id);
         WorkflowInstance instance = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "WorkflowInstance not found: " + id));
-        return WorkflowInstanceMapper.toReadDto(instance);
+        return WorkflowInstanceMapper.toReadDTO(instance);
     }
 
     @Override
-    public List<WorkflowInstanceReadDto> getByState(String stateCode) {
+    public List<WorkflowInstanceReadDTO> getByState(String stateCode) {
         log.debug("WorkflowInstanceQueryService.getByState({})", stateCode);
         return repository.findByCurrentState_Code(stateCode)
                 .stream()
-                .map(WorkflowInstanceMapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<WorkflowInstanceReadDto> getByInitiatingActor(Long employeeId) {
+    public List<WorkflowInstanceReadDTO> getByInitiatingActor(Long employeeId) {
         log.debug("WorkflowInstanceQueryService.getByInitiatingActor({})", employeeId);
         return repository.findByInitiatedBy_Id(employeeId)
                 .stream()
-                .map(WorkflowInstanceMapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<WorkflowInstanceReadDto> getByLastActor(Long employeeId) {
+    public List<WorkflowInstanceReadDTO> getByLastActor(Long employeeId) {
         log.debug("WorkflowInstanceQueryService.getByLastActor({})", employeeId);
         return repository.findByLastActor_Id(employeeId)
                 .stream()
-                .map(WorkflowInstanceMapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<WorkflowInstanceReadDto> getByDateRange(LocalDate from, LocalDate to) {
+    public List<WorkflowInstanceReadDTO> getByDateRange(LocalDate from, LocalDate to) {
         log.debug("WorkflowInstanceQueryService.getByDateRange({}, {})", from, to);
         LocalDateTime fromDt = from.atStartOfDay();
         LocalDateTime toDt = to.atTime(LocalTime.MAX);
         return repository.findByStartedAtBetween(fromDt, toDt)
                 .stream()
-                .map(WorkflowInstanceMapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<WorkflowInstanceReadDto> getByTargetType(String targetTypeCode) {
+    public List<WorkflowInstanceReadDTO> getByTargetType(String targetTypeCode) {
         log.debug("WorkflowInstanceQueryService.getByTargetType({})", targetTypeCode);
         return repository.findByTargetType_Code(targetTypeCode)
                 .stream()
-                .map(WorkflowInstanceMapper::toReadDto)
+                .map(WorkflowInstanceMapper::toReadDTO)
                 .collect(Collectors.toList());
     }
 }

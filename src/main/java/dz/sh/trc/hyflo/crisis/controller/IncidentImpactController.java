@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentImpactReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentImpactReadDTO;
 import dz.sh.trc.hyflo.crisis.service.IIncidentImpactQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,11 +55,11 @@ public class IncidentImpactController {
     @Operation(summary = "Get incident impact by ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Impact record found",
-                content = @Content(schema = @Schema(implementation = IncidentImpactReadDto.class))),
+                content = @Content(schema = @Schema(implementation = IncidentImpactReadDTO.class))),
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<IncidentImpactReadDto> getById(@PathVariable Long id) {
+    public ResponseEntity<IncidentImpactReadDTO> getById(@PathVariable Long id) {
         log.debug("GET /crisis/incident-impact/{}", id);
         return ResponseEntity.ok(impactService.getById(id));
     }
@@ -67,7 +67,7 @@ public class IncidentImpactController {
     @GetMapping
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all incident impacts (paginated)")
-    public ResponseEntity<Page<IncidentImpactReadDto>> getAll(
+    public ResponseEntity<Page<IncidentImpactReadDTO>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -82,7 +82,7 @@ public class IncidentImpactController {
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all incident impacts (unpaginated)")
-    public ResponseEntity<List<IncidentImpactReadDto>> getAllUnpaginated() {
+    public ResponseEntity<List<IncidentImpactReadDTO>> getAllUnpaginated() {
         log.debug("GET /crisis/incident-impact/all");
         return ResponseEntity.ok(impactService.getAll());
     }
@@ -98,7 +98,7 @@ public class IncidentImpactController {
     @GetMapping("/by-incident/{incidentId}")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get all impacts for a specific incident (unpaginated)")
-    public ResponseEntity<List<IncidentImpactReadDto>> getByIncidentId(
+    public ResponseEntity<List<IncidentImpactReadDTO>> getByIncidentId(
             @Parameter(description = "Incident ID", required = true) @PathVariable Long incidentId) {
         log.debug("GET /crisis/incident-impact/by-incident/{}", incidentId);
         return ResponseEntity.ok(impactService.getByIncidentId(incidentId));
@@ -107,7 +107,7 @@ public class IncidentImpactController {
     @GetMapping("/by-incident/{incidentId}/paged")
     @PreAuthorize("hasAuthority('CRISIS:READ')")
     @Operation(summary = "Get impacts for a specific incident (paginated)")
-    public ResponseEntity<Page<IncidentImpactReadDto>> getByIncidentIdPaged(
+    public ResponseEntity<Page<IncidentImpactReadDTO>> getByIncidentIdPaged(
             @Parameter(description = "Incident ID", required = true) @PathVariable Long incidentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,

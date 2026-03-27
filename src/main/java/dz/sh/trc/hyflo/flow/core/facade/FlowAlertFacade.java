@@ -13,7 +13,7 @@
  *                Provides cross-module read access to FlowAlert data
  *                without exposing flow/core entities outside their module.
  *
- *                Maps FlowAlert entities to FlowAlertFacadeDto.
+ *                Maps FlowAlert entities to FlowAlertFacadeDTO.
  *                Owned by flow/core because it accesses flow/core repositories
  *                and entities.
  *
@@ -28,7 +28,7 @@ package dz.sh.trc.hyflo.flow.core.facade;
 
 import dz.sh.trc.hyflo.flow.core.model.FlowAlert;
 import dz.sh.trc.hyflo.flow.core.repository.FlowAlertRepository;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDto;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowAlertFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,42 +63,42 @@ public class FlowAlertFacade implements IFlowAlertFacade {
     // ----------------------------------------------------------------
 
     @Override
-    public List<FlowAlertFacadeDto> findByPipelineAndTimeRange(
+    public List<FlowAlertFacadeDTO> findByPipelineAndTimeRange(
             Long pipelineId, LocalDateTime start, LocalDateTime end) {
         log.debug("FlowAlertFacade.findByPipelineAndTimeRange pipelineId={}, start={}, end={}",
                 pipelineId, start, end);
         return alertRepository
                 .findByPipelineAndTimeRange(pipelineId, start, end, Pageable.unpaged())
                 .stream()
-                .map(this::toDto)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Page<FlowAlertFacadeDto> findUnresolvedByPipeline(Long pipelineId, Pageable pageable) {
+    public Page<FlowAlertFacadeDTO> findUnresolvedByPipeline(Long pipelineId, Pageable pageable) {
         log.debug("FlowAlertFacade.findUnresolvedByPipeline pipelineId={}", pipelineId);
         Page<FlowAlert> page = alertRepository.findUnresolvedByPipeline(pipelineId, pageable);
-        List<FlowAlertFacadeDto> dtos = page.getContent().stream()
-                .map(this::toDto)
+        List<FlowAlertFacadeDTO> dtos = page.getContent().stream()
+                .map(this::toDTO)
                 .collect(Collectors.toList());
         return new PageImpl<>(dtos, pageable, page.getTotalElements());
     }
 
     @Override
-    public List<FlowAlertFacadeDto> findByThreshold(Long thresholdId) {
+    public List<FlowAlertFacadeDTO> findByThreshold(Long thresholdId) {
         log.debug("FlowAlertFacade.findByThreshold thresholdId={}", thresholdId);
         return alertRepository.findByThresholdId(thresholdId)
                 .stream()
-                .map(this::toDto)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<FlowAlertFacadeDto> findByFlowReading(Long flowReadingId) {
+    public List<FlowAlertFacadeDTO> findByFlowReading(Long flowReadingId) {
         log.debug("FlowAlertFacade.findByFlowReading flowReadingId={}", flowReadingId);
         return alertRepository.findByFlowReadingId(flowReadingId)
                 .stream()
-                .map(this::toDto)
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -107,15 +107,15 @@ public class FlowAlertFacade implements IFlowAlertFacade {
     // ================================================================
 
     /**
-     * Map FlowAlert entity to FlowAlertFacadeDto.
+     * Map FlowAlert entity to FlowAlertFacadeDTO.
      *
      * severityCode: FlowAlert has no dedicated severity field.
      * We map status.code as severityCode for PipelineIntelligenceService
      * health computation (CRITICAL check). A future schema addition
      * of FlowAlert.severity would replace this mapping.
      */
-    private FlowAlertFacadeDto toDto(FlowAlert alert) {
-        return FlowAlertFacadeDto.builder()
+    private FlowAlertFacadeDTO toDTO(FlowAlert alert) {
+        return FlowAlertFacadeDTO.builder()
                 .id(alert.getId())
                 .pipelineId(alert.getThreshold() != null && alert.getThreshold().getPipeline() != null
                         ? alert.getThreshold().getPipeline().getId() : null)

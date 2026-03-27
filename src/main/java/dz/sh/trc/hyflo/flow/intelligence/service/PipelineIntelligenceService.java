@@ -43,15 +43,15 @@
  * 	                             status, pipelineId, pipelineName, operatorName,
  * 	                             metadata, category, requiresAction, detailsUrl,
  * 	                             resolvedAt, resolutionNotes
- * 	  FlowReadingReadDto       : readingDate, volumeM3, volumeMscf,
+ * 	  FlowReadingReadDTO       : readingDate, volumeM3, volumeMscf,
  * 	                             inletPressureBar, outletPressureBar, temperatureCelsius,
  * 	                             notes, submittedAt, validatedAt, pipelineId, pipelineCode,
  * 	                             validationStatusId, validationStatusCode,
  * 	                             readingSlotId, readingSlotCode,
  * 	                             workflowInstanceId, workflowStateCode
- * 	  FlowAlertFacadeDto       : id, pipelineId, thresholdId, flowReadingId,
+ * 	  FlowAlertFacadeDTO       : id, pipelineId, thresholdId, flowReadingId,
  * 	                             alertTimestamp, severityCode, statusCode, message
- * 	  FlowEventFacadeDto       : id, pipelineId, flowReadingId, eventTimestamp,
+ * 	  FlowEventFacadeDTO       : id, pipelineId, flowReadingId, eventTimestamp,
  * 	                             severityCode, eventTypeCode, description
  *
  **/
@@ -72,7 +72,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDto;
+import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.KeyMetricsDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineInfoDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineHealthDTO;
@@ -82,9 +82,9 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.PipelineTimelineDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.ReadingsTimeSeriesDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.SlotStatusDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.TimelineItemDTO;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDto;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDto;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDto;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDTO;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDTO;
 import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowAlertFacade;
 import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowEventFacade;
 import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowReadingFacade;
@@ -102,7 +102,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * H2: All flow/core repository dependencies replaced by facade interfaces.
  * F1: All flow/core entity type references replaced by facade DTO projections.
- * F2: IFlowReadingFacade returns FlowReadingReadDto — v1 FlowReadingDTO eliminated.
+ * F2: IFlowReadingFacade returns FlowReadingReadDTO — v1 FlowReadingDTO eliminated.
  */
 @Service
 @Transactional(readOnly = true)
@@ -201,11 +201,11 @@ public class PipelineIntelligenceService {
         LocalDateTime rangeStart = LocalDate.now().minusDays(30).atStartOfDay();
         LocalDateTime rangeEnd   = LocalDateTime.now();
 
-        List<FlowAlertFacadeDto> recentAlerts =
+        List<FlowAlertFacadeDTO> recentAlerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
 
         // thresholds fetched — count used only for healthScore weighting
-        List<FlowThresholdFacadeDto> thresholds =
+        List<FlowThresholdFacadeDTO> thresholds =
                 thresholdFacade.findByPipeline(pipelineId);
 
         int totalAlerts    = recentAlerts.size();
@@ -236,10 +236,10 @@ public class PipelineIntelligenceService {
 
         // Latest readings for current measurement snapshot
         LocalDate today = LocalDate.now();
-        List<FlowReadingReadDto> todayReadings =
+        List<FlowReadingReadDTO> todayReadings =
                 flowReadingFacade.findByPipelineAndDateRange(pipelineId, today, today);
 
-        FlowReadingReadDto latest = latestReading(todayReadings);
+        FlowReadingReadDTO latest = latestReading(todayReadings);
 
         return PipelineHealthDTO.builder()
                 // ── PipelineHealthDTO real fields ──────────────────────────
@@ -270,13 +270,13 @@ public class PipelineIntelligenceService {
      *   KeyMetricsDTO:
      *     BEFORE: .totalReadings/.totalAlerts/.totalThresholds/.totalEvents/.averageFlow
      *     AFTER:  .pressure/.temperature/.flowRate/.containedVolume
-     *             — all sourced from latest FlowReadingReadDto
+     *             — all sourced from latest FlowReadingReadDTO
      *
      *   PipelineDynamicDashboardDTO:
      *     BEFORE: .pipelineCode() / .generatedAt()  (not in DTO)
      *     AFTER:  removed; real fields used instead
      *
-     *   FlowReadingReadDto field usage:
+     *   FlowReadingReadDTO field usage:
      *     .getPressureValue()    → .getInletPressureBar()    ✅
      *     .getTemperatureValue() → .getTemperatureCelsius()  ✅
      *     .getVolumeM3()         ✅ already correct
@@ -292,23 +292,23 @@ public class PipelineIntelligenceService {
         LocalDateTime rangeEnd   = LocalDateTime.now();
         LocalDate today          = LocalDate.now();
 
-        List<FlowReadingReadDto> readings =
+        List<FlowReadingReadDTO> readings =
                 flowReadingFacade.findByPipelineAndDateRange(
                         pipelineId, today.minusDays(1), today);
 
-        List<FlowAlertFacadeDto> alerts =
+        List<FlowAlertFacadeDTO> alerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
 
-        List<FlowEventFacadeDto> events =
+        List<FlowEventFacadeDTO> events =
                 eventFacade.findByPipelineAndTimeRange(pipelineId, rangeStart, rangeEnd);
 
         // Latest reading — for snapshot metrics
-        FlowReadingReadDto latest = latestReading(readings);
+        FlowReadingReadDTO latest = latestReading(readings);
 
         // Average flow (volumeM3) over the date range
         BigDecimal avgFlowValue = readings.stream()
                 .filter(r -> r.getVolumeM3() != null)
-                .map(FlowReadingReadDto::getVolumeM3)
+                .map(FlowReadingReadDTO::getVolumeM3)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(
                         readings.isEmpty() ? BigDecimal.ONE
@@ -318,7 +318,7 @@ public class PipelineIntelligenceService {
         // Average pressure over the date range
         BigDecimal avgPressure = readings.stream()
                 .filter(r -> r.getInletPressureBar() != null)
-                .map(FlowReadingReadDto::getInletPressureBar)
+                .map(FlowReadingReadDTO::getInletPressureBar)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(
                         readings.isEmpty() ? BigDecimal.ONE
@@ -328,7 +328,7 @@ public class PipelineIntelligenceService {
         // Average temperature over the date range
         BigDecimal avgTemperature = readings.stream()
                 .filter(r -> r.getTemperatureCelsius() != null)
-                .map(FlowReadingReadDto::getTemperatureCelsius)
+                .map(FlowReadingReadDTO::getTemperatureCelsius)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(
                         readings.isEmpty() ? BigDecimal.ONE
@@ -338,7 +338,7 @@ public class PipelineIntelligenceService {
         // Total throughput (sum of all volumeM3 readings)
         BigDecimal throughput = readings.stream()
                 .filter(r -> r.getVolumeM3() != null)
-                .map(FlowReadingReadDto::getVolumeM3)
+                .map(FlowReadingReadDTO::getVolumeM3)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Alert counts
@@ -363,7 +363,7 @@ public class PipelineIntelligenceService {
                 .build();
 
         // Validated / pending counts for today
-        List<FlowReadingReadDto> todayReadings =
+        List<FlowReadingReadDTO> todayReadings =
                 flowReadingFacade.findByPipelineAndDateRange(pipelineId, today, today);
         int validatedToday = (int) todayReadings.stream()
                 .filter(r -> "APPROVED".equalsIgnoreCase(r.getValidationStatusCode()))
@@ -424,9 +424,9 @@ public class PipelineIntelligenceService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("Pipeline not found: " + pipelineId));
 
-        List<FlowAlertFacadeDto> alerts =
+        List<FlowAlertFacadeDTO> alerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, from, to);
-        List<FlowEventFacadeDto> events =
+        List<FlowEventFacadeDTO> events =
                 eventFacade.findByPipelineAndTimeRange(pipelineId, from, to);
 
         List<TimelineItemDTO> items = new ArrayList<>();
@@ -520,16 +520,16 @@ public class PipelineIntelligenceService {
                         new IllegalArgumentException("Pipeline not found: " + pipelineId));
 
         // Readings on reference date for slot/volume stats
-        List<FlowReadingReadDto> dayReadings =
+        List<FlowReadingReadDTO> dayReadings =
                 flowReadingFacade.findByPipelineAndDateRange(
                         pipelineId, referenceDate, referenceDate);
 
-        FlowReadingReadDto latest = latestReading(dayReadings);
+        FlowReadingReadDTO latest = latestReading(dayReadings);
 
         // Alert snapshot
         LocalDateTime dayStart = referenceDate.atStartOfDay();
         LocalDateTime dayEnd   = referenceDate.plusDays(1).atStartOfDay();
-        List<FlowAlertFacadeDto> dayAlerts =
+        List<FlowAlertFacadeDTO> dayAlerts =
                 alertFacade.findByPipelineAndTimeRange(pipelineId, dayStart, dayEnd);
 
         // Slot coverage counts
@@ -546,7 +546,7 @@ public class PipelineIntelligenceService {
         // Total volume transported today
         BigDecimal volumeToday = dayReadings.stream()
                 .filter(r -> r.getVolumeM3() != null)
-                .map(FlowReadingReadDto::getVolumeM3)
+                .map(FlowReadingReadDTO::getVolumeM3)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Completion rate (approved / total slots, assuming 12 slots/day)
@@ -611,7 +611,7 @@ public class PipelineIntelligenceService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("Pipeline not found: " + pipelineId));
 
-        List<FlowReadingReadDto> readings =
+        List<FlowReadingReadDTO> readings =
                 flowReadingFacade.findByPipelineAndDateRange(pipelineId, date, date);
 
         return readings.stream()
@@ -659,11 +659,11 @@ public class PipelineIntelligenceService {
      * Selects the most recently submitted reading from a list.
      * Returns null if the list is empty or all submittedAt values are null.
      */
-    private FlowReadingReadDto latestReading(List<FlowReadingReadDto> readings) {
+    private FlowReadingReadDTO latestReading(List<FlowReadingReadDTO> readings) {
         if (readings == null || readings.isEmpty()) return null;
         return readings.stream()
                 .filter(r -> r.getSubmittedAt() != null)
-                .max(Comparator.comparing(FlowReadingReadDto::getSubmittedAt))
+                .max(Comparator.comparing(FlowReadingReadDTO::getSubmittedAt))
                 .orElse(readings.get(readings.size() - 1));
     }
 }

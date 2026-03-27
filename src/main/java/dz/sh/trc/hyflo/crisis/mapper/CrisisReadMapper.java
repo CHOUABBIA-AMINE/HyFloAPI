@@ -13,7 +13,7 @@
 
 package dz.sh.trc.hyflo.crisis.mapper;
 
-import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDto;
+import dz.sh.trc.hyflo.crisis.dto.query.IncidentReadDTO;
 import dz.sh.trc.hyflo.crisis.model.Incident;
 
 /**
@@ -28,7 +28,7 @@ public final class CrisisReadMapper {
 
     // ========== Incident ==========
 
-    public static IncidentReadDto toDto(Incident entity) {
-        return IncidentMapper.toReadDto(entity);
+    public static IncidentReadDTO toDTO(Incident entity) {
+        return IncidentMapper.toReadDTO(entity);
     }
 }
