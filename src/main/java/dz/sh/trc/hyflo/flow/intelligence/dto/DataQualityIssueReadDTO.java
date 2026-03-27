@@ -1,13 +1,13 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: DataQualityIssueReadDTO
- * 	@CreatedOn	: 03-28-2026 — extracted from flow.core.dto, relocated to flow.intelligence.dto
+ *  @Name       : DataQualityIssueReadDTO
+ *  @CreatedOn  : 03-28-2026
  *
- * 	@Type		: Class
- * 	@Layer		: DTO (Read)
- * 	@Package	: Flow / Intelligence
+ *  @Type       : Class
+ *  @Layer      : DTO (Read)
+ *  @Package    : Flow / Intelligence
  *
  **/
 
@@ -31,27 +31,12 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataQualityIssueReadDTO {
 
-    @Schema(description = "Record identifier")
     private Long id;
-
-    @Schema(description = "Type of quality issue", example = "OUT_OF_RANGE")
     private String issueType;
-
-    @Schema(description = "Quality score for the reading (0.0 - 1.0)", example = "0.43")
     private BigDecimal qualityScore;
-
-    @Schema(description = "Detailed explanation of the issue detected")
     private String details;
-
-    @Schema(description = "Whether the operator acknowledged the issue")
     private Boolean acknowledged;
-
-    @Schema(description = "Timestamp when the issue was raised")
     private LocalDateTime raisedAt;
-
-    @Schema(description = "Source flow reading identifier")
     private Long readingId;
-
-    @Schema(description = "Source derived flow reading identifier (if applicable)")
     private Long derivedReadingId;
 }

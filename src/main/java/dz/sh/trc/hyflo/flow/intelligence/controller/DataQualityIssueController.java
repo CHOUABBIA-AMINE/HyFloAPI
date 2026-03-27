@@ -1,15 +1,17 @@
 /**
  *
- * 	@Author		: HyFlo v2
+ *  @Author     : HyFlo v2
  *
- * 	@Name		: DataQualityIssueController
- * 	@CreatedOn	: 03-25-2026
- * 	@UpdatedOn	: 03-28-2026 — refactor: moved from flow.core.controller to flow.intelligence.controller
- *                             Mapping updated from /flow/core/qualityIssue to /flow/intelligence/quality-issue
+ *  @Name       : DataQualityIssueController
+ *  @CreatedOn  : 03-28-2026
  *
- * 	@Type		: Class
- * 	@Layer		: Controller
- * 	@Package	: Flow / Intelligence
+ *  @Type       : Class
+ *  @Layer      : Controller
+ *  @Package    : Flow / Intelligence
+ *
+ *  @Description: REST controller for data quality issues.
+ *                Exposed at /flow/intelligence/quality-issue per HyFlo v2 architecture.
+ *                Replaces deprecated flow.core.controller.DataQualityIssueController.
  *
  **/
 
@@ -17,8 +19,6 @@ package dz.sh.trc.hyflo.flow.intelligence.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,8 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/flow/intelligence/quality-issue")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Data Quality Issues",
-     description = "APIs for querying data quality issues flagged by the validation engine")
+@Tag(name = "Flow Intelligence — Data Quality",
+     description = "Query data quality issues flagged on flow readings")
 @SecurityRequirement(name = "bearer-auth")
 public class DataQualityIssueController {
 
@@ -50,43 +50,28 @@ public class DataQualityIssueController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('FLOW:READ')")
     @Operation(summary = "Get data quality issue by ID")
-    public ResponseEntity<DataQualityIssueReadDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<DataQualityIssueReadDTO> getById(
+            @Parameter(description = "Issue ID") @PathVariable Long id) {
         log.debug("GET /flow/intelligence/quality-issue/{}", id);
-        return ResponseEntity.ok(dataQualityIssueService.getById(id));
+        return ResponseEntity.ok(dataQualityIssueService.findById(id));
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all data quality issues (paginated)")
-    public ResponseEntity<Page<DataQualityIssueReadDTO>> getAll(
+    @Operation(summary = "List all data quality issues (paginated)")
+    public ResponseEntity<?> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
-        return ResponseEntity.ok(dataQualityIssueService.getAll(page, size, sortBy, sortDir));
-    }
-
-    @GetMapping("/all")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Get all data quality issues (unpaginated)")
-    public ResponseEntity<List<DataQualityIssueReadDTO>> getAll() {
-        return ResponseEntity.ok(dataQualityIssueService.getAll());
-    }
-
-    @GetMapping("/count")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Count data quality issues")
-    public ResponseEntity<Long> count() {
-        return ResponseEntity.ok(dataQualityIssueService.count());
-    }
-
-    @GetMapping("/search")
-    @PreAuthorize("hasAuthority('FLOW:READ')")
-    @Operation(summary = "Search data quality issues")
-    public ResponseEntity<Page<DataQualityIssueReadDTO>> search(
-            @RequestParam(required = false) String q,
-            Pageable pageable) {
-        return ResponseEntity.ok(dataQualityIssueService.searchByQuery(q, pageable));
+        log.debug("GET /flow/intelligence/quality-issue page={} size={}", page, size);
+        return ResponseEntity.ok(dataQualityIssueService.findAll(
+                org.springframework.data.domain.PageRequest.of(
+                        page, size,
+                        "desc".equalsIgnoreCase(sortDir)
+                                ? org.springframework.data.domain.Sort.Direction.DESC
+                                : org.springframework.data.domain.Sort.Direction.ASC,
+                        sortBy)));
     }
 
     @GetMapping("/reading/{readingId}")
