@@ -4,10 +4,8 @@
  *
  *  @Name       : FeatureSnapshotServiceImpl
  *  @CreatedOn  : 03-28-2026
- *
- *  @Type       : Class
- *  @Layer      : Service / Impl
- *  @Package    : Flow / Intelligence
+ *  @UpdatedOn  : 03-28-2026 — fix: FeatureSnapshotRepository, FeatureSnapshotReadDTO,
+ *                             FeatureSnapshotMapper now exist — using actual repo methods.
  *
  **/
 
@@ -47,7 +45,7 @@ public class FeatureSnapshotServiceImpl implements FeatureSnapshotService {
 
     @Override
     public List<FeatureSnapshotReadDTO> findByPipeline(Long pipelineId) {
-        log.debug("findByPipeline({})", pipelineId);
+        log.debug("FeatureSnapshotServiceImpl.findByPipeline({})", pipelineId);
         return featureSnapshotRepository.findByPipelineId(pipelineId)
                 .stream().map(FeatureSnapshotMapper::toReadDTO).toList();
     }

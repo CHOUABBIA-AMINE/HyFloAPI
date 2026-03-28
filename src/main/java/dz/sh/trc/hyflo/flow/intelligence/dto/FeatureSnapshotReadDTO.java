@@ -2,7 +2,7 @@
  *
  *  @Author     : HyFlo v2
  *
- *  @Name       : ForecastResultReadDTO
+ *  @Name       : FeatureSnapshotReadDTO
  *  @CreatedOn  : 03-28-2026
  *
  *  @Type       : Class
@@ -20,22 +20,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Schema(description = "Read DTO for a forecast result (forecast vs actual evaluation)")
+@Schema(description = "Read DTO for a feature snapshot (AI traceability)")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ForecastResultReadDTO {
+public class FeatureSnapshotReadDTO {
 
     private Long id;
-    private Long forecastId;
-    private BigDecimal actualVolume;
-    private BigDecimal absoluteError;
-    private BigDecimal percentageError;
-    private String evaluationWindow;
-    private LocalDateTime evaluatedAt;
+    private Long readingId;
+    private Long derivedReadingId;
+    private Long pipelineSegmentId;
+    private String pipelineSegmentCode;
+    private String modelName;
+    private LocalDateTime generatedAt;
+    private String featureVector;
+    private String featureSchemaVersion;
 }

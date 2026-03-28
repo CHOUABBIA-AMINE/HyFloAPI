@@ -4,10 +4,8 @@
  *
  *  @Name       : ForecastResultServiceImpl
  *  @CreatedOn  : 03-28-2026
- *
- *  @Type       : Class
- *  @Layer      : Service / Impl
- *  @Package    : Flow / Intelligence
+ *  @UpdatedOn  : 03-28-2026 — fix: ForecastResultRepository, ForecastResultReadDTO,
+ *                             ForecastResultMapper now exist — using actual repo methods.
  *
  **/
 
@@ -47,7 +45,7 @@ public class ForecastResultServiceImpl implements ForecastResultService {
 
     @Override
     public List<ForecastResultReadDTO> findByForecast(Long forecastId) {
-        log.debug("findByForecast({})", forecastId);
+        log.debug("ForecastResultServiceImpl.findByForecast({})", forecastId);
         return forecastResultRepository.findByForecastId(forecastId)
                 .stream().map(ForecastResultMapper::toReadDTO).toList();
     }
