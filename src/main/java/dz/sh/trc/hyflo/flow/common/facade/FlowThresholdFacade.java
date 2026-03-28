@@ -7,7 +7,7 @@
  *
  *  @Type       : Class
  *  @Layer      : Facade (Service)
- *  @Package    : Flow / Core
+ *  @Package    : Flow / Common
  *
  *  @Description: Implements IFlowThresholdFacade from flow/intelligence.
  *                Provides cross-module read access to FlowThreshold data
@@ -25,20 +25,21 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.core.facade;
-
-import dz.sh.trc.hyflo.flow.common.model.FlowThreshold;
-import dz.sh.trc.hyflo.flow.common.repository.FlowThresholdRepository;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDTO;
-import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowThresholdFacade;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+package dz.sh.trc.hyflo.flow.common.facade;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dz.sh.trc.hyflo.flow.common.model.FlowThreshold;
+import dz.sh.trc.hyflo.flow.common.repository.FlowThresholdRepository;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDTO;
+import dz.sh.trc.hyflo.flow.intelligence.facade.impl.IFlowThresholdFacade;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Facade bean exposing FlowThreshold data to flow/intelligence module.

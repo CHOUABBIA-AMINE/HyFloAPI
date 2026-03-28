@@ -18,7 +18,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.flow.intelligence.facade;
+package dz.sh.trc.hyflo.flow.intelligence.facade.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;

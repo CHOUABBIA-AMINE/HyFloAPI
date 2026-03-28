@@ -30,19 +30,21 @@
 
 package dz.sh.trc.hyflo.flow.intelligence.facade;
 
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDTO;
-import dz.sh.trc.hyflo.flow.intelligence.model.FlowAlert;
-import dz.sh.trc.hyflo.flow.intelligence.repository.FlowAlertRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowAlertFacadeDTO;
+import dz.sh.trc.hyflo.flow.intelligence.facade.impl.IFlowAlertFacade;
+import dz.sh.trc.hyflo.flow.intelligence.model.FlowAlert;
+import dz.sh.trc.hyflo.flow.intelligence.repository.FlowAlertRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Facade bean exposing FlowAlert data within the flow/intelligence module.

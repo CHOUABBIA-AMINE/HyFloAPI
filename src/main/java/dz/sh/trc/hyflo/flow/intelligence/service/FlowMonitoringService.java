@@ -56,7 +56,7 @@ import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.DailyCompletionStatistics
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.PipelineCoverageDetailDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.SubmissionTrendDTO;
 import dz.sh.trc.hyflo.flow.intelligence.dto.analytics.ValidatorWorkloadDTO;
-import dz.sh.trc.hyflo.flow.intelligence.facade.IFlowReadingFacade;
+import dz.sh.trc.hyflo.flow.intelligence.facade.impl.IFlowReadingFacade;
 import dz.sh.trc.hyflo.flow.intelligence.repository.IntelligenceQueryRepository;
 import dz.sh.trc.hyflo.flow.intelligence.util.DateTimeUtils;
 import lombok.RequiredArgsConstructor;

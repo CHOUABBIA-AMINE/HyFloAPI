@@ -48,6 +48,7 @@ import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
+import dz.sh.trc.hyflo.flow.intelligence.facade.impl.IFlowReadingFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

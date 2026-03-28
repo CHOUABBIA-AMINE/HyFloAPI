@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dz.sh.trc.hyflo.flow.intelligence.facade.impl.IPipelineFacade;
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
