@@ -54,7 +54,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "FlowPlan")
 @Table(
-        name = "T_03_03_06",
+        name = "T_03_03_02",
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "T_03_03_06_UK_01",
@@ -100,7 +100,7 @@ public class FlowPlan extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_05", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_06_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_03_02_FK_01"), nullable = false)
     private Pipeline pipeline;
 
     // ------------------------------------------------------------------
@@ -111,7 +111,7 @@ public class FlowPlan extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_06", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_06_FK_02"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_03_02_FK_02"), nullable = false)
     private PlanStatus status;
 
     // ------------------------------------------------------------------
@@ -158,7 +158,7 @@ public class FlowPlan extends GenericModel {
     @Schema(description = "Employee who approved this plan")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_12", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_06_FK_03"))
+            foreignKey = @ForeignKey(name = "T_03_03_02_FK_03"))
     private Employee approvedBy;
 
     // ------------------------------------------------------------------
@@ -168,7 +168,7 @@ public class FlowPlan extends GenericModel {
     @Schema(description = "Employee who entered this plan")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_06_FK_04"))
+            foreignKey = @ForeignKey(name = "T_03_03_02_FK_04"))
     private Employee submittedBy;
 
     // ------------------------------------------------------------------
@@ -178,7 +178,7 @@ public class FlowPlan extends GenericModel {
     @Schema(description = "Plan this revision supersedes (self-reference)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_14", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_06_FK_05"))
+            foreignKey = @ForeignKey(name = "T_03_03_02_FK_05"))
     private FlowPlan revisedFrom;
 
     // ------------------------------------------------------------------
