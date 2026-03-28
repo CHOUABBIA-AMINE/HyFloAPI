@@ -32,7 +32,7 @@ import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
 import dz.sh.trc.hyflo.flow.core.service.FlowReadingCommandService;
-import dz.sh.trc.hyflo.flow.core.service.ReadableTargetValidationService;
+import dz.sh.trc.hyflo.flow.workflow.service.ReadableTargetValidationService;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.repository.EmployeeRepository;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;

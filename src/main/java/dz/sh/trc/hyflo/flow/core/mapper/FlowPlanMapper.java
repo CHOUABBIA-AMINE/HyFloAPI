@@ -153,8 +153,8 @@ public final class FlowPlanMapper {
 
     private static String resolveEmployeeName(Employee employee) {
         if (employee == null) return null;
-        String first = employee.getFirstName();
-        String last  = employee.getLastName();
+        String first = employee.getFirstNameLt();
+        String last  = employee.getLastNameLt();
         if (first == null && last == null) return null;
         return (first != null ? first : "") + (last != null ? " " + last : "");
     }
