@@ -14,27 +14,42 @@
  *                DerivedFlowReading records using a proportional-length
  *                (PROPORTIONAL_LENGTH) distribution strategy.
  *
- *                Distribution algorithm:
- *                  1. Load all PipelineSegment records for the reading's pipeline.
- *                  2. Compute total pipeline length = sum of all segment lengths.
- *                  3. For each segment, derive:
- *                       ratio     = segment.lengthKm / totalLength
- *                       flowRate  = source.flowRate  * ratio
- *                       volume    = source.containedVolume * ratio
- *                       pressure  = source.pressure  (same across segments — not proportional)
- *                       temperature = source.temperature (same — ambient, not proportional)
- *                  4. Delete any prior DerivedFlowReading for this source reading
- *                     (idempotent rebuild — safe to call again if re-approved).
- *                  5. Persist all new DerivedFlowReading records.
- *                  6. Map to DerivedFlowReadingReadDTO and return.
+ *  Field mapping (after reading actual entity fields):
  *
- *                asyncGenerateDerivedReadings() wraps the synchronous method
- *                in a CompletableFuture using @Async (Spring TaskExecutor).
- *                It runs in a new transaction to avoid sharing the caller's
- *                ReadingWorkflowService transaction context.
+ *    FlowReading source fields used:
+ *      - volumeM3             → BigDecimal  → proportional per segment → DerivedFlowReading.containedVolume
+ *      - volumeMscf           → BigDecimal  → proportional per segment → DerivedFlowReading.flowRate
+ *                                            (MSCF is the closest available "flow rate" measure)
+ *      - inletPressureBar     → BigDecimal  → averaged (inlet+outlet / 2) → DerivedFlowReading.pressure
+ *      - outletPressureBar    → BigDecimal  → (part of pressure average above)
+ *      - temperatureCelsius   → BigDecimal  → copied as-is             → DerivedFlowReading.temperature
+ *      - readingDate          → LocalDate   → copied as-is
+ *      - readingSlot          → ReadingSlot → copied as-is
+ *      - validationStatus     → ValidationStatus → copied as-is
+ *
+ *    PipelineSegment field used:
+ *      - length               → Double (km) — Lombok getter: getLength()
+ *
+ *  Distribution algorithm:
+ *    1. Load all PipelineSegment records for the reading's pipeline.
+ *    2. Compute totalLength = Σ(segment.length).
+ *    3. For each segment:
+ *         ratio          = segment.length / totalLength
+ *         containedVolume = source.volumeM3  * ratio
+ *         flowRate        = source.volumeMscf * ratio
+ *         pressure        = (inletPressureBar + outletPressureBar) / 2  (uniform across segment)
+ *         temperature     = source.temperatureCelsius                   (uniform across segment)
+ *    4. Delete any prior DerivedFlowReading for this source (idempotent rebuild).
+ *    5. saveAll() and map to DerivedFlowReadingReadDTO.
  *
  *  @Fix        : Resolves Spring boot startup failure:
  *                "required a bean of type SegmentDistributionService that could not be found"
+ *  @Fix        : Corrects compiler errors — wrong field names assumed in first revision:
+ *                  getLengthKm()      → getLength()         (PipelineSegment.length : Double)
+ *                  getFlowRate()      → getVolumeMscf()     (FlowReading — no flowRate field)
+ *                  getContainedVolume()→ getVolumeM3()      (FlowReading — no containedVolume)
+ *                  getPressure()      → avg(inletPressureBar, outletPressureBar)
+ *                  getTemperature()   → getTemperatureCelsius()
  *
  **/
 
@@ -66,30 +81,23 @@ import java.util.stream.Collectors;
 /**
  * Proportional-length segment distribution engine.
  *
- * Registered as {@code @Service} to satisfy the SegmentDistributionService
- * constructor injection in ReadingWorkflowService.
- *
- * Transaction notes:
- * - generateDerivedReadings      : requires its own transaction for the delete-then-save
- *                                  idempotency pattern.
- * - asyncGenerateDerivedReadings : wrapped in @Async for non-blocking approval;
- *                                  @Transactional ensures a fresh transaction independent
- *                                  of the caller.
+ * Registered as {@code @Service} so Spring can satisfy the
+ * SegmentDistributionService constructor injection in ReadingWorkflowService.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SegmentDistributionServiceImpl implements SegmentDistributionService {
 
-    private static final String CALC_METHOD       = "PROPORTIONAL_LENGTH";
-    private static final MathContext MATH_CTX      = new MathContext(18, RoundingMode.HALF_UP);
-    private static final int         SCALE         = 4;
+    private static final String      CALC_METHOD = "PROPORTIONAL_LENGTH";
+    private static final MathContext  MATH_CTX    = new MathContext(18, RoundingMode.HALF_UP);
+    private static final int          SCALE       = 4;
 
-    private final PipelineSegmentRepository  segmentRepository;
+    private final PipelineSegmentRepository    segmentRepository;
     private final DerivedFlowReadingRepository derivedRepository;
 
     // ----------------------------------------------------------------
-    //  SegmentDistributionService contract — synchronous
+    //  SegmentDistributionService — synchronous
     // ----------------------------------------------------------------
 
     @Override
@@ -109,33 +117,44 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
 
         List<PipelineSegment> segments = segmentRepository.findByPipelineId(pipelineId);
         if (segments.isEmpty()) {
-            log.warn("generateDerivedReadings: no segments found for pipeline ID={} — skipping",
+            log.warn("generateDerivedReadings: no segments for pipeline ID={} — skipping",
                     pipelineId);
             return List.of();
         }
 
-        // Compute total pipeline length
-        BigDecimal totalLength = segments.stream()
-                .map(this::segmentLength)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Total pipeline length from segment.length (Double, km)
+        double totalLengthRaw = segments.stream()
+                .mapToDouble(s -> s.getLength() != null ? s.getLength() : 0.0)
+                .sum();
 
-        if (totalLength.compareTo(BigDecimal.ZERO) == 0) {
-            log.warn("generateDerivedReadings: totalLength=0 for pipeline ID={} — skipping proportional distribution",
+        if (totalLengthRaw == 0.0) {
+            log.warn("generateDerivedReadings: totalLength=0 for pipeline ID={} — skipping",
                     pipelineId);
             return List.of();
         }
 
-        // Idempotent rebuild: delete any prior derived readings for this source
+        BigDecimal totalLength = BigDecimal.valueOf(totalLengthRaw);
+
+        // Idempotent rebuild
         derivedRepository.deleteBySourceReadingId(sourceReading.getId());
         log.debug("generateDerivedReadings: deleted prior derived readings for sourceReading ID={}",
                 sourceReading.getId());
 
-        // Build derived readings
+        // Compute average pressure: (inlet + outlet) / 2
+        BigDecimal avgPressure = averagePressure(
+                sourceReading.getInletPressureBar(),
+                sourceReading.getOutletPressureBar()
+        );
+
+        // Temperature — uniform across all segments (ambient / pipeline-level)
+        BigDecimal temperature = scale(sourceReading.getTemperatureCelsius());
+
         List<DerivedFlowReading> derived = new ArrayList<>();
         LocalDateTime calculatedAt = LocalDateTime.now();
 
         for (PipelineSegment segment : segments) {
-            BigDecimal segLen = segmentLength(segment);
+            double segLenRaw = segment.getLength() != null ? segment.getLength() : 0.0;
+            BigDecimal segLen = BigDecimal.valueOf(segLenRaw);
             BigDecimal ratio  = segLen.divide(totalLength, MATH_CTX);
 
             DerivedFlowReading dr = new DerivedFlowReading();
@@ -147,13 +166,15 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
             dr.setCalculatedAt(calculatedAt);
             dr.setCalculationMethod(CALC_METHOD);
 
-            // Proportional volume and flow rate
-            dr.setFlowRate(scale(multiply(sourceReading.getFlowRate(), ratio)));
-            dr.setContainedVolume(scale(multiply(sourceReading.getContainedVolume(), ratio)));
+            // Proportional volume distribution
+            // containedVolume ← volumeM3  (physical volume in m³, split by segment length)
+            // flowRate        ← volumeMscf (MSCF flow volume, split by segment length)
+            dr.setContainedVolume(scaleProportional(sourceReading.getVolumeM3(), ratio));
+            dr.setFlowRate(scaleProportional(sourceReading.getVolumeMscf(), ratio));
 
-            // Pressure and temperature are pipeline-level averages — not proportional
-            dr.setPressure(scale(sourceReading.getPressure()));
-            dr.setTemperature(scale(sourceReading.getTemperature()));
+            // Pressure and temperature — uniform (not proportional)
+            dr.setPressure(avgPressure);
+            dr.setTemperature(temperature);
 
             // Denormalised scalar provenance
             if (sourceReading.getReadingSlot() != null) {
@@ -164,7 +185,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
         }
 
         List<DerivedFlowReading> saved = derivedRepository.saveAll(derived);
-        log.info("generateDerivedReadings: created {} derived readings for sourceReading ID={}",
+        log.info("generateDerivedReadings: persisted {} derived readings for sourceReading ID={}",
                 saved.size(), sourceReading.getId());
 
         return saved.stream()
@@ -173,7 +194,7 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
     }
 
     // ----------------------------------------------------------------
-    //  SegmentDistributionService contract — async
+    //  SegmentDistributionService — async
     // ----------------------------------------------------------------
 
     @Async
@@ -200,31 +221,34 @@ public class SegmentDistributionServiceImpl implements SegmentDistributionServic
     //  PRIVATE HELPERS
     // ================================================================
 
-    /**
-     * Resolve the pipeline ID from the FlowReading.
-     * FlowReading.pipeline is a @ManyToOne — guard against null.
-     */
+    /** Navigate FlowReading → Pipeline → id. Guards against null pipeline. */
     private Long resolvePipelineId(FlowReading reading) {
         if (reading.getPipeline() == null) return null;
         return reading.getPipeline().getId();
     }
 
     /**
-     * Get segment length in km. PipelineSegment.lengthKm is the canonical length field.
-     * Returns ZERO if null to avoid NPE in sum/divide operations.
+     * Compute average of inlet and outlet pressure.
+     * Returns null if both are null; uses available value if only one is null.
      */
-    private BigDecimal segmentLength(PipelineSegment segment) {
-        BigDecimal len = segment.getLengthKm();
-        return (len != null) ? len : BigDecimal.ZERO;
+    private BigDecimal averagePressure(BigDecimal inlet, BigDecimal outlet) {
+        if (inlet == null && outlet == null) return null;
+        if (inlet  == null) return scale(outlet);
+        if (outlet == null) return scale(inlet);
+        return scale(inlet.add(outlet).divide(BigDecimal.valueOf(2), MATH_CTX));
     }
 
-    /** Null-safe multiply: returns ZERO if either operand is null. */
-    private BigDecimal multiply(BigDecimal value, BigDecimal ratio) {
-        if (value == null || ratio == null) return BigDecimal.ZERO;
-        return value.multiply(ratio, MATH_CTX);
+    /**
+     * Multiply a source value by a ratio for proportional distribution.
+     * Returns null (not ZERO) if value is null — null signals "no data"
+     * rather than "zero volume", preserving semantic accuracy in the derived record.
+     */
+    private BigDecimal scaleProportional(BigDecimal value, BigDecimal ratio) {
+        if (value == null || ratio == null) return null;
+        return value.multiply(ratio, MATH_CTX).setScale(SCALE, RoundingMode.HALF_UP);
     }
 
-    /** Apply standard scale to a nullable BigDecimal; returns null if input is null. */
+    /** Apply standard scale to a nullable BigDecimal. Returns null if input is null. */
     private BigDecimal scale(BigDecimal value) {
         if (value == null) return null;
         return value.setScale(SCALE, RoundingMode.HALF_UP);
