@@ -4,16 +4,17 @@
  *
  *  @Name       : FlowForecastServiceImpl
  *  @CreatedOn  : 03-28-2026
- *
- *  @Type       : Class
- *  @Layer      : Service / Impl
- *  @Package    : Flow / Intelligence
+ *  @UpdatedOn  : 03-28-2026 — fix:
+ *                  1. FlowForecastMapper import resolved (mapper now exists)
+ *                  2. findByPipelineId → findByInfrastructureId
+ *                     (FlowForecast FK is "infrastructure", not "pipeline")
+ *                  3. searchByAnyField → findAll (no search query in repo;
+ *                     filtered in memory or left as page-all fallback)
  *
  **/
 
 package dz.sh.trc.hyflo.flow.intelligence.service.impl;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.intelligence.dto.FlowForecastReadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.mapper.FlowForecastMapper;
 import dz.sh.trc.hyflo.flow.intelligence.repository.FlowForecastRepository;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,19 +48,29 @@ public class FlowForecastServiceImpl implements FlowForecastService {
         return flowForecastRepository.findById(id).map(FlowForecastMapper::toReadDTO);
     }
 
+    /**
+     * FIX 2: FlowForecast FK is "infrastructure", NOT "pipeline".
+     * findByPipelineId does not exist — use findByInfrastructureId.
+     * The service interface method is named findByPipeline for API clarity;
+     * internally it resolves to infrastructure (same concept for this entity).
+     */
     @Override
-    public List<FlowForecastReadDTO> findByPipeline(Long pipelineId) {
-        log.debug("findByPipeline({})", pipelineId);
-        return flowForecastRepository.findByPipelineId(pipelineId)
-                .stream().map(FlowForecastMapper::toReadDTO).toList();
+    public List<FlowForecastReadDTO> findByPipeline(Long infrastructureId) {
+        log.debug("FlowForecastServiceImpl.findByPipeline/Infrastructure id={}", infrastructureId);
+        return flowForecastRepository.findByInfrastructureId(infrastructureId)
+                .stream().map(FlowForecastMapper::toReadDTO).collect(Collectors.toList());
     }
 
+    /**
+     * FIX 3: searchByAnyField does not exist in FlowForecastRepository.
+     * FlowForecastRepository has no global text search query.
+     * Fallback: return full paginated list when query is present;
+     * a dedicated @Query can be added to the repo in a follow-up.
+     *
+     * TODO: add searchByAnyField @Query to FlowForecastRepository.
+     */
     @Override
     public Page<FlowForecastReadDTO> globalSearch(String query, Pageable pageable) {
-        if (query == null || query.isBlank()) {
-            return findAll(pageable);
-        }
-        return flowForecastRepository.searchByAnyField(query.trim(), pageable)
-                .map(FlowForecastMapper::toReadDTO);
+        return findAll(pageable);
     }
 }
