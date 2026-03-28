@@ -47,7 +47,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "DataQualityIssue")
-@Table(name = "T_04_02_02")
+@Table(name = "T_03_05_04")
 public class DataQualityIssue extends GenericModel {
 
     @Schema(description = "Type of quality issue", example = "OUT_OF_RANGE")
@@ -73,12 +73,12 @@ public class DataQualityIssue extends GenericModel {
     @Schema(description = "FK to the source FlowReading")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_06", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_02_02_FK_01"))
+            foreignKey = @ForeignKey(name = "T_03_05_04_FK_01"))
     private FlowReading reading;
 
     @Schema(description = "FK to the source DerivedFlowReading (if applicable)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_07", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_02_02_FK_02"))
+            foreignKey = @ForeignKey(name = "T_03_05_04_FK_02"))
     private DerivedFlowReading derivedReading;
 }

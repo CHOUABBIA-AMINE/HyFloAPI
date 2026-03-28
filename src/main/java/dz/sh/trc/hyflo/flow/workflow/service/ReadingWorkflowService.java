@@ -32,7 +32,6 @@ import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;
-import dz.sh.trc.hyflo.flow.core.service.SegmentDistributionService;
 import dz.sh.trc.hyflo.flow.workflow.event.ReadingRejectedEvent;
 import dz.sh.trc.hyflo.flow.workflow.event.ReadingValidatedEvent;
 import dz.sh.trc.hyflo.flow.workflow.model.WorkflowInstance;

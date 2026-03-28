@@ -34,13 +34,12 @@ public final class FlowAlertMapper {
         return FlowAlertReadDTO.builder()
                 .id(entity.getId())
                 .thresholdId(entity.getThreshold() != null ? entity.getThreshold().getId() : null)
-                .thresholdName(thresholdLabel)
+                .thresholdPipelineCode(thresholdLabel)
                 .flowReadingId(entity.getFlowReading() != null ? entity.getFlowReading().getId() : null)
-                .alertMessage(entity.getMessage())
+                .message(entity.getMessage())
                 .alertTimestamp(entity.getAlertTimestamp())
-                .status(entity.getStatus() != null ? entity.getStatus().getDesignationFr() : null)
+                .statusName(entity.getStatus() != null ? entity.getStatus().getDesignationFr() : null)
                 .notificationSent(entity.getNotificationSent())
-                .pipelineName(thresholdLabel) // pipeline code also serves as pipeline identifier here
                 .build();
     }
 }

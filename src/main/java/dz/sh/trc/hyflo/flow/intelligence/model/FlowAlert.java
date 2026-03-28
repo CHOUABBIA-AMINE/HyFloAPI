@@ -53,11 +53,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "FlowAlert")
 @Table(
-        name = "T_03_03_05",
+        name = "T_03_05_02",
         indexes = {
-                @Index(name = "T_03_03_05_IX_01", columnList = "F_01"),
-                @Index(name = "T_03_03_05_IX_02", columnList = "F_13"),
-                @Index(name = "T_03_03_05_IX_03", columnList = "F_11, F_13")
+                @Index(name = "T_03_05_02_IX_01", columnList = "F_01"),
+                @Index(name = "T_03_05_02_IX_02", columnList = "F_13"),
+                @Index(name = "T_03_05_02_IX_03", columnList = "F_11, F_13")
         }
 )
 public class FlowAlert extends GenericModel {
@@ -113,34 +113,34 @@ public class FlowAlert extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_10", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_04"))
+            foreignKey = @ForeignKey(name = "T_03_05_02_FK_04"))
     private Employee resolvedBy;
 
     @Schema(description = "Flow threshold (flow.common) that was breached",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_05_02_FK_01"), nullable = false)
     private FlowThreshold threshold;
 
     @Schema(description = "Flow reading that triggered this alert",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_12", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_02"))
+            foreignKey = @ForeignKey(name = "T_03_05_02_FK_02"))
     private FlowReading flowReading;
 
     @Schema(description = "Current status of this alert (active, acknowledged, resolved)",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_03"))
+            foreignKey = @ForeignKey(name = "T_03_05_02_FK_03"))
     private AlertStatus status;
 
     @Schema(description = "Employee who acknowledged this alert",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_14", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_05"))
+            foreignKey = @ForeignKey(name = "T_03_05_02_FK_05"))
     private Employee acknowledgedBy;
 }

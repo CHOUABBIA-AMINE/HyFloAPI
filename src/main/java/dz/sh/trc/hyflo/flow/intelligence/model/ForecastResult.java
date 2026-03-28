@@ -44,14 +44,14 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "ForecastResult")
-@Table(name = "T_03_03_11")
+@Table(name = "T_03_05_05")
 public class ForecastResult extends GenericModel {
 
     @Schema(description = "Flow forecast being evaluated",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_11_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_05_05_FK_01"), nullable = false)
     private FlowForecast forecast;
 
     @Schema(description = "Actual volume realized over the forecast period", example = "27250.50",

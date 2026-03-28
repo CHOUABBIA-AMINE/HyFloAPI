@@ -61,9 +61,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "FeatureSnapshot")
 @Table(
-        name = "T_03_06_01",
+        name = "T_03_05_06",
         indexes = {
-                @Index(name = "T_03_06_01_IX_01", columnList = "F_05")
+                @Index(name = "T_03_05_06_IX_01", columnList = "F_05")
         }
 )
 public class FeatureSnapshot extends GenericModel {
@@ -78,7 +78,7 @@ public class FeatureSnapshot extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_06_01_FK_01"))
+            foreignKey = @ForeignKey(name = "T_03_05_06_FK_01"))
     private FlowReading reading;
 
     // ------------------------------------------------------------------
@@ -91,7 +91,7 @@ public class FeatureSnapshot extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_02", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_06_01_FK_02"))
+            foreignKey = @ForeignKey(name = "T_03_05_06_FK_02"))
     private DerivedFlowReading derivedReading;
 
     // ------------------------------------------------------------------
@@ -104,7 +104,7 @@ public class FeatureSnapshot extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_03", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_06_01_FK_03"))
+            foreignKey = @ForeignKey(name = "T_03_05_06_FK_03"))
     private PipelineSegment pipelineSegment;
 
     // ------------------------------------------------------------------

@@ -71,16 +71,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "DerivedFlowReading")
 @Table(
-        name = "T_04_01_02",
+        name = "T_03_03_03",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "T_04_01_02_UK_01",
+                        name = "T_03_03_03_UK_01",
                         columnNames = {"F_01", "F_06", "F_07"}
                 )
         },
         indexes = {
                 @Index(
-                        name = "T_04_01_02_IX_01",
+                        name = "T_03_03_03_IX_01",
                         columnList = "F_01, F_06"
                 )
         }
@@ -142,7 +142,7 @@ public class DerivedFlowReading extends GenericModel {
     @Schema(description = "FK to pipeline segment (canonical network/core ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_10", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_01_02_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_03_03_FK_01"), nullable = false)
     private PipelineSegment pipelineSegment;
 
     // ------------------------------------------------------------------
@@ -152,7 +152,7 @@ public class DerivedFlowReading extends GenericModel {
     @Schema(description = "FK to the source raw FlowReading from which this reading was derived")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_01_02_FK_02"))
+            foreignKey = @ForeignKey(name = "T_03_03_03_FK_02"))
     private FlowReading sourceReading;
 
     // ------------------------------------------------------------------
@@ -162,7 +162,7 @@ public class DerivedFlowReading extends GenericModel {
     @Schema(description = "FK to the time slot this derived reading optionally covers")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_12", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_01_02_FK_03"))
+            foreignKey = @ForeignKey(name = "T_03_03_03_FK_03"))
     private ReadingSlot readingSlot;
 
     // ------------------------------------------------------------------
@@ -172,6 +172,6 @@ public class DerivedFlowReading extends GenericModel {
     @Schema(description = "Validation status inherited from source reading (optional projection)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_04_01_02_FK_04"))
+            foreignKey = @ForeignKey(name = "T_03_03_03_FK_04"))
     private ValidationStatus validationStatus;
 }
