@@ -13,7 +13,7 @@
 
 package dz.sh.trc.hyflo.flow.intelligence.mapper;
 
-import dz.sh.trc.hyflo.flow.intelligence.dto.FeatureSnapshotReadDto;
+import dz.sh.trc.hyflo.flow.intelligence.dto.FeatureSnapshotReadDTO;
 import dz.sh.trc.hyflo.flow.intelligence.model.FeatureSnapshot;
 
 /**
@@ -25,11 +25,11 @@ public final class FeatureSnapshotReadMapper {
         // utility class
     }
 
-    public static FeatureSnapshotReadDto toDto(FeatureSnapshot entity) {
+    public static FeatureSnapshotReadDTO toDto(FeatureSnapshot entity) {
         if (entity == null) {
             return null;
         }
-        FeatureSnapshotReadDto dto = new FeatureSnapshotReadDto();
+        FeatureSnapshotReadDTO dto = new FeatureSnapshotReadDTO();
         dto.setId(entity.getId());
         dto.setReadingId(entity.getReading() != null ? entity.getReading().getId() : null);
         dto.setDerivedReadingId(entity.getDerivedReading() != null ? entity.getDerivedReading().getId() : null);

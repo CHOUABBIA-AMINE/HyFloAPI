@@ -40,7 +40,7 @@ public final class FlowForecastMapper {
                 .productId(entity.getProduct() != null
                         ? entity.getProduct().getId() : null)
                 .productName(entity.getProduct() != null
-                        ? entity.getProduct().getName() : null)
+                        ? entity.getProduct().getCode() : null)
                 .operationTypeId(entity.getOperationType() != null
                         ? entity.getOperationType().getId() : null)
                 .operationTypeName(entity.getOperationType() != null
@@ -48,8 +48,8 @@ public final class FlowForecastMapper {
                 .supervisorId(entity.getSupervisor() != null
                         ? entity.getSupervisor().getId() : null)
                 .supervisorName(entity.getSupervisor() != null
-                        ? (entity.getSupervisor().getFirstName() + " "
-                           + entity.getSupervisor().getLastName()) : null)
+                        ? (entity.getSupervisor().getFirstNameLt() + " "
+                           + entity.getSupervisor().getLastNameLt()) : null)
                 .build();
     }
 }
