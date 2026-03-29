@@ -1,4 +1,0 @@
-# This directory has been cleaned up. All placeholder facade DTOs removed.
-# Cross-module DTOs (PipelineDTO, FlowReadingDTO, etc.) are owned by their
-# respective domain packages (network/core, flow/core). Intelligence module
-# uses facade pattern (FlowReadingFacade, PipelineFacade) for cross-module access.
