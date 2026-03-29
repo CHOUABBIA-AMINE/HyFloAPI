@@ -4,7 +4,7 @@
  *
  * 	@Name		: FlowMonitoringController
  * 	@CreatedOn	: 02-10-2026
- * 	@UpdatedOn	: 03-26-2026
+ * 	@UpdatedOn	: 03-29-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -69,7 +69,7 @@ public class FlowMonitoringController {
         @ApiResponse(responseCode = "404", description = "Structure not found")
     })
     @GetMapping("/pending-validations")
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
     public ResponseEntity<Page<FlowReadingReadDTO>> getPendingValidations(
             @Parameter(description = "Structure ID", required = true, example = "12")
             @RequestParam Long structureId,
@@ -91,7 +91,7 @@ public class FlowMonitoringController {
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
     @GetMapping("/overdue-readings")
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
     public ResponseEntity<Page<FlowReadingReadDTO>> getOverdueReadings(
             @Parameter(description = "Structure ID", required = true, example = "12")
             @RequestParam Long structureId,
@@ -118,7 +118,7 @@ public class FlowMonitoringController {
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
     @GetMapping("/daily-statistics")
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
     public ResponseEntity<List<DailyCompletionStatisticsDTO>> getDailyStatistics(
             @Parameter(description = "Pipeline ID", required = true, example = "5")
             @RequestParam Long pipelineId,
@@ -141,7 +141,7 @@ public class FlowMonitoringController {
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
     @GetMapping("/validator-workload")
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
     public ResponseEntity<List<ValidatorWorkloadDTO>> getValidatorWorkload() {
         log.info("GET /flow/intelligence/monitoring/validator-workload");
         return ResponseEntity.ok(monitoringService.getValidatorWorkload());
@@ -157,7 +157,7 @@ public class FlowMonitoringController {
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
     @GetMapping("/submission-trend")
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
     public ResponseEntity<List<SubmissionTrendDTO>> getSubmissionTrend(
             @Parameter(description = "Start date", required = true, example = "2026-02-01")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -177,7 +177,7 @@ public class FlowMonitoringController {
         @ApiResponse(responseCode = "403", description = "Access forbidden")
     })
     @GetMapping("/pipeline-coverage")
-    @PreAuthorize("hasAuthority('FLOW_READING:READ')")
+    @PreAuthorize("hasAuthority('FLOW:READ')")
     public ResponseEntity<List<PipelineCoverageDetailDTO>> getPipelineCoverage(
             @Parameter(description = "Pipeline ID", required = true, example = "5")
             @RequestParam Long pipelineId,
