@@ -2,8 +2,9 @@
  *
  *  @Author     : HyFlo v2
  *
- *  @Name       : ReadingWorkflowV2Controller
+ *  @Name       : ReadingWorkflowController
  *  @CreatedOn  : Phase 4 — Commit 29
+ *  @UpdatedOn  : Phase 6 — refactor: import patched to dto.command; architecture note added
  *
  *  @Type       : Class
  *  @Layer      : Controller
@@ -15,7 +16,14 @@
  *                with exact method signatures confirmed from Phase 3 implementation.
  *                Returns FlowReadingReadDTO — workflow state visible through reading state.
  *
- *  Phase 4 — Commit 29
+ *  ─── ARCHITECTURE NOTE (HyFlo v2 — Canonical Workflow Controller Pattern) ─────────────
+ *  This controller intentionally does NOT extend GenericController.
+ *  Workflow lifecycle transition endpoints (submit, approve, reject) use domain-specific
+ *  DTOs and do not follow the CRUD pattern.
+ *  This is the canonical pattern for ALL workflow controllers in HyFlo v2.
+ *  Future workflow controllers MUST follow this pattern and expose endpoints
+ *  under /flow/workflow/... using explicit, named lifecycle operations only.
+ *  ─────────────────────────────────────────────────────────────────────────────────────
  *
  *  Service method signatures (confirmed Phase 3):
  *    approve(Long id, Long approvedById)  → FlowReadingReadDTO
@@ -26,7 +34,7 @@
 package dz.sh.trc.hyflo.flow.workflow.controller;
 
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
-import dz.sh.trc.hyflo.flow.workflow.dto.ReadingValidationRequestDTO;
+import dz.sh.trc.hyflo.flow.workflow.dto.command.ReadingValidationRequestDTO;
 import dz.sh.trc.hyflo.flow.workflow.service.ReadingWorkflowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
