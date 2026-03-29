@@ -2,12 +2,12 @@
  *
  * 	@Author		: MEDJERAB Abir
  *
- * 	@Name		: IncidentSeverity
- * 	@CreatedOn	: 03-25-2026
- *	@UpdatedOn	: 03-26-2026
+ *  @Name       : IncidentSeverity
+ *  @CreatedOn  : 03-25-2026
+ *	@UpdatedOn  : 03-29-2026
  *
- * 	@Type		: Class
- * 	@Layer		: Model
+ *  @Type       : Class
+ *  @Layer      : Model
  *  @Package    : Crisis / Common
  *
  **/
@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -39,13 +40,19 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "IncidentSeverity")
-@Table(name = "T_05_00_01")
+@Table(
+        name = "T_05_00_01",
+        uniqueConstraints = @UniqueConstraint(
+                name = "T_05_00_01_UK_01",
+                columnNames = "F_01"
+        )
+)
 public class IncidentSeverity extends GenericModel {
 
     @Schema(description = "Severity code", example = "P1")
     @NotBlank
     @Size(max = 20)
-    @Column(name = "F_01", length = 20, nullable = false, unique = true)
+    @Column(name = "F_01", length = 20, nullable = false)
     private String code;
 
     @Schema(description = "Severity label", example = "Critical")
