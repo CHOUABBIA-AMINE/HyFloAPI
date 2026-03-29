@@ -4,7 +4,7 @@
  *
  * 	@Name		: PipelineIntelligenceController
  * 	@CreatedOn	: 02-07-2026
- * 	@UpdatedOn	: 02-16-2026
+ * 	@UpdatedOn	: 03-29-2026
  *
  * 	@Type		: Class
  * 	@Layer		: Controller
@@ -66,7 +66,7 @@ public class PipelineIntelligenceController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{pipelineId}/info")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @PreAuthorize("hasAnyAuthority('FLOW:READ', 'FLOW:WRITE', 'FLOW:VALIDATE')")
     public ResponseEntity<PipelineInfoDTO> getPipelineInfo(
             @Parameter(description = "Pipeline ID", required = true, example = "101")
             @PathVariable Long pipelineId,
@@ -89,7 +89,7 @@ public class PipelineIntelligenceController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{pipelineId}/dashboard")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @PreAuthorize("hasAnyAuthority('FLOW:READ', 'FLOW:WRITE', 'FLOW:VALIDATE')")
     public ResponseEntity<PipelineDynamicDashboardDTO> getDashboard(
             @Parameter(description = "Pipeline ID", required = true, example = "101")
             @PathVariable Long pipelineId) {
@@ -108,7 +108,7 @@ public class PipelineIntelligenceController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{pipelineId}/timeline")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @PreAuthorize("hasAnyAuthority('FLOW:READ', 'FLOW:WRITE', 'FLOW:VALIDATE')")
     public ResponseEntity<PipelineTimelineDTO> getTimeline(
             @Parameter(description = "Pipeline ID", required = true, example = "101")
             @PathVariable Long pipelineId,
@@ -142,7 +142,7 @@ public class PipelineIntelligenceController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{pipelineId}/overview")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @PreAuthorize("hasAnyAuthority('FLOW:READ', 'FLOW:WRITE', 'FLOW:VALIDATE')")
     public ResponseEntity<PipelineOverviewDTO> getOverview(
             @Parameter(description = "Pipeline ID", required = true, example = "101")
             @PathVariable Long pipelineId,
@@ -164,7 +164,7 @@ public class PipelineIntelligenceController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{pipelineId}/slot-coverage")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @PreAuthorize("hasAnyAuthority('FLOW:READ', 'FLOW:WRITE', 'FLOW:VALIDATE')")
     public ResponseEntity<List<SlotStatusDTO>> getSlotCoverage(
             @Parameter(description = "Pipeline ID", required = true, example = "101")
             @PathVariable Long pipelineId,
@@ -187,7 +187,7 @@ public class PipelineIntelligenceController {
         @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{pipelineId}/readings-timeseries")
-    @PreAuthorize("hasAnyAuthority('FLOW_READ', 'FLOW_WRITE', 'FLOW_VALIDATE')")
+    @PreAuthorize("hasAnyAuthority('FLOW:READ', 'FLOW:WRITE', 'FLOW:VALIDATE')")
     public ResponseEntity<ReadingsTimeSeriesDTO> getReadingsTimeSeries(
             @Parameter(description = "Pipeline ID", required = true, example = "101")
             @PathVariable Long pipelineId,
