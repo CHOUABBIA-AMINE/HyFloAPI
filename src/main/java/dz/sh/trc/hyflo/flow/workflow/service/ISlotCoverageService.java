@@ -16,9 +16,9 @@
 
 package dz.sh.trc.hyflo.flow.workflow.service;
 
-import dz.sh.trc.hyflo.flow.intelligence.dto.monitoring.SlotCoverageResponseDTO;
-
 import java.time.LocalDate;
+
+import dz.sh.trc.hyflo.intelligence.dto.monitoring.SlotCoverageResponseDTO;
 
 /**
  * Contract for slot coverage reporting.

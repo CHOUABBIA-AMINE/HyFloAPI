@@ -21,7 +21,7 @@ package dz.sh.trc.hyflo.flow.common.facade;
 import java.util.List;
 import java.util.Optional;
 
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDTO;
+import dz.sh.trc.hyflo.intelligence.dto.facade.FlowThresholdFacadeDTO;
 
 /**
  * Facade interface giving flow/intelligence read-only access to FlowThreshold data.

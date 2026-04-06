@@ -22,11 +22,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericService;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.domain.setting.dto.ParameterDTO;
 import dz.sh.trc.hyflo.domain.setting.model.Parameter;
 import dz.sh.trc.hyflo.domain.setting.repository.ParameterRepository;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import lombok.extern.slf4j.Slf4j;
 
 @Service

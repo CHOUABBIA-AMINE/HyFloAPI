@@ -21,8 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.configuration.jwt.JwtUtil;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.domain.auth.dto.LoginRequest;
 import dz.sh.trc.hyflo.domain.auth.dto.LoginResponse;
 import dz.sh.trc.hyflo.domain.auth.dto.RegisterRequest;
@@ -32,6 +30,8 @@ import dz.sh.trc.hyflo.domain.auth.dto.UserProfileDTO;
 import dz.sh.trc.hyflo.domain.auth.model.RefreshToken;
 import dz.sh.trc.hyflo.domain.security.model.User;
 import dz.sh.trc.hyflo.domain.security.repository.UserRepository;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
+import dz.sh.trc.hyflo.platform.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 
 @Service

@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.general.type.dto.query.StructureTypeReadDto;
 import dz.sh.trc.hyflo.general.type.mapper.StructureTypeMapper;
 import dz.sh.trc.hyflo.general.type.repository.StructureTypeRepository;

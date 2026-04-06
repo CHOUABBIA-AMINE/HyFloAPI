@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.crisis.core.dto.query.IncidentImpactReadDTO;
 import dz.sh.trc.hyflo.crisis.core.mapper.IncidentImpactMapper;
 import dz.sh.trc.hyflo.crisis.core.repository.IncidentImpactRepository;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

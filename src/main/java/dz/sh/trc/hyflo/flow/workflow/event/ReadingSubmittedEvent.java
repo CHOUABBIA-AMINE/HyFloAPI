@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.workflow.event;
 
-import dz.sh.trc.hyflo.configuration.event.BaseNotificationEvent;
+import dz.sh.trc.hyflo.platform.event.BaseNotificationEvent;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;

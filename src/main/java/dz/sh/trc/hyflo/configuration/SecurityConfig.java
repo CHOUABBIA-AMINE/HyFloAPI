@@ -35,8 +35,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import dz.sh.trc.hyflo.configuration.jwt.JwtAuthenticationEntryPoint;
-import dz.sh.trc.hyflo.configuration.jwt.JwtAuthenticationFilter;
+import dz.sh.trc.hyflo.platform.security.jwt.JwtAuthenticationEntryPoint;
+import dz.sh.trc.hyflo.platform.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 
 /**

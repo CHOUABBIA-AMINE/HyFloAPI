@@ -25,11 +25,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericService;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
 import dz.sh.trc.hyflo.notification.type.model.NotificationType;
 import dz.sh.trc.hyflo.notification.type.repository.NotificationTypeRepository;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

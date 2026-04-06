@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDTO;
 import dz.sh.trc.hyflo.network.core.mapper.PipelineSegmentMapper;
 import dz.sh.trc.hyflo.network.core.repository.PipelineSegmentRepository;

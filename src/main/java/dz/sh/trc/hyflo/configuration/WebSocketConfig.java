@@ -22,7 +22,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import dz.sh.trc.hyflo.configuration.websocket.WebSocketAuthInterceptor;
+import dz.sh.trc.hyflo.platform.notification.websocket.WebSocketAuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

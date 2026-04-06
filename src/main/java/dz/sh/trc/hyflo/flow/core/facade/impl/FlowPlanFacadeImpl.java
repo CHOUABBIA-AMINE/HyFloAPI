@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.flow.core.facade.FlowPlanFacade;
 import dz.sh.trc.hyflo.flow.core.model.FlowPlan;
 import dz.sh.trc.hyflo.flow.core.repository.FlowPlanRepository;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowPlanFacadeDTO;
+import dz.sh.trc.hyflo.intelligence.dto.facade.FlowPlanFacadeDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

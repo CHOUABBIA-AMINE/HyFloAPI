@@ -14,12 +14,25 @@
 
 package dz.sh.trc.hyflo.domain.utility.service;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericService;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.domain.utility.dto.FileDTO;
-import dz.sh.trc.hyflo.domain.utility.model.File;
-import dz.sh.trc.hyflo.domain.utility.repository.FileRepository;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -30,17 +43,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import dz.sh.trc.hyflo.domain.utility.dto.FileDTO;
+import dz.sh.trc.hyflo.domain.utility.model.File;
+import dz.sh.trc.hyflo.domain.utility.repository.FileRepository;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j

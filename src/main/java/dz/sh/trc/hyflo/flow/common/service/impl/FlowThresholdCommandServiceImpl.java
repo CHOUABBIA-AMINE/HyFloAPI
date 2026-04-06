@@ -14,8 +14,11 @@
 
 package dz.sh.trc.hyflo.flow.common.service.impl;
 
-import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dz.sh.trc.hyflo.exception.business.BusinessValidationException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.dto.FlowThresholdDTO;
 import dz.sh.trc.hyflo.flow.common.model.FlowThreshold;
 import dz.sh.trc.hyflo.flow.common.repository.FlowThresholdRepository;
@@ -24,8 +27,6 @@ import dz.sh.trc.hyflo.network.core.model.Pipeline;
 import dz.sh.trc.hyflo.network.core.repository.PipelineRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

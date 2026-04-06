@@ -18,7 +18,7 @@ package dz.sh.trc.hyflo.network.core.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.network.core.dto.command.PipelineSegmentCommandDTO;
 import dz.sh.trc.hyflo.network.core.dto.query.PipelineSegmentReadDTO;
 import dz.sh.trc.hyflo.network.core.mapper.PipelineSegmentMapper;

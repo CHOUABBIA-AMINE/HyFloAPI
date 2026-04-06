@@ -23,11 +23,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericService;
-import dz.sh.trc.hyflo.exception.BusinessValidationException;
+import dz.sh.trc.hyflo.exception.business.BusinessValidationException;
 import dz.sh.trc.hyflo.flow.common.dto.QualityFlagDTO;
 import dz.sh.trc.hyflo.flow.common.model.QualityFlag;
 import dz.sh.trc.hyflo.flow.common.repository.QualityFlagRepository;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

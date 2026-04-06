@@ -23,13 +23,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericService;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.domain.security.dto.GroupDTO;
 import dz.sh.trc.hyflo.domain.security.model.Group;
 import dz.sh.trc.hyflo.domain.security.model.Role;
 import dz.sh.trc.hyflo.domain.security.repository.GroupRepository;
 import dz.sh.trc.hyflo.domain.security.repository.RoleRepository;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
