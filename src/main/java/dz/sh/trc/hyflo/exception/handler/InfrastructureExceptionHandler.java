@@ -91,7 +91,7 @@ public class InfrastructureExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleMaxUpload(MaxUploadSizeExceededException ex, WebRequest req) {
         log.warn("Max upload size exceeded");
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE)
                 .body(simple(ErrorCode.FILE_SIZE_EXCEEDED,
                         "Uploaded file exceeds the maximum allowed size", req));
     }
