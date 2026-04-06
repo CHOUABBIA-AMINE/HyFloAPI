@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.annotation;
+package dz.sh.trc.hyflo.platform.security.abac.annotation;
 
 import java.lang.annotation.*;
 
