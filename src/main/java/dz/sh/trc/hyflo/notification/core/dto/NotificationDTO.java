@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.core.dto;
+package dz.sh.trc.hyflo.notification.core.dto;
 
 import java.time.LocalDateTime;
 
@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.system.notification.core.model.Notification;
-import dz.sh.trc.hyflo.system.notification.type.dto.NotificationTypeDTO;
+import dz.sh.trc.hyflo.notification.core.model.Notification;
+import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
 import dz.sh.trc.hyflo.system.security.dto.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

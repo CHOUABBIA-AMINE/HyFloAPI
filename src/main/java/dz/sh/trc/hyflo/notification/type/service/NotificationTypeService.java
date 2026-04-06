@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.type.service;
+package dz.sh.trc.hyflo.notification.type.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,9 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.system.notification.type.dto.NotificationTypeDTO;
-import dz.sh.trc.hyflo.system.notification.type.model.NotificationType;
-import dz.sh.trc.hyflo.system.notification.type.repository.NotificationTypeRepository;
+import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
+import dz.sh.trc.hyflo.notification.type.model.NotificationType;
+import dz.sh.trc.hyflo.notification.type.repository.NotificationTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

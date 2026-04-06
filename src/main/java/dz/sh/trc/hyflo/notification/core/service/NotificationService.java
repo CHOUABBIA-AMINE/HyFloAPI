@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.core.service;
+package dz.sh.trc.hyflo.notification.core.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,9 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.template.GenericService;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
-import dz.sh.trc.hyflo.system.notification.core.dto.NotificationDTO;
-import dz.sh.trc.hyflo.system.notification.core.model.Notification;
-import dz.sh.trc.hyflo.system.notification.core.repository.NotificationRepository;
+import dz.sh.trc.hyflo.notification.core.dto.NotificationDTO;
+import dz.sh.trc.hyflo.notification.core.model.Notification;
+import dz.sh.trc.hyflo.notification.core.repository.NotificationRepository;
 import dz.sh.trc.hyflo.system.security.model.User;
 import dz.sh.trc.hyflo.system.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

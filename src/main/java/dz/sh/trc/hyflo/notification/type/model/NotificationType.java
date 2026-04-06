@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.type.model;
+package dz.sh.trc.hyflo.notification.type.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;

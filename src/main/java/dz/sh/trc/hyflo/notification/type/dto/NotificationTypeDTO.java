@@ -12,12 +12,12 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.type.dto;
+package dz.sh.trc.hyflo.notification.type.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
-import dz.sh.trc.hyflo.system.notification.type.model.NotificationType;
+import dz.sh.trc.hyflo.notification.type.model.NotificationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

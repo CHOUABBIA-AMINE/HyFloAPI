@@ -12,9 +12,9 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.core.repository;
+package dz.sh.trc.hyflo.notification.core.repository;
 
-import dz.sh.trc.hyflo.system.notification.core.model.Notification;
+import dz.sh.trc.hyflo.notification.core.model.Notification;
 import dz.sh.trc.hyflo.system.security.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

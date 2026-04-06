@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.system.notification.type.controller;
+package dz.sh.trc.hyflo.notification.type.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +20,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import dz.sh.trc.hyflo.configuration.template.GenericController;
-import dz.sh.trc.hyflo.system.notification.type.dto.NotificationTypeDTO;
-import dz.sh.trc.hyflo.system.notification.type.service.NotificationTypeService;
+import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
+import dz.sh.trc.hyflo.notification.type.service.NotificationTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
