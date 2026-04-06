@@ -21,7 +21,7 @@ package dz.sh.trc.hyflo.flow.core.facade;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDTO;
+import dz.sh.trc.hyflo.intelligence.dto.facade.FlowEventFacadeDTO;
 
 /**
  * Facade interface giving flow/intelligence read-only access to FlowEvent data.

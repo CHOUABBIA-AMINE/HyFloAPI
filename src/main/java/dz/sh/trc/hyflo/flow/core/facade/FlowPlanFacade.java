@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowPlanFacadeDTO;
+import dz.sh.trc.hyflo.intelligence.dto.facade.FlowPlanFacadeDTO;
 
 /**
  * Facade interface giving flow.intelligence read-only access to FlowPlan data.

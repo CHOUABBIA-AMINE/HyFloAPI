@@ -23,11 +23,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.domain.security.dto.query.UserReadDTO;
 import dz.sh.trc.hyflo.domain.security.mapper.UserMapper;
 import dz.sh.trc.hyflo.domain.security.repository.UserRepository;
 import dz.sh.trc.hyflo.domain.security.service.UserQueryService;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

@@ -33,8 +33,8 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.BusinessValidationException;
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.BusinessValidationException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.common.model.ValidationStatus;
 import dz.sh.trc.hyflo.flow.common.repository.ValidationStatusRepository;
 import dz.sh.trc.hyflo.flow.core.dto.FlowOperationReadDTO;

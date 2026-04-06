@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.core.dto.DerivedFlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.DerivedFlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.repository.DerivedFlowReadingRepository;

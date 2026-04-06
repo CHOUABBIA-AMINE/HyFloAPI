@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.flow.core.facade.FlowEventFacade;
 import dz.sh.trc.hyflo.flow.core.model.FlowEvent;
 import dz.sh.trc.hyflo.flow.core.repository.FlowEventRepository;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowEventFacadeDTO;
+import dz.sh.trc.hyflo.intelligence.dto.facade.FlowEventFacadeDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

@@ -35,7 +35,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.flow.core.dto.FlowReadingReadDTO;
 import dz.sh.trc.hyflo.flow.core.mapper.FlowReadingMapper;
 import dz.sh.trc.hyflo.flow.core.repository.FlowReadingRepository;

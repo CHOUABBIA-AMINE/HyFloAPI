@@ -18,13 +18,13 @@ package dz.sh.trc.hyflo.domain.security.service.impl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.domain.security.dto.command.UserCommandDTO;
 import dz.sh.trc.hyflo.domain.security.dto.query.UserReadDTO;
 import dz.sh.trc.hyflo.domain.security.mapper.UserMapper;
 import dz.sh.trc.hyflo.domain.security.model.User;
 import dz.sh.trc.hyflo.domain.security.repository.UserRepository;
 import dz.sh.trc.hyflo.domain.security.service.UserCommandService;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

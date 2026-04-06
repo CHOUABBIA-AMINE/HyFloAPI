@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.flow.common.facade.FlowThresholdFacade;
 import dz.sh.trc.hyflo.flow.common.model.FlowThreshold;
 import dz.sh.trc.hyflo.flow.common.repository.FlowThresholdRepository;
-import dz.sh.trc.hyflo.flow.intelligence.dto.facade.FlowThresholdFacadeDTO;
+import dz.sh.trc.hyflo.intelligence.dto.facade.FlowThresholdFacadeDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
