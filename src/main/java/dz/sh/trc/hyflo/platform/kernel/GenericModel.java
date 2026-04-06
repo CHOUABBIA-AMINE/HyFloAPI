@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.template;
+package dz.sh.trc.hyflo.platform.kernel;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;

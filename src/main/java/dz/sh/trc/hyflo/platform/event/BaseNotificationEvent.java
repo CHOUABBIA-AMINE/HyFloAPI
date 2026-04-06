@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.event;
+package dz.sh.trc.hyflo.platform.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

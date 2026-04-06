@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.template;
+package dz.sh.trc.hyflo.platform.kernel;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;

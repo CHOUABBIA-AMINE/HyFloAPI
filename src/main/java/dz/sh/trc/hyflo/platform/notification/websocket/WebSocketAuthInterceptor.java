@@ -12,9 +12,9 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.websocket;
+package dz.sh.trc.hyflo.platform.notification.websocket;
 
-import dz.sh.trc.hyflo.configuration.jwt.JwtUtil;
+import dz.sh.trc.hyflo.platform.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;

@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.abac;
+package dz.sh.trc.hyflo.platform.security.abac;
 
 import java.util.Map;
 

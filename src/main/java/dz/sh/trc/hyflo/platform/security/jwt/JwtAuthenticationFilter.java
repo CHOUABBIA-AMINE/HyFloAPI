@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.jwt;
+package dz.sh.trc.hyflo.platform.security.jwt;
 
 import java.io.IOException;
 

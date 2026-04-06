@@ -12,9 +12,9 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.websocket;
+package dz.sh.trc.hyflo.platform.notification.websocket;
 
-import dz.sh.trc.hyflo.domain.notification.core.dto.NotificationDTO;
+import dz.sh.trc.hyflo.notification.core.dto.NotificationDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

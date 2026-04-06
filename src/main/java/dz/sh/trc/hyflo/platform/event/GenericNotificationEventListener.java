@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.event;
+package dz.sh.trc.hyflo.platform.event;
 
 import java.util.ArrayList;
 import java.util.List;

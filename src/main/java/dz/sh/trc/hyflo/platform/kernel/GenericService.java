@@ -13,7 +13,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.template;
+package dz.sh.trc.hyflo.platform.kernel;
 
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;

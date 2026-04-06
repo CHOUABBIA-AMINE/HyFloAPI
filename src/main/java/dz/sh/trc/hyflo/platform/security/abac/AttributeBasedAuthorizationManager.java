@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.abac;
+package dz.sh.trc.hyflo.platform.security.abac;
 
 import dz.sh.trc.hyflo.domain.security.model.User;
 import org.springframework.security.authorization.AuthorizationDecision;

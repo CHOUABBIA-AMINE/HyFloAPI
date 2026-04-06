@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.template;
+package dz.sh.trc.hyflo.platform.kernel;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
