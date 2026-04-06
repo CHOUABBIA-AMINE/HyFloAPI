@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration;
+package dz.sh.trc.hyflo.configuration.security;
 
 import java.util.Arrays;
 import java.util.List;

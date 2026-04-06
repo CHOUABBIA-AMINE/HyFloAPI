@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration;
+package dz.sh.trc.hyflo.configuration.data;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;

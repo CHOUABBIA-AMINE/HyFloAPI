@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration;
+package dz.sh.trc.hyflo.platform.audit.aspect;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -28,9 +28,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import dz.sh.trc.hyflo.configuration.annotation.Auditable;
 import dz.sh.trc.hyflo.domain.audit.service.AuditedService;
 import dz.sh.trc.hyflo.domain.audit.service.AuditedService.AuditEventBuilder;
+import dz.sh.trc.hyflo.platform.audit.annotation.Auditable;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AuditAspectConfig {
+public class AuditAspect {
 
     private final AuditedService auditedService;
 

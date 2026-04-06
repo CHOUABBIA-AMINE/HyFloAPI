@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration;
+package dz.sh.trc.hyflo.configuration.websocket;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

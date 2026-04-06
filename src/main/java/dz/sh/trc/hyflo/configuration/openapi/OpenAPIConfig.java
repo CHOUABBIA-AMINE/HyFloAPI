@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration;
+package dz.sh.trc.hyflo.configuration.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;

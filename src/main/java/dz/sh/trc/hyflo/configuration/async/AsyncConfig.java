@@ -12,15 +12,18 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration;
+package dz.sh.trc.hyflo.configuration.async;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.Executor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.Executor;
+import dz.sh.trc.hyflo.platform.security.async.AsyncProperties;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Async configuration for event processing
@@ -30,18 +33,19 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AsyncConfig implements AsyncConfigurer {
 
-    @Override
+	@Autowired
+	private final AsyncProperties props;
+	
+	@Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("notification-async-");
+        executor.setCorePoolSize(props.corePoolSize());
+        executor.setMaxPoolSize(props.maxPoolSize());
+        executor.setQueueCapacity(props.queueCapacity());
+        executor.setThreadNamePrefix(props.threadNamePrefix());
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(60);
+        executor.setAwaitTerminationSeconds(props.awaitTerminationSeconds());
         executor.initialize();
-        
-        log.info("Async executor initialized for notification processing");
         return executor;
     }
 }

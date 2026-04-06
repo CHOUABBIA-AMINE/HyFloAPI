@@ -218,5 +218,30 @@
     "name": "file.upload-dir",
     "type": "java.lang.String",
     "description": "A description for 'file.upload-dir'"
+  },
+  {
+    "name": "hyflo.async.core-pool-size",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.async.core-pool-size'"
+  },
+  {
+    "name": "hyflo.async.max-pool-size",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.async.max-pool-size'"
+  },
+  {
+    "name": "hyflo.async.queue-capacity",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.async.queue-capacity'"
+  },
+  {
+    "name": "hyflo.async.thread-name-prefix",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.async.thread-name-prefix'"
+  },
+  {
+    "name": "hyflo.async.await-termination-seconds",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.async.await-termination-seconds'"
   }
 ]}
