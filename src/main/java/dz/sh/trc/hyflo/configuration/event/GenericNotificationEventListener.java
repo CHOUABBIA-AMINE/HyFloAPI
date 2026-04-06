@@ -24,13 +24,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.configuration.websocket.NotificationWebSocketService;
-import dz.sh.trc.hyflo.system.notification.core.dto.NotificationDTO;
-import dz.sh.trc.hyflo.system.notification.core.model.Notification;
-import dz.sh.trc.hyflo.system.notification.core.service.NotificationService;
-import dz.sh.trc.hyflo.system.notification.type.model.NotificationType;
-import dz.sh.trc.hyflo.system.notification.type.repository.NotificationTypeRepository;
-import dz.sh.trc.hyflo.system.security.model.User;
-import dz.sh.trc.hyflo.system.security.repository.UserRepository;
+import dz.sh.trc.hyflo.domain.notification.core.dto.NotificationDTO;
+import dz.sh.trc.hyflo.domain.notification.core.model.Notification;
+import dz.sh.trc.hyflo.domain.notification.core.service.NotificationService;
+import dz.sh.trc.hyflo.domain.notification.type.model.NotificationType;
+import dz.sh.trc.hyflo.domain.notification.type.repository.NotificationTypeRepository;
+import dz.sh.trc.hyflo.domain.security.model.User;
+import dz.sh.trc.hyflo.domain.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

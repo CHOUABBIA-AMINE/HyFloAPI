@@ -347,7 +347,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         
         if (this.pipelineSystemId != null) {
             PipelineSystem system = new PipelineSystem();
-            system.setId(this.pipelineSystemId);
+            domain.setId(this.pipelineSystemId);
             entity.setPipelineSystem(system);
         }
         
@@ -430,7 +430,7 @@ public class PipelineDTO extends GenericDTO<Pipeline> {
         
         if (this.pipelineSystemId != null) {
             PipelineSystem system = new PipelineSystem();
-            system.setId(this.pipelineSystemId);
+            domain.setId(this.pipelineSystemId);
             entity.setPipelineSystem(system);
         }
         

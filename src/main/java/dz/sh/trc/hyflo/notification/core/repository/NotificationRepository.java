@@ -15,7 +15,7 @@
 package dz.sh.trc.hyflo.notification.core.repository;
 
 import dz.sh.trc.hyflo.notification.core.model.Notification;
-import dz.sh.trc.hyflo.system.security.model.User;
+import dz.sh.trc.hyflo.domain.security.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

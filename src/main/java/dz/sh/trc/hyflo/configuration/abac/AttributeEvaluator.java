@@ -18,7 +18,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import dz.sh.trc.hyflo.system.security.model.User;
+import dz.sh.trc.hyflo.domain.security.model.User;
 import lombok.extern.slf4j.Slf4j;
 
 /**

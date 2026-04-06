@@ -5,7 +5,7 @@
  *  @Name       : EmployeeMapper
  *  @CreatedOn  : 03-25-2026
  *  @UpdatedOn  : 03-26-2026 - Fix Role import: general.organization.model.Role →
- *                             system.security.model.Role
+ *                             domain.security.model.Role
  *  @UpdatedOn  : 03-26-2026 - Phase A: Align all entity field access to actual
  *                             Person/Employee model (no firstName/lastName/email/
  *                             jobTitle/structure/active on entity).
@@ -33,7 +33,7 @@ import dz.sh.trc.hyflo.general.organization.dto.command.EmployeeCommandDTO;
 import dz.sh.trc.hyflo.general.organization.dto.query.EmployeeReadDTO;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.general.organization.model.Job;
-import dz.sh.trc.hyflo.system.security.model.Role;
+import dz.sh.trc.hyflo.domain.security.model.Role;
 
 public final class EmployeeMapper {
 

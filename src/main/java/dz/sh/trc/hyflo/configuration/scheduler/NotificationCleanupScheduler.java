@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.configuration.scheduler;
 
-import dz.sh.trc.hyflo.system.notification.core.service.NotificationService;
+import dz.sh.trc.hyflo.domain.notification.core.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

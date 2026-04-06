@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import dz.sh.trc.hyflo.configuration.template.GenericDTO;
 import dz.sh.trc.hyflo.notification.core.model.Notification;
 import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
-import dz.sh.trc.hyflo.system.security.dto.UserDTO;
+import dz.sh.trc.hyflo.domain.security.dto.UserDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

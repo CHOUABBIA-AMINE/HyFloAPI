@@ -31,8 +31,8 @@ import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.notification.core.dto.NotificationDTO;
 import dz.sh.trc.hyflo.notification.core.model.Notification;
 import dz.sh.trc.hyflo.notification.core.repository.NotificationRepository;
-import dz.sh.trc.hyflo.system.security.model.User;
-import dz.sh.trc.hyflo.system.security.repository.UserRepository;
+import dz.sh.trc.hyflo.domain.security.model.User;
+import dz.sh.trc.hyflo.domain.security.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

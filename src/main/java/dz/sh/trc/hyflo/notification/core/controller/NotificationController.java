@@ -130,7 +130,7 @@ public class NotificationController extends GenericController<NotificationDTO, L
 
     @Operation(
         summary = "Delete notification",
-        description = "Delete a notification by ID. Permanently removes the notification from the system."
+        description = "Delete a notification by ID. Permanently removes the notification from the domain."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Notification deleted", content = @Content),

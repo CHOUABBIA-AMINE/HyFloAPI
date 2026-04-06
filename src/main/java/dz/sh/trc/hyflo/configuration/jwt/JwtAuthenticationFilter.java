@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import dz.sh.trc.hyflo.system.auth.service.CustomUserDetailsService;
+import dz.sh.trc.hyflo.domain.auth.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

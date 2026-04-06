@@ -27,7 +27,7 @@ import java.util.List;
  * Provides common structure for event-driven notifications
  * 
  * All workflow events should extend this class to leverage
- * the generic notification system.
+ * the generic notification domain.
  * 
  * Usage Example:
  * <pre>

@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.notification.core.model;
 
 import dz.sh.trc.hyflo.configuration.template.GenericModel;
 import dz.sh.trc.hyflo.notification.type.model.NotificationType;
-import dz.sh.trc.hyflo.system.security.model.User;
+import dz.sh.trc.hyflo.domain.security.model.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

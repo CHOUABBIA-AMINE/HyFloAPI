@@ -107,7 +107,7 @@ public final class PipelineAssetMapper {
     public static PipelineSystem createPipelineSystemReference(Long id) {
         if (id == null) return null;
         PipelineSystem system = new PipelineSystem();
-        system.setId(id);
+        domain.setId(id);
         return system;
     }
     
