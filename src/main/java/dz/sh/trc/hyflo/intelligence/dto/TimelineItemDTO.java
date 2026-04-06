@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,10 +37,10 @@ import lombok.NoArgsConstructor;
 @Schema(description = "A single timeline item (alert or event)")
 public class TimelineItemDTO {
 
-    @Schema(description = "Unique identifier", example = "1", required = true)
+    @Schema(description = "Unique identifier", example = "1", requiredMode = RequiredMode.REQUIRED)
     private Long id;
 
-    @Schema(description = "Item type", example = "ALERT", required = true,
+    @Schema(description = "Item type", example = "ALERT", requiredMode = RequiredMode.REQUIRED,
             allowableValues = {"ALERT", "EVENT", "OPERATION"})
     private String type;
 
@@ -47,13 +48,13 @@ public class TimelineItemDTO {
             allowableValues = {"CRITICAL", "WARNING", "INFO", "NORMAL"})
     private String severity;
 
-    @Schema(description = "Title/summary of the item", example = "Pressure spike detected", required = true)
+    @Schema(description = "Title/summary of the item", example = "Pressure spike detected", requiredMode = RequiredMode.REQUIRED)
     private String title;
 
     @Schema(description = "Detailed description", example = "Pressure exceeded threshold by 5 bar")
     private String description;
 
-    @Schema(description = "Timestamp when the item occurred", example = "2026-02-14T13:45:00", required = true)
+    @Schema(description = "Timestamp when the item occurred", example = "2026-02-14T13:45:00", requiredMode = RequiredMode.REQUIRED)
     private LocalDateTime timestamp;
 
     @Schema(description = "Current status", example = "RESOLVED",

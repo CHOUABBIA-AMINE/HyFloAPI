@@ -20,6 +20,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,7 +38,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Unified timeline of pipeline alerts and events with pagination")
 public class PipelineTimelineDTO {
 
-    @Schema(description = "Timeline items (alerts and events merged)", required = true)
+    @Schema(description = "Timeline items (alerts and events merged)", requiredMode = RequiredMode.REQUIRED)
     private List<TimelineItemDTO> items;
 
     @Schema(description = "Distribution of items by severity", 

@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.annotation;
+package dz.sh.trc.hyflo.platform.audit.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

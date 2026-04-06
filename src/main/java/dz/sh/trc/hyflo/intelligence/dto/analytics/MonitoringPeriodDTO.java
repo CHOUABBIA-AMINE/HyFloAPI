@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,18 +41,18 @@ public class MonitoringPeriodDTO implements Serializable {
     @NotNull(message = "Start date is required")
     @JsonProperty("startDate")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Schema(description = "Start date of monitoring period", example = "2026-02-01", required = true)
+    @Schema(description = "Start date of monitoring period", example = "2026-02-01", requiredMode = RequiredMode.REQUIRED)
     private LocalDate startDate;
 
     @NotNull(message = "End date is required")
     @JsonProperty("endDate")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Schema(description = "End date of monitoring period", example = "2026-02-28", required = true)
+    @Schema(description = "End date of monitoring period", example = "2026-02-28", requiredMode = RequiredMode.REQUIRED)
     private LocalDate endDate;
 
     @NotNull(message = "Structure ID is required")
     @JsonProperty("structureId")
-    @Schema(description = "Structure ID to filter by", example = "1", required = true)
+    @Schema(description = "Structure ID to filter by", example = "1", requiredMode = RequiredMode.REQUIRED)
     private Long structureId;
 
     @JsonProperty("groupBy")

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import dz.sh.trc.hyflo.network.core.dto.PipelineDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -51,10 +52,10 @@ public class PipelineInfoDTO {
 
     // ========== CORE IDENTIFICATION (Source: Pipeline) ==========
     
-    @Schema(description = "[Pipeline] Pipeline ID", example = "1", required = true)
+    @Schema(description = "[Pipeline] Pipeline ID", example = "1", requiredMode = RequiredMode.REQUIRED)
     private Long id;
 
-    @Schema(description = "[Pipeline] Pipeline name", example = "GT-2023-A", required = true)
+    @Schema(description = "[Pipeline] Pipeline name", example = "GT-2023-A", requiredMode = RequiredMode.REQUIRED)
     private String name;
 
     @Schema(description = "[Pipeline] Pipeline code/reference", example = "PL-GT-2023-A")

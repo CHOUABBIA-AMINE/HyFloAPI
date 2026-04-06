@@ -15,7 +15,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.configuration.filter;
+package dz.sh.trc.hyflo.platform.kernel.filter;
 
 import java.io.IOException;
 import java.util.UUID;
