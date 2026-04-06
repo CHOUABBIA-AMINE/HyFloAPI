@@ -18,7 +18,7 @@ package dz.sh.trc.hyflo.intelligence.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.flow.common.model.AlertStatus;
 import dz.sh.trc.hyflo.flow.common.model.FlowThreshold;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;

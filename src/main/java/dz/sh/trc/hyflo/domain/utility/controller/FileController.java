@@ -23,7 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.domain.utility.dto.FileDTO;
 import dz.sh.trc.hyflo.domain.utility.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;

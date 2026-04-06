@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.network.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.platform.kernel.GenericDTO;
 import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.network.common.model.Partner;

@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import dz.sh.trc.hyflo.configuration.template.GenericService;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import dz.sh.trc.hyflo.domain.audit.dto.AuditedDTO;
 import dz.sh.trc.hyflo.domain.audit.model.Audited;
 import dz.sh.trc.hyflo.domain.audit.repository.AuditedRepository;

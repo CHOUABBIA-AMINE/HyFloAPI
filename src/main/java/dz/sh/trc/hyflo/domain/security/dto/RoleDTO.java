@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.platform.kernel.GenericDTO;
 import dz.sh.trc.hyflo.domain.security.model.Permission;
 import dz.sh.trc.hyflo.domain.security.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;

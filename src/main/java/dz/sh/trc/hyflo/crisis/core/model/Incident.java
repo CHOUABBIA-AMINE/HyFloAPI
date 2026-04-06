@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.crisis.core.model;
 
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.crisis.common.model.IncidentSeverity;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;

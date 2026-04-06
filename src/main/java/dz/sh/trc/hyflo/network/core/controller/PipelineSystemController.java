@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.network.core.controller;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.network.core.dto.PipelineSystemDTO;
 import dz.sh.trc.hyflo.network.core.service.PipelineSystemService;
 import io.swagger.v3.oas.annotations.Operation;

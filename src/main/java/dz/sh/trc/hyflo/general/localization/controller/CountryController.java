@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.general.localization.controller;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.general.localization.service.CountryService;
 import io.swagger.v3.oas.annotations.Operation;

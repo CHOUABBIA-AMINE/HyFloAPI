@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.general.localization.service;
 
-import dz.sh.trc.hyflo.configuration.template.GenericService;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.general.localization.repository.CountryRepository;

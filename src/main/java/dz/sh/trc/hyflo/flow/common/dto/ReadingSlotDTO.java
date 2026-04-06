@@ -18,7 +18,7 @@ import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.platform.kernel.GenericDTO;
 import dz.sh.trc.hyflo.flow.common.model.ReadingSlot;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

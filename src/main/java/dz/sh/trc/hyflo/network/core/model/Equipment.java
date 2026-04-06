@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.network.core.model;
 
 import java.time.LocalDate;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Vendor;
 import dz.sh.trc.hyflo.network.type.model.EquipmentType;

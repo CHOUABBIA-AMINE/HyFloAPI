@@ -23,7 +23,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.configuration.template.GenericService;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import dz.sh.trc.hyflo.general.localization.dto.StateDTO;
 import dz.sh.trc.hyflo.general.localization.model.State;
 import dz.sh.trc.hyflo.general.localization.repository.StateRepository;

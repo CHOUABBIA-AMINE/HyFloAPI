@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.network.core.model;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import dz.sh.trc.hyflo.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.network.common.model.Product;

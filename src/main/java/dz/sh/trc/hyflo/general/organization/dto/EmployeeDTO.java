@@ -18,7 +18,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.platform.kernel.GenericDTO;
 import dz.sh.trc.hyflo.general.localization.dto.CountryDTO;
 import dz.sh.trc.hyflo.general.localization.dto.LocalityDTO;
 import dz.sh.trc.hyflo.general.localization.model.Country;

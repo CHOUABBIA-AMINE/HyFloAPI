@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.network.common.controller;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.network.common.dto.VendorDTO;
 import dz.sh.trc.hyflo.network.common.service.VendorService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.general.organization.controller;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.general.organization.dto.StructureDTO;
 import dz.sh.trc.hyflo.general.organization.service.StructureService;
 import io.swagger.v3.oas.annotations.Operation;

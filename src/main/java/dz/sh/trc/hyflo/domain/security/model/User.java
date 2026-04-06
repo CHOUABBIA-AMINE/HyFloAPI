@@ -24,7 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;

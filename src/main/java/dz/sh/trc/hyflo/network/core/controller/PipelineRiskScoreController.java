@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.network.core.dto.PipelineRiskScoreReadDto;
 import dz.sh.trc.hyflo.network.core.service.PipelineRiskScoreService;
 import io.swagger.v3.oas.annotations.Operation;

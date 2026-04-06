@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.notification.core.model;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.notification.type.model.NotificationType;
 import dz.sh.trc.hyflo.domain.security.model.User;
 import io.swagger.v3.oas.annotations.media.Schema;

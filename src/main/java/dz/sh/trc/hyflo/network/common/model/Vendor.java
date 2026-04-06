@@ -15,7 +15,7 @@
 
 package dz.sh.trc.hyflo.network.common.model;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.network.type.model.VendorType;
 import io.swagger.v3.oas.annotations.media.Schema;

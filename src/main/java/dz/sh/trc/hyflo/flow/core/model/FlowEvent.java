@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.flow.core.model;
 
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.flow.common.model.EventStatus;
 import dz.sh.trc.hyflo.flow.common.model.Severity;
 import dz.sh.trc.hyflo.flow.intelligence.model.FlowAlert;

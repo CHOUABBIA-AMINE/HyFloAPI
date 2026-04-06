@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.general.organization.model;
 
 import java.util.Date;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.general.localization.model.Country;
 import dz.sh.trc.hyflo.general.localization.model.Locality;
 import dz.sh.trc.hyflo.domain.utility.model.File;

@@ -23,7 +23,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dz.sh.trc.hyflo.configuration.template.GenericService;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import dz.sh.trc.hyflo.domain.security.dto.PermissionDTO;
 import dz.sh.trc.hyflo.domain.security.model.Permission;
 import dz.sh.trc.hyflo.domain.security.repository.PermissionRepository;

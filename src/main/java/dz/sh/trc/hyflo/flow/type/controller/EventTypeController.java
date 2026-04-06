@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.flow.type.controller;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.flow.type.dto.EventTypeDTO;
 import dz.sh.trc.hyflo.flow.type.service.EventTypeService;
 import io.swagger.v3.oas.annotations.Operation;

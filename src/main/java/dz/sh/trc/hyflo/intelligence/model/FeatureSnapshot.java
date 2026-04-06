@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.intelligence.model;
 
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.flow.core.model.DerivedFlowReading;
 import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.network.core.model.PipelineSegment;

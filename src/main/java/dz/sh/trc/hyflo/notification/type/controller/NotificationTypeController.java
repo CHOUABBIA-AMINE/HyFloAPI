@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
 import dz.sh.trc.hyflo.notification.type.service.NotificationTypeService;
 import io.swagger.v3.oas.annotations.Operation;

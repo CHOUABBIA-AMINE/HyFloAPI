@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.domain.utility.service;
 
-import dz.sh.trc.hyflo.configuration.template.GenericService;
+import dz.sh.trc.hyflo.platform.kernel.GenericService;
 import dz.sh.trc.hyflo.exception.ResourceNotFoundException;
 import dz.sh.trc.hyflo.domain.utility.dto.FileDTO;
 import dz.sh.trc.hyflo.domain.utility.model.File;

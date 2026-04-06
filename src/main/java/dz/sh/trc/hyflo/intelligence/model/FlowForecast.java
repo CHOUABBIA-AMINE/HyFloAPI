@@ -18,7 +18,7 @@ package dz.sh.trc.hyflo.intelligence.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import dz.sh.trc.hyflo.configuration.template.GenericModel;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
 import dz.sh.trc.hyflo.network.common.model.Product;

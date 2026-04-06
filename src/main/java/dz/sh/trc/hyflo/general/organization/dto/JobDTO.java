@@ -16,7 +16,7 @@ package dz.sh.trc.hyflo.general.organization.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.platform.kernel.GenericDTO;
 import dz.sh.trc.hyflo.general.organization.model.Job;
 import dz.sh.trc.hyflo.general.organization.model.Structure;
 import io.swagger.v3.oas.annotations.media.Schema;

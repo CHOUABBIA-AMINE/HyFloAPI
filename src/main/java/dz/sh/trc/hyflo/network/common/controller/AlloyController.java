@@ -14,7 +14,7 @@
 
 package dz.sh.trc.hyflo.network.common.controller;
 
-import dz.sh.trc.hyflo.configuration.template.GenericController;
+import dz.sh.trc.hyflo.platform.kernel.GenericController;
 import dz.sh.trc.hyflo.network.common.dto.AlloyDTO;
 import dz.sh.trc.hyflo.network.common.service.AlloyService;
 import io.swagger.v3.oas.annotations.Operation;

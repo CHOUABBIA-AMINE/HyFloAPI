@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import dz.sh.trc.hyflo.configuration.template.GenericDTO;
+import dz.sh.trc.hyflo.platform.kernel.GenericDTO;
 import dz.sh.trc.hyflo.notification.core.model.Notification;
 import dz.sh.trc.hyflo.notification.type.dto.NotificationTypeDTO;
 import dz.sh.trc.hyflo.domain.security.dto.UserDTO;
