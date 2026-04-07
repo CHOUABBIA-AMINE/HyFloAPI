@@ -41,7 +41,33 @@
 	    <java.version>17</java.version>
 	    <maven.compiler.release>17</maven.compiler.release>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <spring-ai.version>1.0.0</spring-ai.version>
+		<resilience4j.version>2.3.0</resilience4j.version>
+		<json-schema-validator.version>1.4.3</json-schema-validator.version>
+		<archunit.version>1.3.0</archunit.version>
 	</properties>
+	
+	<dependencyManagement>
+	    <dependencies>
+
+	        <dependency>
+	            <groupId>org.springframework.ai</groupId>
+	            <artifactId>spring-ai-bom</artifactId>
+	            <version>${spring-ai.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+
+	        <dependency>
+	            <groupId>io.github.resilience4j</groupId>
+	            <artifactId>resilience4j-bom</artifactId>
+	            <version>${resilience4j.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+
+	    </dependencies>
+	</dependencyManagement>
 	
 	<dependencies>
 		<dependency>
@@ -137,6 +163,65 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>3.0.2</version>
 		</dependency>
+		
+		<!-- ════════════════════════════════════════════════════════
+		     AI PLATFORM — LLM PROVIDER ADAPTERS
+		     Versions managed by spring-ai-bom.
+		     Both inactive until hyflo.ai.enabled=true.
+		     ════════════════════════════════════════════════════════ -->
+
+		<!-- Primary LLM adapter: OpenAI / Azure OpenAI (Spring AI 1.0.0 GA naming) -->
+		<dependency>
+		    <groupId>org.springframework.ai</groupId>
+		    <artifactId>spring-ai-starter-model-openai</artifactId>
+		</dependency>
+		
+		<!-- Offline / local fallback model adapter (Spring AI 1.0.0 GA naming) -->
+		<dependency>
+		    <groupId>org.springframework.ai</groupId>
+		    <artifactId>spring-ai-starter-model-ollama</artifactId>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════════════════
+		     RESILIENCE4J — retry + circuit breaker for LLM calls
+		     Versions managed by resilience4j-bom.
+		     ════════════════════════════════════════════════════════ -->
+
+		<!-- Spring Boot 3 auto-configuration bridge -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-spring-boot3</artifactId>
+		</dependency>
+
+		<!-- Core retry — AiRetryPolicy -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-retry</artifactId>
+		</dependency>
+
+		<!-- Core circuit breaker — AiCircuitBreaker -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-circuitbreaker</artifactId>
+		</dependency>
+
+		<!-- AOP required by @Retry / @CircuitBreaker annotations -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-aspectj</artifactId>
+		</dependency>
+
+		<!-- ════════════════════════════════════════════════════════
+		     JSON SCHEMA VALIDATION
+		     Used by StructuredOutputEnforcer (platform/ai/format/)
+		     to validate and auto-correct LLM structured JSON output.
+		     ════════════════════════════════════════════════════════ -->
+		<dependency>
+		    <groupId>com.networknt</groupId>
+		    <artifactId>json-schema-validator</artifactId>
+		    <version>${json-schema-validator.version}</version>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

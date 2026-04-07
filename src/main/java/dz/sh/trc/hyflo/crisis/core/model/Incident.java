@@ -75,13 +75,11 @@ public class Incident extends GenericModel {
 
     @Schema(description = "FK to the severity reference")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_05_01_01_FK_01"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_05_01_01_FK_01"))
     private IncidentSeverity severity;
 
     @Schema(description = "FK to the affected pipeline segment")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_05_01_01_FK_02"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_05_01_01_FK_02"))
     private PipelineSegment pipelineSegment;
 }
