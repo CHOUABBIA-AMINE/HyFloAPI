@@ -4,83 +4,95 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Typed configuration properties for the HyFlo AI platform module.
- *
- * <p>Binds to the {@code hyflo.ai.*} prefix in {@code application.properties}.
- * All AI platform beans depend on this class — never on raw
- * {@code @Value} injections.</p>
- *
- * <pre>
- * # Minimum required properties
- * hyflo.ai.enabled=false
- * hyflo.ai.provider=ollama
- * hyflo.ai.structured-output.enabled=true
- * hyflo.ai.structured-output.strict=false
- * hyflo.ai.structured-output.max-repair-attempts=2
- * </pre>
+ * Binds to the {@code hyflo.ai.*} prefix in {@code application.properties}.
  */
 @ConfigurationProperties(prefix = "hyflo.ai")
 public class AiProperties {
 
-    /**
-     * Master feature flag. When {@code false}, all AI beans are replaced
-     * by no-op fallbacks and no LLM calls are made.
-     */
     private boolean enabled = false;
-
-    /**
-     * Active provider adapter. Values: {@code openai} | {@code ollama}.
-     * Ignored when {@code enabled=false}.
-     */
     private String provider = "ollama";
-
-    /**
-     * Structured output validation settings.
-     */
     private StructuredOutput structuredOutput = new StructuredOutput();
+
+    /** Model routing configuration — maps agent types to model IDs. */
+    private Routing routing = new Routing();
 
     // -------------------------------------------------------------------------
     // Getters and setters
     // -------------------------------------------------------------------------
 
-    public boolean isEnabled()                       { return enabled; }
-    public void setEnabled(boolean enabled)          { this.enabled = enabled; }
+    public boolean isEnabled()                          { return enabled; }
+    public void setEnabled(boolean enabled)             { this.enabled = enabled; }
 
-    public String getProvider()                      { return provider; }
-    public void setProvider(String provider)         { this.provider = provider; }
+    public String getProvider()                         { return provider; }
+    public void setProvider(String provider)            { this.provider = provider; }
 
-    public StructuredOutput getStructuredOutput()    { return structuredOutput; }
+    public StructuredOutput getStructuredOutput()       { return structuredOutput; }
     public void setStructuredOutput(StructuredOutput s) { this.structuredOutput = s; }
 
+    public Routing getRouting()                         { return routing; }
+    public void setRouting(Routing routing)             { this.routing = routing; }
+
     // -------------------------------------------------------------------------
-    // Nested config classes
+    // Nested config: StructuredOutput (unchanged from Commit 2.1)
     // -------------------------------------------------------------------------
 
     public static class StructuredOutput {
-
-        /**
-         * Enable JSON schema validation on LLM structured responses.
-         */
         private boolean enabled = true;
-
-        /**
-         * When {@code true}, a schema mismatch throws an exception.
-         * When {@code false}, logs a warning and returns the raw content.
-         */
         private boolean strict = false;
-
-        /**
-         * Maximum number of times the adapter will re-prompt the LLM
-         * to repair malformed structured output before failing.
-         */
         private int maxRepairAttempts = 2;
 
         public boolean isEnabled()                         { return enabled; }
         public void setEnabled(boolean enabled)            { this.enabled = enabled; }
-
         public boolean isStrict()                          { return strict; }
         public void setStrict(boolean strict)              { this.strict = strict; }
-
         public int getMaxRepairAttempts()                  { return maxRepairAttempts; }
         public void setMaxRepairAttempts(int v)            { this.maxRepairAttempts = v; }
+    }
+
+    // -------------------------------------------------------------------------
+    // Nested config: Routing (new in Commit 2.4)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Model routing configuration.
+     *
+     * <p>Model IDs must match identifiers understood by the active provider.
+     * For OpenAI: {@code gpt-4o}, {@code gpt-4o-mini}, etc.
+     * For Ollama: {@code mistral}, {@code llama3}, etc.</p>
+     */
+    public static class Routing {
+
+        /**
+         * Default model used when no routing rule matches.
+         * Property: {@code hyflo.ai.routing.default-model-id}
+         */
+        private String defaultModelId = "gpt-4o-mini";
+
+        /**
+         * Strong/expensive model for safety-critical calls (crisis, CRITICAL severity).
+         * Property: {@code hyflo.ai.routing.strong-model-id}
+         */
+        private String strongModelId = "gpt-4o";
+
+        /**
+         * Fast/cheap model for high-volume stateless calls (flow analysis, network).
+         * Property: {@code hyflo.ai.routing.fast-model-id}
+         */
+        private String fastModelId = "gpt-4o-mini";
+
+        /**
+         * Local model for offline or cost-zero routing (Ollama-backed).
+         * Property: {@code hyflo.ai.routing.local-model-id}
+         */
+        private String localModelId = "mistral";
+
+        public String getDefaultModelId()               { return defaultModelId; }
+        public void setDefaultModelId(String v)         { this.defaultModelId = v; }
+        public String getStrongModelId()                { return strongModelId; }
+        public void setStrongModelId(String v)          { this.strongModelId = v; }
+        public String getFastModelId()                  { return fastModelId; }
+        public void setFastModelId(String v)            { this.fastModelId = v; }
+        public String getLocalModelId()                 { return localModelId; }
+        public void setLocalModelId(String v)           { this.localModelId = v; }
     }
 }
