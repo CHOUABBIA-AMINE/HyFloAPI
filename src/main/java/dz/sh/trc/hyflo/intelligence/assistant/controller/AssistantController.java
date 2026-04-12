@@ -1,10 +1,7 @@
 package dz.sh.trc.hyflo.intelligence.assistant.controller;
 
-import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantRequestDTO;
-import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantResponseDTO;
-import dz.sh.trc.hyflo.intelligence.assistant.service.OperatorAssistantService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -16,7 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantRequestDTO;
+import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantResponseDTO;
+import dz.sh.trc.hyflo.intelligence.assistant.service.AssistantService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * REST controller exposing the AI-powered operator assistant endpoints.
@@ -39,10 +40,10 @@ import java.util.List;
 @RequestMapping("/intelligence/assistant")
 public class AssistantController {
 
-    private final OperatorAssistantService operatorAssistantService;
+    private final AssistantService assistantService;
 
-    public AssistantController(OperatorAssistantService operatorAssistantService) {
-        this.operatorAssistantService = operatorAssistantService;
+    public AssistantController(AssistantService assistantService) {
+        this.assistantService = assistantService;
     }
 
     /**
@@ -54,7 +55,7 @@ public class AssistantController {
     @PreAuthorize("hasAuthority('INTELLIGENCE_ASSISTANT_USE')")
     public ResponseEntity<AssistantResponseDTO> chat(
             @Valid @RequestBody AssistantRequestDTO request) {
-        return ResponseEntity.ok(operatorAssistantService.chat(request));
+        return ResponseEntity.ok(assistantService.chat(request));
     }
 
     /**
@@ -68,7 +69,7 @@ public class AssistantController {
             @PathVariable
             @NotBlank(message = "Session ID must not be blank")
             String sessionId) {
-        return ResponseEntity.ok(operatorAssistantService.getHistory(sessionId));
+        return ResponseEntity.ok(assistantService.getHistory(sessionId));
     }
 
     /**
@@ -82,7 +83,7 @@ public class AssistantController {
             @PathVariable
             @NotBlank(message = "Session ID must not be blank")
             String sessionId) {
-        operatorAssistantService.clearSession(sessionId);
+        assistantService.clearSession(sessionId);
         return ResponseEntity.noContent().build();
     }
 }

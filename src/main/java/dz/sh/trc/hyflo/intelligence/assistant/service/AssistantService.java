@@ -34,14 +34,14 @@ import java.util.Objects;
  * without changing this service's public interface.</p>
  */
 @Service
-public class OperatorAssistantService implements AssistantCapability {
+public class AssistantService implements AssistantCapability {
 
     private static final Logger log =
-            LoggerFactory.getLogger(OperatorAssistantService.class);
+            LoggerFactory.getLogger(AssistantService.class);
 
     private final AssistantAgentPort assistantAgentPort;
 
-    public OperatorAssistantService(AssistantAgentPort assistantAgentPort) {
+    public AssistantService(AssistantAgentPort assistantAgentPort) {
         this.assistantAgentPort =
                 Objects.requireNonNull(assistantAgentPort, "AssistantAgentPort must not be null");
     }

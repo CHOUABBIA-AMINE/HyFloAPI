@@ -1,8 +1,8 @@
 package dz.sh.trc.hyflo.platform.ai.adapter;
 
-import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantMessageDTO;
+import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantRequestDTO;
 import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantResponseDTO;
-import dz.sh.trc.hyflo.intelligence.assistant.port.AssistantPort;
+import dz.sh.trc.hyflo.intelligence.assistant.port.AssistantAgentPort;
 import dz.sh.trc.hyflo.platform.ai.agent.AgentContext;
 import dz.sh.trc.hyflo.platform.ai.agent.AgentExecutor;
 import dz.sh.trc.hyflo.platform.ai.agent.AgentRequest;
@@ -35,7 +35,7 @@ import java.util.Objects;
  */
 @Component
 @ConditionalOnProperty(name = "hyflo.ai.enabled", havingValue = "true")
-public class AssistantAgentAdapter implements AssistantPort {
+public class AssistantAgentAdapter implements AssistantAgentPort {
 
     private static final Logger log = LoggerFactory.getLogger(AssistantAgentAdapter.class);
 
@@ -52,7 +52,7 @@ public class AssistantAgentAdapter implements AssistantPort {
     }
 
     @Override
-    public AssistantResponseDTO chat(AssistantMessageDTO message) {
+    public AssistantResponseDTO chat(AssistantRequestDTO message) {
         Objects.requireNonNull(message, "AssistantMessageDTO");
 
         // Enforce session isolation BEFORE touching any memory or executor.

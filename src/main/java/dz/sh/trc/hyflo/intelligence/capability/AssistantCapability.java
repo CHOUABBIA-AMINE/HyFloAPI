@@ -1,6 +1,6 @@
 package dz.sh.trc.hyflo.intelligence.capability;
 
-import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantMessageDTO;
+import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantRequestDTO;
 import dz.sh.trc.hyflo.intelligence.assistant.dto.AssistantResponseDTO;
 
 /**
@@ -23,5 +23,5 @@ public interface AssistantCapability extends AiCapability {
      * @param message the user's message including session context
      * @return the assistant's response with generated text and metadata
      */
-    AssistantResponseDTO chat(AssistantMessageDTO message);
+    AssistantResponseDTO chat(AssistantRequestDTO message);
 }
