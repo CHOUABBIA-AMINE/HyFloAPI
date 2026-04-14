@@ -14,7 +14,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.intelligence.controller;
+package dz.sh.trc.hyflo.flow.core.controller;
 
 import java.time.LocalDate;
 import java.util.List;

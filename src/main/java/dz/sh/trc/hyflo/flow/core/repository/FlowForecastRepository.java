@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.intelligence.repository;
+package dz.sh.trc.hyflo.flow.core.repository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +25,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import dz.sh.trc.hyflo.intelligence.model.FlowForecast;
+import dz.sh.trc.hyflo.flow.core.model.FlowForecast;
 
 @Repository
 public interface FlowForecastRepository extends JpaRepository<FlowForecast, Long> {

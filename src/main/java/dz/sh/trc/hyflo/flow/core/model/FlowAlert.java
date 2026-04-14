@@ -13,16 +13,15 @@
  *
  **/
 
-package dz.sh.trc.hyflo.intelligence.model;
+package dz.sh.trc.hyflo.flow.core.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.flow.common.model.AlertStatus;
 import dz.sh.trc.hyflo.flow.common.model.FlowThreshold;
-import dz.sh.trc.hyflo.flow.core.model.FlowReading;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

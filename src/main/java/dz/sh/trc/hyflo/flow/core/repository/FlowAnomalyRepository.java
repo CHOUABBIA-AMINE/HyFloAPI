@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.intelligence.repository;
+package dz.sh.trc.hyflo.flow.core.repository;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import dz.sh.trc.hyflo.intelligence.model.FlowAnomaly;
+import dz.sh.trc.hyflo.flow.core.model.FlowAnomaly;
 
 @Repository
 public interface FlowAnomalyRepository extends JpaRepository<FlowAnomaly, Long> {

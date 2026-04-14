@@ -13,7 +13,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.intelligence.model;
+package dz.sh.trc.hyflo.flow.core.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
