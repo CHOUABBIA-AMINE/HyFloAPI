@@ -47,7 +47,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AuditedDTO extends GenericDTO<Audited> {
+public class AuditedDTO extends GenericDTO {
 
     @Schema(
         description = "Name of the audited entity class",
