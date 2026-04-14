@@ -42,4 +42,7 @@ public interface ModelRouter {
      * Returns the model ID to use when no rule matches and no explicit
      * default is configured.
      *
-     * @return fallback model ID — 
+     * @return fallback model ID — must be non-null and non-blank
+     */
+    String defaultModelId();
+}

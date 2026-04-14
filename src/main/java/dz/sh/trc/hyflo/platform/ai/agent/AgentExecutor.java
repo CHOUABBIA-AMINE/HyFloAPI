@@ -22,7 +22,7 @@ import java.util.Objects;
  *
  * <h3>Call chain:</h3>
  * <pre>
- *   intelligence/*/port/*AgentPort  (domain adapter impl)
+ *   intelligence//port/AgentPort  (domain adapter impl)
  *           ↓
  *   AgentExecutor.execute(request, mode)      (this class)
  *           ↓

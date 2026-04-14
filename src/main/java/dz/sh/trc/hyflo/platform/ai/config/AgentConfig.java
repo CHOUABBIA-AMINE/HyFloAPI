@@ -48,7 +48,7 @@ public class AgentConfig {
      */
     @Bean
     @ConditionalOnMissingBean(AgentPort.class)
-    public AgentPort noOpAgentAdapter() {
+    AgentPort noOpAgentAdapter() {
         log.info("[AgentConfig] Registering NoOpAgentAdapter " +
                  "(hyflo.ai.enabled=false or no provider adapter present)");
         return new AgentPort() {

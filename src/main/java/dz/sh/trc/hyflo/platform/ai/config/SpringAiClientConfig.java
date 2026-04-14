@@ -63,7 +63,7 @@ public class SpringAiClientConfig {
     @Bean
     @ConditionalOnProperty(name = "hyflo.ai.enabled", havingValue = "true")
     @ConditionalOnProperty(name = "hyflo.ai.provider", havingValue = "openai")
-    public LLMClientPort openAiLLMClientPort(
+    LLMClientPort openAiLLMClientPort(
             ChatModel chatModel,
             AiProperties aiProperties) {
         log.info("[SpringAiClientConfig] Registering SpringAiLLMAdapter (provider=OPENAI)");
@@ -82,7 +82,7 @@ public class SpringAiClientConfig {
     @Primary
     @ConditionalOnProperty(name = "hyflo.ai.enabled", havingValue = "true")
     @ConditionalOnProperty(name = "hyflo.ai.provider", havingValue = "openai")
-    public AgentPort openAiAgentPort(LLMClientPort openAiLLMClientPort) {
+    AgentPort openAiAgentPort(LLMClientPort openAiLLMClientPort) {
         log.info("[SpringAiClientConfig] Wiring OpenAI LLMClientPort as primary AgentPort");
         return buildAgentPortAdapter(openAiLLMClientPort);
     }
@@ -101,7 +101,7 @@ public class SpringAiClientConfig {
     @Bean
     @ConditionalOnProperty(name = "hyflo.ai.enabled", havingValue = "true")
     @ConditionalOnProperty(name = "hyflo.ai.provider", havingValue = "ollama")
-    public LLMClientPort ollamaLLMClientPort(
+    LLMClientPort ollamaLLMClientPort(
             ChatModel chatModel,
             AiProperties aiProperties) {
         log.info("[SpringAiClientConfig] Registering OllamaLLMAdapter (provider=OLLAMA)");
@@ -117,7 +117,7 @@ public class SpringAiClientConfig {
     @Primary
     @ConditionalOnProperty(name = "hyflo.ai.enabled", havingValue = "true")
     @ConditionalOnProperty(name = "hyflo.ai.provider", havingValue = "ollama")
-    public AgentPort ollamaAgentPort(LLMClientPort ollamaLLMClientPort) {
+    AgentPort ollamaAgentPort(LLMClientPort ollamaLLMClientPort) {
         log.info("[SpringAiClientConfig] Wiring Ollama LLMClientPort as primary AgentPort");
         return buildAgentPortAdapter(ollamaLLMClientPort);
     }

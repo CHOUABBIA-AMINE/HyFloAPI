@@ -8,7 +8,8 @@ import java.util.Objects;
  * Immutable context object used by {@link ModelRouter} to select a model.
  *
  * <p>Constructed by platform adapters (e.g. {@code SpringAiLLMAdapter},
- * {@code OllamaLLMAdapter}) from the {@link dz.sh.trc.hyflo.platform.ai.agent.AgentRequest}
+ * {@code OllamaLLMAdapter}) from the
+ * {@link dz.sh.trc.hyflo.platform.ai.agent.AgentRequest}
  * before asking the router which model to use.</p>
  *
  * <h3>Fields used by routing rules:</h3>
@@ -68,4 +69,42 @@ public final class RoutingContext {
     }
 
     public AgentType getAgentType()               { return agentType; }
-    
+    public AgentExecutionMode getExecutionMode()  { return executionMode; }
+    public CriticalityLevel getCriticalityLevel() { return criticalityLevel; }
+    public String getRoutingHint()                { return routingHint; }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private AgentType agentType;
+        private AgentExecutionMode executionMode;
+        private CriticalityLevel criticalityLevel;
+        private String routingHint;
+
+        public Builder agentType(AgentType agentType) {
+            this.agentType = agentType;
+            return this;
+        }
+
+        public Builder executionMode(AgentExecutionMode executionMode) {
+            this.executionMode = executionMode;
+            return this;
+        }
+
+        public Builder criticalityLevel(CriticalityLevel criticalityLevel) {
+            this.criticalityLevel = criticalityLevel;
+            return this;
+        }
+
+        public Builder routingHint(String routingHint) {
+            this.routingHint = routingHint;
+            return this;
+        }
+
+        public RoutingContext build() {
+            return new RoutingContext(this);
+        }
+    }
+}

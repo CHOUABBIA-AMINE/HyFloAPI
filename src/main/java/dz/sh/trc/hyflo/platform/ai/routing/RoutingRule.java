@@ -72,4 +72,28 @@ public final class RoutingRule {
         return condition.test(context);
     }
 
-    
+    public String getName() {
+        return name;
+    }
+
+    public String getTargetModelId() {
+        return targetModelId;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    Predicate<RoutingContext> getCondition() {
+        return condition;
+    }
+
+    @Override
+    public String toString() {
+        return "RoutingRule{" +
+                "name='" + name + '\'' +
+                ", targetModelId='" + targetModelId + '\'' +
+                ", priority=" + priority +
+                '}';
+    }
+}
