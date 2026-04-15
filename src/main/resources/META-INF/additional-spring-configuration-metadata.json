@@ -243,5 +243,50 @@
     "name": "hyflo.async.await-termination-seconds",
     "type": "java.lang.String",
     "description": "A description for 'hyflo.async.await-termination-seconds'"
+  },
+  {
+    "name": "hyflo.ai.structured-output.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.structured-output.enabled'"
+  },
+  {
+    "name": "hyflo.ai.structured-output.strict",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.structured-output.strict'"
+  },
+  {
+    "name": "hyflo.ai.structured-output.max-repair-attempts",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.structured-output.max-repair-attempts'"
+  },
+  {
+    "name": "hyflo.ai.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.enabled'"
+  },
+  {
+    "name": "hyflo.ai.provider",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.provider'"
+  },
+  {
+    "name": "hyflo.ai.provider",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.provider'"
+  },
+  {
+    "name": "hyflo.ai.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.enabled'"
+  },
+  {
+    "name": "hyflo.ai.structured-output.enabled",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.structured-output.enabled'"
+  },
+  {
+    "name": "hyflo.ai.format.max-correction-retries",
+    "type": "java.lang.String",
+    "description": "A description for 'hyflo.ai.format.max-correction-retries'"
   }
 ]}

@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import dz.sh.trc.hyflo.flow.common.model.EventStatus;
 import dz.sh.trc.hyflo.flow.common.model.Severity;
 import dz.sh.trc.hyflo.general.organization.model.Employee;
-import dz.sh.trc.hyflo.intelligence.model.FlowAlert;
 import dz.sh.trc.hyflo.network.core.model.Infrastructure;
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
