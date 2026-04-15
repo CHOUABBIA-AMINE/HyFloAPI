@@ -19,7 +19,7 @@ import java.util.Date;
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.api.general.localization.model.Country;
 import dz.sh.trc.hyflo.api.general.localization.model.Locality;
-import dz.sh.trc.hyflo.api.domain.utility.model.File;
+import dz.sh.trc.hyflo.api.system.utility.model.File;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

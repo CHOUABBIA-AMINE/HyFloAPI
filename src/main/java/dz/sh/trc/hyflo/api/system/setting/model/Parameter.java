@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.domain.setting.model;
+package dz.sh.trc.hyflo.api.system.setting.model;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;

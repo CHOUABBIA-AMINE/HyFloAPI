@@ -17,7 +17,7 @@
 
 package dz.sh.trc.hyflo.api.general.organization.model;
 
-import dz.sh.trc.hyflo.api.domain.security.model.Role;
+import dz.sh.trc.hyflo.api.system.security.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

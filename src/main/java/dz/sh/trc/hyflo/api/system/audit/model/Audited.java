@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.domain.audit.model;
+package dz.sh.trc.hyflo.api.system.audit.model;
 
 import java.util.Date;
 

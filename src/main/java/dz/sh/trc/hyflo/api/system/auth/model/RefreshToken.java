@@ -12,11 +12,11 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.domain.auth.model;
+package dz.sh.trc.hyflo.api.system.auth.model;
 
 import java.time.Instant;
 
-import dz.sh.trc.hyflo.api.domain.security.model.User;
+import dz.sh.trc.hyflo.api.system.security.model.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

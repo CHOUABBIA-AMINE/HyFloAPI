@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.domain.security.model;
+package dz.sh.trc.hyflo.api.system.security.model;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,8 +35,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Authority")
-@Table(name = "T_00_02_05", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_05_UK_01", columnNames = "F_01")})
-public class Authority extends GenericModel {
+@Table(name = "T_00_02_04", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_04_UK_01", columnNames = "F_01")})
+public class Action extends GenericModel {
 
 	@Schema(
 		description = "Unique authority name (typically uppercase)",
@@ -59,16 +59,4 @@ public class Authority extends GenericModel {
 	@Size(max = 200, message = "Description must not exceed 200 characters")
 	@Column(name="F_02", length=200)
 	private String description;
-
-	@Schema(
-		description = "Type/category of authority for classification",
-		example = "SYSTEM",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-		maxLength = 50,
-		allowableValues = {"SYSTEM", "APPLICATION", "MODULE", "SPECIAL", "TEMPORARY"}
-	)
-	@Size(max = 50, message = "Type must not exceed 50 characters")
-	@Pattern(regexp = "^[A-Z_]*$", message = "Type must be uppercase with underscores")
-	@Column(name="F_03", length=50)
-	private String type;
 }

@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.domain.security.model;
+package dz.sh.trc.hyflo.api.system.security.model;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -107,8 +107,7 @@ public class User extends GenericModel implements UserDetails {
         accessMode = Schema.AccessMode.WRITE_ONLY
     )
     @NotBlank(message = "Password is mandatory")
-    @Pattern(regexp = "^[a-zA-Z0-9._-]{8,120}$")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 60, message = "Password must be at least 8 characters")
     @JsonIgnore
     @Column(name="F_03", length=120, nullable=false)
     private String password;
