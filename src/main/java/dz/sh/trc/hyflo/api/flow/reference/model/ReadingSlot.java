@@ -12,7 +12,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.flow.common.model;
+package dz.sh.trc.hyflo.api.flow.reference.model;
 
 import java.time.LocalTime;
 

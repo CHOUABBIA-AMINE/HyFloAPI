@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
-import dz.sh.trc.hyflo.api.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.api.flow.reference.model.ValidationStatus;
 import dz.sh.trc.hyflo.api.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.api.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.api.general.organization.model.Employee;

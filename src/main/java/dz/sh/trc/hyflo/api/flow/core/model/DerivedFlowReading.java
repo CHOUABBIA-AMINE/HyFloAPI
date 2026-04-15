@@ -23,8 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
-import dz.sh.trc.hyflo.api.flow.common.model.ReadingSlot;
-import dz.sh.trc.hyflo.api.flow.common.model.ValidationStatus;
+import dz.sh.trc.hyflo.api.flow.reference.model.ReadingSlot;
+import dz.sh.trc.hyflo.api.flow.reference.model.ValidationStatus;
 import dz.sh.trc.hyflo.api.network.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;

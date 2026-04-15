@@ -16,8 +16,8 @@ package dz.sh.trc.hyflo.api.flow.core.model;
 
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.api.flow.common.model.EventStatus;
-import dz.sh.trc.hyflo.api.flow.common.model.Severity;
+import dz.sh.trc.hyflo.api.flow.reference.model.EventStatus;
+import dz.sh.trc.hyflo.api.flow.reference.model.Severity;
 import dz.sh.trc.hyflo.api.general.organization.model.Employee;
 import dz.sh.trc.hyflo.api.network.core.model.Infrastructure;
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;

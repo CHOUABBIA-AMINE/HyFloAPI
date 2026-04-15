@@ -25,7 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
-import dz.sh.trc.hyflo.api.flow.common.model.PlanStatus;
+import dz.sh.trc.hyflo.api.flow.reference.model.PlanStatus;
 import dz.sh.trc.hyflo.api.general.organization.model.Employee;
 import dz.sh.trc.hyflo.api.network.core.model.Pipeline;
 import io.swagger.v3.oas.annotations.media.Schema;

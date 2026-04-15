@@ -18,8 +18,8 @@ package dz.sh.trc.hyflo.api.flow.core.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.api.flow.common.model.AlertStatus;
-import dz.sh.trc.hyflo.api.flow.common.model.FlowThreshold;
+import dz.sh.trc.hyflo.api.flow.reference.model.AlertStatus;
+import dz.sh.trc.hyflo.api.flow.reference.model.FlowThreshold;
 import dz.sh.trc.hyflo.api.general.organization.model.Employee;
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
