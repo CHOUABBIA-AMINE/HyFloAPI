@@ -24,6 +24,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -56,7 +58,9 @@ public class DataSource extends GenericModel {
             maxLength = 50
     )
     @Column(name = "F_01", length = 50, nullable = false)
-    private String code;
+    @NotBlank(message = "Nominal thickness is mandatory")
+	@Size(max = 50, message = "Code must not exceed 50 characters")
+	private String code;
 
     @Schema(
             description = "Data source designation in Arabic",
@@ -83,7 +87,9 @@ public class DataSource extends GenericModel {
             maxLength = 100
     )
     @Column(name = "F_04", length = 100, nullable = false)
-    private String designationFr;
+    @NotBlank(message = "Nominal thickness is mandatory")
+	@Size(max = 100, message = "Code must not exceed 50 characters")
+	private String designationFr;
 
     @Schema(
             description = "Detailed description in Arabic",

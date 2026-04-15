@@ -98,7 +98,6 @@ public class Pipeline extends Infrastructure {
 		maxLength = 255
 	)
 	@NotNull(message = "Nominal roughness is mandatory")
-	@Size(max = 255, message = "Nominal roughness must not exceed 255 characters")
 	@Column(name="F_11", nullable=false)
 	private Double nominalRoughness;
 
@@ -218,7 +217,7 @@ public class Pipeline extends Infrastructure {
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED
 	)
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_01_FK_07"), nullable = false)
+	@JoinColumn(name="F_24", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_02_03_08_FK_07"), nullable = false)
 	private Structure manager;
 
 	@Schema(
