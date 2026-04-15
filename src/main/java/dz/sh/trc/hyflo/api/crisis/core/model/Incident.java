@@ -17,7 +17,7 @@ package dz.sh.trc.hyflo.api.crisis.core.model;
 import java.time.LocalDateTime;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
-import dz.sh.trc.hyflo.api.crisis.common.model.IncidentSeverity;
+import dz.sh.trc.hyflo.api.crisis.reference.model.IncidentSeverity;
 import dz.sh.trc.hyflo.api.network.core.model.PipelineSegment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
