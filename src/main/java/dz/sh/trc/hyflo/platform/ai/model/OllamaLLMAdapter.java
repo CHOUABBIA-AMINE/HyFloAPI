@@ -182,7 +182,7 @@ public class OllamaLLMAdapter implements LLMClientPort {
             optBuilder.numPredict(request.getMaxTokens());
         }
         if (request.getTemperature() != null) {
-            optBuilder.temperature(request.getTemperature().floatValue());
+            optBuilder.temperature(request.getTemperature());
         }
         return spec.options(optBuilder.build());
     }
