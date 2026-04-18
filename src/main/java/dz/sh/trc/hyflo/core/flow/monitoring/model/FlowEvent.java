@@ -51,11 +51,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "FlowEvent")
 @Table(
-        name = "T_03_03_04",
+        name = "T_03_06_04",
         indexes = {
-                @Index(name = "T_03_03_04_IX_01", columnList = "F_01"),
-                @Index(name = "T_03_03_04_IX_02", columnList = "F_06"),
-                @Index(name = "T_03_03_04_IX_03", columnList = "F_01,F_02,F_07")
+                @Index(name = "T_03_06_04_IX_01", columnList = "F_01"),
+                @Index(name = "T_03_06_04_IX_02", columnList = "F_06"),
+                @Index(name = "T_03_06_04_IX_03", columnList = "F_01,F_02,F_07")
         }
 )
 public class FlowEvent extends GenericModel {
@@ -92,7 +92,7 @@ public class FlowEvent extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_04", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_04_FK_01"))
+            foreignKey = @ForeignKey(name = "T_03_06_04_FK_01"))
     private Severity severity;
 
     @Schema(
@@ -101,7 +101,7 @@ public class FlowEvent extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_06", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_04_FK_03"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_06_04_FK_03"), nullable = false)
     private Infrastructure infrastructure;
 
     @Schema(
@@ -110,7 +110,7 @@ public class FlowEvent extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_07", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_04_FK_04"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_06_04_FK_04"), nullable = false)
     private Employee reportedBy;
 
     @Schema(
@@ -119,7 +119,7 @@ public class FlowEvent extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_08", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_04_FK_05"))
+            foreignKey = @ForeignKey(name = "T_03_06_04_FK_05"))
     private FlowReading relatedReading;
 
     @Schema(
@@ -128,7 +128,7 @@ public class FlowEvent extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_09", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_04_FK_06"))
+            foreignKey = @ForeignKey(name = "T_03_06_04_FK_06"))
     private FlowAlert relatedAlert;
 
     @Schema(
@@ -153,7 +153,7 @@ public class FlowEvent extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_12", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_04_FK_07"))
+            foreignKey = @ForeignKey(name = "T_03_06_04_FK_07"))
     private EventStatus status;
 
     @Schema(

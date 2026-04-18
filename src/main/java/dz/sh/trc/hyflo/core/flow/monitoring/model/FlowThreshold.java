@@ -49,7 +49,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "FlowThreshold")
 @Table(
-        name = "T_03_02_09",
+        name = "T_03_06_01",
         uniqueConstraints = {
                 @UniqueConstraint(name = "T_03_03_06_UK_01", columnNames = {"F_09", "F_10"})
         }
@@ -109,6 +109,6 @@ public class FlowThreshold extends GenericModel {
     @Schema(description = "Pipeline to which these thresholds apply",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_02_09_FK_01"), nullable = false)
+    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_06_01_FK_01"), nullable = false)
     private Pipeline pipeline;
 }

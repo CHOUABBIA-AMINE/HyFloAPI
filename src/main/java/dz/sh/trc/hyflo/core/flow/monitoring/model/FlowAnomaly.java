@@ -43,7 +43,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowAnomaly")
-@Table(name = "T_03_05_03")
+@Table(name = "T_03_06_03")
 public class FlowAnomaly extends GenericModel {
 
     @Schema(description = "Type of anomaly detected", example = "PRESSURE_DROP")
@@ -72,16 +72,16 @@ public class FlowAnomaly extends GenericModel {
 
     @Schema(description = "FK to the source FlowReading")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_05_03_FK_01"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_06_03_FK_01"))
     private FlowReading reading;
 
     @Schema(description = "FK to the source DerivedFlowReading (if applicable)")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_05_03_FK_02"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_06_03_FK_02"))
     private SegmentFlowReading segmentFlowReading;
 
     @Schema(description = "FK to the affected pipeline segment")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_05_03_FK_03"))
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_06_03_FK_03"))
     private PipelineSegment pipelineSegment;
 }

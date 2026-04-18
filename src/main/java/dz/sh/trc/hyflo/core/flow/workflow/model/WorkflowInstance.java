@@ -41,21 +41,21 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "WorkflowInstance")
-@Table(name = "T_03_04_01")
+@Table(name = "T_03_05_01")
 public class WorkflowInstance extends GenericModel {
 
     // F_01 — Process type
     @Schema(description = "Type of workflow process", requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_01", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_04_01_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_05_01_FK_01"), nullable = false)
     private WorkflowTargetType targetType;
 
     // F_02 — Current lifecycle state
     @Schema(description = "Current lifecycle state", requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_02", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_04_01_FK_02"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_05_01_FK_02"), nullable = false)
     private WorkflowState currentState;
 
     // F_03 — Started at
@@ -73,14 +73,14 @@ public class WorkflowInstance extends GenericModel {
     @Schema(description = "Employee who initiated this workflow instance")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_05", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_04_01_FK_03"))
+            foreignKey = @ForeignKey(name = "T_03_05_01_FK_03"))
     private Employee initiatedBy;
 
     // F_06 — Last actor
     @Schema(description = "Employee who performed the most recent workflow transition")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_06", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_04_01_FK_04"))
+            foreignKey = @ForeignKey(name = "T_03_05_01_FK_04"))
     private Employee lastActor;
 
     // F_07 — Last actor comment

@@ -46,9 +46,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "WorkflowState")
-@Table(name = "T_03_04_03", uniqueConstraints = {
-        @UniqueConstraint(name = "T_03_04_03_UK_01", columnNames = {"F_01"}),
-        @UniqueConstraint(name = "T_03_04_03_UK_02", columnNames = {"F_04"})
+@Table(name = "T_03_05_03", uniqueConstraints = {
+        @UniqueConstraint(name = "T_03_05_03_UK_01", columnNames = {"F_01"}),
+        @UniqueConstraint(name = "T_03_05_03_UK_02", columnNames = {"F_04"})
 })
 public class WorkflowState extends GenericModel {
 

@@ -52,13 +52,13 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Table(
-        name = "T_03_05_01",
+        name = "T_03_03_01",
         indexes = {
-                @Index(name = "T_03_05_01_IX_01", columnList = "F_01"),
-                @Index(name = "T_03_05_01_IX_02", columnList = "F_07")
+                @Index(name = "T_03_03_01_IX_01", columnList = "F_01"),
+                @Index(name = "T_03_03_01_IX_02", columnList = "F_07")
         },
         uniqueConstraints = @UniqueConstraint(
-                name = "T_03_05_01_UK_01",
+                name = "T_03_03_01_UK_01",
                 columnNames = {"F_01", "F_07", "F_08", "F_09"}
         )
 )
@@ -98,24 +98,24 @@ public class FlowForecast extends GenericModel {
     @Schema(description = "Infrastructure for which forecast is made",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_05_01_FK_01"), nullable = false)
+    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_01_FK_01"), nullable = false)
     private Infrastructure infrastructure;
 
     @Schema(description = "Product type being forecasted",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_05_01_FK_02"), nullable = false)
+    @JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_01_FK_02"), nullable = false)
     private Product product;
 
     @Schema(description = "Operation type (production, consumption)",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_05_01_FK_03"), nullable = false)
+    @JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_01_FK_03"), nullable = false)
     private OperationType operationType;
 
     @Schema(description = "Supervisor who approved/adjusted this forecast",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_05_01_FK_04"))
+    @JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_01_FK_04"))
     private Employee supervisor;
 }

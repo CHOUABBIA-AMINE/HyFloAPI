@@ -49,7 +49,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowPlan")
-@Table(name = "T_03_03_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_03_06_UK_01", columnNames = {"F_05", "F_01", "F_09"})})
+@Table(name = "T_03_03_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_03_02_UK_01", columnNames = {"F_05", "F_01", "F_09"})})
 public class FlowPlan extends GenericModel {
 
     // ------------------------------------------------------------------

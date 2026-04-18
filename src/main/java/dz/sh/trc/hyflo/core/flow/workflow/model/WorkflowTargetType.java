@@ -40,9 +40,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "WorkflowTargetType")
-@Table(name = "T_03_04_02", uniqueConstraints = {
-        @UniqueConstraint(name = "T_03_04_02_UK_01", columnNames = {"F_01"}),
-        @UniqueConstraint(name = "T_03_04_02_UK_02", columnNames = {"F_04"})
+@Table(name = "T_03_05_02", uniqueConstraints = {
+        @UniqueConstraint(name = "T_03_05_02_UK_01", columnNames = {"F_01"}),
+        @UniqueConstraint(name = "T_03_05_02_UK_02", columnNames = {"F_04"})
 })
 public class WorkflowTargetType extends GenericModel {
 

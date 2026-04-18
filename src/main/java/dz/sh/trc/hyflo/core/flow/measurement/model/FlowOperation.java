@@ -55,14 +55,14 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @Entity(name = "FlowOperation")
 @Table(
-        name = "T_03_03_01",
+        name = "T_03_04_01",
         indexes = {
-                @Index(name = "T_03_03_01_IX_01", columnList = "F_01"),
-                @Index(name = "T_03_03_01_IX_02", columnList = "F_06"),
-                @Index(name = "T_03_03_01_IX_03", columnList = "F_08")
+                @Index(name = "T_03_04_01_IX_01", columnList = "F_01"),
+                @Index(name = "T_03_04_01_IX_02", columnList = "F_06"),
+                @Index(name = "T_03_04_01_IX_03", columnList = "F_08")
         },
         uniqueConstraints = @UniqueConstraint(
-                name = "T_03_03_01_UK_01",
+                name = "T_03_04_01_UK_01",
                 columnNames = {"F_01", "F_06", "F_08", "F_09"}
         )
 )
@@ -114,7 +114,7 @@ public class FlowOperation extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_03_01_FK_01"), nullable = false)
+    @JoinColumn(name = "F_06", foreignKey = @ForeignKey(name = "T_03_04_01_FK_01"), nullable = false)
     private Infrastructure infrastructure;
 
     @Schema(
@@ -122,7 +122,7 @@ public class FlowOperation extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_03_01_FK_02"), nullable = false)
+    @JoinColumn(name = "F_07", foreignKey = @ForeignKey(name = "T_03_04_01_FK_02"), nullable = false)
     private Product product;
 
     @Schema(
@@ -130,7 +130,7 @@ public class FlowOperation extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_03_01_FK_03"), nullable = false)
+    @JoinColumn(name = "F_08", foreignKey = @ForeignKey(name = "T_03_04_01_FK_03"), nullable = false)
     private OperationType type;
 
     @Schema(
@@ -138,7 +138,7 @@ public class FlowOperation extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_03_01_FK_04"), nullable = false)
+    @JoinColumn(name = "F_09", foreignKey = @ForeignKey(name = "T_03_04_01_FK_04"), nullable = false)
     private Employee recordedBy;
 
     @Schema(
@@ -146,7 +146,7 @@ public class FlowOperation extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_03_01_FK_05"))
+    @JoinColumn(name = "F_10", foreignKey = @ForeignKey(name = "T_03_04_01_FK_05"))
     private Employee validatedBy;
 
     @Schema(
@@ -154,7 +154,7 @@ public class FlowOperation extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_11", foreignKey = @ForeignKey(name = "T_03_03_01_FK_06"), nullable = false)
+    @JoinColumn(name = "F_11", foreignKey = @ForeignKey(name = "T_03_04_01_FK_06"), nullable = false)
     private ValidationStatus validationStatus;
 
     @Schema(
@@ -164,6 +164,6 @@ public class FlowOperation extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_12", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_01_FK_07"))
+            foreignKey = @ForeignKey(name = "T_03_04_01_FK_07"))
     private WorkflowInstance workflowInstance;
 }

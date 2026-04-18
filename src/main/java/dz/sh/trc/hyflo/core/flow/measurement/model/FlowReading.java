@@ -50,7 +50,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowReading")
-@Table(name = "T_03_03_05")
+@Table(name = "T_03_04_02")
 public class FlowReading extends GenericModel {
 
     // ------------------------------------------------------------------
@@ -100,13 +100,13 @@ public class FlowReading extends GenericModel {
     @Schema(description = "FK to pipeline (canonical network/core ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_10", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_01"), nullable = false)
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_01"), nullable = false)
     private Pipeline pipeline;
 
     @Schema(description = "FK to validation status reference (canonical flow/common ownership)")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_11", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_02"))
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_02"))
     private ValidationStatus validationStatus;
 
     // ------------------------------------------------------------------
@@ -120,7 +120,7 @@ public class FlowReading extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_12", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_03"))
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_03"))
     private WorkflowInstance workflowInstance;
 
     // ------------------------------------------------------------------
@@ -133,7 +133,7 @@ public class FlowReading extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_04"))
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_04"))
     private DataSource dataSource;
 
     // ------------------------------------------------------------------
@@ -155,7 +155,7 @@ public class FlowReading extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_15", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_05"))
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_05"))
     private ReadingSlot readingSlot;
 
     // ------------------------------------------------------------------
@@ -168,7 +168,7 @@ public class FlowReading extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_16", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_06"))
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_06"))
     private Employee recordedBy;
 
     // ------------------------------------------------------------------
@@ -181,7 +181,7 @@ public class FlowReading extends GenericModel {
     )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_17", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_03_05_FK_07"))
+            foreignKey = @ForeignKey(name = "T_03_04_02_FK_07"))
     private Employee validatedBy;
 
     // ------------------------------------------------------------------
