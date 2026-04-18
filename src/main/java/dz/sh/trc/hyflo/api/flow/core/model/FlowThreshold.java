@@ -13,7 +13,7 @@
  *
  **/
 
-package dz.sh.trc.hyflo.api.flow.reference.model;
+package dz.sh.trc.hyflo.api.flow.core.model;
 
 import java.math.BigDecimal;
 
