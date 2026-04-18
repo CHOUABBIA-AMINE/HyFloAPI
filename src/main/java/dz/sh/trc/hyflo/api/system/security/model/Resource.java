@@ -33,7 +33,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Entity(name="Resource")
 @Table(name = "T_00_02_06", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_06_UK_01", columnNames = "F_01")})
 public class Resource extends GenericModel {
 

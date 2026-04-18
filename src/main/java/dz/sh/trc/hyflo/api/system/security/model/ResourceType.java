@@ -41,7 +41,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Entity(name="ResourceType")
 @Table(name = "T_00_02_05", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_05_UK_01", columnNames = "F_01")})
 public class ResourceType extends GenericModel {
 

@@ -39,7 +39,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="Authority")
+@Entity(name="Action")
 @Table(name = "T_00_02_04", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_04_UK_01", columnNames = "F_01")})
 public class Action extends GenericModel {
 
