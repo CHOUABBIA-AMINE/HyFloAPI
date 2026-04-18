@@ -28,11 +28,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Records an anomaly detected on a flow reading or derived reading
@@ -41,8 +39,6 @@ import lombok.ToString;
 @Schema(description = "Anomaly detected on a flow reading by the intelligence engine")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowAnomaly")
@@ -83,7 +79,7 @@ public class FlowAnomaly extends GenericModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_08", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_05_03_FK_02"))
-    private DerivedFlowReading derivedReading;
+    private SegmentFlowReading segmentFlowReading;
 
     @Schema(description = "FK to the affected pipeline segment")
     @ManyToOne(fetch = FetchType.LAZY)

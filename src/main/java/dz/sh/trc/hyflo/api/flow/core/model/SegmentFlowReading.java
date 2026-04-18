@@ -2,7 +2,7 @@
  *
  * 	@Author		: HyFlo v2
  *
- * 	@Name		: DerivedFlowReading
+ * 	@Name		: SegmentFlowReading
  * 	@CreatedOn	: 03-25-2026
  * 	@UpdatedOn	: 03-25-2026
  * 	@UpdatedOn	: 03-26-2026 — fix: add pressure, temperature, flowRate, containedVolume,
@@ -69,7 +69,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "DerivedFlowReading")
+@Entity(name = "SegmentFlowReading")
 @Table(
         name = "T_03_03_03",
         uniqueConstraints = {
@@ -85,7 +85,7 @@ import lombok.ToString;
                 )
         }
 )
-public class DerivedFlowReading extends GenericModel {
+public class SegmentFlowReading extends GenericModel {
 
     // ------------------------------------------------------------------
     // F_01 — Date dimension
