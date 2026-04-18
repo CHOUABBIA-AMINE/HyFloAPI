@@ -18,6 +18,7 @@ import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -26,33 +27,31 @@ import lombok.*;
  * Spring Security GrantedResource implementation for direct authority assignment.
  * Can represent system-level or special authorities beyond role-based permissions.
  */
-@Schema(description = "Spring Security authority for direct privilege assignment and system-level access")
+@Schema(description = "Represents a secured domain object that can be protected by permissions in the RBAC system")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name="Resource")
-@Table(name = "T_00_02_05", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_05_UK_01", columnNames = "F_01")})
+@Entity
+@Table(name = "T_00_02_06", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_06_UK_01", columnNames = "F_01")})
 public class Resource extends GenericModel {
 
 	@Schema(
-		description = "Unique authority name (typically uppercase)",
-		example = "SYSTEM_ADMIN",
+		description = "Unique resource code (typically uppercase)",
+		example = "ROLE",
 		requiredMode = Schema.RequiredMode.REQUIRED,
 		maxLength = 50
 	)
-	@NotBlank(message = "Resource name is mandatory")
-	@Size(max = 50, message = "Resource name must not exceed 50 characters")
-	@Pattern(regexp = "^[A-Z_]+$", message = "Resource name must be uppercase with underscores")
+	@NotBlank(message = "Resource code is mandatory")
+	@Size(max = 50, message = "Resource code must not exceed 50 characters")
+	@Pattern(regexp = "^[A-Z_]+$", message = "Resource code must be uppercase with underscores")
 	@Column(name="F_01", length=50, nullable=false)
-	private String name;
+	private String code;
 
 	@Schema(
-		description = "Human-readable description of what this authority grants",
-		example = "Full system administration privileges including user and security management",
+		description = "Human-readable description of what is this resource",
+		example = "Role resource",
 		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
 		maxLength = 200
 	)
@@ -61,14 +60,11 @@ public class Resource extends GenericModel {
 	private String description;
 
 	@Schema(
-		description = "Type/category of authority for classification",
-		example = "SYSTEM",
-		requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-		maxLength = 50,
-		allowableValues = {"SYSTEM", "APPLICATION", "MODULE", "SPECIAL", "TEMPORARY"}
+		description = "Type/category of resource for classification",
+		requiredMode = Schema.RequiredMode.REQUIRED
 	)
-	@Size(max = 50, message = "Type must not exceed 50 characters")
-	@Pattern(regexp = "^[A-Z_]*$", message = "Type must be uppercase with underscores")
-	@Column(name="F_03", length=50)
-	private String type;
+	@NotNull(message = "Resource type is mandatory")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_00_02_06_FK_02"), nullable=false)
+	private ResourceType resourceType;
 }

@@ -49,7 +49,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Permission")
-@Table(name = "T_00_02_06", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_06_UK_01", columnNames = "F_01")})
+@Table(name = "T_00_02_07", uniqueConstraints = {@UniqueConstraint(name = "T_00_02_07_UK_01", columnNames = "F_01")})
 public class Permission extends GenericModel {
 
 	@Schema(
@@ -80,15 +80,15 @@ public class Permission extends GenericModel {
 	)
 	@NotNull(message = "Resource is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_00_02_06_FK_01"), nullable=false)
+	@JoinColumn(name="F_03", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_00_02_07_FK_01"), nullable=false)
 	private Resource resource;
 	
 	@Schema(
-		description = "Resource/entity this permission applies to",
+		description = "Action this permission grants with",
 		requiredMode = Schema.RequiredMode.REQUIRED
 	)
 	@NotNull(message = "Action is mandatory")
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_00_02_06_FK_02"), nullable=false)
+	@JoinColumn(name="F_04", referencedColumnName = "F_00", foreignKey=@ForeignKey(name="T_00_02_07_FK_02"), nullable=false)
 	private Action action;
 }
