@@ -2,7 +2,7 @@
  *
  * 	@Author		: MEDJERAB Abir
  *
- * 	@Name		: FlowOperation
+ * 	@Name		: FlowVolumeReading
  * 	@CreatedOn	: 01-21-2026
  * 	@UpdatedOn	: 03-25-2026
  *
@@ -18,13 +18,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.flow.reference.model.ValidationStatus;
 import dz.sh.trc.hyflo.core.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.core.network.common.model.Product;
 import dz.sh.trc.hyflo.core.network.topology.model.Infrastructure;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,7 +43,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Daily flow operation recording hydrocarbon movements.
+ * Daily flow volume reading recording hydrocarbon movements.
  * Represents production input, transportation, or consumption output operations.
  */
 @Schema(description = "Daily flow operation tracking hydrocarbon movements (production, transport, consumption)")
@@ -53,7 +53,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@Entity(name = "FlowOperation")
+@Entity(name = "FlowVolumeReading")
 @Table(
         name = "T_03_04_01",
         indexes = {
@@ -66,7 +66,7 @@ import lombok.ToString;
                 columnNames = {"F_01", "F_06", "F_08", "F_09"}
         )
 )
-public class FlowOperation extends GenericModel {
+public class FlowVolumeReading extends GenericModel {
 
     @Schema(
             description = "Date of the flow operation",
