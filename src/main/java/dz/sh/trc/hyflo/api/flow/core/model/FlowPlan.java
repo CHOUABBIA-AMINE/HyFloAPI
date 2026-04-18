@@ -24,10 +24,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.api.flow.reference.model.PlanStatus;
 import dz.sh.trc.hyflo.api.general.organization.model.Employee;
 import dz.sh.trc.hyflo.api.network.core.model.Pipeline;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,37 +39,27 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Schema(description = "Management-entered operational planning targets for a pipeline")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowPlan")
-@Table(
-        name = "T_03_03_02",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "T_03_03_06_UK_01",
-                        columnNames = {"F_05", "F_01", "F_09"}
-                )
-        }
-)
+@Table(name = "T_03_03_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_03_06_UK_01", columnNames = {"F_05", "F_01", "F_09"})})
 public class FlowPlan extends GenericModel {
 
     // ------------------------------------------------------------------
     // F_01 — Planning date (mandatory)
     // ------------------------------------------------------------------
 
-    @Schema(description = "Calendar date this plan covers", example = "2026-04-01",
-            requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(
+    	description = "Calendar date this plan covers", example = "2026-04-01",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @Column(name = "F_01", nullable = false)
     private LocalDate planDate;
 

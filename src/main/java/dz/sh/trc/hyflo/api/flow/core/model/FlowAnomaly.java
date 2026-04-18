@@ -1,14 +1,13 @@
 /**
  *
- * 	@Author		: HyFlo v2
+* 	@Author		: MEDJERAB Abir
  *
  * 	@Name		: FlowAnomaly
  * 	@CreatedOn	: 03-25-2026
- * 	@MovedOn	: 03-28-2026 — refactor: flow.core.model → flow.intelligence.model
  *
  * 	@Type		: Class
  * 	@Layer		: Model
- * 	@Package	: Flow / Intelligence
+ * 	@Package	: Flow / Core
  *
  **/
 
@@ -71,19 +70,16 @@ public class FlowAnomaly extends GenericModel {
 
     @Schema(description = "FK to the source FlowReading")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_05_03_FK_01"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_05_03_FK_01"))
     private FlowReading reading;
 
     @Schema(description = "FK to the source DerivedFlowReading (if applicable)")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_05_03_FK_02"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_05_03_FK_02"))
     private SegmentFlowReading segmentFlowReading;
 
     @Schema(description = "FK to the affected pipeline segment")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_09", referencedColumnName = "F_00",
-            foreignKey = @ForeignKey(name = "T_03_05_03_FK_03"))
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_05_03_FK_03"))
     private PipelineSegment pipelineSegment;
 }
