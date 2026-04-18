@@ -15,7 +15,7 @@
 package dz.sh.trc.hyflo.api.general.localization.model;
 
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
-import dz.sh.trc.hyflo.api.network.core.model.Infrastructure;
+import dz.sh.trc.hyflo.api.network.topology.model.Infrastructure;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
