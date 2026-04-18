@@ -44,7 +44,7 @@ import lombok.Setter;
  * Daily flow volume reading recording hydrocarbon movements.
  * Represents production input, transportation, or consumption output operations.
  */
-@Schema(description = "Daily flow operation tracking hydrocarbon movements (production, transport, consumption)")
+@Schema(description = "Daily flow volume reading tracking hydrocarbon movements (production, transport, consumption)")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -65,12 +65,12 @@ import lombok.Setter;
 public class FlowVolumeReading extends GenericModel {
 
     @Schema(
-            description = "Date of the flow operation",
+            description = "Date of the flow volume reading",
             example = "2026-01-22",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @Column(name = "F_01", nullable = false)
-    private LocalDate operationDate;
+    private LocalDate readingDate;
 
     @Schema(
             description = "Volume of product moved (in cubic meters or barrels)",
@@ -81,7 +81,7 @@ public class FlowVolumeReading extends GenericModel {
     private BigDecimal volume;
 
     @Schema(
-            description = "Timestamp when this operation was recorded",
+            description = "Timestamp when this reading was recorded",
             example = "2026-01-22T08:30:00",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
@@ -89,7 +89,7 @@ public class FlowVolumeReading extends GenericModel {
     private LocalDateTime recordedAt;
 
     @Schema(
-            description = "Timestamp when this operation was validated by supervisor",
+            description = "Timestamp when this reading was validated by supervisor",
             example = "2026-01-22T08:30:00",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
@@ -97,8 +97,8 @@ public class FlowVolumeReading extends GenericModel {
     private LocalDateTime validatedAt;
 
     @Schema(
-            description = "Additional notes or comments about this operation",
-            example = "Normal operation, no anomalies detected",
+            description = "Additional notes or comments about this reading",
+            example = "Normal reading, no anomalies detected",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 500
     )
@@ -106,7 +106,7 @@ public class FlowVolumeReading extends GenericModel {
     private String notes;
 
     @Schema(
-            description = "Infrastructure where this operation occurred (facility, station, terminal)",
+            description = "Infrastructure where this reading occurred (facility, station, terminal)",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
@@ -122,7 +122,7 @@ public class FlowVolumeReading extends GenericModel {
     private Product product;
 
     @Schema(
-            description = "Type of operation (production input, transport, consumption output)",
+            description = "Type of reading (production input, transport, consumption output)",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
@@ -130,7 +130,7 @@ public class FlowVolumeReading extends GenericModel {
     private OperationType type;
 
     @Schema(
-            description = "Employee who recorded this operation",
+            description = "Employee who recorded this reading",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
@@ -138,7 +138,7 @@ public class FlowVolumeReading extends GenericModel {
     private Employee recordedBy;
 
     @Schema(
-            description = "Supervisor who validated this operation",
+            description = "Supervisor who validated this reading",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
     @ManyToOne(fetch = FetchType.LAZY)
@@ -154,7 +154,7 @@ public class FlowVolumeReading extends GenericModel {
     private ValidationStatus validationStatus;
 
     @Schema(
-            description = "FK to the workflow instance governing the validation lifecycle of this operation. " +
+            description = "FK to the workflow instance governing the validation lifecycle of this reading. " +
                     "Null when no workflow process has been opened yet.",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )

@@ -19,6 +19,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -68,4 +69,8 @@ public abstract class GenericModel {
     @Column(name = "F_00")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Version
+    @Column(name = "A_01", nullable = false)
+    private Long version;
 }
