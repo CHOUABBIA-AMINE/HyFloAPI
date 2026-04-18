@@ -16,10 +16,10 @@ package dz.sh.trc.hyflo.core.general.organization.model;
 
 import java.util.Date;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.general.localization.model.Country;
 import dz.sh.trc.hyflo.core.general.localization.model.Locality;
 import dz.sh.trc.hyflo.core.system.utility.model.File;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,11 +35,9 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents individuals in the system (employees, users, contacts).
@@ -48,8 +46,6 @@ import lombok.ToString;
 @Schema(description = "Person entity with bilingual name support (Arabic and Latin) and comprehensive demographic information")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

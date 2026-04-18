@@ -21,11 +21,9 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Classification for production field types.
@@ -34,8 +32,6 @@ import lombok.ToString;
 @Schema(description = "Type classification for production fields (oil, gas, condensate)")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity(name="ProductionFieldType")
 @Inheritance(strategy = InheritanceType.JOINED)

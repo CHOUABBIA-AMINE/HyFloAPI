@@ -16,8 +16,8 @@ package dz.sh.trc.hyflo.core.flow.workflow.model;
 
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,17 +27,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Schema(description = "Explicit workflow instance representing the governance lifecycle of a domain entity")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "WorkflowInstance")

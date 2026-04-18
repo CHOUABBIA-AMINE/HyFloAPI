@@ -24,11 +24,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Classification of hydrocarbon flow operations.
@@ -39,8 +37,6 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 @Entity(name = "OperationType")
 @Table(name = "T_03_01_01", uniqueConstraints = {@UniqueConstraint(name = "T_03_01_01_UK_01", columnNames = {"F_01"}),
 												 @UniqueConstraint(name = "T_03_01_01_UK_02", columnNames = {"F_03"})})

@@ -21,11 +21,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Reference entity describing the nature of a reading source
@@ -34,8 +32,6 @@ import lombok.ToString;
 @Schema(description = "Reference entity describing the nature of a reading source (DIRECT, DERIVED, AI_ASSISTED)")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "ReadingSourceNature")

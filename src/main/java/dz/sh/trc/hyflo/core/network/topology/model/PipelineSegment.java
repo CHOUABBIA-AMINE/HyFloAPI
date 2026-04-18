@@ -33,11 +33,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents individual segments of a pipeline with specific physical characteristics.
@@ -47,8 +45,6 @@ import lombok.ToString;
 @Schema(description = "Individual pipeline segment with specific physical and material properties for detailed asset management")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="PipelineSegment")

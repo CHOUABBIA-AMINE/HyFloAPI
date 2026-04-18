@@ -18,9 +18,9 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.network.topology.model.Pipeline;
 import dz.sh.trc.hyflo.core.network.topology.model.PipelineSegment;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,11 +33,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Structured impact analysis for an incident (affected assets, losses, downtime).
@@ -45,8 +43,6 @@ import lombok.ToString;
 @Schema(description = "Structured impact analysis for an incident")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "IncidentImpact")

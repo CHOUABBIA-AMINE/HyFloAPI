@@ -20,11 +20,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Classification for business partners in joint ventures and production sharing.
@@ -33,8 +31,6 @@ import lombok.ToString;
 @Schema(description = "Type classification for business partners in joint ventures and collaborative operations")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity(name="PartnerType")
 @Table(name="T_02_01_02")

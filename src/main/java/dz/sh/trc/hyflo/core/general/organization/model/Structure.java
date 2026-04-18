@@ -14,8 +14,8 @@
 
 package dz.sh.trc.hyflo.core.general.organization.model;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.general.type.model.StructureType;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,11 +29,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents organizational structures within SONATRACH (departments, divisions, directorates).
@@ -42,8 +40,6 @@ import lombok.ToString;
 @Schema(description = "Organizational structure entity with hierarchical parent-child relationships")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Structure")

@@ -28,11 +28,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents Algerian communes (baladiyahs) - municipalities at the local level.
@@ -41,8 +39,6 @@ import lombok.ToString;
 @Schema(description = "Algerian commune (baladiyah) representing third-level administrative subdivision - municipalities")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Locality")

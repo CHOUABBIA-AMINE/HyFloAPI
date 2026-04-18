@@ -35,11 +35,9 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents oil and gas production fields where hydrocarbons are extracted.
@@ -48,8 +46,6 @@ import lombok.ToString;
 @Schema(description = "Oil or gas production field where hydrocarbons are extracted from reservoirs")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="ProductionField")

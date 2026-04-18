@@ -19,13 +19,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.flow.reference.model.DataSource;
 import dz.sh.trc.hyflo.core.flow.reference.model.ReadingSlot;
 import dz.sh.trc.hyflo.core.flow.reference.model.ValidationStatus;
 import dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.core.network.topology.model.Pipeline;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,17 +36,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Schema(description = "Operational flow reading recorded by a transport operator")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowReading")

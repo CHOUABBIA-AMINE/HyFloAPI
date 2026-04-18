@@ -30,11 +30,9 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Comprehensive audit log entity for tracking all business operations.
@@ -43,8 +41,6 @@ import lombok.ToString;
 @Schema(description = "Comprehensive audit log for tracking all system operations and changes")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

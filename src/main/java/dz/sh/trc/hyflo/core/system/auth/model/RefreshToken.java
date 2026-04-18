@@ -37,7 +37,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Refresh token for JWT token rotation strategy.
@@ -46,7 +45,6 @@ import lombok.ToString;
 @Schema(description = "JWT refresh token for secure token rotation and session management")
 @Setter
 @Getter
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

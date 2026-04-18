@@ -28,11 +28,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents Algerian districts (daïras) - administrative subdivisions within provinces.
@@ -41,8 +39,6 @@ import lombok.ToString;
 @Schema(description = "Algerian district (daïra) representing second-level administrative subdivision within a wilaya")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="District")

@@ -20,11 +20,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Classification for vendors and contractors providing goods and services.
@@ -33,8 +31,6 @@ import lombok.ToString;
 @Schema(description = "Type classification for vendors, suppliers, and contractors")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity(name="VendorType")
 @Table(name="T_02_01_03")

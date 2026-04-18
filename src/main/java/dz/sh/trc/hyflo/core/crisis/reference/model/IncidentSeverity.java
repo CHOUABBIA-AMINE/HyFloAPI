@@ -23,11 +23,9 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Reference entity for incident severity levels (P1–P4, CRITICAL, HIGH, MEDIUM, LOW).
@@ -35,8 +33,6 @@ import lombok.ToString;
 @Schema(description = "Incident severity reference")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "IncidentSeverity")

@@ -37,11 +37,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents hydrocarbon transportation pipelines connecting terminals and facilities.
@@ -50,8 +48,6 @@ import lombok.ToString;
 @Schema(description = "Hydrocarbon transportation pipeline with comprehensive technical and operational specifications")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Pipeline")

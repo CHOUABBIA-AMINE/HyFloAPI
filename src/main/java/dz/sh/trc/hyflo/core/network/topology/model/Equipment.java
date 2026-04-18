@@ -16,10 +16,10 @@ package dz.sh.trc.hyflo.core.network.topology.model;
 
 import java.time.LocalDate;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.core.network.common.model.Vendor;
 import dz.sh.trc.hyflo.core.network.type.model.EquipmentType;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,11 +34,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents equipment and machinery installed at facilities.
@@ -47,8 +45,6 @@ import lombok.ToString;
 @Schema(description = "Equipment and machinery installed at hydrocarbon transportation facilities")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="Equipment")

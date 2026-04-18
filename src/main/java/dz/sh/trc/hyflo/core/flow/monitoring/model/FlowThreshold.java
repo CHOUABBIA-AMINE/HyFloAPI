@@ -17,8 +17,8 @@ package dz.sh.trc.hyflo.core.flow.monitoring.model;
 
 import java.math.BigDecimal;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.network.topology.model.Pipeline;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,11 +29,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Operating thresholds for pipeline monitoring and alerting.
@@ -43,8 +41,6 @@ import lombok.ToString;
 @Schema(description = "Pipeline operating thresholds for monitoring and automated alerting")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowThreshold")

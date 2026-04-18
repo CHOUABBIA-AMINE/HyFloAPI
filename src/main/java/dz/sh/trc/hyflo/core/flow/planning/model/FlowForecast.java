@@ -17,11 +17,11 @@ package dz.sh.trc.hyflo.core.flow.planning.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.core.network.common.model.Product;
 import dz.sh.trc.hyflo.core.network.topology.model.Infrastructure;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,24 +33,20 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Flow volume forecast for production planning and capacity management.
  * Enables predictive analytics and comparison with actual performance.
  */
 @Schema(description = "Flow volume forecast for production planning with accuracy tracking")
-@Entity(name = "FlowForecast")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+@Entity(name = "FlowForecast")
 @Table(
         name = "T_03_03_01",
         indexes = {

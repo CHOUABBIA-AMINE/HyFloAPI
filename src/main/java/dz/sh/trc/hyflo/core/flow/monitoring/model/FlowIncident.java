@@ -2,7 +2,7 @@
  *	
  *	@Author		: MEDJERAB Abir
  *
- *	@Name		: FlowEvent
+ *	@Name		: FlowIncident
  *	@CreatedOn	: 01-21-2026
  *	@UpdatedOn	: 03-25-2026
  *
@@ -32,11 +32,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Operational event log for infrastructure activities and incidents.
@@ -45,11 +43,9 @@ import lombok.ToString;
 @Schema(description = "Operational event log for infrastructure activities, incidents, and maintenance tracking")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "FlowEvent")
+@Entity(name = "FlowIncident")
 @Table(
         name = "T_03_06_04",
         indexes = {
@@ -58,7 +54,7 @@ import lombok.ToString;
                 @Index(name = "T_03_06_04_IX_03", columnList = "F_01,F_02,F_07")
         }
 )
-public class FlowEvent extends GenericModel {
+public class FlowIncident extends GenericModel {
 
     @Schema(
             description = "Timestamp when event occurred",

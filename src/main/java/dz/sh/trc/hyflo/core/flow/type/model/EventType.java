@@ -24,11 +24,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Classification of operational events in hydrocarbon infrastructure.
@@ -39,8 +37,6 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
 @Entity(name = "EventType")
 @Table(name = "T_03_01_02", uniqueConstraints = {@UniqueConstraint(name = "T_03_01_02_UK_01", columnNames = {"F_01"}),
 												 @UniqueConstraint(name = "T_03_01_02_UK_02", columnNames = {"F_03"})})

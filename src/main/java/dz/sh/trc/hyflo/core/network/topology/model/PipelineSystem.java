@@ -14,10 +14,10 @@
 
 package dz.sh.trc.hyflo.core.network.topology.model;
 
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import dz.sh.trc.hyflo.core.general.organization.model.Structure;
 import dz.sh.trc.hyflo.core.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.core.network.common.model.Product;
+import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,11 +31,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents a pipeline system consisting of multiple interconnected pipelines,
@@ -45,8 +43,6 @@ import lombok.ToString;
 @Schema(description = "Integrated pipeline system for transporting specific hydrocarbon products across multiple facilities")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name="PipelineSystem")

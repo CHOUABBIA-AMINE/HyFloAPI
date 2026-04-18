@@ -31,11 +31,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Automated alert triggered when flow readings breach defined thresholds.
@@ -45,8 +43,6 @@ import lombok.ToString;
 @Schema(description = "Automated alert for threshold breaches requiring operator attention and resolution")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "FlowAlert")

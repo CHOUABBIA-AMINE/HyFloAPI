@@ -21,11 +21,9 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Classification for station types in the pipeline network.
@@ -34,8 +32,6 @@ import lombok.ToString;
 @Schema(description = "Type classification for stations (pumping, compression, metering, etc.)")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @Entity(name="StationType")
 @Inheritance(strategy = InheritanceType.JOINED)

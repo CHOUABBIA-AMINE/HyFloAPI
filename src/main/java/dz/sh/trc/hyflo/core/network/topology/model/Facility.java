@@ -34,11 +34,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represents fixed-location infrastructure facilities including stations,
@@ -47,8 +45,6 @@ import lombok.ToString;
 @Schema(description = "Fixed-location infrastructure facilities with specific geographic positioning and associated equipment")
 @Setter
 @Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
