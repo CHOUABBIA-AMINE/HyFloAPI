@@ -1,0 +1,47 @@
+/**
+ *	
+ *	@Author		: MEDJERAB Abir
+ *
+ *	@Name		: FacilityRepository
+ *	@CreatedOn	: 06-26-2025
+ *	@UpdatedOn	: 01-02-2026
+ *
+ *	@Type		: Interface
+ *	@Layer		: Repository
+ *	@Package	: Network / Topology
+ *
+ **/
+
+package dz.sh.trc.hyflo.core.network.topology.repository;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import dz.sh.trc.hyflo.core.network.topology.model.Facility;
+
+@Repository
+public interface FacilityRepository extends JpaRepository<Facility, Long> {
+
+    // ========== SPRING DERIVED QUERIES (Optimized) ==========
+    
+    boolean existsByCode(String code);
+    
+    boolean existsByCodeAndIdNot(String code, Long id);
+    
+    List<Facility> findByVendorId(Long vendorId);
+        
+    List<Facility> findByOperationalStatusId(Long operationalStatusId);
+
+    // ========== CUSTOM QUERIES (Complex multi-field search) ==========
+    
+    @Query("SELECT f FROM Facility f WHERE "
+         + "LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR "
+         + "LOWER(f.code) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Facility> searchByAnyField(@Param("search") String search, Pageable pageable);
+}
