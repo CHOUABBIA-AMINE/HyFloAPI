@@ -1,24 +1,17 @@
-/**
- *	
- *	@Author		: MEDJERAB Abir
- *
- *	@Name		: BaseMapper
- *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 04-19-2026
- *
- *	@Type		: Interface
- *	@Layer		: Template
- *	@Package	: Platform / kernel
- *
- **/
-
 package dz.sh.trc.hyflo.platform.kernel;
 
-public interface BaseMapper<E, REQ, RES> {
+import java.util.List;
+import org.mapstruct.MappingTarget;
 
-    E toEntity(REQ dto);
+public interface BaseMapper<REQ_C, REQ_U, RES, SUM, E> {
+
+    E toEntity(REQ_C dto);
 
     RES toResponse(E entity);
 
-    void updateEntity(REQ dto, E entity);
+    void updateEntityFromRequest(REQ_U dto, @MappingTarget E entity);
+    
+    SUM toSummary(E entity);
+    
+    List<RES> toResponseList(List<E> entities);
 }

@@ -14,8 +14,6 @@
 
 package dz.sh.trc.hyflo.core.system.security.model;
 
-import javax.validation.constraints.NotNull;
-
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -23,6 +21,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

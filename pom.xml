@@ -41,13 +41,13 @@
 	    <java.version>17</java.version>
 	    <maven.compiler.release>17</maven.compiler.release>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	    <spring-ai.version>1.0.0</spring-ai.version>
+	    <!--<spring-ai.version>1.0.0</spring-ai.version>
 		<resilience4j.version>2.3.0</resilience4j.version>
 		<json-schema-validator.version>1.4.3</json-schema-validator.version>
-		<archunit.version>1.3.0</archunit.version>
+		<archunit.version>1.3.0</archunit.version>-->
 	</properties>
 	
-	<dependencyManagement>
+	<!--<dependencyManagement>
 	    <dependencies>
 
 	        <dependency>
@@ -67,7 +67,7 @@
 	        </dependency>
 
 	    </dependencies>
-	</dependencyManagement>
+	</dependencyManagement>-->
 	
 	<dependencies>
 		<dependency>
@@ -121,6 +121,18 @@
 			<optional>true</optional>
 		</dependency>
 		
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>1.6.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+			<version>1.6.3</version>
+			<scope>provided</scope>
+		</dependency>
+		
 		<!-- JWT Dependencies - Version 0.13.0 -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -170,64 +182,64 @@
 		     Both inactive until hyflo.ai.enabled=true.
 		     ════════════════════════════════════════════════════════ -->
 
-		<!-- Primary LLM adapter: OpenAI / Azure OpenAI (Spring AI 1.0.0 GA naming) -->
+		<!-- Primary LLM adapter: OpenAI / Azure OpenAI (Spring AI 1.0.0 GA naming) 
 		<dependency>
 		    <groupId>org.springframework.ai</groupId>
 		    <artifactId>spring-ai-starter-model-openai</artifactId>
-		</dependency>
+		</dependency>-->
 		
-		<!-- Offline / local fallback model adapter (Spring AI 1.0.0 GA naming) -->
+		<!-- Offline / local fallback model adapter (Spring AI 1.0.0 GA naming) 
 		<dependency>
 		    <groupId>org.springframework.ai</groupId>
 		    <artifactId>spring-ai-starter-model-ollama</artifactId>
-		</dependency>
+		</dependency>-->
 
 		<!-- ════════════════════════════════════════════════════════
 		     RESILIENCE4J — retry + circuit breaker for LLM calls
 		     Versions managed by resilience4j-bom.
 		     ════════════════════════════════════════════════════════ -->
 
-		<!-- Spring Boot 3 auto-configuration bridge -->
+		<!-- Spring Boot 3 auto-configuration bridge 
 		<dependency>
 		    <groupId>io.github.resilience4j</groupId>
 		    <artifactId>resilience4j-spring-boot3</artifactId>
-		</dependency>
+		</dependency>-->
 
-		<!-- Core retry — AiRetryPolicy -->
+		<!-- Core retry — AiRetryPolicy 
 		<dependency>
 		    <groupId>io.github.resilience4j</groupId>
 		    <artifactId>resilience4j-retry</artifactId>
-		</dependency>
+		</dependency>-->
 
-		<!-- Core circuit breaker — AiCircuitBreaker -->
+		<!-- Core circuit breaker — AiCircuitBreaker 
 		<dependency>
 		    <groupId>io.github.resilience4j</groupId>
 		    <artifactId>resilience4j-circuitbreaker</artifactId>
-		</dependency>
+		</dependency>-->
 
-		<!-- AOP required by @Retry / @CircuitBreaker annotations -->
+		<!-- AOP required by @Retry / @CircuitBreaker annotations 
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-aspectj</artifactId>
-		</dependency>
+		</dependency>-->
 
-		<!-- StringTemplate 4 — prompt template rendering -->
+		<!-- StringTemplate 4 — prompt template rendering 
 		<dependency>
 		    <groupId>org.antlr</groupId>
 		    <artifactId>ST4</artifactId>
 		    <version>4.3.4</version>
-		</dependency>
+		</dependency>-->
 
 		<!-- ════════════════════════════════════════════════════════
 		     JSON SCHEMA VALIDATION
 		     Used by StructuredOutputEnforcer (platform/ai/format/)
 		     to validate and auto-correct LLM structured JSON output.
 		     ════════════════════════════════════════════════════════ -->
-		<dependency>
+		<!--<dependency>
 		    <groupId>com.networknt</groupId>
 		    <artifactId>json-schema-validator</artifactId>
 		    <version>${json-schema-validator.version}</version>
-		</dependency>
+		</dependency>-->
 		
 	</dependencies>
 
@@ -241,8 +253,18 @@
 					<release>${java.version}</release>
 					<annotationProcessorPaths>
 						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>1.6.3</version>
+						</path>
+						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
