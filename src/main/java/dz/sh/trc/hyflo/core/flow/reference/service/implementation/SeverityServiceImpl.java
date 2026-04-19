@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class SeverityServiceImpl extends AbstractCrudService<CreateSeverityRequest, UpdateSeverityRequest, SeverityResponse, SeveritySummary, Severity, Long> implements SeverityService {
+public class SeverityServiceImpl extends AbstractCrudService<CreateSeverityRequest, UpdateSeverityRequest, SeverityResponse, SeveritySummary, Severity> implements SeverityService {
 
     public SeverityServiceImpl(SeverityRepository repository, SeverityMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

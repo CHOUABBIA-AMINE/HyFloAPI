@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class PlanStatusServiceImpl extends AbstractCrudService<CreatePlanStatusRequest, UpdatePlanStatusRequest, PlanStatusResponse, PlanStatusSummary, PlanStatus, Long> implements PlanStatusService {
+public class PlanStatusServiceImpl extends AbstractCrudService<CreatePlanStatusRequest, UpdatePlanStatusRequest, PlanStatusResponse, PlanStatusSummary, PlanStatus> implements PlanStatusService {
 
     public PlanStatusServiceImpl(PlanStatusRepository repository, PlanStatusMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

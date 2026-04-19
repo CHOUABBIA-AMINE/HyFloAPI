@@ -17,7 +17,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class PartnerServiceImpl extends AbstractCrudService<CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse, PartnerSummary, Partner, Long> implements PartnerService {
+public class PartnerServiceImpl extends AbstractCrudService<CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse, PartnerSummary, Partner> implements PartnerService {
 
     public PartnerServiceImpl(PartnerRepository repository, PartnerMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

@@ -16,7 +16,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class DataSourceServiceImpl extends AbstractCrudService<CreateDataSourceRequest, UpdateDataSourceRequest, DataSourceResponse, DataSourceSummary, DataSource, Long> implements DataSourceService {
+public class DataSourceServiceImpl extends AbstractCrudService<CreateDataSourceRequest, UpdateDataSourceRequest, DataSourceResponse, DataSourceSummary, DataSource> implements DataSourceService {
 
     public DataSourceServiceImpl(DataSourceRepository repository, DataSourceMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class QualityFlagServiceImpl extends AbstractCrudService<CreateQualityFlagRequest, UpdateQualityFlagRequest, QualityFlagResponse, QualityFlagSummary, QualityFlag, Long> implements QualityFlagService {
+public class QualityFlagServiceImpl extends AbstractCrudService<CreateQualityFlagRequest, UpdateQualityFlagRequest, QualityFlagResponse, QualityFlagSummary, QualityFlag> implements QualityFlagService {
 
     public QualityFlagServiceImpl(QualityFlagRepository repository, QualityFlagMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

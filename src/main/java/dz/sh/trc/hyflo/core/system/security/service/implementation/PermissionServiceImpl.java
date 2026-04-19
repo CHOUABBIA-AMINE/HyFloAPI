@@ -17,7 +17,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class PermissionServiceImpl extends AbstractCrudService<CreatePermissionRequest, UpdatePermissionRequest, PermissionResponse, PermissionSummary, Permission, Long> implements PermissionService {
+public class PermissionServiceImpl extends AbstractCrudService<CreatePermissionRequest, UpdatePermissionRequest, PermissionResponse, PermissionSummary, Permission> implements PermissionService {
 
     public PermissionServiceImpl(PermissionRepository repository, PermissionMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

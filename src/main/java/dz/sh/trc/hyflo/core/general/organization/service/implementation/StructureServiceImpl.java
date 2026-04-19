@@ -16,7 +16,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class StructureServiceImpl extends AbstractCrudService<CreateStructureRequest, UpdateStructureRequest, StructureResponse, StructureSummary, Structure, Long> implements StructureService {
+public class StructureServiceImpl extends AbstractCrudService<CreateStructureRequest, UpdateStructureRequest, StructureResponse, StructureSummary, Structure> implements StructureService {
 
     public StructureServiceImpl(StructureRepository repository, StructureMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

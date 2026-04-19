@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class EventTypeServiceImpl extends AbstractCrudService<CreateEventTypeRequest, UpdateEventTypeRequest, EventTypeResponse, EventTypeSummary, EventType, Long> implements EventTypeService {
+public class EventTypeServiceImpl extends AbstractCrudService<CreateEventTypeRequest, UpdateEventTypeRequest, EventTypeResponse, EventTypeSummary, EventType> implements EventTypeService {
 
     public EventTypeServiceImpl(EventTypeRepository repository, EventTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

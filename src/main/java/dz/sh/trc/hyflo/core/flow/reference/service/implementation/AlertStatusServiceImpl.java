@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class AlertStatusServiceImpl extends AbstractCrudService<CreateAlertStatusRequest, UpdateAlertStatusRequest, AlertStatusResponse, AlertStatusSummary, AlertStatus, Long> implements AlertStatusService {
+public class AlertStatusServiceImpl extends AbstractCrudService<CreateAlertStatusRequest, UpdateAlertStatusRequest, AlertStatusResponse, AlertStatusSummary, AlertStatus> implements AlertStatusService {
 
     public AlertStatusServiceImpl(AlertStatusRepository repository, AlertStatusMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

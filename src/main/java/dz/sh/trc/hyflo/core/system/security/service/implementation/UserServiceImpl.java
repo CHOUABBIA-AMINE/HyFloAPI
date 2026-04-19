@@ -23,7 +23,7 @@ import dz.sh.trc.hyflo.exception.base.ErrorCode;
 import dz.sh.trc.hyflo.exception.business.BusinessException;
 
 @Service
-public class UserServiceImpl extends AbstractCrudService<CreateUserRequest, UpdateUserRequest, UserResponse, UserSummary, User, Long> implements UserService {
+public class UserServiceImpl extends AbstractCrudService<CreateUserRequest, UpdateUserRequest, UserResponse, UserSummary, User> implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;

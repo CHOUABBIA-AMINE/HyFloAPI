@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ParameterServiceImpl extends AbstractCrudService<CreateParameterRequest, UpdateParameterRequest, ParameterResponse, ParameterSummary, Parameter, Long> implements ParameterService {
+public class ParameterServiceImpl extends AbstractCrudService<CreateParameterRequest, UpdateParameterRequest, ParameterResponse, ParameterSummary, Parameter> implements ParameterService {
 
     public ParameterServiceImpl(ParameterRepository repository, ParameterMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

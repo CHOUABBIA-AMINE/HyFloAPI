@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class OperationTypeServiceImpl extends AbstractCrudService<CreateOperationTypeRequest, UpdateOperationTypeRequest, OperationTypeResponse, OperationTypeSummary, OperationType, Long> implements OperationTypeService {
+public class OperationTypeServiceImpl extends AbstractCrudService<CreateOperationTypeRequest, UpdateOperationTypeRequest, OperationTypeResponse, OperationTypeSummary, OperationType> implements OperationTypeService {
 
     public OperationTypeServiceImpl(OperationTypeRepository repository, OperationTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

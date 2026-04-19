@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ResourceTypeServiceImpl extends AbstractCrudService<CreateResourceTypeRequest, UpdateResourceTypeRequest, ResourceTypeResponse, ResourceTypeSummary, ResourceType, Long> implements ResourceTypeService {
+public class ResourceTypeServiceImpl extends AbstractCrudService<CreateResourceTypeRequest, UpdateResourceTypeRequest, ResourceTypeResponse, ResourceTypeSummary, ResourceType> implements ResourceTypeService {
 
     public ResourceTypeServiceImpl(ResourceTypeRepository repository, ResourceTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

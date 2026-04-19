@@ -20,7 +20,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class EmployeeServiceImpl extends AbstractCrudService<CreateEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse, EmployeeSummary, Employee, Long> implements EmployeeService {
+public class EmployeeServiceImpl extends AbstractCrudService<CreateEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse, EmployeeSummary, Employee> implements EmployeeService {
 
     public EmployeeServiceImpl(EmployeeRepository repository, EmployeeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

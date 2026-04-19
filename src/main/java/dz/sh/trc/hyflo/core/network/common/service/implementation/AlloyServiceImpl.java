@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class AlloyServiceImpl extends AbstractCrudService<CreateAlloyRequest, UpdateAlloyRequest, AlloyResponse, AlloySummary, Alloy, Long> implements AlloyService {
+public class AlloyServiceImpl extends AbstractCrudService<CreateAlloyRequest, UpdateAlloyRequest, AlloyResponse, AlloySummary, Alloy> implements AlloyService {
 
     public AlloyServiceImpl(AlloyRepository repository, AlloyMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

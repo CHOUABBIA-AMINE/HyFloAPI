@@ -24,7 +24,7 @@ import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 import jakarta.persistence.criteria.Predicate;
 
 @Service
-public class AuditServiceImpl extends AbstractCrudService<CreateAuditRequest, UpdateAuditRequest, AuditResponse, AuditSummary, Audited, Long> implements AuditService {
+public class AuditServiceImpl extends AbstractCrudService<CreateAuditRequest, UpdateAuditRequest, AuditResponse, AuditSummary, Audited> implements AuditService {
 
     private final AuditedRepository auditedRepository;
 

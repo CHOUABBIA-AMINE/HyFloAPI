@@ -23,7 +23,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class PipelineServiceImpl extends AbstractCrudService<CreatePipelineRequest, UpdatePipelineRequest, PipelineResponse, PipelineSummary, Pipeline, Long> implements PipelineService {
+public class PipelineServiceImpl extends AbstractCrudService<CreatePipelineRequest, UpdatePipelineRequest, PipelineResponse, PipelineSummary, Pipeline> implements PipelineService {
 
     public PipelineServiceImpl(PipelineRepository repository, PipelineMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

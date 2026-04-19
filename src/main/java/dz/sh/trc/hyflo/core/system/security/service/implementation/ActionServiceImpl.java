@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ActionServiceImpl extends AbstractCrudService<CreateActionRequest, UpdateActionRequest, ActionResponse, ActionSummary, Action, Long> implements ActionService {
+public class ActionServiceImpl extends AbstractCrudService<CreateActionRequest, UpdateActionRequest, ActionResponse, ActionSummary, Action> implements ActionService {
 
     public ActionServiceImpl(ActionRepository repository, ActionMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

@@ -1,7 +1,6 @@
 package dz.sh.trc.hyflo.core.network.topology.dto.response;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 public record EquipmentResponse(
         Long id,

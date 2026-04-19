@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class OperationalStatusServiceImpl extends AbstractCrudService<CreateOperationalStatusRequest, UpdateOperationalStatusRequest, OperationalStatusResponse, OperationalStatusSummary, OperationalStatus, Long> implements OperationalStatusService {
+public class OperationalStatusServiceImpl extends AbstractCrudService<CreateOperationalStatusRequest, UpdateOperationalStatusRequest, OperationalStatusResponse, OperationalStatusSummary, OperationalStatus> implements OperationalStatusService {
 
     public OperationalStatusServiceImpl(OperationalStatusRepository repository, OperationalStatusMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

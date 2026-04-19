@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class FacilityTypeServiceImpl extends AbstractCrudService<CreateFacilityTypeRequest, UpdateFacilityTypeRequest, FacilityTypeResponse, FacilityTypeSummary, FacilityType, Long> implements FacilityTypeService {
+public class FacilityTypeServiceImpl extends AbstractCrudService<CreateFacilityTypeRequest, UpdateFacilityTypeRequest, FacilityTypeResponse, FacilityTypeSummary, FacilityType> implements FacilityTypeService {
 
     public FacilityTypeServiceImpl(FacilityTypeRepository repository, FacilityTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);
