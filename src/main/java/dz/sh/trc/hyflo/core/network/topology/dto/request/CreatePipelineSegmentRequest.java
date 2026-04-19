@@ -1,0 +1,30 @@
+package dz.sh.trc.hyflo.core.network.topology.dto.request;
+
+import java.time.LocalDate;
+import java.util.Set;
+
+public record CreatePipelineSegmentRequest(
+        String code,
+        String name,
+        LocalDate installationDate,
+        LocalDate commissioningDate,
+        LocalDate decommissioningDate,
+        Long operationalStatusId,
+        Long ownerId,
+        Double diameter,
+        Double length,
+        Double thickness,
+        Double roughness,
+        Double startPoint,
+        Double endPoint,
+        Long constructionMaterialId,
+        Long exteriorCoatingId,
+        Long interiorCoatingId,
+        Long pipelineId,
+        Long departureFacilityId,
+        Long arrivalFacilityId,
+        String terrainType,
+        String environmentSensitivity,
+        Double corrosionIndex,
+        String criticality
+) {}

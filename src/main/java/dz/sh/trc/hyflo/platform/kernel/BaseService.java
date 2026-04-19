@@ -1,30 +1,24 @@
-/**
- *	
- *	@Author		: MEDJERAB Abir
- *
- *	@Name		: BaseService
- *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 04-19-2026
- *
- *	@Type		: interface
- *	@Layer		: Template
- *	@Package	: Configuration / Template
- *
- **/
-
 package dz.sh.trc.hyflo.platform.kernel;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-public interface BaseService<REQ, RES> {
+public interface BaseService<REQ_C, REQ_U, RES, SUM> {
 
-    RES create(REQ request);
+    RES create(REQ_C request);
 
-    RES update(Long id, REQ request);
+    RES update(Long id, REQ_U request);
 
     RES getById(Long id);
 
     List<RES> getAll();
 
+    Page<SUM> getAll(Pageable pageable);
+
     void delete(Long id);
+
+    boolean existsById(Long id);
+
+    long count();
 }

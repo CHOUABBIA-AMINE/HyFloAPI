@@ -1,84 +1,139 @@
-/**
- *	
- *	@Author		: MEDJERAB Abir
- *
- *	@Name		: AbstractCrudService
- *	@CreatedOn	: 06-26-2025
- *	@UpdatedOn	: 04-19-2026
- *
- *	@Type		: Abstract Class
- *	@Layer		: Template
- *	@Package	: Platform / Kernel
- *
- **/
-
 package dz.sh.trc.hyflo.platform.kernel;
 
 import java.util.List;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.transaction.Transactional;
+import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 
 @Transactional
-public abstract class AbstractCrudService<E, REQ, RES> implements BaseService<REQ, RES> {
+public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> implements BaseService<REQ_C, REQ_U, RES, SUM> {
 
-    protected abstract JpaRepository<E, Long> getRepository();
+    protected final JpaRepository<E, ID> repository;
+    protected final BaseMapper<REQ_C, REQ_U, RES, SUM, E> mapper;
+    protected final ReferenceResolver referenceResolver;
+    protected final ApplicationEventPublisher eventPublisher;
 
-    protected abstract BaseMapper<E, REQ, RES> getMapper();
+    protected AbstractCrudService(JpaRepository<E, ID> repository, 
+                                  BaseMapper<REQ_C, REQ_U, RES, SUM, E> mapper, 
+                                  ReferenceResolver referenceResolver, 
+                                  ApplicationEventPublisher eventPublisher) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.referenceResolver = referenceResolver;
+        this.eventPublisher = eventPublisher;
+    }
 
-    protected abstract void beforeCreate(REQ request, E entity);
+    protected abstract Class<E> getEntityClass();
 
-    protected abstract void beforeUpdate(REQ request, E entity);
+    protected void beforeCreate(REQ_C request, E entity) {}
 
-    protected abstract void validate(REQ request);
+    protected void afterCreate(E entity) {}
+
+    protected void beforeUpdate(REQ_U request, E entity) {}
+
+    protected void afterUpdate(E entity) {}
+
+    protected void beforeDelete(E entity) {}
+
+    protected void afterDelete(ID id) {}
+
+    protected void validateCreate(REQ_C request) {}
+
+    protected void validateUpdate(REQ_U request) {}
+
+    protected void publishEvent(Object event) {
+        if (eventPublisher != null) {
+            eventPublisher.publishEvent(event);
+        }
+    }
+
+    protected String getEntityName() {
+        return getEntityClass().getSimpleName();
+    }
+    
+    protected E findEntityById(ID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(getEntityName() + " with id " + id + " not found"));
+    }
 
     @Override
-    public RES create(REQ request) {
-        validate(request);
+    public RES create(REQ_C request) {
+        validateCreate(request);
 
-        E entity = getMapper().toEntity(request);
+        E entity = mapper.toEntity(request);
 
         beforeCreate(request, entity);
 
-        entity = getRepository().save(entity);
+        entity = repository.save(entity);
 
-        return getMapper().toResponse(entity);
+        afterCreate(entity);
+
+        return mapper.toResponse(entity);
     }
 
     @Override
-    public RES update(Long id, REQ request) {
-        validate(request);
+    public RES update(Long id, REQ_U request) {
+        validateUpdate(request);
 
-        E entity = getRepository().findById(id)
-                .orElseThrow(() -> new RuntimeException("Entity not found"));
+        E entity = findEntityById((ID) id);
 
-        getMapper().updateEntity(request, entity);
+        mapper.updateEntityFromRequest(request, entity);
 
         beforeUpdate(request, entity);
 
-        entity = getRepository().save(entity);
+        entity = repository.save(entity);
 
-        return getMapper().toResponse(entity);
+        afterUpdate(entity);
+
+        return mapper.toResponse(entity);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public RES getById(Long id) {
-        return getRepository().findById(id)
-                .map(getMapper()::toResponse)
-                .orElseThrow(() -> new RuntimeException("Entity not found"));
+        E entity = findEntityById((ID) id);
+        return mapper.toResponse(entity);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RES> getAll() {
-        return getRepository().findAll()
+        return repository.findAll()
                 .stream()
-                .map(getMapper()::toResponse)
+                .map(mapper::toResponse)
                 .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<SUM> getAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(mapper::toSummary);
+    }
+
+    @Override
     public void delete(Long id) {
-        getRepository().deleteById(id);
+        E entity = findEntityById((ID) id);
+        
+        beforeDelete(entity);
+        repository.delete(entity);
+        afterDelete((ID) id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsById(Long id) {
+        return repository.existsById((ID) id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long count() {
+        return repository.count();
     }
 }

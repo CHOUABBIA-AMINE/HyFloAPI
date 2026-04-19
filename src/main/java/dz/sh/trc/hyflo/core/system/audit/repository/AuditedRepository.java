@@ -24,10 +24,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import dz.sh.trc.hyflo.core.system.audit.model.Audited;
 
 @Repository
-public interface AuditedRepository extends JpaRepository<Audited, Long> {
+public interface AuditedRepository extends JpaRepository<Audited, Long>, JpaSpecificationExecutor<Audited> {
 
     // Spring Data derived queries (no custom implementation needed)
     List<Audited> findByEntityNameAndEntityId(String entityName, Long entityId);
