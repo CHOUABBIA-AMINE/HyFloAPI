@@ -16,7 +16,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class JobServiceImpl extends AbstractCrudService<CreateJobRequest, UpdateJobRequest, JobResponse, JobSummary, Job, Long> implements JobService {
+public class JobServiceImpl extends AbstractCrudService<CreateJobRequest, UpdateJobRequest, JobResponse, JobSummary, Job> implements JobService {
 
     public JobServiceImpl(JobRepository repository, JobMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

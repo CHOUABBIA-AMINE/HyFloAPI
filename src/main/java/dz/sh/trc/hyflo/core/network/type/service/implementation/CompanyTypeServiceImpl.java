@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class CompanyTypeServiceImpl extends AbstractCrudService<CreateCompanyTypeRequest, UpdateCompanyTypeRequest, CompanyTypeResponse, CompanyTypeSummary, CompanyType, Long> implements CompanyTypeService {
+public class CompanyTypeServiceImpl extends AbstractCrudService<CreateCompanyTypeRequest, UpdateCompanyTypeRequest, CompanyTypeResponse, CompanyTypeSummary, CompanyType> implements CompanyTypeService {
 
     public CompanyTypeServiceImpl(CompanyTypeRepository repository, CompanyTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

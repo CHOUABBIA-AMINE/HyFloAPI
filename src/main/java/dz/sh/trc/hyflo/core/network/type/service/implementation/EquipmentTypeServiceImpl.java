@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class EquipmentTypeServiceImpl extends AbstractCrudService<CreateEquipmentTypeRequest, UpdateEquipmentTypeRequest, EquipmentTypeResponse, EquipmentTypeSummary, EquipmentType, Long> implements EquipmentTypeService {
+public class EquipmentTypeServiceImpl extends AbstractCrudService<CreateEquipmentTypeRequest, UpdateEquipmentTypeRequest, EquipmentTypeResponse, EquipmentTypeSummary, EquipmentType> implements EquipmentTypeService {
 
     public EquipmentTypeServiceImpl(EquipmentTypeRepository repository, EquipmentTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

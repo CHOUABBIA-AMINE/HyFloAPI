@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -23,12 +22,11 @@ import dz.sh.trc.hyflo.core.system.utility.mapper.FileMapper;
 import dz.sh.trc.hyflo.core.system.utility.model.File;
 import dz.sh.trc.hyflo.core.system.utility.repository.FileRepository;
 import dz.sh.trc.hyflo.core.system.utility.service.FileService;
-import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class FileServiceImpl extends AbstractCrudService<CreateFileRequest, UpdateFileRequest, FileResponse, FileSummary, File, Long> implements FileService {
+public class FileServiceImpl extends AbstractCrudService<CreateFileRequest, UpdateFileRequest, FileResponse, FileSummary, File> implements FileService {
 
     private final String uploadDir = "uploads";
 

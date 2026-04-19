@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ReadingSlotServiceImpl extends AbstractCrudService<CreateReadingSlotRequest, UpdateReadingSlotRequest, ReadingSlotResponse, ReadingSlotSummary, ReadingSlot, Long> implements ReadingSlotService {
+public class ReadingSlotServiceImpl extends AbstractCrudService<CreateReadingSlotRequest, UpdateReadingSlotRequest, ReadingSlotResponse, ReadingSlotSummary, ReadingSlot> implements ReadingSlotService {
 
     public ReadingSlotServiceImpl(ReadingSlotRepository repository, ReadingSlotMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

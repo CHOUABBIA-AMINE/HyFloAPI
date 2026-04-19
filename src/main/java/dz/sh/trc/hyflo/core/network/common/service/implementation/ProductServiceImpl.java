@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ProductServiceImpl extends AbstractCrudService<CreateProductRequest, UpdateProductRequest, ProductResponse, ProductSummary, Product, Long> implements ProductService {
+public class ProductServiceImpl extends AbstractCrudService<CreateProductRequest, UpdateProductRequest, ProductResponse, ProductSummary, Product> implements ProductService {
 
     public ProductServiceImpl(ProductRepository repository, ProductMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

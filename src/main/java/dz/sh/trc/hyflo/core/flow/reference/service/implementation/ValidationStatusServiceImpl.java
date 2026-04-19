@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ValidationStatusServiceImpl extends AbstractCrudService<CreateValidationStatusRequest, UpdateValidationStatusRequest, ValidationStatusResponse, ValidationStatusSummary, ValidationStatus, Long> implements ValidationStatusService {
+public class ValidationStatusServiceImpl extends AbstractCrudService<CreateValidationStatusRequest, UpdateValidationStatusRequest, ValidationStatusResponse, ValidationStatusSummary, ValidationStatus> implements ValidationStatusService {
 
     public ValidationStatusServiceImpl(ValidationStatusRepository repository, ValidationStatusMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

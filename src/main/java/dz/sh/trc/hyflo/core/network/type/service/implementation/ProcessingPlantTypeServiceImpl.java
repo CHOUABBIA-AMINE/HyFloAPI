@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ProcessingPlantTypeServiceImpl extends AbstractCrudService<CreateProcessingPlantTypeRequest, UpdateProcessingPlantTypeRequest, ProcessingPlantTypeResponse, ProcessingPlantTypeSummary, ProcessingPlantType, Long> implements ProcessingPlantTypeService {
+public class ProcessingPlantTypeServiceImpl extends AbstractCrudService<CreateProcessingPlantTypeRequest, UpdateProcessingPlantTypeRequest, ProcessingPlantTypeResponse, ProcessingPlantTypeSummary, ProcessingPlantType> implements ProcessingPlantTypeService {
 
     public ProcessingPlantTypeServiceImpl(ProcessingPlantTypeRepository repository, ProcessingPlantTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

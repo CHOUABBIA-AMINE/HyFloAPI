@@ -17,7 +17,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class RoleServiceImpl extends AbstractCrudService<CreateRoleRequest, UpdateRoleRequest, RoleResponse, RoleSummary, Role, Long> implements RoleService {
+public class RoleServiceImpl extends AbstractCrudService<CreateRoleRequest, UpdateRoleRequest, RoleResponse, RoleSummary, Role> implements RoleService {
 
     public RoleServiceImpl(RoleRepository repository, RoleMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class TerminalTypeServiceImpl extends AbstractCrudService<CreateTerminalTypeRequest, UpdateTerminalTypeRequest, TerminalTypeResponse, TerminalTypeSummary, TerminalType, Long> implements TerminalTypeService {
+public class TerminalTypeServiceImpl extends AbstractCrudService<CreateTerminalTypeRequest, UpdateTerminalTypeRequest, TerminalTypeResponse, TerminalTypeSummary, TerminalType> implements TerminalTypeService {
 
     public TerminalTypeServiceImpl(TerminalTypeRepository repository, TerminalTypeMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

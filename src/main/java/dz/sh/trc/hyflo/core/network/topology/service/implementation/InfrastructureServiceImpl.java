@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class InfrastructureServiceImpl extends AbstractCrudService<CreateInfrastructureRequest, UpdateInfrastructureRequest, InfrastructureResponse, InfrastructureSummary, Infrastructure, Long> implements InfrastructureService {
+public class InfrastructureServiceImpl extends AbstractCrudService<CreateInfrastructureRequest, UpdateInfrastructureRequest, InfrastructureResponse, InfrastructureSummary, Infrastructure> implements InfrastructureService {
 
     public InfrastructureServiceImpl(InfrastructureRepository repository, InfrastructureMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ProductionFieldServiceImpl extends AbstractCrudService<CreateProductionFieldRequest, UpdateProductionFieldRequest, ProductionFieldResponse, ProductionFieldSummary, ProductionField, Long> implements ProductionFieldService {
+public class ProductionFieldServiceImpl extends AbstractCrudService<CreateProductionFieldRequest, UpdateProductionFieldRequest, ProductionFieldResponse, ProductionFieldSummary, ProductionField> implements ProductionFieldService {
 
     public ProductionFieldServiceImpl(ProductionFieldRepository repository, ProductionFieldMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

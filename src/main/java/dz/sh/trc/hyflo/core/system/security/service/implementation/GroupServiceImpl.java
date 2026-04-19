@@ -17,7 +17,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class GroupServiceImpl extends AbstractCrudService<CreateGroupRequest, UpdateGroupRequest, GroupResponse, GroupSummary, Group, Long> implements GroupService {
+public class GroupServiceImpl extends AbstractCrudService<CreateGroupRequest, UpdateGroupRequest, GroupResponse, GroupSummary, Group> implements GroupService {
 
     public GroupServiceImpl(GroupRepository repository, GroupMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

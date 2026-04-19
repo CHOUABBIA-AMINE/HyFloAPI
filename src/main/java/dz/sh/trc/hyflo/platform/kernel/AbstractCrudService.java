@@ -11,14 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 
 @Transactional
-public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> implements BaseService<REQ_C, REQ_U, RES, SUM> {
+public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E> implements BaseService<REQ_C, REQ_U, RES, SUM> {
 
-    protected final JpaRepository<E, ID> repository;
+    protected final JpaRepository<E, Long> repository;
     protected final BaseMapper<REQ_C, REQ_U, RES, SUM, E> mapper;
     protected final ReferenceResolver referenceResolver;
     protected final ApplicationEventPublisher eventPublisher;
 
-    protected AbstractCrudService(JpaRepository<E, ID> repository, 
+    protected AbstractCrudService(JpaRepository<E, Long> repository, 
                                   BaseMapper<REQ_C, REQ_U, RES, SUM, E> mapper, 
                                   ReferenceResolver referenceResolver, 
                                   ApplicationEventPublisher eventPublisher) {
@@ -40,7 +40,7 @@ public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> impleme
 
     protected void beforeDelete(E entity) {}
 
-    protected void afterDelete(ID id) {}
+    protected void afterDelete(Long id) {}
 
     protected void validateCreate(REQ_C request) {}
 
@@ -56,7 +56,7 @@ public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> impleme
         return getEntityClass().getSimpleName();
     }
     
-    protected E findEntityById(ID id) {
+    protected E findEntityById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(getEntityName() + " with id " + id + " not found"));
     }
@@ -80,7 +80,7 @@ public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> impleme
     public RES update(Long id, REQ_U request) {
         validateUpdate(request);
 
-        E entity = findEntityById((ID) id);
+        E entity = findEntityById(id);
 
         mapper.updateEntityFromRequest(request, entity);
 
@@ -96,7 +96,7 @@ public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> impleme
     @Override
     @Transactional(readOnly = true)
     public RES getById(Long id) {
-        E entity = findEntityById((ID) id);
+        E entity = findEntityById(id);
         return mapper.toResponse(entity);
     }
 
@@ -118,17 +118,17 @@ public abstract class AbstractCrudService<REQ_C, REQ_U, RES, SUM, E, ID> impleme
 
     @Override
     public void delete(Long id) {
-        E entity = findEntityById((ID) id);
+        E entity = findEntityById(id);
         
         beforeDelete(entity);
         repository.delete(entity);
-        afterDelete((ID) id);
+        afterDelete(id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean existsById(Long id) {
-        return repository.existsById((ID) id);
+        return repository.existsById(id);
     }
 
     @Override

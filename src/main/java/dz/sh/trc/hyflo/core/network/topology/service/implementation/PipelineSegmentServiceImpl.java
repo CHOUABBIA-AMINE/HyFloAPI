@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class PipelineSegmentServiceImpl extends AbstractCrudService<CreatePipelineSegmentRequest, UpdatePipelineSegmentRequest, PipelineSegmentResponse, PipelineSegmentSummary, PipelineSegment, Long> implements PipelineSegmentService {
+public class PipelineSegmentServiceImpl extends AbstractCrudService<CreatePipelineSegmentRequest, UpdatePipelineSegmentRequest, PipelineSegmentResponse, PipelineSegmentSummary, PipelineSegment> implements PipelineSegmentService {
 
     public PipelineSegmentServiceImpl(PipelineSegmentRepository repository, PipelineSegmentMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

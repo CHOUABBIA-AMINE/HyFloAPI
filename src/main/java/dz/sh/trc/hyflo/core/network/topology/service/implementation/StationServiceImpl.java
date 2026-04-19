@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class StationServiceImpl extends AbstractCrudService<CreateStationRequest, UpdateStationRequest, StationResponse, StationSummary, Station, Long> implements StationService {
+public class StationServiceImpl extends AbstractCrudService<CreateStationRequest, UpdateStationRequest, StationResponse, StationSummary, Station> implements StationService {
 
     public StationServiceImpl(StationRepository repository, StationMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

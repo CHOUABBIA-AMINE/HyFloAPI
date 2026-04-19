@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class ReadingSourceNatureServiceImpl extends AbstractCrudService<CreateReadingSourceNatureRequest, UpdateReadingSourceNatureRequest, ReadingSourceNatureResponse, ReadingSourceNatureSummary, ReadingSourceNature, Long> implements ReadingSourceNatureService {
+public class ReadingSourceNatureServiceImpl extends AbstractCrudService<CreateReadingSourceNatureRequest, UpdateReadingSourceNatureRequest, ReadingSourceNatureResponse, ReadingSourceNatureSummary, ReadingSourceNature> implements ReadingSourceNatureService {
 
     public ReadingSourceNatureServiceImpl(ReadingSourceNatureRepository repository, ReadingSourceNatureMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);

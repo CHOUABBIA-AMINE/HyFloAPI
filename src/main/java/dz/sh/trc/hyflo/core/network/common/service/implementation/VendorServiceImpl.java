@@ -17,7 +17,7 @@ import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
 
 @Service
-public class VendorServiceImpl extends AbstractCrudService<CreateVendorRequest, UpdateVendorRequest, VendorResponse, VendorSummary, Vendor, Long> implements VendorService {
+public class VendorServiceImpl extends AbstractCrudService<CreateVendorRequest, UpdateVendorRequest, VendorResponse, VendorSummary, Vendor> implements VendorService {
 
     public VendorServiceImpl(VendorRepository repository, VendorMapper mapper, ReferenceResolver referenceResolver, ApplicationEventPublisher eventPublisher) {
         super(repository, mapper, referenceResolver, eventPublisher);
