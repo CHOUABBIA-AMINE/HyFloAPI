@@ -79,9 +79,9 @@ public abstract class BaseController<REQ_C, REQ_U, RES, SUM, E, ID> {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Page<SUM>> search(@RequestBody Object criteria, Pageable pageable) {
-        log.debug("REST request to search entities");
-        return ResponseEntity.ok(performSearch(criteria.toString(), pageable));
+    public ResponseEntity<Page<SUM>> search(@RequestParam(required = false) String criteria, Pageable pageable) {
+        log.debug("REST request to search entities with criteria: {}", criteria);
+        return ResponseEntity.ok(performSearch(criteria, pageable));
     }
     
     protected abstract Page<SUM> performSearch(String search, Pageable pageable);

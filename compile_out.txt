@@ -1,0 +1,601 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------------< dz.sh.trc:hyflo >---------------------------
+[INFO] Building HyFloAPI 0.2.4
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ hyflo ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 35 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ hyflo ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 691 source files with javac [debug parameters release 17] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/dto/FlowAlertDTOs.java:[8,8] class CreateFlowAlertRequest is public, should be declared in a file named CreateFlowAlertRequest.java
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[17,81] cannot find symbol
+  symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[17,105] cannot find symbol
+  symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[17,124] cannot find symbol
+  symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[6,79] cannot find symbol
+  symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[6,103] cannot find symbol
+  symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[6,122] cannot find symbol
+  symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[27,86] cannot find symbol
+  symbol:   class AcknowledgeAlertRequest
+  location: class dz.sh.trc.hyflo.core.flow.monitoring.controller.FlowAlertController
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[33,82] cannot find symbol
+  symbol:   class ResolveAlertRequest
+  location: class dz.sh.trc.hyflo.core.flow.monitoring.controller.FlowAlertController
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[39,20] cannot find symbol
+  symbol:   class FlowAlertSummary
+  location: class dz.sh.trc.hyflo.core.flow.monitoring.controller.FlowAlertController
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[7,36] cannot find symbol
+  symbol:   class AcknowledgeAlertRequest
+  location: interface dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[8,32] cannot find symbol
+  symbol:   class ResolveAlertRequest
+  location: interface dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[12,77] cannot find symbol
+  symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[12,101] cannot find symbol
+  symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[12,120] cannot find symbol
+  symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[25,5] cannot find symbol
+  symbol:   class FlowAlertResponse
+  location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[28,5] cannot find symbol
+  symbol:   class FlowAlertSummary
+  location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[30,10] cannot find symbol
+  symbol:   class FlowAlertResponse
+  location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[32,34] cannot find symbol
+  symbol:   class UpdateFlowAlertRequest
+  location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[20,87] cannot find symbol
+  symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[20,111] cannot find symbol
+  symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[20,130] cannot find symbol
+  symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[46,43] cannot find symbol
+  symbol:   class AcknowledgeAlertRequest
+  location: class dz.sh.trc.hyflo.core.flow.monitoring.service.implementation.FlowAlertServiceImpl
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[57,39] cannot find symbol
+  symbol:   class ResolveAlertRequest
+  location: class dz.sh.trc.hyflo.core.flow.monitoring.service.implementation.FlowAlertServiceImpl
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/configuration/async/AsyncConfig.java:[46,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.configuration.async.AsyncConfig
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/User.java:[73,8] dz.sh.trc.hyflo.core.system.security.model.User is not abstract and does not override abstract method getUsername() in org.springframework.security.core.userdetails.UserDetails
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/User.java:[270,30] cannot find symbol
+  symbol:   method getRoles()
+  location: variable group of type dz.sh.trc.hyflo.core.system.security.model.Group
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/User.java:[271,52] cannot find symbol
+  symbol:   method getRoles()
+  location: variable group of type dz.sh.trc.hyflo.core.system.security.model.Group
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[89,21] cannot find symbol
+  symbol:   method getFirstNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[89,49] cannot find symbol
+  symbol:   method getLastNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[92,21] cannot find symbol
+  symbol:   method getFirstNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[93,32] cannot find symbol
+  symbol:   method getLastNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[95,21] cannot find symbol
+  symbol:   method getLastNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[96,32] cannot find symbol
+  symbol:   method getFirstNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[98,24] cannot find symbol
+  symbol:   method getFirstNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[98,49] cannot find symbol
+  symbol:   method getLastNameLt()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[105,21] cannot find symbol
+  symbol:   method getFirstNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[105,49] cannot find symbol
+  symbol:   method getLastNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[108,21] cannot find symbol
+  symbol:   method getFirstNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[109,32] cannot find symbol
+  symbol:   method getLastNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[109,58] cannot find symbol
+  symbol:   method getLastNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[111,21] cannot find symbol
+  symbol:   method getLastNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[112,32] cannot find symbol
+  symbol:   method getFirstNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[114,24] cannot find symbol
+  symbol:   method getFirstNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[114,49] cannot find symbol
+  symbol:   method getLastNameAr()
+  location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/Role.java:[104,89] cannot find symbol
+  symbol:   method getName()
+  location: variable permission of type dz.sh.trc.hyflo.core.system.security.model.Permission
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[33,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[40,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[46,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[52,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[62,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[71,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[77,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[83,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[91,9] cannot find symbol
+  symbol:   variable log
+  location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[51,15] cannot find symbol
+  symbol:   method setPipeline(dz.sh.trc.hyflo.core.network.topology.model.Pipeline)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[52,50] cannot find symbol
+  symbol:   method setDataSource(dz.sh.trc.hyflo.core.flow.reference.model.DataSource)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[53,51] cannot find symbol
+  symbol:   method setReadingSlot(dz.sh.trc.hyflo.core.flow.reference.model.ReadingSlot)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[54,50] cannot find symbol
+  symbol:   method setRecordedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[55,15] cannot find symbol
+  symbol:   method setRecordedAt(java.time.LocalDateTime)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[63,15] cannot find symbol
+  symbol:   method setWorkflowInstance(dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[64,15] cannot find symbol
+  symbol:   method setSubmittedAt(java.time.LocalDateTime)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[73,47] cannot find symbol
+  symbol:   method getWorkflowInstance()
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[81,47] cannot find symbol
+  symbol:   method getWorkflowInstance()
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[82,15] cannot find symbol
+  symbol:   method setValidatedAt(java.time.LocalDateTime)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[83,15] cannot find symbol
+  symbol:   method setValidatedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[92,47] cannot find symbol
+  symbol:   method getWorkflowInstance()
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[93,15] cannot find symbol
+  symbol:   method setValidatedAt(java.time.LocalDateTime)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[94,15] cannot find symbol
+  symbol:   method setValidatedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[24,15] cannot find symbol
+  symbol:   method setInfrastructure(dz.sh.trc.hyflo.core.network.topology.model.Infrastructure)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[25,15] cannot find symbol
+  symbol:   method setProduct(dz.sh.trc.hyflo.core.network.common.model.Product)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[26,15] cannot find symbol
+  symbol:   method setType(dz.sh.trc.hyflo.core.flow.type.model.OperationType)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[27,15] cannot find symbol
+  symbol:   method setRecordedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[28,15] cannot find symbol
+  symbol:   method setRecordedAt(java.time.LocalDateTime)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[33,44] cannot find symbol
+  symbol:   method setType(dz.sh.trc.hyflo.core.flow.type.model.OperationType)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/SegmentFlowReadingServiceImpl.java:[24,15] cannot find symbol
+  symbol:   method setPipelineSegment(dz.sh.trc.hyflo.core.network.topology.model.PipelineSegment)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/SegmentFlowReadingServiceImpl.java:[25,53] cannot find symbol
+  symbol:   method setSourceReading(dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/SegmentFlowReadingServiceImpl.java:[26,15] cannot find symbol
+  symbol:   method setCalculatedAt(java.time.LocalDateTime)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[33,20] cannot find symbol
+  symbol:   method getThresholdId()
+  location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[34,66] cannot find symbol
+  symbol:   method getThresholdId()
+  location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[36,20] cannot find symbol
+  symbol:   method getFlowReadingId()
+  location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[37,68] cannot find symbol
+  symbol:   method getFlowReadingId()
+  location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[39,20] cannot find symbol
+  symbol:   method getStatusId()
+  location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[40,63] cannot find symbol
+  symbol:   method getStatusId()
+  location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[48,14] cannot find symbol
+  symbol:   method setAcknowledgedAt(java.time.LocalDateTime)
+  location: variable alert of type dz.sh.trc.hyflo.core.flow.monitoring.model.FlowAlert
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[59,14] cannot find symbol
+  symbol:   method setResolvedAt(java.time.LocalDateTime)
+  location: variable alert of type dz.sh.trc.hyflo.core.flow.monitoring.model.FlowAlert
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/reference/service/implementation/DataSourceServiceImpl.java:[32,15] cannot find symbol
+  symbol:   method setSourceNature(dz.sh.trc.hyflo.core.flow.reference.model.ReadingSourceNature)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.reference.model.DataSource
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/reference/service/implementation/DataSourceServiceImpl.java:[38,19] cannot find symbol
+  symbol:   method setSourceNature(dz.sh.trc.hyflo.core.flow.reference.model.ReadingSourceNature)
+  location: variable entity of type dz.sh.trc.hyflo.core.flow.reference.model.DataSource
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[57,33] cannot find symbol
+  symbol:   method getCode()
+  location: variable tt of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowTargetType
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[62,33] cannot find symbol
+  symbol:   method getCode()
+  location: variable ws of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[72,17] cannot find symbol
+  symbol:   method setTargetType(dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowTargetType)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[73,17] cannot find symbol
+  symbol:   method setCurrentState(dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[74,17] cannot find symbol
+  symbol:   method setStartedAt(java.time.LocalDateTime)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[75,17] cannot find symbol
+  symbol:   method setInitiatedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[76,17] cannot find symbol
+  symbol:   method setLastActor(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[77,17] cannot find symbol
+  symbol:   method setUpdatedAt(java.time.LocalDateTime)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[83,21] cannot find symbol
+  symbol:   method setHistory(java.lang.String)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[85,21] cannot find symbol
+  symbol:   method setHistory(java.lang.String)
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[104,33] cannot find symbol
+  symbol:   method getCode()
+  location: variable ws of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[107,44] cannot find symbol
+  symbol:   method getCurrentState()
+  location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[INFO] 100 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  31.757 s
+[INFO] Finished at: 2026-04-20T20:30:47+01:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project hyflo: Compilation failure: Compilation failure: 
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/dto/FlowAlertDTOs.java:[8,8] class CreateFlowAlertRequest is public, should be declared in a file named CreateFlowAlertRequest.java
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[17,81] cannot find symbol
+[ERROR]   symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[17,105] cannot find symbol
+[ERROR]   symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[17,124] cannot find symbol
+[ERROR]   symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[6,79] cannot find symbol
+[ERROR]   symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[6,103] cannot find symbol
+[ERROR]   symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[6,122] cannot find symbol
+[ERROR]   symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[27,86] cannot find symbol
+[ERROR]   symbol:   class AcknowledgeAlertRequest
+[ERROR]   location: class dz.sh.trc.hyflo.core.flow.monitoring.controller.FlowAlertController
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[33,82] cannot find symbol
+[ERROR]   symbol:   class ResolveAlertRequest
+[ERROR]   location: class dz.sh.trc.hyflo.core.flow.monitoring.controller.FlowAlertController
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/controller/FlowAlertController.java:[39,20] cannot find symbol
+[ERROR]   symbol:   class FlowAlertSummary
+[ERROR]   location: class dz.sh.trc.hyflo.core.flow.monitoring.controller.FlowAlertController
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[7,36] cannot find symbol
+[ERROR]   symbol:   class AcknowledgeAlertRequest
+[ERROR]   location: interface dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/FlowAlertService.java:[8,32] cannot find symbol
+[ERROR]   symbol:   class ResolveAlertRequest
+[ERROR]   location: interface dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[12,77] cannot find symbol
+[ERROR]   symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[12,101] cannot find symbol
+[ERROR]   symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[12,120] cannot find symbol
+[ERROR]   symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[25,5] cannot find symbol
+[ERROR]   symbol:   class FlowAlertResponse
+[ERROR]   location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[28,5] cannot find symbol
+[ERROR]   symbol:   class FlowAlertSummary
+[ERROR]   location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[30,10] cannot find symbol
+[ERROR]   symbol:   class FlowAlertResponse
+[ERROR]   location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/mapper/FlowAlertMapper.java:[32,34] cannot find symbol
+[ERROR]   symbol:   class UpdateFlowAlertRequest
+[ERROR]   location: interface dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[20,87] cannot find symbol
+[ERROR]   symbol: class UpdateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[20,111] cannot find symbol
+[ERROR]   symbol: class FlowAlertResponse
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[20,130] cannot find symbol
+[ERROR]   symbol: class FlowAlertSummary
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[46,43] cannot find symbol
+[ERROR]   symbol:   class AcknowledgeAlertRequest
+[ERROR]   location: class dz.sh.trc.hyflo.core.flow.monitoring.service.implementation.FlowAlertServiceImpl
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[57,39] cannot find symbol
+[ERROR]   symbol:   class ResolveAlertRequest
+[ERROR]   location: class dz.sh.trc.hyflo.core.flow.monitoring.service.implementation.FlowAlertServiceImpl
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/configuration/async/AsyncConfig.java:[46,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.configuration.async.AsyncConfig
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/User.java:[73,8] dz.sh.trc.hyflo.core.system.security.model.User is not abstract and does not override abstract method getUsername() in org.springframework.security.core.userdetails.UserDetails
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/User.java:[270,30] cannot find symbol
+[ERROR]   symbol:   method getRoles()
+[ERROR]   location: variable group of type dz.sh.trc.hyflo.core.system.security.model.Group
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/User.java:[271,52] cannot find symbol
+[ERROR]   symbol:   method getRoles()
+[ERROR]   location: variable group of type dz.sh.trc.hyflo.core.system.security.model.Group
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[89,21] cannot find symbol
+[ERROR]   symbol:   method getFirstNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[89,49] cannot find symbol
+[ERROR]   symbol:   method getLastNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[92,21] cannot find symbol
+[ERROR]   symbol:   method getFirstNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[93,32] cannot find symbol
+[ERROR]   symbol:   method getLastNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[95,21] cannot find symbol
+[ERROR]   symbol:   method getLastNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[96,32] cannot find symbol
+[ERROR]   symbol:   method getFirstNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[98,24] cannot find symbol
+[ERROR]   symbol:   method getFirstNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[98,49] cannot find symbol
+[ERROR]   symbol:   method getLastNameLt()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[105,21] cannot find symbol
+[ERROR]   symbol:   method getFirstNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[105,49] cannot find symbol
+[ERROR]   symbol:   method getLastNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[108,21] cannot find symbol
+[ERROR]   symbol:   method getFirstNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[109,32] cannot find symbol
+[ERROR]   symbol:   method getLastNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[109,58] cannot find symbol
+[ERROR]   symbol:   method getLastNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[111,21] cannot find symbol
+[ERROR]   symbol:   method getLastNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[112,32] cannot find symbol
+[ERROR]   symbol:   method getFirstNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[114,24] cannot find symbol
+[ERROR]   symbol:   method getFirstNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/general/organization/model/Employee.java:[114,49] cannot find symbol
+[ERROR]   symbol:   method getLastNameAr()
+[ERROR]   location: class dz.sh.trc.hyflo.core.general.organization.model.Employee
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/system/security/model/Role.java:[104,89] cannot find symbol
+[ERROR]   symbol:   method getName()
+[ERROR]   location: variable permission of type dz.sh.trc.hyflo.core.system.security.model.Permission
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[33,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[40,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[46,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[52,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[62,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[71,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[77,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[83,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/platform/kernel/BaseController.java:[91,9] cannot find symbol
+[ERROR]   symbol:   variable log
+[ERROR]   location: class dz.sh.trc.hyflo.platform.kernel.BaseController<REQ_C,REQ_U,RES,SUM,E,ID>
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[51,15] cannot find symbol
+[ERROR]   symbol:   method setPipeline(dz.sh.trc.hyflo.core.network.topology.model.Pipeline)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[52,50] cannot find symbol
+[ERROR]   symbol:   method setDataSource(dz.sh.trc.hyflo.core.flow.reference.model.DataSource)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[53,51] cannot find symbol
+[ERROR]   symbol:   method setReadingSlot(dz.sh.trc.hyflo.core.flow.reference.model.ReadingSlot)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[54,50] cannot find symbol
+[ERROR]   symbol:   method setRecordedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[55,15] cannot find symbol
+[ERROR]   symbol:   method setRecordedAt(java.time.LocalDateTime)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[63,15] cannot find symbol
+[ERROR]   symbol:   method setWorkflowInstance(dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[64,15] cannot find symbol
+[ERROR]   symbol:   method setSubmittedAt(java.time.LocalDateTime)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[73,47] cannot find symbol
+[ERROR]   symbol:   method getWorkflowInstance()
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[81,47] cannot find symbol
+[ERROR]   symbol:   method getWorkflowInstance()
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[82,15] cannot find symbol
+[ERROR]   symbol:   method setValidatedAt(java.time.LocalDateTime)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[83,15] cannot find symbol
+[ERROR]   symbol:   method setValidatedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[92,47] cannot find symbol
+[ERROR]   symbol:   method getWorkflowInstance()
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[93,15] cannot find symbol
+[ERROR]   symbol:   method setValidatedAt(java.time.LocalDateTime)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowReadingServiceImpl.java:[94,15] cannot find symbol
+[ERROR]   symbol:   method setValidatedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[24,15] cannot find symbol
+[ERROR]   symbol:   method setInfrastructure(dz.sh.trc.hyflo.core.network.topology.model.Infrastructure)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[25,15] cannot find symbol
+[ERROR]   symbol:   method setProduct(dz.sh.trc.hyflo.core.network.common.model.Product)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[26,15] cannot find symbol
+[ERROR]   symbol:   method setType(dz.sh.trc.hyflo.core.flow.type.model.OperationType)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[27,15] cannot find symbol
+[ERROR]   symbol:   method setRecordedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[28,15] cannot find symbol
+[ERROR]   symbol:   method setRecordedAt(java.time.LocalDateTime)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/FlowVolumeReadingServiceImpl.java:[33,44] cannot find symbol
+[ERROR]   symbol:   method setType(dz.sh.trc.hyflo.core.flow.type.model.OperationType)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.FlowVolumeReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/SegmentFlowReadingServiceImpl.java:[24,15] cannot find symbol
+[ERROR]   symbol:   method setPipelineSegment(dz.sh.trc.hyflo.core.network.topology.model.PipelineSegment)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/SegmentFlowReadingServiceImpl.java:[25,53] cannot find symbol
+[ERROR]   symbol:   method setSourceReading(dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/measurement/service/implementation/SegmentFlowReadingServiceImpl.java:[26,15] cannot find symbol
+[ERROR]   symbol:   method setCalculatedAt(java.time.LocalDateTime)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[33,20] cannot find symbol
+[ERROR]   symbol:   method getThresholdId()
+[ERROR]   location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[34,66] cannot find symbol
+[ERROR]   symbol:   method getThresholdId()
+[ERROR]   location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[36,20] cannot find symbol
+[ERROR]   symbol:   method getFlowReadingId()
+[ERROR]   location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[37,68] cannot find symbol
+[ERROR]   symbol:   method getFlowReadingId()
+[ERROR]   location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[39,20] cannot find symbol
+[ERROR]   symbol:   method getStatusId()
+[ERROR]   location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[40,63] cannot find symbol
+[ERROR]   symbol:   method getStatusId()
+[ERROR]   location: variable request of type dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[48,14] cannot find symbol
+[ERROR]   symbol:   method setAcknowledgedAt(java.time.LocalDateTime)
+[ERROR]   location: variable alert of type dz.sh.trc.hyflo.core.flow.monitoring.model.FlowAlert
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/monitoring/service/implementation/FlowAlertServiceImpl.java:[59,14] cannot find symbol
+[ERROR]   symbol:   method setResolvedAt(java.time.LocalDateTime)
+[ERROR]   location: variable alert of type dz.sh.trc.hyflo.core.flow.monitoring.model.FlowAlert
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/reference/service/implementation/DataSourceServiceImpl.java:[32,15] cannot find symbol
+[ERROR]   symbol:   method setSourceNature(dz.sh.trc.hyflo.core.flow.reference.model.ReadingSourceNature)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.reference.model.DataSource
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/reference/service/implementation/DataSourceServiceImpl.java:[38,19] cannot find symbol
+[ERROR]   symbol:   method setSourceNature(dz.sh.trc.hyflo.core.flow.reference.model.ReadingSourceNature)
+[ERROR]   location: variable entity of type dz.sh.trc.hyflo.core.flow.reference.model.DataSource
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[57,33] cannot find symbol
+[ERROR]   symbol:   method getCode()
+[ERROR]   location: variable tt of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowTargetType
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[62,33] cannot find symbol
+[ERROR]   symbol:   method getCode()
+[ERROR]   location: variable ws of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[72,17] cannot find symbol
+[ERROR]   symbol:   method setTargetType(dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowTargetType)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[73,17] cannot find symbol
+[ERROR]   symbol:   method setCurrentState(dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[74,17] cannot find symbol
+[ERROR]   symbol:   method setStartedAt(java.time.LocalDateTime)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[75,17] cannot find symbol
+[ERROR]   symbol:   method setInitiatedBy(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[76,17] cannot find symbol
+[ERROR]   symbol:   method setLastActor(dz.sh.trc.hyflo.core.general.organization.model.Employee)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[77,17] cannot find symbol
+[ERROR]   symbol:   method setUpdatedAt(java.time.LocalDateTime)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[83,21] cannot find symbol
+[ERROR]   symbol:   method setHistory(java.lang.String)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[85,21] cannot find symbol
+[ERROR]   symbol:   method setHistory(java.lang.String)
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[104,33] cannot find symbol
+[ERROR]   symbol:   method getCode()
+[ERROR]   location: variable ws of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState
+[ERROR] /C:/Developing/Workspace/Backend/HyFloAPI/src/main/java/dz/sh/trc/hyflo/core/flow/workflow/service/implementation/WorkflowServiceImpl.java:[107,44] cannot find symbol
+[ERROR]   symbol:   method getCurrentState()
+[ERROR]   location: variable instance of type dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowInstance
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

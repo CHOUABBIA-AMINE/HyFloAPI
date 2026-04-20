@@ -1,0 +1,21 @@
+package dz.sh.trc.hyflo.core.flow.measurement.dto.response;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+public record SegmentFlowReadingResponse(
+    Long id,
+    LocalDate readingDate,
+    BigDecimal pressure,
+    BigDecimal temperature,
+    BigDecimal flowRate,
+    BigDecimal containedVolume,
+    LocalDateTime calculatedAt,
+    String calculationMethod,
+    Long dataSourceId,
+    Long readingSlotId,
+    Long pipelineSegmentId,
+    String pipelineSegmentName,
+    Long sourceReadingId,
+    Long validationStatusId,
+    String validationStatusName
+) {}

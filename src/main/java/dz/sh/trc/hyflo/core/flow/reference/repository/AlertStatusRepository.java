@@ -34,6 +34,8 @@ public interface AlertStatusRepository extends JpaRepository<AlertStatus, Long> 
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
+    Optional<AlertStatus> findByCode(String code);
+
     boolean existsByDesignationFr(String designationFr);
     
     boolean existsByDesignationFrAndIdNot(String designationFr, Long id);

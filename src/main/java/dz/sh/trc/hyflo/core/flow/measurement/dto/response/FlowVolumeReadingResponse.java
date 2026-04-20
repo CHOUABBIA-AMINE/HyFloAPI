@@ -1,0 +1,23 @@
+package dz.sh.trc.hyflo.core.flow.measurement.dto.response;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+public record FlowVolumeReadingResponse(
+    Long id,
+    LocalDate readingDate,
+    BigDecimal volume,
+    LocalDateTime recordedAt,
+    LocalDateTime validatedAt,
+    String notes,
+    Long infrastructureId,
+    String infrastructureName,
+    Long productId,
+    String productName,
+    Long typeId,
+    String typeName,
+    Long recordedById,
+    Long validatedById,
+    Long validationStatusId,
+    String validationStatusName,
+    Long workflowInstanceId
+) {}
