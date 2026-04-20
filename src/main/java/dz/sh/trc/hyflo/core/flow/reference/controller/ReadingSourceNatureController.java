@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.reference.dto.request.CreateReadingSourceNature
 import dz.sh.trc.hyflo.core.flow.reference.dto.request.UpdateReadingSourceNatureRequest;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.ReadingSourceNatureResponse;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.ReadingSourceNatureSummary;
-import dz.sh.trc.hyflo.core.flow.reference.model.ReadingSourceNature;
 import dz.sh.trc.hyflo.core.flow.reference.service.ReadingSourceNatureService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

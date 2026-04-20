@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateFacilityTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateFacilityTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.FacilityTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.FacilityTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.FacilityType;
 import dz.sh.trc.hyflo.core.network.type.service.FacilityTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

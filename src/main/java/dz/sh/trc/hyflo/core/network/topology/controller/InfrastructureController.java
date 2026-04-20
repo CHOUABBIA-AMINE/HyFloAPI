@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.topology.dto.request.CreateInfrastructureReq
 import dz.sh.trc.hyflo.core.network.topology.dto.request.UpdateInfrastructureRequest;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.InfrastructureResponse;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.InfrastructureSummary;
-import dz.sh.trc.hyflo.core.network.topology.model.Infrastructure;
 import dz.sh.trc.hyflo.core.network.topology.service.InfrastructureService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

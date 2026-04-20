@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.common.dto.request.CreateAlloyRequest;
 import dz.sh.trc.hyflo.core.network.common.dto.request.UpdateAlloyRequest;
 import dz.sh.trc.hyflo.core.network.common.dto.response.AlloyResponse;
 import dz.sh.trc.hyflo.core.network.common.dto.response.AlloySummary;
-import dz.sh.trc.hyflo.core.network.common.model.Alloy;
 import dz.sh.trc.hyflo.core.network.common.service.AlloyService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

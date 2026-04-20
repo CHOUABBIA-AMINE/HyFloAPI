@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateTerminalTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateTerminalTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.TerminalTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.TerminalTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.TerminalType;
 import dz.sh.trc.hyflo.core.network.type.service.TerminalTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

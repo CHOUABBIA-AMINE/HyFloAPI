@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateProcessingPlantTypeRe
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateProcessingPlantTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.ProcessingPlantTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.ProcessingPlantTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.ProcessingPlantType;
 import dz.sh.trc.hyflo.core.network.type.service.ProcessingPlantTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

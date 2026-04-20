@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.general.type.dto.request.CreateStructureTypeRequest;
 import dz.sh.trc.hyflo.core.general.type.dto.request.UpdateStructureTypeRequest;
 import dz.sh.trc.hyflo.core.general.type.dto.response.StructureTypeResponse;
 import dz.sh.trc.hyflo.core.general.type.dto.response.StructureTypeSummary;
-import dz.sh.trc.hyflo.core.general.type.model.StructureType;
 import dz.sh.trc.hyflo.core.general.type.service.StructureTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

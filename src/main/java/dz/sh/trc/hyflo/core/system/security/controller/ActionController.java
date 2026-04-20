@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.system.security.dto.request.CreateActionRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.request.UpdateActionRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.response.ActionResponse;
 import dz.sh.trc.hyflo.core.system.security.dto.response.ActionSummary;
-import dz.sh.trc.hyflo.core.system.security.model.Action;
 import dz.sh.trc.hyflo.core.system.security.service.ActionService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.reference.dto.request.CreateReadingSlotRequest;
 import dz.sh.trc.hyflo.core.flow.reference.dto.request.UpdateReadingSlotRequest;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.ReadingSlotResponse;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.ReadingSlotSummary;
-import dz.sh.trc.hyflo.core.flow.reference.model.ReadingSlot;
 import dz.sh.trc.hyflo.core.flow.reference.service.ReadingSlotService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

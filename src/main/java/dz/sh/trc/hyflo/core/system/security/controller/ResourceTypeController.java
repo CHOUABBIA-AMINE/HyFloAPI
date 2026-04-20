@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.system.security.dto.request.CreateResourceTypeReques
 import dz.sh.trc.hyflo.core.system.security.dto.request.UpdateResourceTypeRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.response.ResourceTypeResponse;
 import dz.sh.trc.hyflo.core.system.security.dto.response.ResourceTypeSummary;
-import dz.sh.trc.hyflo.core.system.security.model.ResourceType;
 import dz.sh.trc.hyflo.core.system.security.service.ResourceTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

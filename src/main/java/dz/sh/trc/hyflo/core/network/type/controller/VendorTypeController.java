@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateVendorTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateVendorTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.VendorTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.VendorTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.VendorType;
 import dz.sh.trc.hyflo.core.network.type.service.VendorTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

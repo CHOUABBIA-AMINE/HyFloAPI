@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.topology.dto.request.CreatePipelineSystemReq
 import dz.sh.trc.hyflo.core.network.topology.dto.request.UpdatePipelineSystemRequest;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.PipelineSystemResponse;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.PipelineSystemSummary;
-import dz.sh.trc.hyflo.core.network.topology.model.PipelineSystem;
 import dz.sh.trc.hyflo.core.network.topology.service.PipelineSystemService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

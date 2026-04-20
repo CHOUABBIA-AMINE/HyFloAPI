@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.common.dto.request.CreateOperationalStatusRe
 import dz.sh.trc.hyflo.core.network.common.dto.request.UpdateOperationalStatusRequest;
 import dz.sh.trc.hyflo.core.network.common.dto.response.OperationalStatusResponse;
 import dz.sh.trc.hyflo.core.network.common.dto.response.OperationalStatusSummary;
-import dz.sh.trc.hyflo.core.network.common.model.OperationalStatus;
 import dz.sh.trc.hyflo.core.network.common.service.OperationalStatusService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

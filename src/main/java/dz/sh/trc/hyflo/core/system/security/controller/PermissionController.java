@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.system.security.dto.request.CreatePermissionRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.request.UpdatePermissionRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.response.PermissionResponse;
 import dz.sh.trc.hyflo.core.system.security.dto.response.PermissionSummary;
-import dz.sh.trc.hyflo.core.system.security.model.Permission;
 import dz.sh.trc.hyflo.core.system.security.service.PermissionService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

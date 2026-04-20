@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.reference.dto.request.CreateEventStatusRequest;
 import dz.sh.trc.hyflo.core.flow.reference.dto.request.UpdateEventStatusRequest;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.EventStatusResponse;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.EventStatusSummary;
-import dz.sh.trc.hyflo.core.flow.reference.model.EventStatus;
 import dz.sh.trc.hyflo.core.flow.reference.service.EventStatusService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

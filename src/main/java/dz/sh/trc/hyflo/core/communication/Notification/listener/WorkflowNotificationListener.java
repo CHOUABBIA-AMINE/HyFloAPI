@@ -4,7 +4,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import dz.sh.trc.hyflo.core.communication.Notification.service.NotificationService;
 import dz.sh.trc.hyflo.platform.event.WorkflowTransitionEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class WorkflowNotificationListener {
-
-    private final NotificationService notificationService;
 
     @Async
     @EventListener

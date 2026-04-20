@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.workflow.dto.request.CreateWorkflowStateRequest
 import dz.sh.trc.hyflo.core.flow.workflow.dto.request.UpdateWorkflowStateRequest;
 import dz.sh.trc.hyflo.core.flow.workflow.dto.response.WorkflowStateResponse;
 import dz.sh.trc.hyflo.core.flow.workflow.dto.response.WorkflowStateSummary;
-import dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowState;
 import dz.sh.trc.hyflo.core.flow.workflow.service.WorkflowStateService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

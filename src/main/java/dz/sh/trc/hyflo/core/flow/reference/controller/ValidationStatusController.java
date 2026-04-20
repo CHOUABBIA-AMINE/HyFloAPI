@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.reference.dto.request.CreateValidationStatusReq
 import dz.sh.trc.hyflo.core.flow.reference.dto.request.UpdateValidationStatusRequest;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.ValidationStatusResponse;
 import dz.sh.trc.hyflo.core.flow.reference.dto.response.ValidationStatusSummary;
-import dz.sh.trc.hyflo.core.flow.reference.model.ValidationStatus;
 import dz.sh.trc.hyflo.core.flow.reference.service.ValidationStatusService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

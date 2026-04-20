@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.topology.dto.request.CreateEquipmentRequest;
 import dz.sh.trc.hyflo.core.network.topology.dto.request.UpdateEquipmentRequest;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.EquipmentResponse;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.EquipmentSummary;
-import dz.sh.trc.hyflo.core.network.topology.model.Equipment;
 import dz.sh.trc.hyflo.core.network.topology.service.EquipmentService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

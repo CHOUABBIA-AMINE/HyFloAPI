@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateStationTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateStationTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.StationTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.StationTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.StationType;
 import dz.sh.trc.hyflo.core.network.type.service.StationTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

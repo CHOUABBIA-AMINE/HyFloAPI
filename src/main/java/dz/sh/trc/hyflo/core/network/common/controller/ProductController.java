@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.common.dto.request.CreateProductRequest;
 import dz.sh.trc.hyflo.core.network.common.dto.request.UpdateProductRequest;
 import dz.sh.trc.hyflo.core.network.common.dto.response.ProductResponse;
 import dz.sh.trc.hyflo.core.network.common.dto.response.ProductSummary;
-import dz.sh.trc.hyflo.core.network.common.model.Product;
 import dz.sh.trc.hyflo.core.network.common.service.ProductService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

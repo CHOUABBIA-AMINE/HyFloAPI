@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.topology.dto.request.CreateProductionFieldRe
 import dz.sh.trc.hyflo.core.network.topology.dto.request.UpdateProductionFieldRequest;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.ProductionFieldResponse;
 import dz.sh.trc.hyflo.core.network.topology.dto.response.ProductionFieldSummary;
-import dz.sh.trc.hyflo.core.network.topology.model.ProductionField;
 import dz.sh.trc.hyflo.core.network.topology.service.ProductionFieldService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

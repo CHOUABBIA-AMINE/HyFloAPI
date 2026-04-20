@@ -18,7 +18,6 @@ import dz.sh.trc.hyflo.core.system.utility.dto.request.CreateFileRequest;
 import dz.sh.trc.hyflo.core.system.utility.dto.request.UpdateFileRequest;
 import dz.sh.trc.hyflo.core.system.utility.dto.response.FileResponse;
 import dz.sh.trc.hyflo.core.system.utility.dto.response.FileSummary;
-import dz.sh.trc.hyflo.core.system.utility.model.File;
 import dz.sh.trc.hyflo.core.system.utility.service.FileService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,7 +40,7 @@ public class FileController extends BaseController<CreateFileRequest, UpdateFile
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<FileResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<FileResponse> uploadFile(@RequestParam MultipartFile file) {
         return ResponseEntity.ok(fileService.uploadFile(file));
     }
 

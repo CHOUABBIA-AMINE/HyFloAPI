@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateCompanyTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateCompanyTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.CompanyTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.CompanyTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.CompanyType;
 import dz.sh.trc.hyflo.core.network.type.service.CompanyTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

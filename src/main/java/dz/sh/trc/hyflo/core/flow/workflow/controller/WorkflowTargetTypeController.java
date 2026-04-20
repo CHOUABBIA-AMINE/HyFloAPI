@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.workflow.dto.request.CreateWorkflowTargetTypeRe
 import dz.sh.trc.hyflo.core.flow.workflow.dto.request.UpdateWorkflowTargetTypeRequest;
 import dz.sh.trc.hyflo.core.flow.workflow.dto.response.WorkflowTargetTypeResponse;
 import dz.sh.trc.hyflo.core.flow.workflow.dto.response.WorkflowTargetTypeSummary;
-import dz.sh.trc.hyflo.core.flow.workflow.model.WorkflowTargetType;
 import dz.sh.trc.hyflo.core.flow.workflow.service.WorkflowTargetTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

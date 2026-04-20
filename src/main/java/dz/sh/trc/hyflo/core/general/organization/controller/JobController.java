@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.general.organization.dto.request.CreateJobRequest;
 import dz.sh.trc.hyflo.core.general.organization.dto.request.UpdateJobRequest;
 import dz.sh.trc.hyflo.core.general.organization.dto.response.JobResponse;
 import dz.sh.trc.hyflo.core.general.organization.dto.response.JobSummary;
-import dz.sh.trc.hyflo.core.general.organization.model.Job;
 import dz.sh.trc.hyflo.core.general.organization.service.JobService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

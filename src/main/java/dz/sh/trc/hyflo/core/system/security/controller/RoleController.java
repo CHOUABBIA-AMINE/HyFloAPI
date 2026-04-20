@@ -13,7 +13,6 @@ import dz.sh.trc.hyflo.core.system.security.dto.request.CreateRoleRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.request.UpdateRoleRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.response.RoleResponse;
 import dz.sh.trc.hyflo.core.system.security.dto.response.RoleSummary;
-import dz.sh.trc.hyflo.core.system.security.model.Role;
 import dz.sh.trc.hyflo.core.system.security.service.RoleService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.Operation;

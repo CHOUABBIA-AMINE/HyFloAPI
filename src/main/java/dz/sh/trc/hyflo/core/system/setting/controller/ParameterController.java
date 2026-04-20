@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.system.setting.dto.request.CreateParameterRequest;
 import dz.sh.trc.hyflo.core.system.setting.dto.request.UpdateParameterRequest;
 import dz.sh.trc.hyflo.core.system.setting.dto.response.ParameterResponse;
 import dz.sh.trc.hyflo.core.system.setting.dto.response.ParameterSummary;
-import dz.sh.trc.hyflo.core.system.setting.model.Parameter;
 import dz.sh.trc.hyflo.core.system.setting.service.ParameterService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

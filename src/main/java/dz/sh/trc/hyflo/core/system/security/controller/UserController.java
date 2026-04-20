@@ -14,7 +14,6 @@ import dz.sh.trc.hyflo.core.system.security.dto.request.CreateUserRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.request.UpdateUserRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.response.UserResponse;
 import dz.sh.trc.hyflo.core.system.security.dto.response.UserSummary;
-import dz.sh.trc.hyflo.core.system.security.model.User;
 import dz.sh.trc.hyflo.core.system.security.service.UserService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.Operation;

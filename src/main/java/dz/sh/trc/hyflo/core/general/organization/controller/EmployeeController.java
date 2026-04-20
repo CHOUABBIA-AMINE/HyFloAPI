@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.general.organization.dto.request.CreateEmployeeReque
 import dz.sh.trc.hyflo.core.general.organization.dto.request.UpdateEmployeeRequest;
 import dz.sh.trc.hyflo.core.general.organization.dto.response.EmployeeResponse;
 import dz.sh.trc.hyflo.core.general.organization.dto.response.EmployeeSummary;
-import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.core.general.organization.service.EmployeeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

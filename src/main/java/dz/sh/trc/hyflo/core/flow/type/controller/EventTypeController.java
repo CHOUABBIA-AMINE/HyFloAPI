@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.type.dto.request.CreateEventTypeRequest;
 import dz.sh.trc.hyflo.core.flow.type.dto.request.UpdateEventTypeRequest;
 import dz.sh.trc.hyflo.core.flow.type.dto.response.EventTypeResponse;
 import dz.sh.trc.hyflo.core.flow.type.dto.response.EventTypeSummary;
-import dz.sh.trc.hyflo.core.flow.type.model.EventType;
 import dz.sh.trc.hyflo.core.flow.type.service.EventTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

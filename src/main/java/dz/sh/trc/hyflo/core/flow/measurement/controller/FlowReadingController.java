@@ -3,20 +3,22 @@ package dz.sh.trc.hyflo.core.flow.measurement.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import dz.sh.trc.hyflo.core.flow.measurement.dto.request.CreateFlowReadingRequest;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.request.FlowReadingFilterDTO;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.request.UpdateFlowReadingRequest;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.response.FlowReadingResponse;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.response.FlowReadingSummary;
-import dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading;
 import dz.sh.trc.hyflo.core.flow.measurement.service.FlowReadingService;
 import dz.sh.trc.hyflo.core.flow.workflow.dto.request.WorkflowActionDTO;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/flow/readings")

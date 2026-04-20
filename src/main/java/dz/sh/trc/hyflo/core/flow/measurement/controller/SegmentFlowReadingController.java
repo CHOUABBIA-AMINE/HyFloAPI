@@ -3,11 +3,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import dz.sh.trc.hyflo.core.flow.measurement.dto.request.CreateSegmentFlowReadingRequest;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.request.UpdateSegmentFlowReadingRequest;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.response.SegmentFlowReadingResponse;
 import dz.sh.trc.hyflo.core.flow.measurement.dto.response.SegmentFlowReadingSummary;
-import dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading;
 import dz.sh.trc.hyflo.core.flow.measurement.service.SegmentFlowReadingService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.network.type.dto.request.CreateProductionFieldTypeRe
 import dz.sh.trc.hyflo.core.network.type.dto.request.UpdateProductionFieldTypeRequest;
 import dz.sh.trc.hyflo.core.network.type.dto.response.ProductionFieldTypeResponse;
 import dz.sh.trc.hyflo.core.network.type.dto.response.ProductionFieldTypeSummary;
-import dz.sh.trc.hyflo.core.network.type.model.ProductionFieldType;
 import dz.sh.trc.hyflo.core.network.type.service.ProductionFieldTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

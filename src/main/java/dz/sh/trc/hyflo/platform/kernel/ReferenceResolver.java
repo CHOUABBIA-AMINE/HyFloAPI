@@ -1,11 +1,10 @@
 package dz.sh.trc.hyflo.platform.kernel;
 
+import org.mapstruct.TargetType;
 import org.springframework.stereotype.Component;
 
-import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.TargetType;
 
 /**
  * Generic FK resolver for the service layer.

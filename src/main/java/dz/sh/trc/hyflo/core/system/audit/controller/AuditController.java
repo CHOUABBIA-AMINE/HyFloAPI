@@ -12,7 +12,6 @@ import dz.sh.trc.hyflo.core.system.audit.dto.request.CreateAuditRequest;
 import dz.sh.trc.hyflo.core.system.audit.dto.request.UpdateAuditRequest;
 import dz.sh.trc.hyflo.core.system.audit.dto.response.AuditResponse;
 import dz.sh.trc.hyflo.core.system.audit.dto.response.AuditSummary;
-import dz.sh.trc.hyflo.core.system.audit.model.Audited;
 import dz.sh.trc.hyflo.core.system.audit.service.AuditService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

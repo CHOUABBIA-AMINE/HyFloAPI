@@ -9,7 +9,6 @@ import dz.sh.trc.hyflo.core.flow.type.dto.request.CreateOperationTypeRequest;
 import dz.sh.trc.hyflo.core.flow.type.dto.request.UpdateOperationTypeRequest;
 import dz.sh.trc.hyflo.core.flow.type.dto.response.OperationTypeResponse;
 import dz.sh.trc.hyflo.core.flow.type.dto.response.OperationTypeSummary;
-import dz.sh.trc.hyflo.core.flow.type.model.OperationType;
 import dz.sh.trc.hyflo.core.flow.type.service.OperationTypeService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -13,7 +13,6 @@ import dz.sh.trc.hyflo.core.system.security.dto.request.CreateGroupRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.request.UpdateGroupRequest;
 import dz.sh.trc.hyflo.core.system.security.dto.response.GroupResponse;
 import dz.sh.trc.hyflo.core.system.security.dto.response.GroupSummary;
-import dz.sh.trc.hyflo.core.system.security.model.Group;
 import dz.sh.trc.hyflo.core.system.security.service.GroupService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.Operation;
