@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 
 @RestController
 @RequestMapping("/api/v1/crisis/impacts")
-public class IncidentImpactController extends BaseController<CreateIncidentImpactRequest, UpdateIncidentImpactRequest, IncidentImpactResponse, IncidentImpactSummary, dz.sh.trc.hyflo.core.crisis.emergency.model.IncidentImpact, Long> {
+public class IncidentImpactController extends BaseController<CreateIncidentImpactRequest, UpdateIncidentImpactRequest, IncidentImpactResponse, IncidentImpactSummary> {
 
     public IncidentImpactController(IncidentImpactService service) {
         super(service);

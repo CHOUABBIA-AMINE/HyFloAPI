@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/operation-types")
 @Tag(name = "OperationType API", description = "Endpoints for managing OperationType")
-public class OperationTypeController extends BaseController<CreateOperationTypeRequest, UpdateOperationTypeRequest, OperationTypeResponse, OperationTypeSummary, OperationType, Long> {
+public class OperationTypeController extends BaseController<CreateOperationTypeRequest, UpdateOperationTypeRequest, OperationTypeResponse, OperationTypeSummary> {
 
     public OperationTypeController(OperationTypeService service) {
         super(service);

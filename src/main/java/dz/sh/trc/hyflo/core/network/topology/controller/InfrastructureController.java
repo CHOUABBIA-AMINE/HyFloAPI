@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/infrastructures")
 @Tag(name = "Infrastructure API", description = "Endpoints for managing infrastructure")
-public class InfrastructureController extends BaseController<CreateInfrastructureRequest, UpdateInfrastructureRequest, InfrastructureResponse, InfrastructureSummary, Infrastructure, Long> {
+public class InfrastructureController extends BaseController<CreateInfrastructureRequest, UpdateInfrastructureRequest, InfrastructureResponse, InfrastructureSummary> {
 
     public InfrastructureController(InfrastructureService service) {
         super(service);

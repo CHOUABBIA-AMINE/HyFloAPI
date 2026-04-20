@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/resource-types")
 @Tag(name = "Resource Type API", description = "Endpoints for managing resource types")
-public class ResourceTypeController extends BaseController<CreateResourceTypeRequest, UpdateResourceTypeRequest, ResourceTypeResponse, ResourceTypeSummary, ResourceType, Long> {
+public class ResourceTypeController extends BaseController<CreateResourceTypeRequest, UpdateResourceTypeRequest, ResourceTypeResponse, ResourceTypeSummary> {
 
     public ResourceTypeController(ResourceTypeService service) {
         super(service);

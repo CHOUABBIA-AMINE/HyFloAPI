@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/terminal-types")
 @Tag(name = "TerminalType API", description = "Endpoints for managing TerminalType")
-public class TerminalTypeController extends BaseController<CreateTerminalTypeRequest, UpdateTerminalTypeRequest, TerminalTypeResponse, TerminalTypeSummary, TerminalType, Long> {
+public class TerminalTypeController extends BaseController<CreateTerminalTypeRequest, UpdateTerminalTypeRequest, TerminalTypeResponse, TerminalTypeSummary> {
 
     public TerminalTypeController(TerminalTypeService service) {
         super(service);

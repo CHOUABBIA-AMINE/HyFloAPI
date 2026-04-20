@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/actions")
 @Tag(name = "Action API", description = "Endpoints for managing actions")
-public class ActionController extends BaseController<CreateActionRequest, UpdateActionRequest, ActionResponse, ActionSummary, Action, Long> {
+public class ActionController extends BaseController<CreateActionRequest, UpdateActionRequest, ActionResponse, ActionSummary> {
 
     public ActionController(ActionService service) {
         super(service);

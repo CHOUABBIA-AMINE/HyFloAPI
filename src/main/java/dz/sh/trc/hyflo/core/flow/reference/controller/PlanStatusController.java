@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/plan-statuses")
 @Tag(name = "PlanStatus API", description = "Endpoints for managing PlanStatus")
-public class PlanStatusController extends BaseController<CreatePlanStatusRequest, UpdatePlanStatusRequest, PlanStatusResponse, PlanStatusSummary, PlanStatus, Long> {
+public class PlanStatusController extends BaseController<CreatePlanStatusRequest, UpdatePlanStatusRequest, PlanStatusResponse, PlanStatusSummary> {
 
     public PlanStatusController(PlanStatusService service) {
         super(service);

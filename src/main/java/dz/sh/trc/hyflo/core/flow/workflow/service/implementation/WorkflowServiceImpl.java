@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,8 @@ import dz.sh.trc.hyflo.core.flow.workflow.service.WorkflowService;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.core.general.organization.repository.EmployeeRepository;
 import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
+import dz.sh.trc.hyflo.platform.audit.service.AuditService;
+import dz.sh.trc.hyflo.platform.event.WorkflowTransitionEvent;
 
 @Service
 public class WorkflowServiceImpl implements WorkflowService {
@@ -37,6 +40,8 @@ public class WorkflowServiceImpl implements WorkflowService {
     private final EmployeeRepository employeeRepository;
     private final WorkflowInstanceMapper mapper;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
+    private final AuditService auditService;
 
     /**
      * State transition validation matrix.
@@ -56,13 +61,17 @@ public class WorkflowServiceImpl implements WorkflowService {
                                WorkflowTargetTypeRepository workflowTargetTypeRepository,
                                EmployeeRepository employeeRepository,
                                WorkflowInstanceMapper mapper,
-                               ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               ApplicationEventPublisher eventPublisher,
+                               AuditService auditService) {
         this.workflowInstanceRepository = workflowInstanceRepository;
         this.workflowStateRepository = workflowStateRepository;
         this.workflowTargetTypeRepository = workflowTargetTypeRepository;
         this.employeeRepository = employeeRepository;
         this.mapper = mapper;
         this.objectMapper = objectMapper;
+        this.eventPublisher = eventPublisher;
+        this.auditService = auditService;
     }
 
     @Override
@@ -98,6 +107,20 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
 
         instance = workflowInstanceRepository.save(instance);
+
+        // Publish event for workflow initiation
+        eventPublisher.publishEvent(WorkflowTransitionEvent.builder()
+                .entityId(instance.getId())
+                .entityType(instance.getTargetType().getCode())
+                .fromState(null)
+                .toState("DRAFT")
+                .action("INITIATE")
+                .actorEmployeeId(initiatorEmployeeId)
+                .build());
+
+        // Audit log
+        auditService.logWorkflow("WorkflowInstance", instance.getId(), null, "DRAFT", "INITIATE", initiatorEmployeeId);
+
         return mapper.toResponse(instance);
     }
 
@@ -140,6 +163,20 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
 
         instance = workflowInstanceRepository.save(instance);
+
+        // Publish event for state transition
+        eventPublisher.publishEvent(WorkflowTransitionEvent.builder()
+                .entityId(instance.getId())
+                .entityType(instance.getTargetType().getCode())
+                .fromState(currentStateCode)
+                .toState(nextStateCode)
+                .action(action)
+                .actorEmployeeId(actionDTO.actorEmployeeId())
+                .build());
+
+        // Audit log
+        auditService.logWorkflow("WorkflowInstance", instance.getId(), currentStateCode, nextStateCode, action, actionDTO.actorEmployeeId());
+
         return mapper.toResponse(instance);
     }
 

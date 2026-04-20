@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/permissions")
 @Tag(name = "Permission API", description = "Endpoints for managing permissions")
-public class PermissionController extends BaseController<CreatePermissionRequest, UpdatePermissionRequest, PermissionResponse, PermissionSummary, Permission, Long> {
+public class PermissionController extends BaseController<CreatePermissionRequest, UpdatePermissionRequest, PermissionResponse, PermissionSummary> {
 
     public PermissionController(PermissionService service) {
         super(service);

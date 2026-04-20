@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/alert-statuses")
 @Tag(name = "AlertStatus API", description = "Endpoints for managing AlertStatus")
-public class AlertStatusController extends BaseController<CreateAlertStatusRequest, UpdateAlertStatusRequest, AlertStatusResponse, AlertStatusSummary, AlertStatus, Long> {
+public class AlertStatusController extends BaseController<CreateAlertStatusRequest, UpdateAlertStatusRequest, AlertStatusResponse, AlertStatusSummary> {
 
     public AlertStatusController(AlertStatusService service) {
         super(service);

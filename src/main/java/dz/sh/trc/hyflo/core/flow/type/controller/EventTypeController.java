@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/event-types")
 @Tag(name = "EventType API", description = "Endpoints for managing EventType")
-public class EventTypeController extends BaseController<CreateEventTypeRequest, UpdateEventTypeRequest, EventTypeResponse, EventTypeSummary, EventType, Long> {
+public class EventTypeController extends BaseController<CreateEventTypeRequest, UpdateEventTypeRequest, EventTypeResponse, EventTypeSummary> {
 
     public EventTypeController(EventTypeService service) {
         super(service);

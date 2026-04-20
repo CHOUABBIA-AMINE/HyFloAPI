@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/audit")
 @Tag(name = "Audit API", description = "Endpoints for viewing system audit logs")
-public class AuditController extends BaseController<CreateAuditRequest, UpdateAuditRequest, AuditResponse, AuditSummary, Audited, Long> {
+public class AuditController extends BaseController<CreateAuditRequest, UpdateAuditRequest, AuditResponse, AuditSummary> {
 
     private final AuditService auditService;
     private final ObjectMapper objectMapper;

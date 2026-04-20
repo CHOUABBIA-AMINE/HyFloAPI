@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/roles")
 @Tag(name = "Role API", description = "Endpoints for managing roles")
-public class RoleController extends BaseController<CreateRoleRequest, UpdateRoleRequest, RoleResponse, RoleSummary, Role, Long> {
+public class RoleController extends BaseController<CreateRoleRequest, UpdateRoleRequest, RoleResponse, RoleSummary> {
 
     private final RoleService roleService;
 

@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/processing-plants")
 @Tag(name = "ProcessingPlant API", description = "Endpoints for managing ProcessingPlant")
-public class ProcessingPlantController extends BaseController<CreateProcessingPlantRequest, UpdateProcessingPlantRequest, ProcessingPlantResponse, ProcessingPlantSummary, ProcessingPlant, Long> {
+public class ProcessingPlantController extends BaseController<CreateProcessingPlantRequest, UpdateProcessingPlantRequest, ProcessingPlantResponse, ProcessingPlantSummary> {
 
     public ProcessingPlantController(ProcessingPlantService service) {
         super(service);

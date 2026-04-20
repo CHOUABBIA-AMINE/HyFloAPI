@@ -10,7 +10,7 @@ import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowDeviationService;
 
 @RestController
 @RequestMapping("/api/v1/flow/deviations")
-public class FlowDeviationController extends BaseController<CreateFlowDeviationRequest, UpdateFlowDeviationRequest, FlowDeviationResponse, FlowDeviationSummary, dz.sh.trc.hyflo.core.flow.monitoring.model.FlowDeviation, Long> {
+public class FlowDeviationController extends BaseController<CreateFlowDeviationRequest, UpdateFlowDeviationRequest, FlowDeviationResponse, FlowDeviationSummary> {
 
     public FlowDeviationController(FlowDeviationService service) {
         super(service);

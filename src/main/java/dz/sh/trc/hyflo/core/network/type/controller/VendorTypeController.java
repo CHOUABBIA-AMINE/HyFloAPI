@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/vendor-types")
 @Tag(name = "VendorType API", description = "Endpoints for managing VendorType")
-public class VendorTypeController extends BaseController<CreateVendorTypeRequest, UpdateVendorTypeRequest, VendorTypeResponse, VendorTypeSummary, VendorType, Long> {
+public class VendorTypeController extends BaseController<CreateVendorTypeRequest, UpdateVendorTypeRequest, VendorTypeResponse, VendorTypeSummary> {
 
     public VendorTypeController(VendorTypeService service) {
         super(service);

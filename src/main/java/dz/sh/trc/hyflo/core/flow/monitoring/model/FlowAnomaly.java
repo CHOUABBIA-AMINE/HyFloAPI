@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading;
 import dz.sh.trc.hyflo.core.flow.measurement.model.SegmentFlowReading;
 import dz.sh.trc.hyflo.core.network.topology.model.PipelineSegment;
+import dz.sh.trc.hyflo.core.flow.reference.model.EventStatus;
 import dz.sh.trc.hyflo.platform.kernel.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -84,4 +85,9 @@ public class FlowAnomaly extends GenericModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "F_09", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_06_03_FK_03"))
     private PipelineSegment pipelineSegment;
+
+    @Schema(description = "Current status of the anomaly investigation")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_10", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_03_06_03_FK_04"))
+    private EventStatus status;
 }

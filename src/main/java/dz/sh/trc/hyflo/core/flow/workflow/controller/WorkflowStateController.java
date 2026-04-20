@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/workflow-states")
 @Tag(name = "WorkflowState API", description = "Endpoints for managing WorkflowState")
-public class WorkflowStateController extends BaseController<CreateWorkflowStateRequest, UpdateWorkflowStateRequest, WorkflowStateResponse, WorkflowStateSummary, WorkflowState, Long> {
+public class WorkflowStateController extends BaseController<CreateWorkflowStateRequest, UpdateWorkflowStateRequest, WorkflowStateResponse, WorkflowStateSummary> {
     public WorkflowStateController(WorkflowStateService service) { super(service); }
     @Override
     protected Page<WorkflowStateSummary> performSearch(String search, Pageable pageable) { throw new UnsupportedOperationException("Search not implemented"); }

@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/operational-statuses")
 @Tag(name = "Operational Status API", description = "Endpoints for managing operational statuses")
-public class OperationalStatusController extends BaseController<CreateOperationalStatusRequest, UpdateOperationalStatusRequest, OperationalStatusResponse, OperationalStatusSummary, OperationalStatus, Long> {
+public class OperationalStatusController extends BaseController<CreateOperationalStatusRequest, UpdateOperationalStatusRequest, OperationalStatusResponse, OperationalStatusSummary> {
 
     public OperationalStatusController(OperationalStatusService service) {
         super(service);

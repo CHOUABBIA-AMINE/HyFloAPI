@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/pipeline-systems")
 @Tag(name = "PipelineSystem API", description = "Endpoints for managing PipelineSystem")
-public class PipelineSystemController extends BaseController<CreatePipelineSystemRequest, UpdatePipelineSystemRequest, PipelineSystemResponse, PipelineSystemSummary, PipelineSystem, Long> {
+public class PipelineSystemController extends BaseController<CreatePipelineSystemRequest, UpdatePipelineSystemRequest, PipelineSystemResponse, PipelineSystemSummary> {
 
     public PipelineSystemController(PipelineSystemService service) {
         super(service);

@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService;
 
 @RestController
 @RequestMapping("/api/v1/flow/alerts")
-public class FlowAlertController extends BaseController<CreateFlowAlertRequest, UpdateFlowAlertRequest, FlowAlertResponse, FlowAlertSummary, dz.sh.trc.hyflo.core.flow.monitoring.model.FlowAlert, Long> {
+public class FlowAlertController extends BaseController<CreateFlowAlertRequest, UpdateFlowAlertRequest, FlowAlertResponse, FlowAlertSummary> {
 
     private final FlowAlertService flowAlertService;
 

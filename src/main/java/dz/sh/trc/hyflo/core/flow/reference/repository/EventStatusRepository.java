@@ -40,6 +40,8 @@ public interface EventStatusRepository extends JpaRepository<EventStatus, Long> 
         
     Optional<EventStatus> findByDesignationFr(String designationFr);
     
+    Optional<EventStatus> findByCode(String code);
+    
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
     @Query("SELECT evs FROM EventStatus evs WHERE " +

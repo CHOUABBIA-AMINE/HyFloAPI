@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/stations")
 @Tag(name = "Station API", description = "Endpoints for managing Station")
-public class StationController extends BaseController<CreateStationRequest, UpdateStationRequest, StationResponse, StationSummary, Station, Long> {
+public class StationController extends BaseController<CreateStationRequest, UpdateStationRequest, StationResponse, StationSummary> {
 
     public StationController(StationService service) {
         super(service);

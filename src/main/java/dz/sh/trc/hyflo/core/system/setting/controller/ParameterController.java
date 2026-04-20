@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/parameters")
 @Tag(name = "Parameter API", description = "Endpoints for managing system settings and parameters")
-public class ParameterController extends BaseController<CreateParameterRequest, UpdateParameterRequest, ParameterResponse, ParameterSummary, Parameter, Long> {
+public class ParameterController extends BaseController<CreateParameterRequest, UpdateParameterRequest, ParameterResponse, ParameterSummary> {
 
     public ParameterController(ParameterService service) {
         super(service);

@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/company-types")
 @Tag(name = "CompanyType API", description = "Endpoints for managing CompanyType")
-public class CompanyTypeController extends BaseController<CreateCompanyTypeRequest, UpdateCompanyTypeRequest, CompanyTypeResponse, CompanyTypeSummary, CompanyType, Long> {
+public class CompanyTypeController extends BaseController<CreateCompanyTypeRequest, UpdateCompanyTypeRequest, CompanyTypeResponse, CompanyTypeSummary> {
 
     public CompanyTypeController(CompanyTypeService service) {
         super(service);

@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/workflow-target-types")
 @Tag(name = "WorkflowTargetType API", description = "Endpoints for managing WorkflowTargetType")
-public class WorkflowTargetTypeController extends BaseController<CreateWorkflowTargetTypeRequest, UpdateWorkflowTargetTypeRequest, WorkflowTargetTypeResponse, WorkflowTargetTypeSummary, WorkflowTargetType, Long> {
+public class WorkflowTargetTypeController extends BaseController<CreateWorkflowTargetTypeRequest, UpdateWorkflowTargetTypeRequest, WorkflowTargetTypeResponse, WorkflowTargetTypeSummary> {
     public WorkflowTargetTypeController(WorkflowTargetTypeService service) { super(service); }
     @Override
     protected Page<WorkflowTargetTypeSummary> performSearch(String search, Pageable pageable) { throw new UnsupportedOperationException("Search not implemented"); }

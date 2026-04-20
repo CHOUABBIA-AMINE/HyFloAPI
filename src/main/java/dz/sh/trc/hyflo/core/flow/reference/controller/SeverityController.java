@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/severities")
 @Tag(name = "Severity API", description = "Endpoints for managing Severity")
-public class SeverityController extends BaseController<CreateSeverityRequest, UpdateSeverityRequest, SeverityResponse, SeveritySummary, Severity, Long> {
+public class SeverityController extends BaseController<CreateSeverityRequest, UpdateSeverityRequest, SeverityResponse, SeveritySummary> {
 
     public SeverityController(SeverityService service) {
         super(service);

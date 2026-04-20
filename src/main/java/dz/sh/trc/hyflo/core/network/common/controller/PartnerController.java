@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/network/partners")
 @Tag(name = "Partner API", description = "Endpoints for managing business partners")
-public class PartnerController extends BaseController<CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse, PartnerSummary, Partner, Long> {
+public class PartnerController extends BaseController<CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse, PartnerSummary> {
 
     public PartnerController(PartnerService service) {
         super(service);

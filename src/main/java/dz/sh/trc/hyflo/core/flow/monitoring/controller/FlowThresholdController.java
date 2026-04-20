@@ -10,7 +10,7 @@ import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowThresholdService;
 
 @RestController
 @RequestMapping("/api/v1/flow/thresholds")
-public class FlowThresholdController extends BaseController<CreateFlowThresholdRequest, UpdateFlowThresholdRequest, FlowThresholdResponse, FlowThresholdSummary, dz.sh.trc.hyflo.core.flow.monitoring.model.FlowThreshold, Long> {
+public class FlowThresholdController extends BaseController<CreateFlowThresholdRequest, UpdateFlowThresholdRequest, FlowThresholdResponse, FlowThresholdSummary> {
 
     public FlowThresholdController(FlowThresholdService service) {
         super(service);

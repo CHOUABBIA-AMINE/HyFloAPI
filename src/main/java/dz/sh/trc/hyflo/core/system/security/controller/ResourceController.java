@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/system/resources")
 @Tag(name = "Resource API", description = "Endpoints for managing resources")
-public class ResourceController extends BaseController<CreateResourceRequest, UpdateResourceRequest, ResourceResponse, ResourceSummary, Resource, Long> {
+public class ResourceController extends BaseController<CreateResourceRequest, UpdateResourceRequest, ResourceResponse, ResourceSummary> {
 
     public ResourceController(ResourceService service) {
         super(service);

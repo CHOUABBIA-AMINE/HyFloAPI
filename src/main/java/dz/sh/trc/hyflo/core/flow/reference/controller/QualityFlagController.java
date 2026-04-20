@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/quality-flags")
 @Tag(name = "QualityFlag API", description = "Endpoints for managing QualityFlag")
-public class QualityFlagController extends BaseController<CreateQualityFlagRequest, UpdateQualityFlagRequest, QualityFlagResponse, QualityFlagSummary, QualityFlag, Long> {
+public class QualityFlagController extends BaseController<CreateQualityFlagRequest, UpdateQualityFlagRequest, QualityFlagResponse, QualityFlagSummary> {
 
     public QualityFlagController(QualityFlagService service) {
         super(service);

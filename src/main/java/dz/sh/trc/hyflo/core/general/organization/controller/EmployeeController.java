@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/general/employees")
 @Tag(name = "Employee API", description = "Endpoints for managing employees")
-public class EmployeeController extends BaseController<CreateEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse, EmployeeSummary, Employee, Long> {
+public class EmployeeController extends BaseController<CreateEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse, EmployeeSummary> {
 
     public EmployeeController(EmployeeService service) {
         super(service);

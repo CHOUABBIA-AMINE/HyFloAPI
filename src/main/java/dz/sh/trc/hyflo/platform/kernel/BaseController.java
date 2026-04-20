@@ -20,9 +20,9 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class BaseController<REQ_C, REQ_U, RES, SUM, E, ID> {
+public abstract class BaseController<REQ_C, REQ_U, RES, SUM> {
 
-    private final BaseService<REQ_C, REQ_U, RES, SUM> service;
+    protected final BaseService<REQ_C, REQ_U, RES, SUM> service;
 
     protected BaseController(BaseService<REQ_C, REQ_U, RES, SUM> service) {
         this.service = service;

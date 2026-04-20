@@ -19,19 +19,24 @@ import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
 import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
+import dz.sh.trc.hyflo.platform.audit.service.AuditService;
+import dz.sh.trc.hyflo.platform.event.WorkflowTransitionEvent;
 
 @Service
 public class FlowAlertServiceImpl extends AbstractCrudService<CreateFlowAlertRequest, UpdateFlowAlertRequest, FlowAlertResponse, FlowAlertSummary, FlowAlert> implements FlowAlertService {
 
     private final AlertStatusRepository alertStatusRepository;
+    private final AuditService auditService;
 
     public FlowAlertServiceImpl(FlowAlertRepository repository,
                                 FlowAlertMapper mapper,
                                 ReferenceResolver referenceResolver,
                                 ApplicationEventPublisher eventPublisher,
-                                AlertStatusRepository alertStatusRepository) {
+                                AlertStatusRepository alertStatusRepository,
+                                AuditService auditService) {
         super(repository, mapper, referenceResolver, eventPublisher);
         this.alertStatusRepository = alertStatusRepository;
+        this.auditService = auditService;
     }
 
     @Override
@@ -56,6 +61,19 @@ public class FlowAlertServiceImpl extends AbstractCrudService<CreateFlowAlertReq
         AlertStatus activeStatus = alertStatusRepository.findByCode("ACTIVE")
                 .orElseThrow(() -> new ResourceNotFoundException("AlertStatus 'ACTIVE' not found. Please seed reference data."));
         entity.setStatus(activeStatus);
+
+        // Event for alert trigger
+        eventPublisher.publishEvent(WorkflowTransitionEvent.builder()
+                .entityId(null) // ID not yet generated
+                .entityType("FLOW_ALERT")
+                .fromState(null)
+                .toState("ACTIVE")
+                .action("TRIGGER")
+                .actorEmployeeId(null) // triggered by system threshold
+                .build());
+
+        // Audit log
+        auditService.logWorkflow("FlowAlert", entity.getId(), null, "ACTIVE", "TRIGGER", null);
     }
 
     @Override
@@ -77,6 +95,19 @@ public class FlowAlertServiceImpl extends AbstractCrudService<CreateFlowAlertReq
         alert.setStatus(acknowledgedStatus);
 
         repository.save(alert);
+
+        // Event for alert acknowledgment
+        eventPublisher.publishEvent(WorkflowTransitionEvent.builder()
+                .entityId(alert.getId())
+                .entityType("FLOW_ALERT")
+                .fromState("ACTIVE")
+                .toState("ACKNOWLEDGED")
+                .action("ACKNOWLEDGE")
+                .actorEmployeeId(request.getAcknowledgedByEmployeeId())
+                .build());
+
+        // Audit log
+        auditService.logWorkflow("FlowAlert", alert.getId(), "ACTIVE", "ACKNOWLEDGED", "ACKNOWLEDGE", request.getAcknowledgedByEmployeeId());
     }
 
     @Override
@@ -99,6 +130,19 @@ public class FlowAlertServiceImpl extends AbstractCrudService<CreateFlowAlertReq
         alert.setStatus(resolvedStatus);
 
         repository.save(alert);
+
+        // Event for alert resolution
+        eventPublisher.publishEvent(WorkflowTransitionEvent.builder()
+                .entityId(alert.getId())
+                .entityType("FLOW_ALERT")
+                .fromState("ACKNOWLEDGED")
+                .toState("RESOLVED")
+                .action("RESOLVE")
+                .actorEmployeeId(request.getResolvedByEmployeeId())
+                .build());
+
+        // Audit log
+        auditService.logWorkflow("FlowAlert", alert.getId(), "ACKNOWLEDGED", "RESOLVED", "RESOLVE", request.getResolvedByEmployeeId());
     }
 
     /**

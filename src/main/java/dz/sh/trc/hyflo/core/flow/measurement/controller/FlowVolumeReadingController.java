@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/flow-volume-readings")
 @Tag(name = "FlowVolumeReading API", description = "Endpoints for FlowVolumeReading")
-public class FlowVolumeReadingController extends BaseController<CreateFlowVolumeReadingRequest, UpdateFlowVolumeReadingRequest, FlowVolumeReadingResponse, FlowVolumeReadingSummary, FlowVolumeReading, Long> {
+public class FlowVolumeReadingController extends BaseController<CreateFlowVolumeReadingRequest, UpdateFlowVolumeReadingRequest, FlowVolumeReadingResponse, FlowVolumeReadingSummary> {
     public FlowVolumeReadingController(FlowVolumeReadingService service) { super(service); }
     @Override
     protected Page<FlowVolumeReadingSummary> performSearch(String search, Pageable pageable) { throw new UnsupportedOperationException("Search not implemented"); }

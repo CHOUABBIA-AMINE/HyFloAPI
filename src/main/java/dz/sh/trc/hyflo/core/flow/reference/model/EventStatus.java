@@ -40,9 +40,18 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "EventStatus")
 @Table(name = "T_03_02_01", uniqueConstraints = {
-        @UniqueConstraint(name = "T_03_02_01_UK_01", columnNames = {"F_03"})
+        @UniqueConstraint(name = "T_03_02_01_UK_01", columnNames = {"F_01"})
 })
 public class EventStatus extends GenericModel {
+
+    @Schema(
+            description = "Event status code",
+            example = "OPEN",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            maxLength = 20
+    )
+    @Column(name = "F_01", length = 20, nullable = false)
+    private String code;
 
     @Schema(
             description = "Event status designation in Arabic",
@@ -50,7 +59,7 @@ public class EventStatus extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 100
     )
-    @Column(name = "F_01", length = 100)
+    @Column(name = "F_02", length = 100)
     private String designationAr;
 
     @Schema(
@@ -59,7 +68,7 @@ public class EventStatus extends GenericModel {
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             maxLength = 100
     )
-    @Column(name = "F_02", length = 100)
+    @Column(name = "F_03", length = 100)
     private String designationEn;
 
     @Schema(
@@ -68,6 +77,6 @@ public class EventStatus extends GenericModel {
             requiredMode = Schema.RequiredMode.REQUIRED,
             maxLength = 100
     )
-    @Column(name = "F_03", length = 100, nullable = false)
+    @Column(name = "F_04", length = 100, nullable = false)
     private String designationFr;
 }

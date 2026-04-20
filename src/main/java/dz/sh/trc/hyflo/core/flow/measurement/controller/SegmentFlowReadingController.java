@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/segment-flow-readings")
 @Tag(name = "SegmentFlowReading API", description = "Endpoints for SegmentFlowReading")
-public class SegmentFlowReadingController extends BaseController<CreateSegmentFlowReadingRequest, UpdateSegmentFlowReadingRequest, SegmentFlowReadingResponse, SegmentFlowReadingSummary, SegmentFlowReading, Long> {
+public class SegmentFlowReadingController extends BaseController<CreateSegmentFlowReadingRequest, UpdateSegmentFlowReadingRequest, SegmentFlowReadingResponse, SegmentFlowReadingSummary> {
     public SegmentFlowReadingController(SegmentFlowReadingService service) { super(service); }
     @Override
     protected Page<SegmentFlowReadingSummary> performSearch(String search, Pageable pageable) { throw new UnsupportedOperationException("Search not implemented"); }

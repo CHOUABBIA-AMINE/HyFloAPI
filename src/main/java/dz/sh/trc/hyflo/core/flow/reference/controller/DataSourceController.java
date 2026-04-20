@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/data-sources")
 @Tag(name = "DataSource API", description = "Endpoints for managing DataSource")
-public class DataSourceController extends BaseController<CreateDataSourceRequest, UpdateDataSourceRequest, DataSourceResponse, DataSourceSummary, DataSource, Long> {
+public class DataSourceController extends BaseController<CreateDataSourceRequest, UpdateDataSourceRequest, DataSourceResponse, DataSourceSummary> {
     public DataSourceController(DataSourceService service) { super(service); }
     @Override
     protected Page<DataSourceSummary> performSearch(String search, Pageable pageable) { throw new UnsupportedOperationException("Search not implemented"); }

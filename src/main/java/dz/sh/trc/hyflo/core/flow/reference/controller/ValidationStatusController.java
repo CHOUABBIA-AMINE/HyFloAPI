@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/flow/validation-statuses")
 @Tag(name = "ValidationStatus API", description = "Endpoints for managing ValidationStatus")
-public class ValidationStatusController extends BaseController<CreateValidationStatusRequest, UpdateValidationStatusRequest, ValidationStatusResponse, ValidationStatusSummary, ValidationStatus, Long> {
+public class ValidationStatusController extends BaseController<CreateValidationStatusRequest, UpdateValidationStatusRequest, ValidationStatusResponse, ValidationStatusSummary> {
 
     public ValidationStatusController(ValidationStatusService service) {
         super(service);

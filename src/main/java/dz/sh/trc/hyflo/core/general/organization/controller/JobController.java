@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/v1/general/jobs")
 @Tag(name = "Job API", description = "Endpoints for managing jobs")
-public class JobController extends BaseController<CreateJobRequest, UpdateJobRequest, JobResponse, JobSummary, Job, Long> {
+public class JobController extends BaseController<CreateJobRequest, UpdateJobRequest, JobResponse, JobSummary> {
 
     public JobController(JobService service) {
         super(service);
