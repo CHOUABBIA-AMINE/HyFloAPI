@@ -34,7 +34,6 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -131,14 +130,6 @@ public class FlowReading extends GenericModel {
     @JoinColumn(name = "F_13", referencedColumnName = "F_00",
             foreignKey = @ForeignKey(name = "T_03_04_02_FK_04"))
     private DataSource dataSource;
-
-    // ------------------------------------------------------------------
-    // F_14 — Optimistic locking (H6)
-    // ------------------------------------------------------------------
-
-    @Version
-    @Column(name = "F_14")
-    private Long version;
 
     // ------------------------------------------------------------------
     // F_15 — Reading slot (measurement period)

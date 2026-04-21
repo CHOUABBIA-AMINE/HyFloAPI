@@ -175,7 +175,4 @@ public class FlowPlan extends GenericModel {
     // F_15 — Optimistic locking
     // ------------------------------------------------------------------
 
-    @Version
-    @Column(name = "F_15")
-    private Long version;
 }

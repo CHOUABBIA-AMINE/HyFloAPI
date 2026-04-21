@@ -31,9 +31,9 @@ public interface FlowVolumeRepository extends JpaRepository<FlowVolumeReading, L
 
     // ========== SPRING DERIVED QUERIES (Optimized) ==========
     
-    List<FlowVolumeReading> findByOperationDate(LocalDate operationDate);
+    List<FlowVolumeReading> findByReadingDate(LocalDate operationDate);
     
-    List<FlowVolumeReading> findByOperationDateBetween(LocalDate startDate, LocalDate endDate);
+    List<FlowVolumeReading> findByReadingDateBetween(LocalDate startDate, LocalDate endDate);
     
     List<FlowVolumeReading> findByInfrastructureId(Long infrastructureId);
     
@@ -47,27 +47,27 @@ public interface FlowVolumeRepository extends JpaRepository<FlowVolumeReading, L
     
     List<FlowVolumeReading> findByValidatedById(Long employeeId);
     
-    List<FlowVolumeReading> findByInfrastructureIdAndOperationDate(Long infrastructureId, LocalDate operationDate);
+    List<FlowVolumeReading> findByInfrastructureIdAndReadingDate(Long infrastructureId, LocalDate readingDate);
     
     List<FlowVolumeReading> findByInfrastructureIdAndProductIdAndTypeId(Long infrastructureId, Long productId, Long typeId);
     
-    boolean existsByOperationDateAndInfrastructureIdAndProductIdAndTypeId(LocalDate operationDate, Long infrastructureId, Long productId, Long typeId);
+    boolean existsByReadingDateAndInfrastructureIdAndProductIdAndTypeId(LocalDate readingDate, Long infrastructureId, Long productId, Long typeId);
 
     // ========== CUSTOM QUERIES (Complex multi-field search) ==========
     
-    @Query("SELECT fo FROM FlowVolume fo WHERE "
+    @Query("SELECT fo FROM FlowVolumeReading fo WHERE "
          + "fo.infrastructure.id = :infrastructureId AND "
-         + "fo.operationDate BETWEEN :startDate AND :endDate")
+         + "fo.readingDate BETWEEN :startDate AND :endDate")
     Page<FlowVolumeReading> findByInfrastructureAndDateRange(
         @Param("infrastructureId") Long infrastructureId,
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate,
         Pageable pageable);
     
-    @Query("SELECT fo FROM FlowVolume fo WHERE "
+    @Query("SELECT fo FROM FlowVolumeReading fo WHERE "
          + "fo.product.id = :productId AND "
          + "fo.type.id = :typeId AND "
-         + "fo.operationDate BETWEEN :startDate AND :endDate")
+         + "fo.readingDate BETWEEN :startDate AND :endDate")
     Page<FlowVolumeReading> findByProductAndTypeAndDateRange(
         @Param("productId") Long productId,
         @Param("typeId") Long typeId,
@@ -75,9 +75,9 @@ public interface FlowVolumeRepository extends JpaRepository<FlowVolumeReading, L
         @Param("endDate") LocalDate endDate,
         Pageable pageable);
     
-    @Query("SELECT fo FROM FlowVolume fo WHERE "
+    @Query("SELECT fo FROM FlowVolumeReading fo WHERE "
          + "fo.validationStatus.id = :statusId AND "
-         + "fo.operationDate BETWEEN :startDate AND :endDate")
+         + "fo.readingDate BETWEEN :startDate AND :endDate")
     Page<FlowVolumeReading> findByValidationStatusAndDateRange(
         @Param("statusId") Long statusId,
         @Param("startDate") LocalDate startDate,

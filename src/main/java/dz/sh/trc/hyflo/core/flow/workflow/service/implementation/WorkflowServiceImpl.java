@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,8 @@ public class WorkflowServiceImpl implements WorkflowService {
     private final WorkflowTargetTypeRepository workflowTargetTypeRepository;
     private final EmployeeRepository employeeRepository;
     private final WorkflowInstanceMapper mapper;
+    
+    @Autowired
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final AuditService auditService;

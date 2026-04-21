@@ -86,9 +86,6 @@ public class FlowReadingRequestDTO {
 
     // --- Optimistic locking ---
 
-    @Schema(description = "Entity version for optimistic locking", example = "0")
-    private Long version;
-
     // Getters and setters omitted for brevity
     // (Use Lombok @Getter/@Setter if consistent with project style.)
 }
