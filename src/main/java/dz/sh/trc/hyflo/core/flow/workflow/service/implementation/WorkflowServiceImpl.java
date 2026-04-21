@@ -27,8 +27,8 @@ import dz.sh.trc.hyflo.core.flow.workflow.repository.WorkflowTargetTypeRepositor
 import dz.sh.trc.hyflo.core.flow.workflow.service.WorkflowService;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
 import dz.sh.trc.hyflo.core.general.organization.repository.EmployeeRepository;
+import dz.sh.trc.hyflo.core.system.audit.service.AuditService;
 import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
-import dz.sh.trc.hyflo.platform.audit.service.AuditService;
 import dz.sh.trc.hyflo.platform.event.WorkflowTransitionEvent;
 
 @Service

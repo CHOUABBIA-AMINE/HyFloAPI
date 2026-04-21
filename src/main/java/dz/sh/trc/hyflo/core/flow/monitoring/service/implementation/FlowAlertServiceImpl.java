@@ -7,7 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dz.sh.trc.hyflo.core.flow.measurement.model.FlowReading;
-import dz.sh.trc.hyflo.core.flow.monitoring.dto.*;
+import dz.sh.trc.hyflo.core.flow.monitoring.dto.AcknowledgeAlertRequest;
+import dz.sh.trc.hyflo.core.flow.monitoring.dto.CreateFlowAlertRequest;
+import dz.sh.trc.hyflo.core.flow.monitoring.dto.FlowAlertResponse;
+import dz.sh.trc.hyflo.core.flow.monitoring.dto.FlowAlertSummary;
+import dz.sh.trc.hyflo.core.flow.monitoring.dto.ResolveAlertRequest;
+import dz.sh.trc.hyflo.core.flow.monitoring.dto.UpdateFlowAlertRequest;
 import dz.sh.trc.hyflo.core.flow.monitoring.mapper.FlowAlertMapper;
 import dz.sh.trc.hyflo.core.flow.monitoring.model.FlowAlert;
 import dz.sh.trc.hyflo.core.flow.monitoring.model.FlowThreshold;
@@ -16,11 +21,11 @@ import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService;
 import dz.sh.trc.hyflo.core.flow.reference.model.AlertStatus;
 import dz.sh.trc.hyflo.core.flow.reference.repository.AlertStatusRepository;
 import dz.sh.trc.hyflo.core.general.organization.model.Employee;
+import dz.sh.trc.hyflo.core.system.audit.service.AuditService;
 import dz.sh.trc.hyflo.exception.business.ResourceNotFoundException;
+import dz.sh.trc.hyflo.platform.event.WorkflowTransitionEvent;
 import dz.sh.trc.hyflo.platform.kernel.AbstractCrudService;
 import dz.sh.trc.hyflo.platform.kernel.ReferenceResolver;
-import dz.sh.trc.hyflo.platform.audit.service.AuditService;
-import dz.sh.trc.hyflo.platform.event.WorkflowTransitionEvent;
 
 @Service
 public class FlowAlertServiceImpl extends AbstractCrudService<CreateFlowAlertRequest, UpdateFlowAlertRequest, FlowAlertResponse, FlowAlertSummary, FlowAlert> implements FlowAlertService {
