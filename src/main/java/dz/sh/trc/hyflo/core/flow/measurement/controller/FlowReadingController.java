@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/flow/readings")
+@RequestMapping("/flow/readings")
 @Tag(name = "FlowReading API", description = "Endpoints for Flow Readings and Validation Workflows")
 public class FlowReadingController extends BaseController<CreateFlowReadingRequest, UpdateFlowReadingRequest, FlowReadingResponse, FlowReadingSummary> {
 

@@ -1,4 +1,4 @@
-package dz.sh.trc.hyflo.platform.security.configuration;
+package dz.sh.trc.hyflo.configuration.security;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import dz.sh.trc.hyflo.platform.security.configuration.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -41,9 +42,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/api/v1/system/auth/login",
-                        "/api/v1/system/auth/register",
-                        "/api/v1/system/auth/refresh",
+                        "/system/auth/login",
+                        "/system/auth/register",
+                        "/system/auth/refresh",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html"

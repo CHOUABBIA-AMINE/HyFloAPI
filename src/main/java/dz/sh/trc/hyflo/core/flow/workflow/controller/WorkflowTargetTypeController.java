@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/workflow-target-types")
+@RequestMapping("/flow/workflow-target-types")
 @Tag(name = "WorkflowTargetType API", description = "Endpoints for managing WorkflowTargetType")
 public class WorkflowTargetTypeController extends BaseController<CreateWorkflowTargetTypeRequest, UpdateWorkflowTargetTypeRequest, WorkflowTargetTypeResponse, WorkflowTargetTypeSummary> {
     public WorkflowTargetTypeController(WorkflowTargetTypeService service) { super(service); }

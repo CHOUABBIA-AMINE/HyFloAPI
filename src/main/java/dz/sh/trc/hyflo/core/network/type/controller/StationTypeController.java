@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/station-types")
+@RequestMapping("/network/station-types")
 @Tag(name = "StationType API", description = "Endpoints for managing StationType")
 public class StationTypeController extends BaseController<CreateStationTypeRequest, UpdateStationTypeRequest, StationTypeResponse, StationTypeSummary> {
 

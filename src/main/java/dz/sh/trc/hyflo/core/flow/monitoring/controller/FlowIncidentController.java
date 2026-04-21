@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.core.flow.monitoring.dto.*;
 import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowIncidentService;
 
 @RestController
-@RequestMapping("/api/v1/flow/incidents")
+@RequestMapping("/flow/incidents")
 public class FlowIncidentController extends BaseController<CreateFlowIncidentRequest, UpdateFlowIncidentRequest, FlowIncidentResponse, FlowIncidentSummary> {
 
     public FlowIncidentController(FlowIncidentService service) {

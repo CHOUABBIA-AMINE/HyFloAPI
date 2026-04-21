@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/resource-types")
+@RequestMapping("/system/resource-types")
 @Tag(name = "Resource Type API", description = "Endpoints for managing resource types")
 public class ResourceTypeController extends BaseController<CreateResourceTypeRequest, UpdateResourceTypeRequest, ResourceTypeResponse, ResourceTypeSummary> {
 

@@ -13,7 +13,7 @@ import dz.sh.trc.hyflo.core.flow.monitoring.dto.*;
 import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAlertService;
 
 @RestController
-@RequestMapping("/api/v1/flow/alerts")
+@RequestMapping("/flow/alerts")
 public class FlowAlertController extends BaseController<CreateFlowAlertRequest, UpdateFlowAlertRequest, FlowAlertResponse, FlowAlertSummary> {
 
     private final FlowAlertService flowAlertService;

@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.core.flow.workflow.service.WorkflowService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/workflow-instances")
+@RequestMapping("/flow/workflow-instances")
 @Tag(name = "Workflow API", description = "Endpoints for managing Workflows")
 public class WorkflowController {
 

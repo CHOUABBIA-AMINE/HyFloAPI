@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/terminals")
+@RequestMapping("/network/terminals")
 @Tag(name = "Terminal API", description = "Endpoints for managing Terminal")
 public class TerminalController extends BaseController<CreateTerminalRequest, UpdateTerminalRequest, TerminalResponse, TerminalSummary> {
 

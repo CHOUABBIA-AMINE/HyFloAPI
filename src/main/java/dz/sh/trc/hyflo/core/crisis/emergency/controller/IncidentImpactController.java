@@ -13,7 +13,7 @@ import dz.sh.trc.hyflo.core.crisis.emergency.service.IncidentImpactService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 
 @RestController
-@RequestMapping("/api/v1/crisis/impacts")
+@RequestMapping("/crisis/impacts")
 public class IncidentImpactController extends BaseController<CreateIncidentImpactRequest, UpdateIncidentImpactRequest, IncidentImpactResponse, IncidentImpactSummary> {
 
     public IncidentImpactController(IncidentImpactService service) {

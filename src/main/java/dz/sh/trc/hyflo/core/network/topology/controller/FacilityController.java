@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/facilities")
+@RequestMapping("/network/facilities")
 @Tag(name = "Facility API", description = "Endpoints for managing Facility")
 public class FacilityController extends BaseController<CreateFacilityRequest, UpdateFacilityRequest, FacilityResponse, FacilitySummary> {
 

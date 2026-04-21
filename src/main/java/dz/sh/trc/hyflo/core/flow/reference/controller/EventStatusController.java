@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/event-statuses")
+@RequestMapping("/flow/event-statuses")
 @Tag(name = "EventStatus API", description = "Endpoints for managing EventStatus")
 public class EventStatusController extends BaseController<CreateEventStatusRequest, UpdateEventStatusRequest, EventStatusResponse, EventStatusSummary> {
 

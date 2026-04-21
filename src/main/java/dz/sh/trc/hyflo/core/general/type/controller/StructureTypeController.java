@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/general/types/structures")
+@RequestMapping("/general/types/structures")
 @Tag(name = "Structure Type API", description = "Endpoints for managing structure types")
 public class StructureTypeController extends BaseController<CreateStructureTypeRequest, UpdateStructureTypeRequest, StructureTypeResponse, StructureTypeSummary> {
 

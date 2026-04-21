@@ -13,7 +13,7 @@ import dz.sh.trc.hyflo.core.crisis.reference.service.IncidentSeverityService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 
 @RestController
-@RequestMapping("/api/v1/crisis/severities")
+@RequestMapping("/crisis/severities")
 public class IncidentSeverityController extends BaseController<CreateIncidentSeverityRequest, UpdateIncidentSeverityRequest, IncidentSeverityResponse, IncidentSeveritySummary> {
 
     public IncidentSeverityController(IncidentSeverityService service) {

@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/planning/plans")
+@RequestMapping("/flow/planning/plans")
 @Tag(name = "FlowPlan API", description = "Endpoints for managing pipeline flow plans and approvals")
 public class FlowPlanController extends BaseController<CreateFlowPlanRequest, UpdateFlowPlanRequest, FlowPlanResponse, FlowPlanSummary> {
 

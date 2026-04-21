@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/operational-statuses")
+@RequestMapping("/network/operational-statuses")
 @Tag(name = "Operational Status API", description = "Endpoints for managing operational statuses")
 public class OperationalStatusController extends BaseController<CreateOperationalStatusRequest, UpdateOperationalStatusRequest, OperationalStatusResponse, OperationalStatusSummary> {
 

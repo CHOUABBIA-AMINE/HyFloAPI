@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/event-types")
+@RequestMapping("/flow/event-types")
 @Tag(name = "EventType API", description = "Endpoints for managing EventType")
 public class EventTypeController extends BaseController<CreateEventTypeRequest, UpdateEventTypeRequest, EventTypeResponse, EventTypeSummary> {
 

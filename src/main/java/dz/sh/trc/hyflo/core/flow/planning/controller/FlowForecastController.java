@@ -9,7 +9,7 @@ import dz.sh.trc.hyflo.core.flow.planning.dto.*;
 import dz.sh.trc.hyflo.core.flow.planning.service.FlowForecastService;
 
 @RestController
-@RequestMapping("/api/v1/flow/planning/forecasts")
+@RequestMapping("/flow/planning/forecasts")
 public class FlowForecastController extends BaseController<CreateFlowForecastRequest, UpdateFlowForecastRequest, FlowForecastResponse, FlowForecastSummary> {
 
     public FlowForecastController(FlowForecastService service) {

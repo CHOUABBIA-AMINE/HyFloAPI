@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/general/employees")
+@RequestMapping("/general/employees")
 @Tag(name = "Employee API", description = "Endpoints for managing employees")
 public class EmployeeController extends BaseController<CreateEmployeeRequest, UpdateEmployeeRequest, EmployeeResponse, EmployeeSummary> {
 

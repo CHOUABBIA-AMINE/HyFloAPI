@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/actions")
+@RequestMapping("/system/actions")
 @Tag(name = "Action API", description = "Endpoints for managing actions")
 public class ActionController extends BaseController<CreateActionRequest, UpdateActionRequest, ActionResponse, ActionSummary> {
 

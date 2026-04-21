@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/partner-types")
+@RequestMapping("/network/partner-types")
 @Tag(name = "PartnerType API", description = "Endpoints for managing PartnerType")
 public class PartnerTypeController extends BaseController<CreatePartnerTypeRequest, UpdatePartnerTypeRequest, PartnerTypeResponse, PartnerTypeSummary> {
 

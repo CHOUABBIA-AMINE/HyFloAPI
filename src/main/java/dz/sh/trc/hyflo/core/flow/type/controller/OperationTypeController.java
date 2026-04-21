@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/operation-types")
+@RequestMapping("/flow/operation-types")
 @Tag(name = "OperationType API", description = "Endpoints for managing OperationType")
 public class OperationTypeController extends BaseController<CreateOperationTypeRequest, UpdateOperationTypeRequest, OperationTypeResponse, OperationTypeSummary> {
 

@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/pipeline-segments")
+@RequestMapping("/network/pipeline-segments")
 @Tag(name = "PipelineSegment API", description = "Endpoints for managing PipelineSegment")
 public class PipelineSegmentController extends BaseController<CreatePipelineSegmentRequest, UpdatePipelineSegmentRequest, PipelineSegmentResponse, PipelineSegmentSummary> {
 

@@ -17,7 +17,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/audit")
+@RequestMapping("/system/audit")
 @Tag(name = "Audit API", description = "Endpoints for viewing system audit logs")
 public class AuditController extends BaseController<CreateAuditRequest, UpdateAuditRequest, AuditResponse, AuditSummary> {
 

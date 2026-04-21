@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/permissions")
+@RequestMapping("/system/permissions")
 @Tag(name = "Permission API", description = "Endpoints for managing permissions")
 public class PermissionController extends BaseController<CreatePermissionRequest, UpdatePermissionRequest, PermissionResponse, PermissionSummary> {
 

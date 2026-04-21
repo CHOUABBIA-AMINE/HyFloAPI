@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/plan-statuses")
+@RequestMapping("/flow/plan-statuses")
 @Tag(name = "PlanStatus API", description = "Endpoints for managing PlanStatus")
 public class PlanStatusController extends BaseController<CreatePlanStatusRequest, UpdatePlanStatusRequest, PlanStatusResponse, PlanStatusSummary> {
 

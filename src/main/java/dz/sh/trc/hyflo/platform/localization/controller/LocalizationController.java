@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/localization")
+@RequestMapping("/localization")
 @Tag(name = "Localization API", description = "Translation key resolution for multi-language support")
 @RequiredArgsConstructor
 public class LocalizationController {

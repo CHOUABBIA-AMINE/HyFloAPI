@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/parameters")
+@RequestMapping("/system/parameters")
 @Tag(name = "Parameter API", description = "Endpoints for managing system settings and parameters")
 public class ParameterController extends BaseController<CreateParameterRequest, UpdateParameterRequest, ParameterResponse, ParameterSummary> {
 

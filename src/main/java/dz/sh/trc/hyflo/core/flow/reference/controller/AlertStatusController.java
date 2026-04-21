@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/alert-statuses")
+@RequestMapping("/flow/alert-statuses")
 @Tag(name = "AlertStatus API", description = "Endpoints for managing AlertStatus")
 public class AlertStatusController extends BaseController<CreateAlertStatusRequest, UpdateAlertStatusRequest, AlertStatusResponse, AlertStatusSummary> {
 

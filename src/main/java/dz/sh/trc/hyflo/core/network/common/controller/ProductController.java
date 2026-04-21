@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/products")
+@RequestMapping("/network/products")
 @Tag(name = "Product API", description = "Endpoints for managing hydrocarbon products")
 public class ProductController extends BaseController<CreateProductRequest, UpdateProductRequest, ProductResponse, ProductSummary> {
 

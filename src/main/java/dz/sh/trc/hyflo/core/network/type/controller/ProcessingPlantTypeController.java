@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/processing-plant-types")
+@RequestMapping("/network/processing-plant-types")
 @Tag(name = "ProcessingPlantType API", description = "Endpoints for managing ProcessingPlantType")
 public class ProcessingPlantTypeController extends BaseController<CreateProcessingPlantTypeRequest, UpdateProcessingPlantTypeRequest, ProcessingPlantTypeResponse, ProcessingPlantTypeSummary> {
 

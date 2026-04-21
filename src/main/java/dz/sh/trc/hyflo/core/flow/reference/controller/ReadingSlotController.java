@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/reading-slots")
+@RequestMapping("/flow/reading-slots")
 @Tag(name = "ReadingSlot API", description = "Endpoints for managing ReadingSlot")
 public class ReadingSlotController extends BaseController<CreateReadingSlotRequest, UpdateReadingSlotRequest, ReadingSlotResponse, ReadingSlotSummary> {
 

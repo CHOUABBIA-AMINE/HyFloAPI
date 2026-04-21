@@ -12,7 +12,7 @@ import dz.sh.trc.hyflo.core.flow.measurement.service.FlowVolumeReadingService;
 import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
-@RequestMapping("/api/v1/flow/flow-volume-readings")
+@RequestMapping("/flow/flow-volume-readings")
 @Tag(name = "FlowVolumeReading API", description = "Endpoints for FlowVolumeReading")
 public class FlowVolumeReadingController extends BaseController<CreateFlowVolumeReadingRequest, UpdateFlowVolumeReadingRequest, FlowVolumeReadingResponse, FlowVolumeReadingSummary> {
     public FlowVolumeReadingController(FlowVolumeReadingService service) { super(service); }

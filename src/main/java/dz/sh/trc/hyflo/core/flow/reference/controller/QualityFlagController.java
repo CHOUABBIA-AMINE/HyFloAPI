@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/quality-flags")
+@RequestMapping("/flow/quality-flags")
 @Tag(name = "QualityFlag API", description = "Endpoints for managing QualityFlag")
 public class QualityFlagController extends BaseController<CreateQualityFlagRequest, UpdateQualityFlagRequest, QualityFlagResponse, QualityFlagSummary> {
 

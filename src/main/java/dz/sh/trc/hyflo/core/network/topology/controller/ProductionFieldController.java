@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/production-fields")
+@RequestMapping("/network/production-fields")
 @Tag(name = "ProductionField API", description = "Endpoints for managing ProductionField")
 public class ProductionFieldController extends BaseController<CreateProductionFieldRequest, UpdateProductionFieldRequest, ProductionFieldResponse, ProductionFieldSummary> {
 

@@ -30,7 +30,7 @@ import java.util.UUID;
  *   "correlationId" : "d3b07384-...",
  *   "errorCode"     : "AUTH-001",
  *   "message"       : "Invalid username or password",
- *   "path"          : "/api/v1/auth/login",
+ *   "path"          : "/auth/login",
  *   "details"       : { "fieldErrors": { "password": "must not be blank" } }
  * }
  *

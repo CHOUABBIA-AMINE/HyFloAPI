@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/users")
+@RequestMapping("/system/users")
 @Tag(name = "User API", description = "Endpoints for managing users")
 public class UserController extends BaseController<CreateUserRequest, UpdateUserRequest, UserResponse, UserSummary> {
 

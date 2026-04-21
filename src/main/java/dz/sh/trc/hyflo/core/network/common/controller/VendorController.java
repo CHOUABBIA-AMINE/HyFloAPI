@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/vendors")
+@RequestMapping("/network/vendors")
 @Tag(name = "Vendor API", description = "Endpoints for managing vendors and contractors")
 public class VendorController extends BaseController<CreateVendorRequest, UpdateVendorRequest, VendorResponse, VendorSummary> {
 

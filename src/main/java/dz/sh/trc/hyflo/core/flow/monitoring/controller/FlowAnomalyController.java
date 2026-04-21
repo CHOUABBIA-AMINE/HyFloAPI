@@ -15,7 +15,7 @@ import dz.sh.trc.hyflo.core.flow.monitoring.dto.*;
 import dz.sh.trc.hyflo.core.flow.monitoring.service.FlowAnomalyService;
 
 @RestController
-@RequestMapping("/api/v1/flow/anomalies")
+@RequestMapping("/flow/anomalies")
 public class FlowAnomalyController extends BaseController<CreateFlowAnomalyRequest, UpdateFlowAnomalyRequest, FlowAnomalyResponse, FlowAnomalySummary> {
 
     public FlowAnomalyController(FlowAnomalyService service) {

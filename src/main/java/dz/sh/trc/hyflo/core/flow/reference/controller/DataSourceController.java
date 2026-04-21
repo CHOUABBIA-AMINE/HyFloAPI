@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/data-sources")
+@RequestMapping("/flow/data-sources")
 @Tag(name = "DataSource API", description = "Endpoints for managing DataSource")
 public class DataSourceController extends BaseController<CreateDataSourceRequest, UpdateDataSourceRequest, DataSourceResponse, DataSourceSummary> {
     public DataSourceController(DataSourceService service) { super(service); }

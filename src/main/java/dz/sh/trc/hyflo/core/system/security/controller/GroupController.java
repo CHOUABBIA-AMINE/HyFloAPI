@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/groups")
+@RequestMapping("/system/groups")
 @Tag(name = "Group API", description = "Endpoints for managing groups")
 public class GroupController extends BaseController<CreateGroupRequest, UpdateGroupRequest, GroupResponse, GroupSummary> {
 

@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/workflow-states")
+@RequestMapping("/flow/workflow-states")
 @Tag(name = "WorkflowState API", description = "Endpoints for managing WorkflowState")
 public class WorkflowStateController extends BaseController<CreateWorkflowStateRequest, UpdateWorkflowStateRequest, WorkflowStateResponse, WorkflowStateSummary> {
     public WorkflowStateController(WorkflowStateService service) { super(service); }

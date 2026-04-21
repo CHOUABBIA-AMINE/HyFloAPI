@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/network/alloys")
+@RequestMapping("/network/alloys")
 @Tag(name = "Alloy API", description = "Endpoints for managing alloys and materials")
 public class AlloyController extends BaseController<CreateAlloyRequest, UpdateAlloyRequest, AlloyResponse, AlloySummary> {
 

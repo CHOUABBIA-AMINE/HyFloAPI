@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/flow/reading-source-natures")
+@RequestMapping("/flow/reading-source-natures")
 @Tag(name = "ReadingSourceNature API", description = "Endpoints for managing ReadingSourceNature")
 public class ReadingSourceNatureController extends BaseController<CreateReadingSourceNatureRequest, UpdateReadingSourceNatureRequest, ReadingSourceNatureResponse, ReadingSourceNatureSummary> {
 

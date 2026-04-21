@@ -23,7 +23,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/system/files")
+@RequestMapping("/system/files")
 @Tag(name = "File API", description = "Endpoints for file uploads and downloads")
 public class FileController extends BaseController<CreateFileRequest, UpdateFileRequest, FileResponse, FileSummary> {
 

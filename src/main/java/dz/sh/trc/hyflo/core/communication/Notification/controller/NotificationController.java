@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/notifications")
 @Tag(name = "Notification API", description = "Endpoints for user notification management")
 @RequiredArgsConstructor
 public class NotificationController {

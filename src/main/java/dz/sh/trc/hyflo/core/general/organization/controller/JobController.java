@@ -14,7 +14,7 @@ import dz.sh.trc.hyflo.platform.kernel.BaseController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/general/jobs")
+@RequestMapping("/general/jobs")
 @Tag(name = "Job API", description = "Endpoints for managing jobs")
 public class JobController extends BaseController<CreateJobRequest, UpdateJobRequest, JobResponse, JobSummary> {
 
