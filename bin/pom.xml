@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.5</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>dz.sh.trc</groupId>
+	<artifactId>hyflo</artifactId>
+	<version>0.2.4</version>
+	<name>HyFloAPI</name>
+	<description>Hydrocarbon Flow API</description>
+	<url>https://github.com/CHOUABBIA-AMINE/HyFloAPI</url>
+
+	<licenses>
+	    <license>
+	        <name>Apache License 2.0</name>
+	        <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+	    </license>
+	</licenses>
+
+	<developers>
+	    <developer>
+	        <id>Abir</id>
+	        <name>Abir MEDJERAB</name>
+	        <organization>SONATRACH</organization>
+	    </developer>
+	</developers>
+
+	<scm>
+	    <connection>scm:git:git://github.com/CHOUABBIA-AMINE/HyFloAPI.git</connection>
+	    <developerConnection>scm:git:ssh://git@github.com/CHOUABBIA-AMINE/HyFloAPI.git</developerConnection>
+	    <url>https://github.com/CHOUABBIA-AMINE/HyFloAPI</url>
+	    <tag>HEAD</tag>
+	</scm>
+	
+	<properties>
+	    <java.version>17</java.version>
+	    <maven.compiler.release>17</maven.compiler.release>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	    <!--<spring-ai.version>1.0.0</spring-ai.version>
+		<resilience4j.version>2.3.0</resilience4j.version>
+		<json-schema-validator.version>1.4.3</json-schema-validator.version>
+		<archunit.version>1.3.0</archunit.version>-->
+	</properties>
+	
+	<!--<dependencyManagement>
+	    <dependencies>
+
+	        <dependency>
+	            <groupId>org.springframework.ai</groupId>
+	            <artifactId>spring-ai-bom</artifactId>
+	            <version>${spring-ai.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+
+	        <dependency>
+	            <groupId>io.github.resilience4j</groupId>
+	            <artifactId>resilience4j-bom</artifactId>
+	            <version>${resilience4j.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+
+	    </dependencies>
+	</dependencyManagement>-->
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.security</groupId>
+		    <artifactId>spring-security-messaging</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-messaging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-configuration-processor</artifactId>
+		    <optional>true</optional>  <!-- ← compile-time only, not bundled in final jar -->
+		</dependency>
+
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>1.6.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct-processor</artifactId>
+			<version>1.6.3</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- JWT Dependencies - Version 0.13.0 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.13.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.13.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-annotations</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>com.fasterxml.jackson.datatype</groupId>
+		    <artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
+		
+		<!-- OpenAPI/Swagger Documentation -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		
+		<!-- ════════════════════════════════════════════════════════
+		     AI PLATFORM — LLM PROVIDER ADAPTERS
+		     Versions managed by spring-ai-bom.
+		     Both inactive until hyflo.ai.enabled=true.
+		     ════════════════════════════════════════════════════════ -->
+
+		<!-- Primary LLM adapter: OpenAI / Azure OpenAI (Spring AI 1.0.0 GA naming) 
+		<dependency>
+		    <groupId>org.springframework.ai</groupId>
+		    <artifactId>spring-ai-starter-model-openai</artifactId>
+		</dependency>-->
+		
+		<!-- Offline / local fallback model adapter (Spring AI 1.0.0 GA naming) 
+		<dependency>
+		    <groupId>org.springframework.ai</groupId>
+		    <artifactId>spring-ai-starter-model-ollama</artifactId>
+		</dependency>-->
+
+		<!-- ════════════════════════════════════════════════════════
+		     RESILIENCE4J — retry + circuit breaker for LLM calls
+		     Versions managed by resilience4j-bom.
+		     ════════════════════════════════════════════════════════ -->
+
+		<!-- Spring Boot 3 auto-configuration bridge 
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-spring-boot3</artifactId>
+		</dependency>-->
+
+		<!-- Core retry — AiRetryPolicy 
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-retry</artifactId>
+		</dependency>-->
+
+		<!-- Core circuit breaker — AiCircuitBreaker 
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-circuitbreaker</artifactId>
+		</dependency>-->
+
+		<!-- AOP required by @Retry / @CircuitBreaker annotations 
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-aspectj</artifactId>
+		</dependency>-->
+
+		<!-- StringTemplate 4 — prompt template rendering 
+		<dependency>
+		    <groupId>org.antlr</groupId>
+		    <artifactId>ST4</artifactId>
+		    <version>4.3.4</version>
+		</dependency>-->
+
+		<!-- ════════════════════════════════════════════════════════
+		     JSON SCHEMA VALIDATION
+		     Used by StructuredOutputEnforcer (platform/ai/format/)
+		     to validate and auto-correct LLM structured JSON output.
+		     ════════════════════════════════════════════════════════ -->
+		<!--<dependency>
+		    <groupId>com.networknt</groupId>
+		    <artifactId>json-schema-validator</artifactId>
+		    <version>${json-schema-validator.version}</version>
+		</dependency>-->
+		
+	</dependencies>
+
+	<build>
+		<finalName>${project.name}-${project.version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>${java.version}</release>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>1.6.3</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
