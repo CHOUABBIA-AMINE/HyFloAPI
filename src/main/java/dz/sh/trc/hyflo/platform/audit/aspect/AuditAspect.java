@@ -28,8 +28,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import dz.sh.trc.hyflo.domain.audit.service.AuditedService;
-import dz.sh.trc.hyflo.domain.audit.service.AuditedService.AuditEventBuilder;
+import dz.sh.trc.hyflo.core.system.audit.service.AuditedService;
+import dz.sh.trc.hyflo.core.system.audit.service.AuditedService.AuditEventBuilder;
 import dz.sh.trc.hyflo.platform.audit.annotation.Auditable;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

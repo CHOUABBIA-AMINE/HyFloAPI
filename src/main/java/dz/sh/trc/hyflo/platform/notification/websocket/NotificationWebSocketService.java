@@ -14,11 +14,12 @@
 
 package dz.sh.trc.hyflo.platform.notification.websocket;
 
-import dz.sh.trc.hyflo.notification.core.dto.NotificationDTO;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import dz.sh.trc.hyflo.core.communication.notification.dto.NotificationDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service for sending notifications via WebSocket
