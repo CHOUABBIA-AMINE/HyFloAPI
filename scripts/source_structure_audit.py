@@ -56,8 +56,8 @@ def workbook_meta(path: Path) -> dict:
 def sql_meta(path: Path) -> dict:
     # No SQL execution; collect structural counts only, never identifiers or data.
     creates, inserts = set(), set()
-    create_re = re.compile(r"\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:`[^`]+`\\.)?`?([A-Za-z0-9_]+)`?",re.I)
-    insert_re = re.compile(r"\\b(?:INSERT|REPLACE)\\s+INTO\\s+(?:`[^`]+`\\.)?`?([A-Za-z0-9_]+)`?",re.I)
+    create_re = re.compile(r"\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:`[^`]+`\.)?`?([A-Za-z0-9_]+)`?",re.I)
+    insert_re = re.compile(r"\b(?:INSERT|REPLACE)\s+INTO\s+(?:`[^`]+`\.)?`?([A-Za-z0-9_]+)`?",re.I)
     statements = 0
     with path.open("r",encoding="utf-8",errors="replace") as source:
         for line in source:
