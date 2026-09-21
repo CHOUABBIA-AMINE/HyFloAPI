@@ -1,0 +1,20 @@
+name: HyFlo source structure audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/hyflo-source-structure-audit.yml'
+      - 'scripts/source_structure_audit.py'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Inspect workbook and SQL structure without executing source content
+        run: python3 scripts/source_structure_audit.py
