@@ -59,3 +59,54 @@ Exact corrective allowlist (update only):
 - `docs/ARCHITECTURE.md`
 
 Create/delete: none. Acceptance: exact-SHA HyFloAPI Build must compile tests and pass existing unit and MySQL integration assertions, including corrected Identity fixture, Position persistence, type descriptions/active round-trip, retirement preservation and F_00–F_08 physical columns. Prior scope and evidence remain retained except the explicitly superseded type-field restriction.
+
+### ORG-DATA-001 acceptance — 2026-11-24
+
+Status: COMPLETED — corrective SHA 6a82e3ea1b99fd27060153ac26316ab6d4a116ee, [HyFloAPI Build #23 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45473527112) success, including 8 MySQL 8.4 integration tests, zero failures/errors/skips, required test and SBOM evidence and verified JAR. Optional security scan skipped. Acceptance is development/software only. Preserve all preceding entries.
+
+## FDN-DATA-001 — Add approved UserType, Language, Location and MeasurementUnit
+
+Status: IN PROGRESS — owner approved the four retained entities and requested implementation on 2026-11-24. Baseline 6a82e3ea1b99fd27060153ac26316ab6d4a116ee, CI #23 passed. Dependencies: accepted ORG-DATA-001; existing Identity and Reference persistence models. Implement the previously proposed dependency-order table allocation on fresh disposable schemas only. The owner excluded Company; preserve Organization and Infra byte-for-byte, AuthorizationScope including companyId, and all existing business behavior. No optional preferredLanguageId on User (not essential and not separately selected), QuantityType, conversions, external identity, seed data, APIs, migrations or deployment.
+
+- UserType: immutable unique code (HUMAN, SERVICE only), trilingual names; User requires explicit same-module userType, no implicit/default persisted type or classification-based authorization.
+- Language: unique lowercase two-letter language code shape, trilingual names, nativeName, rightToLeft, active default true/retire. No claim of ISO catalog membership or translation completeness.
+- MeasurementUnit: immutable unique uppercase stable code, trilingual names, case-sensitive symbol text (not a unique key), active default true/retire. No unit conversion, quantity classification, reference-condition handling or solver qualification.
+- Location: trilingual name (at least one), finite WGS84 latitude/longitude in decimal degrees within physical range, optional finite elevation in metres above mean sea level (survey datum/engineering qualification deferred), optional same-module Locality. No route geometry or extra entity. Optional elevation is not defaulted to zero.
+- Localized names follow current 120-character convention with at least one nonblank name; UserType and MeasurementUnit codes max 64; Language code length 2, nativeName max 120; MeasurementUnit symbol max 40, case preserved.
+- Identity table order: existing 01–06 unchanged, UserType 07, User 08, Permission 09, LocalCredential 10, LoginSession 11, AuthenticationEvent 12, GroupMembership 13, RolePermission 14, UserRoleGrant 15, GroupRoleGrant 16, RefreshToken 17. User adds F_07 userType (FK_03), preserve F_00–F_06 and A_01.
+- Reference table order: Country 01 unchanged, Language 02, MeasurementUnit 03, State 04, District 05, Locality 06, Location 07. Update dependent named constraints, raw SQL tests and inventory. No table ID duplication. AGENTS examples updated only to reflect User's new table number; governance rules unchanged. The prior proposal explicitly presented this renumbering; owner-approved implementation is interpreted to include the published dependency order, not existing-data migration.
+
+Registration commit: docs(foundation): accept organization data and register approved catalogs
+
+Implementation commit: feat(foundation): add approved identity and reference catalogs
+
+Exact implementation allowlist:
+
+Create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/UserType.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/Language.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/MeasurementUnit.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/Location.java`
+
+Update:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/User.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/Permission.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/LocalCredential.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/LoginSession.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/AuthenticationEvent.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/GroupMembership.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/RolePermission.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/UserRoleGrant.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/GroupRoleGrant.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/RefreshToken.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/State.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/District.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/Locality.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiTest.java`
+- `docs/ARCHITECTURE.md`
+- `AGENTS.md`
+
+Delete: none.
+
+Acceptance: compile and existing tests pass with explicit UserType fixtures and all old behavior retained; new unit tests reject unsupported user type, missing names, bad language code/symbol/coordinates (including nonfinite elevation); synthetic MySQL integration persists/reloads both account classifications, multilingual language and RTL metadata, measurement symbols and retirement, Location with/without locality and optional elevation, named constraints, sequential columns and updated actor FK targets; verify mandatory UserType FK and optional Location FK. Exact-SHA HyFloAPI Build pass required, no skipped MySQL test accepted. Fresh-schema testing only; do not run Hibernate update against an existing populated or old-mapped database.
