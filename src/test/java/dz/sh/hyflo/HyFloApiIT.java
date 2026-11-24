@@ -235,10 +235,16 @@ class HyFloApiIT {
 
         var companyType = new OrganizationUnitType(OrganizationUnitType.COMPANY_CODE, null, null, "Synthetic company type");
         var divisionType = new OrganizationUnitType("DIVISION", null, null, "Company");
-        var unitStatus = new OrganizationUnitStatus(OrganizationUnitStatus.ACTIVE_CODE, null, null, "Active");
+        var unitStatus = entityManager.createQuery(
+                        "select s from OrganizationUnitStatus s where s.code = :code", OrganizationUnitStatus.class)
+                .setParameter("code", OrganizationUnitStatus.ACTIVE_CODE)
+                .getResultList().stream().findFirst().orElseGet(() -> {
+                    var status = new OrganizationUnitStatus(OrganizationUnitStatus.ACTIVE_CODE, null, null, "Active");
+                    entityManager.persist(status);
+                    return status;
+                });
         entityManager.persist(companyType);
         entityManager.persist(divisionType);
-        entityManager.persist(unitStatus);
         var company = new OrganizationUnit("SYNTH_COMPANY", null, null, "Synthetic company", companyType, null,
                 LocalDate.of(2026, 1, 1), null, unitStatus);
         entityManager.persist(company);
@@ -252,12 +258,6 @@ class HyFloApiIT {
                 .getOrganizationUnitId()).isEqualTo(organizationUnitId);
         assertThat(authorizationScopes.validateCompanyBoundary(AuthorizationScope.region(organizationUnitId, 2))
                 .getScopeReferenceId()).isEqualTo(2L);
-        assertThatThrownBy(() -> authorizationScopes.validateCompanyBoundary(AuthorizationScope.global(division.getId())))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Invalid company organization-unit reference");
-        assertThatThrownBy(() -> authorizationScopes.validateCompanyBoundary(AuthorizationScope.pipeline(Long.MAX_VALUE, 2)))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Invalid company organization-unit reference");
 
         var direct = new UserRoleGrant(account, role,
                 authorizationScopes.validateCompanyBoundary(AuthorizationScope.infrastructure(organizationUnitId, 3)),
@@ -331,6 +331,15 @@ class HyFloApiIT {
         assertThat(revokedMembership.getRevokedAt()).isEqualTo(now);
         assertThat(revokedMembership.getRevokedBy().getId()).isEqualTo(revoker.getId());
         assertThat(revokedMembership.isActiveAt(now)).isFalse();
+
+        // Expected failures can mark the participating transaction rollback-only.
+        // Keep them after all successful database writes and readback assertions.
+        assertThatThrownBy(() -> authorizationScopes.validateCompanyBoundary(AuthorizationScope.global(division.getId())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid company organization-unit reference");
+        assertThatThrownBy(() -> authorizationScopes.validateCompanyBoundary(AuthorizationScope.pipeline(Long.MAX_VALUE, 2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid company organization-unit reference");
     }
 
     @Test
