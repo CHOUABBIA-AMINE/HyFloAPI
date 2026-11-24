@@ -57,11 +57,13 @@ public class GroupMembership {
     @Column(name = "F_03")
     private Instant revokedAt;
 
-    @Column(name = "F_04", nullable = false, updatable = false)
-    private long grantedByUserId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_11_FK_03"))
+    private User grantedBy;
 
-    @Column(name = "F_05")
-    private Long revokedByUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_10_01_11_FK_04"))
+    private User revokedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_11_FK_01"))
@@ -75,7 +77,7 @@ public class GroupMembership {
     @Column(name = "A_01", nullable = false)
     private Long version;
 
-    public GroupMembership(User user, Group group, Instant validFrom, Instant validTo, long grantedByUserId) {
+    public GroupMembership(User user, Group group, Instant validFrom, Instant validTo, User grantedBy) {
         this.user = Objects.requireNonNull(user, "User is required");
         this.group = Objects.requireNonNull(group, "Group is required");
         this.validFrom = Objects.requireNonNull(validFrom, "Validity start is required");
@@ -83,10 +85,10 @@ public class GroupMembership {
             throw new IllegalArgumentException("Validity end must be after its start");
         }
         this.validTo = validTo;
-        if (grantedByUserId <= 0) {
+        if (grantedBy == null || grantedBy.getId() == null || grantedBy.getId() <= 0) {
             throw new IllegalArgumentException("Granting actor must be a persisted user");
         }
-        this.grantedByUserId = grantedByUserId;
+        this.grantedBy = grantedBy;
     }
 
     public boolean isActiveAt(Instant instant) {
@@ -96,15 +98,15 @@ public class GroupMembership {
                 && (revokedAt == null || instant.isBefore(revokedAt));
     }
 
-    public void revoke(Instant instant, long actorUserId) {
+    public void revoke(Instant instant, User revokedBy) {
         Objects.requireNonNull(instant, "Revocation time is required");
-        if (actorUserId <= 0) {
+        if (revokedBy == null || revokedBy.getId() == null || revokedBy.getId() <= 0) {
             throw new IllegalArgumentException("Revoking actor must be a persisted user");
         }
         if (revokedAt != null) {
             throw new IllegalStateException("Already revoked");
         }
         revokedAt = instant;
-        revokedByUserId = actorUserId;
+        this.revokedBy = revokedBy;
     }
 }

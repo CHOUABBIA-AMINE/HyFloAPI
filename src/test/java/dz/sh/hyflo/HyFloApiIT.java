@@ -185,7 +185,7 @@ class HyFloApiIT {
         var permission = new Permission("station.update", "Update station", action, resourceType);
         entityManager.persist(permission);
         var rolePermission = new RolePermission(role, permission);
-        var membership = new GroupMembership(account, group, starts, ends, actor.getId());
+        var membership = new GroupMembership(account, group, starts, ends, actor);
         entityManager.persist(rolePermission);
         entityManager.persist(membership);
 
@@ -220,7 +220,12 @@ class HyFloApiIT {
         assertThat(savedInherited.isActiveAt(ends)).isFalse();
         assertThat(savedInherited.getAuthorizationScope().getScopeType()).isEqualTo(AuthorizationScope.PIPELINE);
         assertThat(savedInherited.getAuthorizationScope().getScopeReferenceId()).isEqualTo(2L);
-        assertThat(entityManager.find(GroupMembership.class, membership.getId()).isActiveAt(now)).isTrue();
+        var savedMembership = entityManager.find(GroupMembership.class, membership.getId());
+        assertThat(savedMembership.getUser().getId()).isEqualTo(account.getId());
+        assertThat(savedMembership.getGrantedBy().getId()).isEqualTo(actor.getId());
+        assertThat(savedMembership.getRevokedBy()).isNull();
+        assertThat(savedMembership.getRevokedAt()).isNull();
+        assertThat(savedMembership.isActiveAt(now)).isTrue();
         assertThat(entityManager.find(RolePermission.class, rolePermission.getId()).getPermission().getCode())
                 .isEqualTo("station.update");
         assertThat(entityManager.find(LoginSession.class, session.getId()).isActiveAt(now)).isTrue();
@@ -231,13 +236,17 @@ class HyFloApiIT {
                 "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
         assertIdentityColumns("T_10_01_13", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
                 "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
-        assertRoleGrantActorForeignKeys("T_10_01_17");
-        assertRoleGrantActorForeignKeys("T_10_01_13");
+        assertActorForeignKeys("T_10_01_17", "F_10", "F_11");
+        assertActorForeignKeys("T_10_01_13", "F_10", "F_11");
+        assertActorForeignKeys("T_10_01_11", "F_04", "F_05");
+        assertIdentityConstraints("T_10_01_11", "T_10_01_11_FK_01", "T_10_01_11_FK_02");
         assertIdentityConstraints("T_10_01_17", "T_10_01_17_FK_01", "T_10_01_17_FK_02");
         assertIdentityConstraints("T_10_01_13", "T_10_01_13_FK_01", "T_10_01_13_FK_02");
         assertIdentityConstraints("T_10_01_12", "T_10_01_12_UK_01", "T_10_01_12_FK_01", "T_10_01_12_FK_02");
 
-        savedInherited.revoke(now, entityManager.getReference(User.class, revoker.getId()));
+        var revokingUser = entityManager.getReference(User.class, revoker.getId());
+        savedInherited.revoke(now, revokingUser);
+        savedMembership.revoke(now, revokingUser);
         entityManager.flush();
         entityManager.clear();
 
@@ -245,16 +254,21 @@ class HyFloApiIT {
         assertThat(revokedInherited.getRevokedAt()).isEqualTo(now);
         assertThat(revokedInherited.getRevokedBy().getId()).isEqualTo(revoker.getId());
         assertThat(revokedInherited.isActiveAt(now)).isFalse();
+        var revokedMembership = entityManager.find(GroupMembership.class, membership.getId());
+        assertThat(revokedMembership.getRevokedAt()).isEqualTo(now);
+        assertThat(revokedMembership.getRevokedBy().getId()).isEqualTo(revoker.getId());
+        assertThat(revokedMembership.isActiveAt(now)).isFalse();
     }
 
-    private void assertRoleGrantActorForeignKeys(String table) {
+    private void assertActorForeignKeys(String table, String grantedByColumn, String revokedByColumn) {
         assertThat(jdbc.queryForList("""
                 SELECT CONCAT(CONSTRAINT_NAME, ':', COLUMN_NAME)
                 FROM information_schema.KEY_COLUMN_USAGE
                 WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?
                     AND BINARY REFERENCED_TABLE_NAME = BINARY 'T_00_02_02' AND REFERENCED_COLUMN_NAME = 'F_00'
-                    AND COLUMN_NAME IN ('F_10', 'F_11')
-                """, String.class, table)).containsExactlyInAnyOrder(table + "_FK_03:F_10", table + "_FK_04:F_11");
+                    AND COLUMN_NAME IN (?, ?)
+                """, String.class, table, grantedByColumn, revokedByColumn))
+                .containsExactlyInAnyOrder(table + "_FK_03:" + grantedByColumn, table + "_FK_04:" + revokedByColumn);
     }
 
     private void assertIdentityColumns(String table, String... columns) {

@@ -160,7 +160,7 @@ The four pre-existing tables retain their `T_00_02` names. The new allocations u
 | Action | T_10_01_04 | Immutable unique operation code and label. |
 | ResourceType | T_10_01_05 | Immutable unique resource-type code and label. |
 | Permission | T_10_01_07 | Unique code and unique action/resource-type pair. |
-| GroupMembership | T_10_01_11 | User and group links, effective interval and revocation attribution. |
+| GroupMembership | T_10_01_11 | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
 | RolePermission | T_10_01_12 | Unique role/permission link. Effective scope belongs to role grants. |
 | GroupRoleGrant | T_10_01_13 | Group and role links, embedded scope, interval, reason, and actor attribution. |
 | LoginSession | T_10_01_15 | User-linked session with expiry and revocation. |
