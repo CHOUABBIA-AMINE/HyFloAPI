@@ -7,13 +7,13 @@
 
 | Ring | Set | Modules | Count |
 |---|---|---|---:|
-| C1 | Foundation | identity, organization, reference | 3 |
+| C1 | Foundation | infra, identity, organization, reference | 4 |
 | C2 | Coordination | configuration, audit, workflow, notification, integration | 5 |
 | C3 | Engineering | topology, assets, party | 3 |
 | C4 | Operation | telemetry, monitoring, planning, custody, documents, reporting | 6 |
 | C5 | Safety | alarm, incident, integrity, leakdetection, hse | 5 |
 | C6 | Intelligence | analytics, risk, simulation | 3 |
-| | Total | | 25 |
+| | Total | | 26 |
 
 The exact Java package pattern is `dz.sh.hyflo.modules.<set>.<module>`. Set names are lowercase singular. Preserve existing assets/documents spellings; no rename has been selected. Each root follows [ARCHITECTURE.md](ARCHITECTURE.md). A ring is not a dependency graph or deployment boundary.
 
@@ -23,6 +23,7 @@ The exact Java package pattern is `dz.sh.hyflo.modules.<set>.<module>`. Set name
 
 | Module/package suffix | Authoritative responsibilities | Ownership boundary |
 |---|---|---|
+| [foundation/infra](../src/main/java/dz/sh/hyflo/modules/foundation/infra) | Shared file identity, metadata and storage references. | Identity, Party, Topology and Documents refer to files by stable ID. |
 | [foundation/identity](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/identity) | Local users, credentials, principals, roles, permissions, grants and authorization evidence. | Organization supplies employee/company scope; platform.security implements enforcement. No external identity provider. |
 | [foundation/organization](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/organization) | Companies, organizational units, employees, positions, assignments, hierarchy and responsibilities/operational scope. | Owns internal organization; uses Reference for shared geography, not identity credentials or external party profiles. |
 | [foundation/reference](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/reference) | Shared countries/geography, units, languages, common catalogs and localized reference labels. | HyFlo-specific additional module; owns only shared catalogs. Module-specific classifications remain in their owner; platform.localization resolves application messages. |
@@ -53,7 +54,7 @@ The exact Java package pattern is `dz.sh.hyflo.modules.<set>.<module>`. Set name
 | [operation/monitoring](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/operation/monitoring) | Operating rules, limits/evaluations, plan-versus-actual deviation evidence. | Consume approved targets and trusted observations; do not overwrite telemetry or automatically actuate equipment. |
 | [operation/planning](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/operation/planning) | Planning periods, operational plans, revisions, targets and nominations. | Owns authorized targets and historical versions; Workflow approves exact revision, Monitoring consumes accepted target. |
 | [operation/custody](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/operation/custody) | Custody measurement periods, transfer tickets, quantities, discrepancy and reconciliation records. | References metering/party and evidence; does not replace raw telemetry. Classified Operation, not Safety. |
-| [operation/documents](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/operation/documents) | Documents, versions, storage-object metadata and governed target links. | Owner revisions and access scope preserved; references workflow decisions rather than duplicating approval state. |
+| [operation/documents](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/operation/documents) | Documents, versions and governed target links. | Owns document revisions and access scope. References Foundation Infra file IDs and Workflow decisions. |
 | [operation/reporting](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/operation/reporting) | Report definitions, requests, runs and generated output-artifact metadata. | Uses scoped owner evidence; Analytics owns computed insights and Documents owns controlled document versions. |
 
 ### C5 — Safety

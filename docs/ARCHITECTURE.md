@@ -11,7 +11,7 @@ At [HyFloAPI e513487](https://github.com/CHOUABBIA-AMINE/HyFloAPI/commit/e513487
 |---|---|---|
 | Style | DDD/Hexagonal, explicit ports and adapters | Modular Layered; one JPA business model per entity |
 | Package root | dz.sh.hidra | dz.sh.hyflo |
-| Module placement | Flat 24 roots | 25 roots grouped in six singular sets |
+| Module placement | Flat 24 roots | 26 roots grouped in six singular sets |
 | Java | 21 | 25 |
 | Database | PostgreSQL / Flyway | MySQL / Hibernate; Flyway deferred |
 | Identity | Local and enterprise integration capability | Local only; business authorization retained |
@@ -195,6 +195,20 @@ Foundation Organization uses the `T_10_02_NN` prefix. Entity codes follow depend
 The baseline allows one effective assignment per employee on a given date. An assignment starts on an inclusive date and ends on an exclusive date. When employment has an end date, it bounds the assignment. Positions can be reused across units. A transfer ends the previous assignment and creates the replacement in one transaction. The assignment service locks the employee before checking periods or writing changes. Its date lookup returns the historical unit and position in effect on the requested date.
 
 The hierarchy and directory are persisted through JPA. Assignment, transfer and date lookup are internal application operations. Organization REST endpoints and company-bound appointment rules are outside this baseline.
+
+### Reference geography and shared files
+
+| Module | Model | Table | Internal dependencies |
+|---|---|---|---|
+| Reference | Country | T_10_03_01 | None |
+| Reference | State | T_10_03_02 | Country |
+| Reference | District | T_10_03_03 | State |
+| Reference | Locality | T_10_03_04 | District |
+| Infra | File | T_10_00_01 | None |
+
+Reference stores Arabic, French and English names. Country codes are unique across the catalog. State, district and locality codes are unique within their parent. The required parent joins preserve the full geographic hierarchy.
+
+Infra stores a unique opaque storage key, original filename, media type, size in bytes and creation time for each file. Other modules can refer to this record by ID. The persistence model is in place for file metadata. Content storage, uploads and downloads require application wiring.
 
 ## 8. Security and operational trust
 
