@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class HyFloApiIT {
 
+	@SuppressWarnings("resource")
     @Container
     static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.4")
             .withDatabaseName("hyflo_test")
@@ -118,7 +119,7 @@ class HyFloApiIT {
 
         var savedAccount = entityManager.find(User.class, account.getId());
         var savedCredential = entityManager.find(LocalCredential.class, credential.getId());
-        assertThat(savedAccount.getNormalizedUsername()).isEqualTo("synthetic.user");
+        assertThat(savedAccount.getUsername()).isEqualTo("synthetic.user");
         assertThat(savedAccount.getStatus().getCode()).isEqualTo(UserStatus.ACTIVE_CODE);
         assertThat(savedAccount.getProvider().getCode()).isEqualTo(IdentityProvider.LOCAL_CODE);
         assertThat(savedCredential.getUser().getId()).isEqualTo(savedAccount.getId());

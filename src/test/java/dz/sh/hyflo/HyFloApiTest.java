@@ -39,7 +39,7 @@ class HyFloApiTest {
         var foreignCredential = new LocalCredential(other, hash, changedAt);
         var ownCredential = new LocalCredential(account, hash, changedAt);
 
-        assertThat(account.getNormalizedUsername()).isEqualTo("synthetic.user");
+        assertThat(account.getUsername()).isEqualTo("synthetic.user");
         assertThatThrownBy(() -> account.activate(foreignCredential, active))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);

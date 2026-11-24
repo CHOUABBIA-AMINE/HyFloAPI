@@ -45,8 +45,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "T_00_02_02", uniqueConstraints = {
-    @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = {"F_09", "F_01"}),
-    @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = "F_02")
+    @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = {"F_04", "F_01"}),
+    @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = {"F_02"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -59,18 +59,9 @@ public class User {
     @Column(name = "F_00")
     private Long id;
 
-    @Version
-    @Column(name = "A_01", nullable = false)
-    private Long version;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "T_00_02_02_FK_02"))
-    private IdentityProvider provider;
-
     @NotBlank
     @Column(name = "F_01", length = 20, nullable = false)
-    private String normalizedUsername;
+    private String username;
 
     @NotBlank
     @Email
@@ -78,18 +69,24 @@ public class User {
     @Column(name = "F_02", length = 100, nullable = false)
     private String email;
 
-    @Column(name = "F_08")
+    @Column(name = "F_03")
     private Long employeeId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_10", referencedColumnName = "F_00", nullable = false,
-            foreignKey = @ForeignKey(name = "T_00_02_02_FK_03"))
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_01"))
+    private IdentityProvider provider;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_02"))
     private UserStatus status;
 
-    public User(IdentityProvider provider, String username, String email, Long employeeId,
-            UserStatus pendingStatus) {
+    @Version
+    @Column(name = "A_01", nullable = false)
+    private Long version;
+
+    public User(IdentityProvider provider, String username, String email, Long employeeId, UserStatus pendingStatus) {
         this.provider = Objects.requireNonNull(provider, "Identity provider is required");
-        this.normalizedUsername = normalizeUsername(username);
+        this.username = normalizeUsername(username);
         this.email = Objects.requireNonNull(email, "Email is required");
         this.employeeId = employeeId;
         this.status = requireStatus(pendingStatus, UserStatus.PENDING_CODE);
@@ -98,8 +95,7 @@ public class User {
     public static String normalizeUsername(String username) {
         String candidate = Objects.requireNonNull(username, "Username is required").strip();
         if (!USERNAME_FORMAT.matcher(candidate).matches()) {
-            throw new IllegalArgumentException(
-                    "Username must contain 3 to 20 letters, digits, dots, hyphens, or underscores");
+            throw new IllegalArgumentException("Username must contain 3 to 20 letters, digits, dots, hyphens, or underscores");
         }
         return candidate.toLowerCase(Locale.ROOT);
     }
