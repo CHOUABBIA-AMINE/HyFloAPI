@@ -1,0 +1,4 @@
+/**
+ * Mapping between API DTOs and business/application objects; localized display labels are resolved server-side.
+ */
+package dz.sh.hyflo.modules.coordination.workflow.api.mapper;
