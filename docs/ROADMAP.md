@@ -116,3 +116,32 @@ Acceptance: compile and existing tests pass with explicit UserType fixtures and 
 Status: COMPLETED — exact implementation SHA 5e333c57a51eebc8354feb8ebaf0fee059011a77, [HyFloAPI Build #24 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45482369400) success. Surefire: 9 tests; Failsafe: 8 integration tests against real disposable MySQL 8.4; both zero failures, errors or skips. Maven verify, required test/JaCoCo/SBOM evidence and verified JAR upload passed. Optional security scan skipped. Acceptance is development/software only, not production schema migration, complete authentication/authorization, catalog seeding, surveyed engineering coordinates or industrial qualification. Company and AuthorizationScope remain unchanged; companyId ownership semantics are unresolved and require a separate owner decision. No next task is registered or selected. Preserve preceding scope and evidence append-only.
 
 Acceptance documentation commit: docs(foundation): accept approved identity and reference catalogs
+
+## FDN-SCOPE-001 — Represent company boundary by a classified organization unit
+
+Status: IN PROGRESS — owner decision 2026-11-24: Company is a specific case of OrganizationUnit; companyId becomes organizationUnitId and the referenced unit must have the company organization-unit type. Baseline dd84c80bf3d07c068464b1509cef229d6774b2b0, [Build #25](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45483175416) success. Depends on accepted FDN-DATA-001 and ORG-DATA-001. Supersedes the previously unresolved companyId decision only; no separate Company or OrganizationUnitKind entity, no new tables or columns, no renumbering.
+
+- Keep F_06 required, immutable positive scalar ID in both embedded grant scopes; rename Java field/getter and all factory parameters to organizationUnitId. Existing GLOBAL/REGION/PIPELINE/INFRASTRUCTURE meanings remain company-bounded; F_05 and F_07 unchanged.
+- OrganizationUnitType.COMPANY_CODE = "COMPANY" is the stable code, not a translated name or arbitrary root-unit assumption. No new enum or seed data. Organization owns the exact case-sensitive type check of a persisted unit (query returns type code, not entity). Missing and non-company units rejected identically; positive ID required.
+- Admit internal OrganizationUnitScopeService.requireCompanyUnit(long) (Organization owner; Identity application consumer; no public HTTP/API; caller must already be authorized to request the grant). Identity AuthorizationScopeService.validateCompanyBoundary(AuthorizationScope) returns the same structurally valid scope after owner validation. Both grant construction paths in the synthetic integration scenario use it. Pure domain scope factories still validate shape only. No claims of universal write interception, database cross-module FK, effective-date/status eligibility, resource ownership or request-time authorization; those require separate selected protected grant/evaluation use cases. The owner check is deliberately type-only as requested.
+- Preserve existing table layouts, historical role-grant behavior, audit actors and temporal scope. No cross-module entity/repository imports by Identity, no external identity, migration, seed or deployment.
+
+Registration commit: docs(foundation): register company organization-unit scope decision
+Implementation commit: fix(identity): bind authorization scope to company-classified organization units
+
+Create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/OrganizationUnitRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/OrganizationUnitScopeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/AuthorizationScopeService.java`
+
+Update:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/AuthorizationScope.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/domain/model/OrganizationUnitType.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiTest.java`
+- `docs/ARCHITECTURE.md`
+- `docs/MODULES.md`
+
+Delete: none.
+
+Acceptance: existing exact-SHA build passes; update all Java scope getters, preserve F_06 and other fields; real MySQL integration creates a persisted COMPANY-typed unit and child with a different type, verifies accepted GLOBAL and specific scopes, rejects missing/non-company references with identical failure, persists/reloads user and group grants using actual company-unit ID, preserves actor and revocation tests. Unit scope tests retain all four shape cases and check renamed accessor; no skipped tests. No production authorization or schema compatibility claim.
