@@ -42,8 +42,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_03_03", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_03_03_UK_01", columnNames = {"F_06", "F_01"}))
+@Table(name = "T_10_03_05", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_03_05_UK_01", columnNames = {"F_06", "F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class District {
@@ -74,7 +74,7 @@ public class District {
     private boolean active;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_03_FK_01"))
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_05_FK_01"))
     private State state;
 
     public District(String code, String nameAr, String nameFr, String nameEn, State state) {

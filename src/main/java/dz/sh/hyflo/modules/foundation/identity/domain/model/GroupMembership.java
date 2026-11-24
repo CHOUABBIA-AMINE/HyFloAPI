@@ -38,7 +38,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_12")
+@Table(name = "T_10_01_13")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GroupMembership {
@@ -58,19 +58,19 @@ public class GroupMembership {
     private Instant revokedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_12_FK_03"))
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_03"))
     private User grantedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_10_01_12_FK_04"))
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_10_01_13_FK_04"))
     private User revokedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_12_FK_01"))
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_01"))
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_12_FK_02"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_02"))
     private Group group;
 
     @Version

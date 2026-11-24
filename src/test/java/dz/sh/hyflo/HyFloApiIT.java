@@ -27,6 +27,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
 import dz.sh.hyflo.modules.foundation.organization.application.service.EmployeeAssignmentService;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeType;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeStatus;
@@ -43,6 +44,9 @@ import dz.sh.hyflo.modules.foundation.infra.domain.model.File;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Country;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.District;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Locality;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.Language;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.Location;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.MeasurementUnit;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.State;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -126,20 +130,22 @@ class HyFloApiIT {
         entityManager.persist(provider);
 
         var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var userType = new UserType(UserType.HUMAN_CODE, null, null, "Human");
         var active = new UserStatus(UserStatus.ACTIVE_CODE, "Active");
         var suspended = new UserStatus(UserStatus.SUSPENDED_CODE, "Suspended");
         var disabled = new UserStatus(UserStatus.DISABLED_CODE, "Disabled");
         entityManager.persist(pending);
+        entityManager.persist(userType);
         entityManager.persist(active);
         entityManager.persist(suspended);
         entityManager.persist(disabled);
 
         assertThatThrownBy(() -> new UserStatus("UNKNOWN", "Unknown"))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new User(provider, "synthetic", "other@example.invalid", null, active))
+        assertThatThrownBy(() -> new User(provider, "synthetic", "other@example.invalid", null, active, userType))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending);
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending, userType);
         entityManager.persist(account);
 
         var encoder = new BCryptPasswordEncoder();
@@ -161,21 +167,26 @@ class HyFloApiIT {
         assertThat(savedAccount.getUsername()).isEqualTo("synthetic.user");
         assertThat(savedAccount.getUserStatus().getCode()).isEqualTo(UserStatus.ACTIVE_CODE);
         assertThat(savedAccount.getIdentityProvider().getCode()).isEqualTo(IdentityProvider.LOCAL_CODE);
+        assertThat(savedAccount.getUserType().getCode()).isEqualTo(UserType.HUMAN_CODE);
+        assertThat(savedAccount.getUserType().getNameEn()).isEqualTo("Human");
         assertThat(savedCredential.getUser().getId()).isEqualTo(savedAccount.getId());
         assertThat(savedCredential.getPasswordHash()).isEqualTo(hash);
-        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_07 WHERE F_00 = ?", String.class,
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_08 WHERE F_00 = ?", String.class,
                 savedAccount.getId())).isEqualTo("synthetic.user");
-        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_09 WHERE F_00 = ?", String.class,
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_00 = ?", String.class,
                 savedCredential.getId())).isEqualTo(hash);
 
-        assertTableColumns("T_10_01_07", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "A_01");
+        assertTableColumns("T_10_01_08", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "A_01");
+        assertTableColumns("T_10_01_07", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_01_07", "T_10_01_07_UK_01");
+        assertForeignKey("T_10_01_08", "F_07", "T_10_01_07", "T_10_01_08_FK_03", false);
         assertTableColumns("T_10_01_01", "F_00", "F_01", "F_02", "F_03");
-        assertTableColumns("T_10_01_09", "F_00", "F_01", "F_02", "F_03");
+        assertTableColumns("T_10_01_10", "F_00", "F_01", "F_02", "F_03");
         assertTableColumns("T_10_01_02", "F_00", "F_01", "F_02");
-        assertTableConstraints("T_10_01_07", "T_10_01_07_UK_01", "T_10_01_07_UK_02",
-                "T_10_01_07_FK_01", "T_10_01_07_FK_02");
+        assertTableConstraints("T_10_01_08", "T_10_01_08_UK_01", "T_10_01_08_UK_02",
+                "T_10_01_08_FK_01", "T_10_01_08_FK_02", "T_10_01_08_FK_03");
         assertTableConstraints("T_10_01_01", "T_10_01_01_UK_01");
-        assertTableConstraints("T_10_01_09", "T_10_01_09_UK_01", "T_10_01_09_FK_01");
+        assertTableConstraints("T_10_01_10", "T_10_01_10_UK_01", "T_10_01_10_FK_01");
         assertTableConstraints("T_10_01_02", "T_10_01_02_UK_01");
 
         savedAccount.disable(entityManager.find(UserStatus.class, disabled.getId()));
@@ -191,11 +202,13 @@ class HyFloApiIT {
         var now = starts.plusSeconds(600);
         var provider = IdentityProvider.local();
         var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var userType = new UserType(UserType.HUMAN_CODE, null, null, "Human");
         entityManager.persist(provider);
         entityManager.persist(pending);
-        var actor = new User(provider, "grant-admin", "admin@example.invalid", null, pending);
-        var revoker = new User(provider, "grant-revoker", "revoker@example.invalid", null, pending);
-        var account = new User(provider, "station-engineer", "engineer@example.invalid", null, pending);
+        entityManager.persist(userType);
+        var actor = new User(provider, "grant-admin", "admin@example.invalid", null, pending, userType);
+        var revoker = new User(provider, "grant-revoker", "revoker@example.invalid", null, pending, userType);
+        var account = new User(provider, "station-engineer", "engineer@example.invalid", null, pending, userType);
         account.changeProfilePicture(42L);
         entityManager.persist(actor);
         entityManager.persist(revoker);
@@ -259,17 +272,17 @@ class HyFloApiIT {
         assertThat(entityManager.find(AuthenticationEvent.class, event.getId()).getUser()).isNull();
         assertThat(entityManager.find(User.class, account.getId()).getProfilePictureFileId()).isEqualTo(42L);
 
-        assertTableColumns("T_10_01_14", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
-                "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
         assertTableColumns("T_10_01_15", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
                 "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
-        assertActorForeignKeys("T_10_01_14", "F_10", "F_11");
+        assertTableColumns("T_10_01_16", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
+                "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
         assertActorForeignKeys("T_10_01_15", "F_10", "F_11");
-        assertActorForeignKeys("T_10_01_12", "F_04", "F_05");
-        assertTableConstraints("T_10_01_12", "T_10_01_12_FK_01", "T_10_01_12_FK_02");
-        assertTableConstraints("T_10_01_14", "T_10_01_14_FK_01", "T_10_01_14_FK_02");
+        assertActorForeignKeys("T_10_01_16", "F_10", "F_11");
+        assertActorForeignKeys("T_10_01_13", "F_04", "F_05");
+        assertTableConstraints("T_10_01_13", "T_10_01_13_FK_01", "T_10_01_13_FK_02");
         assertTableConstraints("T_10_01_15", "T_10_01_15_FK_01", "T_10_01_15_FK_02");
-        assertTableConstraints("T_10_01_13", "T_10_01_13_UK_01", "T_10_01_13_FK_01", "T_10_01_13_FK_02");
+        assertTableConstraints("T_10_01_16", "T_10_01_16_FK_01", "T_10_01_16_FK_02");
+        assertTableConstraints("T_10_01_14", "T_10_01_14_UK_01", "T_10_01_14_FK_01", "T_10_01_14_FK_02");
 
         var revokingUser = entityManager.getReference(User.class, revoker.getId());
         savedInherited.revoke(now, revokingUser);
@@ -295,9 +308,11 @@ class HyFloApiIT {
         var rotatedAt = startedAt.plusSeconds(300);
         var provider = IdentityProvider.local();
         var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var userType = new UserType(UserType.SERVICE_CODE, null, null, "Service");
         entityManager.persist(provider);
         entityManager.persist(pending);
-        var account = new User(provider, "refresh-user", "refresh@example.invalid", null, pending);
+        entityManager.persist(userType);
+        var account = new User(provider, "refresh-user", "refresh@example.invalid", null, pending, userType);
         entityManager.persist(account);
         var session = new LoginSession(account, startedAt, expiresAt);
         entityManager.persist(session);
@@ -313,6 +328,7 @@ class HyFloApiIT {
         var savedOriginal = entityManager.find(RefreshToken.class, originalToken.getId());
         var savedReplacement = entityManager.find(RefreshToken.class, replacementToken.getId());
         assertThat(savedOriginal.getLoginSession().getId()).isEqualTo(session.getId());
+        assertThat(entityManager.find(User.class, account.getId()).getUserType().getCode()).isEqualTo(UserType.SERVICE_CODE);
         assertThat(savedOriginal.getTokenDigest()).isEqualTo("a".repeat(64));
         assertThat(savedOriginal.getIssuedAt()).isEqualTo(startedAt);
         assertThat(savedOriginal.getConsumedAt()).isEqualTo(rotatedAt);
@@ -327,8 +343,8 @@ class HyFloApiIT {
                 .isInstanceOf(IllegalStateException.class);
         assertThat(savedReplacement.getConsumedAt()).isNull();
 
-        assertTableColumns("T_10_01_16", "F_00", "F_01", "F_02", "F_03", "F_04", "A_01");
-        assertTableConstraints("T_10_01_16", "T_10_01_16_UK_01", "T_10_01_16_FK_01");
+        assertTableColumns("T_10_01_17", "F_00", "F_01", "F_02", "F_03", "F_04", "A_01");
+        assertTableConstraints("T_10_01_17", "T_10_01_17_UK_01", "T_10_01_17_FK_01");
     }
 
     @Test
@@ -477,6 +493,20 @@ class HyFloApiIT {
         var locality = new Locality("L01", null, null, "Synthetic locality", district);
         entityManager.persist(locality);
         locality.updatePostalCode("12345");
+        var arabic = new Language(" AR ", "العربية", "Arabe", "Arabic", "العربية", true);
+        var english = new Language("en", null, null, "English", "English", false);
+        var pressure = new MeasurementUnit(" pascal ", null, "Pascal", "Pascal", "Pa");
+        var flow = new MeasurementUnit("CUBIC_METRE_PER_HOUR", null, null, "Cubic metre per hour", "m³/h");
+        var located = new Location(null, "Point synthétique", "Synthetic point", 31.5, 6.25, 138.5, locality);
+        var remote = new Location(null, null, "Remote synthetic point", -90.0, 180.0, null, null);
+        entityManager.persist(arabic);
+        entityManager.persist(english);
+        entityManager.persist(pressure);
+        entityManager.persist(flow);
+        entityManager.persist(located);
+        entityManager.persist(remote);
+        english.retire();
+        flow.retire();
         var file = new File("synthetic/sample.png", "sample.png", "image/png", 128L, created);
         entityManager.persist(file);
         entityManager.flush();
@@ -487,6 +517,33 @@ class HyFloApiIT {
         assertThat(savedLocality.isActive()).isTrue();
         assertThat(savedLocality.getDistrict().getNameFr()).isEqualTo("District synthétique");
         assertThat(savedLocality.getDistrict().getState().getCountry().getCode()).isEqualTo("XAA");
+        var savedArabic = entityManager.find(Language.class, arabic.getId());
+        assertThat(savedArabic.getCode()).isEqualTo("ar");
+        assertThat(savedArabic.getNameFr()).isEqualTo("Arabe");
+        assertThat(savedArabic.getNativeName()).isEqualTo("العربية");
+        assertThat(savedArabic.isRightToLeft()).isTrue();
+        assertThat(savedArabic.isActive()).isTrue();
+        var savedEnglish = entityManager.find(Language.class, english.getId());
+        assertThat(savedEnglish.isRightToLeft()).isFalse();
+        assertThat(savedEnglish.isActive()).isFalse();
+        var savedPressure = entityManager.find(MeasurementUnit.class, pressure.getId());
+        assertThat(savedPressure.getCode()).isEqualTo("PASCAL");
+        assertThat(savedPressure.getSymbol()).isEqualTo("Pa");
+        assertThat(savedPressure.isActive()).isTrue();
+        var savedFlow = entityManager.find(MeasurementUnit.class, flow.getId());
+        assertThat(savedFlow.getSymbol()).isEqualTo("m³/h");
+        assertThat(savedFlow.isActive()).isFalse();
+        var savedLocation = entityManager.find(Location.class, located.getId());
+        assertThat(savedLocation.getNameFr()).isEqualTo("Point synthétique");
+        assertThat(savedLocation.getLatitude()).isEqualTo(31.5);
+        assertThat(savedLocation.getLongitude()).isEqualTo(6.25);
+        assertThat(savedLocation.getElevation()).isEqualTo(138.5);
+        assertThat(savedLocation.getLocality().getId()).isEqualTo(locality.getId());
+        var savedRemote = entityManager.find(Location.class, remote.getId());
+        assertThat(savedRemote.getLatitude()).isEqualTo(-90.0);
+        assertThat(savedRemote.getLongitude()).isEqualTo(180.0);
+        assertThat(savedRemote.getElevation()).isNull();
+        assertThat(savedRemote.getLocality()).isNull();
         var savedFile = entityManager.find(File.class, file.getId());
         assertThat(savedFile.getStorageKey()).isEqualTo("synthetic/sample.png");
         assertThat(savedFile.getOriginalName()).isEqualTo("sample.png");
@@ -494,14 +551,35 @@ class HyFloApiIT {
         assertThat(savedFile.getSizeBytes()).isEqualTo(128L);
         assertThat(savedFile.getCreatedAt()).isEqualTo(created);
         assertTableColumns("T_10_03_01", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05");
-        assertTableColumns("T_10_03_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertTableColumns("T_10_03_04", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertTableColumns("T_10_03_05", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertTableColumns("T_10_03_06", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
+        assertTableColumns("T_10_03_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
         assertTableColumns("T_10_03_03", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
-        assertTableColumns("T_10_03_04", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
+        assertTableColumns("T_10_03_07", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
+        assertTableConstraints("T_10_03_02", "T_10_03_02_UK_01");
+        assertTableConstraints("T_10_03_03", "T_10_03_03_UK_01");
+        assertTableConstraints("T_10_03_07", "T_10_03_07_FK_01");
+        assertForeignKey("T_10_03_07", "F_07", "T_10_03_06", "T_10_03_07_FK_01", true);
         assertTableConstraints("T_10_03_01", "T_10_03_01_UK_01");
-        assertTableConstraints("T_10_03_02", "T_10_03_02_UK_01", "T_10_03_02_FK_01");
-        assertTableConstraints("T_10_03_03", "T_10_03_03_UK_01", "T_10_03_03_FK_01");
         assertTableConstraints("T_10_03_04", "T_10_03_04_UK_01", "T_10_03_04_FK_01");
+        assertTableConstraints("T_10_03_05", "T_10_03_05_UK_01", "T_10_03_05_FK_01");
+        assertTableConstraints("T_10_03_06", "T_10_03_06_UK_01", "T_10_03_06_FK_01");
         assertTableConstraints("T_10_00_01", "T_10_00_01_UK_01");
+    }
+
+    private void assertForeignKey(String table, String column, String referencedTable, String constraint, boolean nullable) {
+        assertThat(jdbc.queryForList("""
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?
+                    AND COLUMN_NAME = ? AND BINARY REFERENCED_TABLE_NAME = BINARY ?
+                    AND REFERENCED_COLUMN_NAME = 'F_00'
+                """, String.class, table, column, referencedTable)).containsExactly(constraint);
+        assertThat(jdbc.queryForObject("""
+                SELECT IS_NULLABLE FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ? AND COLUMN_NAME = ?
+                """, String.class, table, column)).isEqualTo(nullable ? "YES" : "NO");
     }
 
     private void assertActorForeignKeys(String table, String grantedByColumn, String revokedByColumn) {
@@ -509,7 +587,7 @@ class HyFloApiIT {
                 SELECT CONCAT(CONSTRAINT_NAME, ':', COLUMN_NAME)
                 FROM information_schema.KEY_COLUMN_USAGE
                 WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?
-                    AND BINARY REFERENCED_TABLE_NAME = BINARY 'T_10_01_07' AND REFERENCED_COLUMN_NAME = 'F_00'
+                    AND BINARY REFERENCED_TABLE_NAME = BINARY 'T_10_01_08' AND REFERENCED_COLUMN_NAME = 'F_00'
                     AND COLUMN_NAME IN (?, ?)
                 """, String.class, table, grantedByColumn, revokedByColumn))
                 .containsExactlyInAnyOrder(table + "_FK_03:" + grantedByColumn, table + "_FK_04:" + revokedByColumn);

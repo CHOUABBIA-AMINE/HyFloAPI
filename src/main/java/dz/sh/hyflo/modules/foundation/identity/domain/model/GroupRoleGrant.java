@@ -41,7 +41,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_15")
+@Table(name = "T_10_01_16")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GroupRoleGrant {
@@ -69,19 +69,19 @@ public class GroupRoleGrant {
     private AuthorizationScope authorizationScope;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_08", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_15_FK_01"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_16_FK_01"))
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_15_FK_02"))
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_16_FK_02"))
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_10", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_15_FK_03"))
+    @JoinColumn(name = "F_10", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_16_FK_03"))
     private User grantedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_10_01_15_FK_04"))
+    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_10_01_16_FK_04"))
     private User revokedBy;
 
     @Version

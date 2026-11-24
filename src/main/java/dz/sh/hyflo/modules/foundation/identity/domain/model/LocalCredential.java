@@ -41,8 +41,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_09", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_01_09_UK_01", columnNames = "F_03"))
+@Table(name = "T_10_01_10", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_01_10_UK_01", columnNames = "F_03"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LocalCredential {
@@ -61,7 +61,7 @@ public class LocalCredential {
     private Instant passwordChangedAt;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_03", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_09_FK_01"))
+    @JoinColumn(name = "F_03", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_10_FK_01"))
     private User user;
 
     public LocalCredential(User user, String passwordHash, Instant passwordChangedAt) {

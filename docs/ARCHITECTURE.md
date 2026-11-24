@@ -154,18 +154,19 @@ The inventory starts with entities that have no internal foreign-key dependencie
 | 1 | Role | T_10_01_04 | None | Controlled role catalog. Immutable unique code, display name and retirement. |
 | 1 | Action | T_10_01_05 | None | Immutable unique operation code and label. |
 | 1 | ResourceType | T_10_01_06 | None | Immutable unique resource-type code and label. |
-| 2 | User | T_10_01_07 | IdentityProvider, UserStatus | F_00 id; F_01 username; F_02 email; F_03 employeeId; F_04 profilePictureFileId; F_05 identityProvider; F_06 userStatus; A_01 version. Constraints — UK_01 (F_05,F_01); UK_02 (F_02); FK_01 identityProvider; FK_02 userStatus. |
-| 2 | Permission | T_10_01_08 | Action, ResourceType | Unique code and unique action/resource-type pair. |
-| 3 | LocalCredential | T_10_01_09 | User | F_00 id; F_01 passwordHash; F_02 passwordChangedAt; F_03 user. Constraints — UK_01 user; FK_01 user. |
-| 3 | LoginSession | T_10_01_10 | User | User-linked session with expiry and revocation. |
-| 3 | AuthenticationEvent | T_10_01_11 | IdentityProvider, User | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
-| 3 | GroupMembership | T_10_01_12 | User, Group | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
-| 3 | RolePermission | T_10_01_13 | Role, Permission | Unique role/permission link. Effective scope belongs to role grants. |
-| 3 | UserRoleGrant | T_10_01_14 | User, Role | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
-| 3 | GroupRoleGrant | T_10_01_15 | Group, Role, User | Group and role links, embedded scope, interval, reason, and actor attribution. |
-| 4 | RefreshToken | T_10_01_16 | LoginSession | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
+| 1 | UserType | T_10_01_07 | None | F_00 id; F_01 code; F_02 nameAr; F_03 nameFr; F_04 nameEn. UK_01 code. HUMAN and SERVICE. |
+| 2 | User | T_10_01_08 | IdentityProvider, UserStatus, UserType | F_00 id; F_01 username; F_02 email; F_03 employeeId; F_04 profilePictureFileId; F_05 identityProvider; F_06 userStatus; F_07 userType; A_01 version. Constraints — UK_01 (F_05,F_01); UK_02 (F_02); FK_01 identityProvider; FK_02 userStatus; FK_03 userType. |
+| 2 | Permission | T_10_01_09 | Action, ResourceType | Unique code and unique action/resource-type pair. |
+| 3 | LocalCredential | T_10_01_10 | User | F_00 id; F_01 passwordHash; F_02 passwordChangedAt; F_03 user. Constraints — UK_01 user; FK_01 user. |
+| 3 | LoginSession | T_10_01_11 | User | User-linked session with expiry and revocation. |
+| 3 | AuthenticationEvent | T_10_01_12 | IdentityProvider, User | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
+| 3 | GroupMembership | T_10_01_13 | User, Group | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
+| 3 | RolePermission | T_10_01_14 | Role, Permission | Unique role/permission link. Effective scope belongs to role grants. |
+| 3 | UserRoleGrant | T_10_01_15 | User, Role | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
+| 3 | GroupRoleGrant | T_10_01_16 | Group, Role, User | Group and role links, embedded scope, interval, reason, and actor attribution. |
+| 4 | RefreshToken | T_10_01_17 | LoginSession | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
 
-All Identity tables use `T_10_01_NN`, where `10` is Foundation, `01` is Identity, and `NN` is the one-based position in the inventory above. This allocation supersedes the previous Identity table names for fresh development schemas. Several table codes previously identified different entities. An existing schema with Identity tables requires a separately reviewed migration before reuse. The `employeeId` and `profilePictureFileId` columns are scalar owner references. They do not create physical cross-module foreign keys. `IdentityProvider` remains LOCAL only, and `UserStatus` uses persisted rows with stable codes.
+All Identity tables use `T_10_01_NN`, where `10` is Foundation, `01` is Identity, and `NN` is the one-based position in the inventory above. This allocation supersedes the previous Identity table names for fresh development schemas. Several table codes previously identified different entities. An existing schema with Identity tables requires a separately reviewed migration before reuse. The `employeeId` and `profilePictureFileId` columns are scalar owner references. They do not create physical cross-module foreign keys. `IdentityProvider` remains LOCAL only, and `UserStatus` uses persisted rows with stable codes. UserType is a required immutable association to a stable-code HUMAN or SERVICE classification row; classification alone grants no rights. No preferredLanguageId or catalog seed rows are introduced.
 
 A login session can retain multiple refresh token digests as tokens rotate. The model records consumption once and uses optimistic locking to detect competing updates to a token row. Session expiry and revocation govern token usability. Atomic rotation and session revocation on reuse belong to the future refresh service. Access JWTs require no token table.
 
@@ -178,7 +179,7 @@ A login session can retain multiple refresh token digests as tokens rotate. The 
 | PIPELINE | Pipeline ID | The named pipeline and its associated resources within the company, as resolved by their owners. |
 | INFRASTRUCTURE | Infrastructure ID | The named infrastructure within the company, such as a station, terminal, or valve. |
 
-Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Both role grant tables reference Identity User (T_10_01_07) through F_10 (grantedBy, required and immutable) and F_11 (revokedBy, set together with revokedAt). The field names distinguish the two audit roles from the recipient association. The application service must derive each actor from the authenticated context. This column layout is for disposable development schemas. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
+Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Both role grant tables reference Identity User (T_10_01_08) through F_10 (grantedBy, required and immutable) and F_11 (revokedBy, set together with revokedAt). The field names distinguish the two audit roles from the recipient association. The application service must derive each actor from the authenticated context. This column layout is for disposable development schemas. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
 
 ### Organization persistence
 
@@ -210,12 +211,15 @@ The hierarchy and directory are persisted through JPA. Assignment, transfer and 
 | Module | Model | Table | Internal dependencies |
 |---|---|---|---|
 | Reference | Country | T_10_03_01 | None |
-| Reference | State | T_10_03_02 | Country |
-| Reference | District | T_10_03_03 | State |
-| Reference | Locality | T_10_03_04 | District |
+| Reference | Language | T_10_03_02 | None |
+| Reference | MeasurementUnit | T_10_03_03 | None |
+| Reference | State | T_10_03_04 | Country |
+| Reference | District | T_10_03_05 | State |
+| Reference | Locality | T_10_03_06 | District |
+| Reference | Location | T_10_03_07 | Optional Locality |
 | Infra | File | T_10_00_01 | None |
 
-Reference stores Arabic, French and English names. Country codes are unique across the catalog. State, district and locality codes are unique within their parent. The required parent joins preserve the full geographic hierarchy. Country codes are normalized to three uppercase ASCII letters (shape only, not ISO membership verification). All four geographic records retain an active flag; Locality also stores an optional postal code. Retirement does not delete historical geography.
+Reference stores Arabic, French and English names. Country codes are unique across the catalog. State, district and locality codes are unique within their parent. The required parent joins preserve the full geographic hierarchy. Country codes are normalized to three uppercase ASCII letters (shape only, not ISO membership verification). All four geographic records retain an active flag; Locality also stores an optional postal code. Retirement does not delete historical geography. Language (F_00 id, F_01 lowercase two-letter code, F_02–04 trilingual names, F_05 nativeName, F_06 rightToLeft, F_07 active) and MeasurementUnit (F_00 id, F_01 uppercase stable code, F_02–04 trilingual names, F_05 symbol, F_06 active) use unique immutable codes and default active/retirement. Language code shape is not verified ISO membership; unit symbols preserve case and are not unique identifiers. No conversions, quantity catalog, reference-condition inference or translation completeness is implied. Location (F_00 id, F_01–03 trilingual names, F_04 latitude, F_05 longitude, F_06 elevation, F_07 optional locality FK_01) stores finite WGS84 decimal-degree point coordinates and optional metres above mean sea level, not surveyed engineering qualification or route geometry. Identity and Reference renumbering in FDN-DATA-001 is fresh disposable-schema only; do not reuse existing physical schemas through Hibernate update. Company and AuthorizationScope remain unchanged.
 
 Infra stores a unique opaque storage key, original filename, media type, size in bytes and creation time for each file. Other modules can refer to this record by ID. The persistence model is in place for file metadata. Content storage, uploads and downloads require application wiring.
 

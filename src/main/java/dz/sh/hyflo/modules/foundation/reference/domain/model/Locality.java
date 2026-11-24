@@ -42,8 +42,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_03_04", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_03_04_UK_01", columnNames = {"F_07", "F_01"}))
+@Table(name = "T_10_03_06", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_03_06_UK_01", columnNames = {"F_07", "F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Locality {
@@ -78,7 +78,7 @@ public class Locality {
     private String postalCode;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_04_FK_01"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_06_FK_01"))
     private District district;
 
     public Locality(String code, String nameAr, String nameFr, String nameEn, District district) {

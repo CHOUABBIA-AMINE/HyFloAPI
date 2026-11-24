@@ -37,8 +37,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_13", uniqueConstraints = {
-    @UniqueConstraint(name = "T_10_01_13_UK_01", columnNames = {"F_01", "F_02"})
+@Table(name = "T_10_01_14", uniqueConstraints = {
+    @UniqueConstraint(name = "T_10_01_14_UK_01", columnNames = {"F_01", "F_02"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -50,11 +50,11 @@ public class RolePermission {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_01", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_01"))
+    @JoinColumn(name = "F_01", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_14_FK_01"))
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_02", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_02"))
+    @JoinColumn(name = "F_02", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_14_FK_02"))
     private Permission permission;
 
 

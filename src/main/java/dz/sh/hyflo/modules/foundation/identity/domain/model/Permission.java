@@ -39,9 +39,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_08", uniqueConstraints = {
-    @UniqueConstraint(name = "T_10_01_08_UK_01", columnNames = {"F_01"}),
-    @UniqueConstraint(name = "T_10_01_08_UK_02", columnNames = {"F_03", "F_04"})
+@Table(name = "T_10_01_09", uniqueConstraints = {
+    @UniqueConstraint(name = "T_10_01_09_UK_01", columnNames = {"F_01"}),
+    @UniqueConstraint(name = "T_10_01_09_UK_02", columnNames = {"F_03", "F_04"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -63,11 +63,11 @@ public class Permission {
     private String displayName;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_03", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_01"))
+    @JoinColumn(name = "F_03", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_09_FK_01"))
     private Action action;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_02"))
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_09_FK_02"))
     private ResourceType resourceType;
 
 

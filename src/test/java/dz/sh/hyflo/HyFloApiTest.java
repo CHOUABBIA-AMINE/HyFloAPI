@@ -7,6 +7,10 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.Language;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.Location;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.MeasurementUnit;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
@@ -30,11 +34,12 @@ class HyFloApiTest {
     void activationRequiresOwnCredentialAndDisabledAccountsCannotBeReactivated() {
         var provider = IdentityProvider.local();
         var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var userType = new UserType(UserType.HUMAN_CODE, null, null, "Human");
         var active = new UserStatus(UserStatus.ACTIVE_CODE, "Active");
         var suspended = new UserStatus(UserStatus.SUSPENDED_CODE, "Suspended");
         var disabled = new UserStatus(UserStatus.DISABLED_CODE, "Disabled");
-        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending);
-        var other = new User(provider, "other", "other@example.invalid", null, pending);
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending, userType);
+        var other = new User(provider, "other", "other@example.invalid", null, pending, userType);
         String hash = new BCryptPasswordEncoder().encode("synthetic-account-password");
         var changedAt = Instant.parse("2026-11-24T00:00:00Z");
         var foreignCredential = new LocalCredential(other, hash, changedAt);
@@ -116,6 +121,67 @@ class HyFloApiTest {
                 "OTHER", null, null, "Other");
         assertThat(minimal.isActive()).isTrue();
         assertThat(minimal.getDescriptionEn()).isNull();
+    }
+
+    @Test
+    void userTypeRequiresSupportedCodeAndLocalizedName() {
+        var human = new UserType(UserType.HUMAN_CODE, null, null, "Human");
+        assertThat(human.hasCode(UserType.HUMAN_CODE)).isTrue();
+        assertThat(new UserType(UserType.SERVICE_CODE, null, "Service", null).hasCode(UserType.SERVICE_CODE)).isTrue();
+        assertThatThrownBy(() -> new UserType("SYSTEM", null, null, "System"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new UserType(UserType.HUMAN_CODE, null, " ", null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new User(IdentityProvider.local(), "sample", "sample@example.invalid", null,
+                new UserStatus(UserStatus.PENDING_CODE, "Pending"), null))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void languageAndMeasurementUnitRetainBusinessLabelsAndRejectInvalidData() {
+        var arabic = new Language(" AR ", "العربية", null, null, "العربية", true);
+        assertThat(arabic.getCode()).isEqualTo("ar");
+        assertThat(arabic.isRightToLeft()).isTrue();
+        arabic.retire();
+        assertThat(arabic.isActive()).isFalse();
+        assertThatThrownBy(() -> new Language("ara", null, null, "Arabic", "Arabic", true))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Language("ar", null, null, "Arabic", " ", true))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Language("ar", null, null, null, "Arabic", true))
+                .isInstanceOf(IllegalArgumentException.class);
+        var unit = new MeasurementUnit(" pascal ", null, null, "Pascal", "Pa");
+        assertThat(unit.getCode()).isEqualTo("PASCAL");
+        assertThat(unit.getSymbol()).isEqualTo("Pa");
+        unit.retire();
+        assertThat(unit.isActive()).isFalse();
+        assertThatThrownBy(() -> new MeasurementUnit("bad code", null, null, "Unit", "m"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, "Pascal", " "))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, null, "Pa"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void locationRejectsInvalidCoordinatesAndPreservesUnknownElevation() {
+        var remote = new Location(null, null, "Remote point", -90.0, 180.0, null, null);
+        assertThat(remote.getElevation()).isNull();
+        assertThat(remote.getLocality()).isNull();
+        assertThatThrownBy(() -> new Location(null, null, "Point", 90.1, 0.0, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Location(null, null, "Point", 0.0, -180.1, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Location(null, null, "Point", Double.NaN, 0.0, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Location(null, null, "Point", 0.0, Double.POSITIVE_INFINITY, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Location(null, null, "Point", 0.0, 0.0, Double.NEGATIVE_INFINITY, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Location(null, null, "Point", null, 0.0, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Location(null, null, null, 0.0, 0.0, null, null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
