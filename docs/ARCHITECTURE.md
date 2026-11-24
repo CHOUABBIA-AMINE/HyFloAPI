@@ -138,6 +138,21 @@ Database-managed catalogs return stable IDs and codes plus translated labels. Sh
 
 Java 25, Spring Boot 4.2.0, wrapper Maven 3.10.2, MapStruct 1.6.3, JJWT 0.13.0, SpringDoc 3.2.1. Dependency versions governed by actual POM/BOM. Database credentials and local bootstrap password externalized. No production profile, Flyway, migration directories or real-data import. Hibernate update cannot guarantee arbitrary schema transformations; never treat it as a production migration mechanism. Production preparation introduces versioned Flyway baseline, validate, release and rollback checks only under explicit authorization.
 
+### Physical database identifiers
+
+The owner requires the original numeric HyFlo naming convention (see [AGENTS.md](../AGENTS.md)). Preserve T_NN_NN_NN tables, F_00 primary keys, F_NN business and join columns, A_01 version, and explicit table-prefixed UK_NN/FK_NN constraint names. Physical case is preserved by Hibernate's standard naming strategy. Java properties retain descriptive names.
+
+Historical source: [User before correction](https://github.com/CHOUABBIA-AMINE/HyFloAPI/blob/6763b5d12655fe02404af2a43d1807bb90d2e8fb/src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/User.java); historical security namespace T_00_02_01–07 was Group, User, Role, Action, ResourceType, Resource, Permission. The previous model assigned F_00 to ID, A_01 to version, F_01 username, F_02 email and F_08 employee. F_03–07 (former password and flags) remain reserved; do not reintroduce password into User. The former employee FK_01 is reserved until Organization integration is implemented.
+
+| Model | Table | Physical fields | Named constraints |
+|---|---|---|---|
+| User | T_00_02_02 | F_00 id; A_01 version; F_01 normalizedUsername; F_02 email; F_08 employeeId; F_09 provider; F_10 status | UK_01 (F_09,F_01); UK_02 (F_02); FK_02 provider; FK_03 status |
+| IdentityProvider | T_00_02_08 | F_00 id; F_01 code; F_02 displayName; F_03 enabled | UK_01 code |
+| LocalCredential | T_00_02_09 | F_00 id; F_01 user; F_02 passwordHash; F_03 passwordChangedAt | UK_01 user; FK_01 user |
+| UserStatus | T_00_02_10 | F_00 id; F_01 code; F_02 displayName | UK_01 code |
+
+Provider, LocalCredential and UserStatus are new numeric allocations, not recovered historical table names. UK_01 on User retains current provider-scoped normalized username uniqueness rather than changing semantics to the historical single-column constraint; email uniqueness is retained. UserStatus replaces the business enum with a required reference and the finite codes PENDING, ACTIVE, SUSPENDED, DISABLED. User lifecycle methods validate the expected code; labels cannot authorize transitions. IdentityProvider remains LOCAL only. Runtime reference population and server-side translations are deferred; synthetic test rows are not deployment seeds. No Flyway, database reset, migration or backfill is selected. Existing disposable development schemas may still contain old descriptive tables because Hibernate update does not rename or drop them; validate a fresh schema for this correction.
+
 ## 8. Security and operational trust
 
 Local accounts, password hashes, grants and effective permissions belong to Identity. Spring Security and token verification belong to platform.security. Bootstrap default user is temporary; target persistent local authentication must replace it without bypassing authorization. Enforce company/operational scope before disclosing data or existence, counts, export/history. Use authenticated actor attribution and least privilege, fail closed, independent decisions where required. External systems, OT, live SCADA, enterprise SSO and real data are not authorized. Audit evidence records who did what and when; Workflow owns transitions and approvals.

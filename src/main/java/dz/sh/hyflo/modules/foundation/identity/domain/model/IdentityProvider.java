@@ -32,8 +32,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "identity_provider", uniqueConstraints =
-        @UniqueConstraint(name = "uk_identity_provider_code", columnNames = "code"))
+@Table(name = "T_00_02_08", uniqueConstraints =
+        @UniqueConstraint(name = "T_00_02_08_UK_01", columnNames = "F_01"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IdentityProvider {
@@ -42,15 +42,16 @@ public class IdentityProvider {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "F_00")
     private Long id;
 
-    @Column(length = 32, nullable = false, updatable = false)
+    @Column(name = "F_01", length = 32, nullable = false, updatable = false)
     private String code;
 
-    @Column(name = "display_name", length = 100, nullable = false)
+    @Column(name = "F_02", length = 100, nullable = false)
     private String displayName;
 
-    @Column(nullable = false)
+    @Column(name = "F_03", nullable = false)
     private boolean enabled;
 
     private IdentityProvider(String code, String displayName, boolean enabled) {

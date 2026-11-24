@@ -5,6 +5,7 @@ import java.time.Instant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
@@ -27,25 +28,29 @@ class HyFloApiTest {
     @Test
     void activationRequiresOwnCredentialAndDisabledAccountsCannotBeReactivated() {
         var provider = IdentityProvider.local();
-        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null);
-        var other = new User(provider, "other", "other@example.invalid", null);
+        var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var active = new UserStatus(UserStatus.ACTIVE_CODE, "Active");
+        var suspended = new UserStatus(UserStatus.SUSPENDED_CODE, "Suspended");
+        var disabled = new UserStatus(UserStatus.DISABLED_CODE, "Disabled");
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending);
+        var other = new User(provider, "other", "other@example.invalid", null, pending);
         String hash = new BCryptPasswordEncoder().encode("synthetic-account-password");
         var changedAt = Instant.parse("2026-11-24T00:00:00Z");
         var foreignCredential = new LocalCredential(other, hash, changedAt);
         var ownCredential = new LocalCredential(account, hash, changedAt);
 
         assertThat(account.getNormalizedUsername()).isEqualTo("synthetic.user");
-        assertThatThrownBy(() -> account.activate(foreignCredential))
+        assertThatThrownBy(() -> account.activate(foreignCredential, active))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThat(account.getStatus()).isEqualTo(User.Status.PENDING);
+        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);
 
-        account.activate(ownCredential);
-        account.suspend();
-        assertThat(account.getStatus()).isEqualTo(User.Status.SUSPENDED);
-        account.activate(ownCredential);
-        account.disable();
-        assertThatThrownBy(() -> account.activate(ownCredential)).isInstanceOf(IllegalStateException.class);
-        assertThat(account.getStatus()).isEqualTo(User.Status.DISABLED);
+        account.activate(ownCredential, active);
+        account.suspend(suspended);
+        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.SUSPENDED_CODE);
+        account.activate(ownCredential, active);
+        account.disable(disabled);
+        assertThatThrownBy(() -> account.activate(ownCredential, active)).isInstanceOf(IllegalStateException.class);
+        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.DISABLED_CODE);
     }
 
     @Test

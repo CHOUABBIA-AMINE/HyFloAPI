@@ -12,6 +12,7 @@ import java.util.Base64;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mysql.MySQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Testcontainers
 @ActiveProfiles("test")
@@ -83,14 +85,33 @@ class HyFloApiIT {
         var provider = IdentityProvider.local();
         entityManager.persist(provider);
 
-        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null);
+        var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var active = new UserStatus(UserStatus.ACTIVE_CODE, "Active");
+        var suspended = new UserStatus(UserStatus.SUSPENDED_CODE, "Suspended");
+        var disabled = new UserStatus(UserStatus.DISABLED_CODE, "Disabled");
+        entityManager.persist(pending);
+        entityManager.persist(active);
+        entityManager.persist(suspended);
+        entityManager.persist(disabled);
+
+        assertThatThrownBy(() -> new UserStatus("UNKNOWN", "Unknown"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new User(provider, "synthetic", "other@example.invalid", null, active))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending);
         entityManager.persist(account);
 
         var encoder = new BCryptPasswordEncoder();
         String hash = encoder.encode("synthetic-account-password");
         var credential = new LocalCredential(account, hash, Instant.parse("2026-11-24T00:00:00Z"));
         entityManager.persist(credential);
-        account.activate(credential);
+        assertThatThrownBy(() -> account.activate(credential, disabled))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);
+        account.activate(credential, active);
+        account.suspend(suspended);
+        account.activate(credential, active);
 
         entityManager.flush();
         entityManager.clear();
@@ -98,10 +119,40 @@ class HyFloApiIT {
         var savedAccount = entityManager.find(User.class, account.getId());
         var savedCredential = entityManager.find(LocalCredential.class, credential.getId());
         assertThat(savedAccount.getNormalizedUsername()).isEqualTo("synthetic.user");
-        assertThat(savedAccount.getStatus()).isEqualTo(User.Status.ACTIVE);
+        assertThat(savedAccount.getStatus().getCode()).isEqualTo(UserStatus.ACTIVE_CODE);
         assertThat(savedAccount.getProvider().getCode()).isEqualTo(IdentityProvider.LOCAL_CODE);
         assertThat(savedCredential.getUser().getId()).isEqualTo(savedAccount.getId());
         assertThat(savedCredential.getPasswordHash()).isEqualTo(hash);
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_00_02_02 WHERE F_00 = ?", String.class,
+                savedAccount.getId())).isEqualTo("synthetic.user");
+        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_00_02_09 WHERE F_00 = ?", String.class,
+                savedCredential.getId())).isEqualTo(hash);
+
+        assertIdentityColumns("T_00_02_02", "F_00", "A_01", "F_01", "F_02", "F_08", "F_09", "F_10");
+        assertIdentityColumns("T_00_02_08", "F_00", "F_01", "F_02", "F_03");
+        assertIdentityColumns("T_00_02_09", "F_00", "F_01", "F_02", "F_03");
+        assertIdentityColumns("T_00_02_10", "F_00", "F_01", "F_02");
+        assertIdentityConstraints("T_00_02_02", "T_00_02_02_UK_01", "T_00_02_02_UK_02",
+                "T_00_02_02_FK_02", "T_00_02_02_FK_03");
+        assertIdentityConstraints("T_00_02_08", "T_00_02_08_UK_01");
+        assertIdentityConstraints("T_00_02_09", "T_00_02_09_UK_01", "T_00_02_09_FK_01");
+        assertIdentityConstraints("T_00_02_10", "T_00_02_10_UK_01");
+
+        savedAccount.disable(entityManager.find(UserStatus.class, disabled.getId()));
+        assertThatThrownBy(() -> savedAccount.activate(savedCredential, entityManager.find(UserStatus.class, active.getId())))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    private void assertIdentityColumns(String table, String... columns) {
+        assertThat(jdbc.queryForList(
+                "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?",
+                String.class, table)).containsExactlyInAnyOrder(columns);
+    }
+
+    private void assertIdentityConstraints(String table, String... constraints) {
+        assertThat(jdbc.queryForList(
+                "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?",
+                String.class, table)).contains(constraints);
     }
 
     @Test

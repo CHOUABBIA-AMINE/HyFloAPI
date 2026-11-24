@@ -41,6 +41,24 @@ Use explicit REST request/response DTOs, Bean Validation and MapStruct where app
 
 Use the existing HyFlo project/product header convention for new Java files; accurate package, type, description and layer, truthful authorship and dates. Preserve existing attribution and creation dates when editing. Use descriptive JavaDoc in package-info.java as in the accepted skeleton. Do not retrofit headers across unrelated files. Do not create placeholders or empty packages outside an expressly selected structural task.
 
+### Physical database naming — mandatory
+
+Preserve the historical HyFlo numeric physical identifiers. Logical Java class/field names remain descriptive; explicit JPA names are mandatory for all persistent columns (including IDs, versions and join columns), tables, unique constraints and foreign keys.
+
+| Object | Format | Example |
+|---|---|---|
+| Entity table | T_NN_NN_NN | T_00_02_02 (User) |
+| Primary key | F_00 | User.id |
+| Business column / FK column | F_NN | F_01, F_08 |
+| Technical optimistic-lock version | A_01 (historical GenericModel convention) | User.version |
+| Unique constraint | <table>_UK_NN | T_00_02_02_UK_01 |
+| Foreign key | <table>_FK_NN | T_00_02_02_FK_02 |
+| Historical many-to-many join table | R_TNNNNNN_TNNNNNN | R_T000202_T000203 |
+
+Use uppercase physical identifiers, two-digit numeric components, explicit referencedColumnName=F_00 for entity-ID joins, and explicit constraint names. Preserve established IDs and field meaning; never recycle retired table/column/constraint numbers or allocate colliding identifiers. New identifiers must be checked against current and historical source, registered in the architecture inventory, and not silently renumbered. Preserve identifier case via the configured Hibernate standard physical naming strategy. Test-only probe tables are not business-schema names. Where a referenced module is not implemented yet, a scalar ID is not evidence of an actual FK; the owner integration must add the proper constraint when selected.
+
+Business classifications/statuses/providers use classes and finite database-managed reference rows, not Java enum declarations or @Enumerated. JPA annotation enums (e.g., FetchType and GenerationType) are framework APIs, not business classifications. Keep immutable stable codes and controlled transitions independent of labels. Seed approved reference values only in a separately selected task; synthetic test fixtures may create rows now. Server-side translation is the target; a single displayName field is not a completed localization workflow.
+
 ## 4. Data, localization and security
 
 - Database-owned business classifications use stable unique codes, referential integrity, lifecycle and localized labels; no business enum catalogs on either client or server. Internal finite technical constants and hard safety/transition rules are not configurable by editing a label. Reference owns shared catalogs; module-specific types stay with their owner.

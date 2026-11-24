@@ -26,9 +26,8 @@ import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,10 +44,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "identity_user", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_identity_user_provider_username",
-            columnNames = {"provider_id", "normalized_username"}),
-    @UniqueConstraint(name = "uk_identity_user_email", columnNames = "email")
+@Table(name = "T_00_02_02", uniqueConstraints = {
+    @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = {"F_09", "F_01"}),
+    @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = "F_02")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -58,38 +56,43 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "F_00")
     private Long id;
 
     @Version
+    @Column(name = "A_01", nullable = false)
     private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "provider_id", nullable = false, updatable = false)
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, updatable = false,
+            foreignKey = @ForeignKey(name = "T_00_02_02_FK_02"))
     private IdentityProvider provider;
 
     @NotBlank
-    @Column(name = "normalized_username", length = 20, nullable = false)
+    @Column(name = "F_01", length = 20, nullable = false)
     private String normalizedUsername;
 
     @NotBlank
     @Email
     @Size(max = 100)
-    @Column(length = 100, nullable = false)
+    @Column(name = "F_02", length = 100, nullable = false)
     private String email;
 
-    @Column(name = "employee_id")
+    @Column(name = "F_08")
     private Long employeeId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 16, nullable = false)
-    private Status status;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_10", referencedColumnName = "F_00", nullable = false,
+            foreignKey = @ForeignKey(name = "T_00_02_02_FK_03"))
+    private UserStatus status;
 
-    public User(IdentityProvider provider, String username, String email, Long employeeId) {
+    public User(IdentityProvider provider, String username, String email, Long employeeId,
+            UserStatus pendingStatus) {
         this.provider = Objects.requireNonNull(provider, "Identity provider is required");
         this.normalizedUsername = normalizeUsername(username);
         this.email = Objects.requireNonNull(email, "Email is required");
         this.employeeId = employeeId;
-        this.status = Status.PENDING;
+        this.status = requireStatus(pendingStatus, UserStatus.PENDING_CODE);
     }
 
     public static String normalizeUsername(String username) {
@@ -101,8 +104,8 @@ public class User {
         return candidate.toLowerCase(Locale.ROOT);
     }
 
-    public void activate(LocalCredential credential) {
-        if (status != Status.PENDING && status != Status.SUSPENDED) {
+    public void activate(LocalCredential credential, UserStatus activeStatus) {
+        if (!status.hasCode(UserStatus.PENDING_CODE) && !status.hasCode(UserStatus.SUSPENDED_CODE)) {
             throw new IllegalStateException("Only pending or suspended accounts can be activated");
         }
         if (!provider.isEnabled()) {
@@ -111,24 +114,24 @@ public class User {
         if (credential == null || !credential.belongsTo(this)) {
             throw new IllegalArgumentException("An account credential is required for activation");
         }
-        status = Status.ACTIVE;
+        status = requireStatus(activeStatus, UserStatus.ACTIVE_CODE);
     }
 
-    public void suspend() {
-        if (status != Status.ACTIVE) {
+    public void suspend(UserStatus suspendedStatus) {
+        if (!status.hasCode(UserStatus.ACTIVE_CODE)) {
             throw new IllegalStateException("Only active accounts can be suspended");
         }
-        status = Status.SUSPENDED;
+        status = requireStatus(suspendedStatus, UserStatus.SUSPENDED_CODE);
     }
 
-    public void disable() {
-        status = Status.DISABLED;
+    public void disable(UserStatus disabledStatus) {
+        status = requireStatus(disabledStatus, UserStatus.DISABLED_CODE);
     }
 
-    public enum Status {
-        PENDING,
-        ACTIVE,
-        SUSPENDED,
-        DISABLED
+    private static UserStatus requireStatus(UserStatus candidate, String requiredCode) {
+        if (candidate == null || !candidate.hasCode(requiredCode)) {
+            throw new IllegalArgumentException("The required account status is " + requiredCode);
+        }
+        return candidate;
     }
 }
