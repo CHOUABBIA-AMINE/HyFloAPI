@@ -2,14 +2,12 @@ name: HyFloAPI Build
 on:
   push:
     branches: [main]
-    paths:
-      - 'pom.xml'
-      - '.mvn/**'
-      - 'mvnw'
-      - 'mvnw.cmd'
-      - 'src/**'
-      - '.github/workflows/build.yml'
   workflow_dispatch:
+    inputs:
+      security_scan:
+        description: Run OWASP dependency scan (requires NVD_API_KEY secret)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -17,7 +15,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -29,5 +27,67 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
+      - name: Verify toolchain
+        run: ./mvnw --version
       - name: Build and verify
-        run: sh ./mvnw --batch-mode --no-transfer-progress clean verify
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+      - name: Retain effective POM and dependency tree
+        run: |
+          ./mvnw --batch-mode --no-transfer-progress help:effective-pom -Doutput=target/effective-pom.xml
+          ./mvnw --batch-mode --no-transfer-progress dependency:tree -DoutputFile=target/dependency-tree.txt
+      - name: Require test and SBOM evidence
+        run: |
+          test -n "$(find target/surefire-reports -name 'TEST-*.xml' -print -quit)"
+          test -n "$(find target/failsafe-reports -name 'TEST-*.xml' -print -quit)"
+          test -s target/site/jacoco/jacoco.xml
+          test -s target/classes/META-INF/sbom/application.cdx.json
+      - name: Upload test reports and build metadata
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyflo-verification-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+            target/site/jacoco/
+            target/classes/META-INF/sbom/application.cdx.json
+            target/effective-pom.xml
+            target/dependency-tree.txt
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload verified application JAR
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyflo-jar-${{ github.sha }}
+          path: target/HyFloAPI-*.jar
+          if-no-files-found: error
+
+  security-scan:
+    if: github.event_name == 'workflow_dispatch' && inputs.security_scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Scan dependencies
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -z "$NVD_API_KEY" ]; then
+            echo "Configure the NVD_API_KEY repository secret before requesting this scan."
+            exit 1
+          fi
+          ./mvnw --batch-mode --no-transfer-progress -Psecurity-scan org.owasp:dependency-check-maven:13.0.0:check
+      - name: Upload vulnerability report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyflo-security-${{ github.sha }}-${{ github.run_attempt }}
+          path: target/dependency-check-report.*
+          if-no-files-found: warn
