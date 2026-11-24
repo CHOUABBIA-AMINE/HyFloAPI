@@ -2,6 +2,7 @@ package dz.sh.hyflo;
 
 import java.time.Instant;
 
+import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthorizationScope;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
@@ -51,6 +52,29 @@ class HyFloApiTest {
         account.disable(disabled);
         assertThatThrownBy(() -> account.activate(ownCredential, active)).isInstanceOf(IllegalStateException.class);
         assertThat(account.getUserStatus().getCode()).isEqualTo(UserStatus.DISABLED_CODE);
+    }
+
+    @Test
+    void distinguishesCompanyWideAndSpecificResourceScopes() {
+        var global = AuthorizationScope.global(1);
+        assertThat(global.getScopeType()).isEqualTo(AuthorizationScope.GLOBAL);
+        assertThat(global.getCompanyId()).isEqualTo(1L);
+        assertThat(global.getScopeReferenceId()).isNull();
+
+        for (var scope : java.util.List.of(
+                AuthorizationScope.region(1, 2),
+                AuthorizationScope.pipeline(1, 2),
+                AuthorizationScope.infrastructure(1, 2))) {
+            assertThat(scope.getCompanyId()).isEqualTo(1L);
+            assertThat(scope.getScopeReferenceId()).isEqualTo(2L);
+        }
+        assertThat(AuthorizationScope.region(1, 2).getScopeType()).isEqualTo(AuthorizationScope.REGION);
+        assertThat(AuthorizationScope.pipeline(1, 2).getScopeType()).isEqualTo(AuthorizationScope.PIPELINE);
+        assertThat(AuthorizationScope.infrastructure(1, 2).getScopeType()).isEqualTo(AuthorizationScope.INFRASTRUCTURE);
+        assertThatThrownBy(() -> AuthorizationScope.global(0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> AuthorizationScope.region(1, 0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> AuthorizationScope.pipeline(1, -1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> AuthorizationScope.infrastructure(1, 0)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

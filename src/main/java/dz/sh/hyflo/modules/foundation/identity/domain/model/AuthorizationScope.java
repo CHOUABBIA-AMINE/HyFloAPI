@@ -14,7 +14,7 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.domain.model
  *
- * @Description : Stores company, pipeline system and station update limits on a grant.
+ * @Description : Defines the company and resource boundary of a role grant.
  *
  */
 
@@ -31,43 +31,42 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthorizationScope {
 
-    public static final String ASSIGNED_REGION = "ASSIGNED_REGION";
-    public static final String SELECTED_REGION = "SELECTED_REGION";
-    public static final String ENTIRE_PIPELINE_SYSTEM = "ENTIRE_PIPELINE_SYSTEM";
+    public static final String GLOBAL = "GLOBAL";
+    public static final String REGION = "REGION";
+    public static final String PIPELINE = "PIPELINE";
+    public static final String INFRASTRUCTURE = "INFRASTRUCTURE";
 
-    @Column(name = "F_07", length = 24, nullable = false, updatable = false)
-    private String stationUpdateMode;
+    @Column(name = "F_07", length = 16, nullable = false, updatable = false)
+    private String scopeType;
 
     @Column(name = "F_08", nullable = false, updatable = false)
     private long companyId;
 
     @Column(name = "F_09", updatable = false)
-    private Long pipelineSystemId;
+    private Long scopeReferenceId;
 
-    @Column(name = "F_10", updatable = false)
-    private Long selectedRegionId;
-
-
-    private AuthorizationScope(long companyId, Long pipelineSystemId, String mode, Long selectedRegionId) {
-        if (companyId <= 0 || (pipelineSystemId != null && pipelineSystemId <= 0)
-                || (selectedRegionId != null && selectedRegionId <= 0)) {
+    private AuthorizationScope(String scopeType, long companyId, Long scopeReferenceId) {
+        if (companyId <= 0 || (scopeReferenceId != null && scopeReferenceId <= 0)) {
             throw new IllegalArgumentException("Scope references must be positive");
         }
+        this.scopeType = scopeType;
         this.companyId = companyId;
-        this.pipelineSystemId = pipelineSystemId;
-        this.stationUpdateMode = mode;
-        this.selectedRegionId = selectedRegionId;
+        this.scopeReferenceId = scopeReferenceId;
     }
 
-    public static AuthorizationScope assignedRegion(long companyId, Long pipelineSystemId) {
-        return new AuthorizationScope(companyId, pipelineSystemId, ASSIGNED_REGION, null);
+    public static AuthorizationScope global(long companyId) {
+        return new AuthorizationScope(GLOBAL, companyId, null);
     }
 
-    public static AuthorizationScope selectedRegion(long companyId, Long pipelineSystemId, long regionId) {
-        return new AuthorizationScope(companyId, pipelineSystemId, SELECTED_REGION, regionId);
+    public static AuthorizationScope region(long companyId, long regionId) {
+        return new AuthorizationScope(REGION, companyId, regionId);
     }
 
-    public static AuthorizationScope entirePipelineSystem(long companyId, long pipelineSystemId) {
-        return new AuthorizationScope(companyId, pipelineSystemId, ENTIRE_PIPELINE_SYSTEM, null);
+    public static AuthorizationScope pipeline(long companyId, long pipelineId) {
+        return new AuthorizationScope(PIPELINE, companyId, pipelineId);
+    }
+
+    public static AuthorizationScope infrastructure(long companyId, long infrastructureId) {
+        return new AuthorizationScope(INFRASTRUCTURE, companyId, infrastructureId);
     }
 }

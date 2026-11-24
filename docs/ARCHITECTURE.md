@@ -167,7 +167,16 @@ The four pre-existing tables retain their `T_00_02` names. The new allocations u
 | AuthenticationEvent | T_10_01_16 | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
 | UserRoleGrant | T_10_01_17 | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
 
-`AuthorizationScope` is embedded in each role grant as F_07–F_10. It carries the station-update mode, company ID, optional pipeline-system ID, and optional selected-region ID. Assigned-region, selected-region, and entire-pipeline modes are stable policy command codes. Each selected-region grant names one region. Administration may issue multiple grants for multiple selected regions. Grant actor IDs record attribution as scalars and must be assigned by the future authorized application service. The station owning module must resolve the target company, pipeline system and region before an update can be authorized. These models do not implement login, permission checks, administrative APIs or runtime catalog seeding.
+`AuthorizationScope` is embedded in both role grant tables. F_07 is the scope type, F_08 is the company ID, and F_09 is the optional target ID. F_10 is the user or group foreign key and F_11 is the role foreign key. The scope types are stable codes carried by the class.
+
+| Scope type | Target ID | Authorization boundary |
+|---|---|---|
+| GLOBAL | Absent | Company-wide access for the permissions included in the grant. |
+| REGION | Region ID | Resources covered by the named region within the company. |
+| PIPELINE | Pipeline ID | The named pipeline and its associated resources within the company, as resolved by their owners. |
+| INFRASTRUCTURE | Infrastructure ID | The named infrastructure within the company, such as a station, terminal, or valve. |
+
+Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Grant actor IDs record attribution and must be assigned from the authenticated actor. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
 
 ## 8. Security and operational trust
 

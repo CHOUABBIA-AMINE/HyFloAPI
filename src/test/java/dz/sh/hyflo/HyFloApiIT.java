@@ -158,7 +158,7 @@ class HyFloApiIT {
 
     @Test
     @Transactional
-    void persistsDirectAndGroupRoleGrantsWithIndependentStationScopes() {
+    void persistsDirectAndGroupRoleGrantsWithIndependentResourceScopes() {
         var starts = Instant.parse("2026-11-24T10:00:00Z");
         var ends = starts.plusSeconds(3600);
         var now = starts.plusSeconds(600);
@@ -187,9 +187,9 @@ class HyFloApiIT {
         entityManager.persist(rolePermission);
         entityManager.persist(membership);
 
-        var direct = new UserRoleGrant(account, role, AuthorizationScope.selectedRegion(1, 2L, 3),
+        var direct = new UserRoleGrant(account, role, AuthorizationScope.infrastructure(1, 3),
                 "Regional station assignment", starts, ends, actor.getId());
-        var inherited = new GroupRoleGrant(group, role, AuthorizationScope.assignedRegion(1, 2L),
+        var inherited = new GroupRoleGrant(group, role, AuthorizationScope.pipeline(1, 2),
                 "Assigned-region station access", starts, ends, actor.getId());
         entityManager.persist(direct);
         entityManager.persist(inherited);
@@ -204,14 +204,15 @@ class HyFloApiIT {
 
         var savedDirect = entityManager.find(UserRoleGrant.class, direct.getId());
         var savedInherited = entityManager.find(GroupRoleGrant.class, inherited.getId());
-        assertThat(savedDirect.getAuthorizationScope().getStationUpdateMode()).isEqualTo(AuthorizationScope.SELECTED_REGION);
-        assertThat(savedDirect.getAuthorizationScope().getSelectedRegionId()).isEqualTo(3L);
-        assertThat(savedDirect.getAuthorizationScope().getPipelineSystemId()).isEqualTo(2L);
+        assertThat(savedDirect.getAuthorizationScope().getScopeType()).isEqualTo(AuthorizationScope.INFRASTRUCTURE);
+        assertThat(savedDirect.getAuthorizationScope().getScopeReferenceId()).isEqualTo(3L);
+        assertThat(savedDirect.getAuthorizationScope().getCompanyId()).isEqualTo(1L);
         assertThat(savedDirect.getRevokedByUserId()).isEqualTo(actor.getId());
         assertThat(savedDirect.isActiveAt(now)).isFalse();
         assertThat(savedInherited.isActiveAt(now)).isTrue();
         assertThat(savedInherited.isActiveAt(ends)).isFalse();
-        assertThat(savedInherited.getAuthorizationScope().getStationUpdateMode()).isEqualTo(AuthorizationScope.ASSIGNED_REGION);
+        assertThat(savedInherited.getAuthorizationScope().getScopeType()).isEqualTo(AuthorizationScope.PIPELINE);
+        assertThat(savedInherited.getAuthorizationScope().getScopeReferenceId()).isEqualTo(2L);
         assertThat(entityManager.find(GroupMembership.class, membership.getId()).isActiveAt(now)).isTrue();
         assertThat(entityManager.find(RolePermission.class, rolePermission.getId()).getPermission().getCode())
                 .isEqualTo("station.update");
@@ -220,7 +221,7 @@ class HyFloApiIT {
         assertThat(entityManager.find(User.class, account.getId()).getProfilePictureFileId()).isEqualTo(42L);
 
         assertIdentityColumns("T_10_01_17", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
-                "F_07", "F_08", "F_09", "F_10", "F_11", "F_12", "A_01");
+                "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
         assertIdentityConstraints("T_10_01_17", "T_10_01_17_FK_01", "T_10_01_17_FK_02");
         assertIdentityConstraints("T_10_01_12", "T_10_01_12_UK_01", "T_10_01_12_FK_01", "T_10_01_12_FK_02");
     }
