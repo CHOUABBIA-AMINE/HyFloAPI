@@ -144,29 +144,28 @@ The owner requires the original numeric HyFlo naming convention (see [AGENTS.md]
 
 Historical source: [User before correction](https://github.com/CHOUABBIA-AMINE/HyFloAPI/blob/6763b5d12655fe02404af2a43d1807bb90d2e8fb/src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/User.java); historical security namespace T_00_02_01–07 was Group, User, Role, Action, ResourceType, Resource, Permission. The historical User model assigned F_00 to ID, A_01 to version, F_01 username, F_02 email and F_08 employee. The owner's [latest model revision](https://github.com/CHOUABBIA-AMINE/HyFloAPI/commit/0c96402a6702467d18a0124d86b8b44d69ac4776) supersedes the previous column reservations: F_01 onward is consecutive across ordinary fields, scalar extra-module references and same-module entity associations, with no separate FK range or reserved gaps. FK and UK constraints each use independent consecutive numbering. Password remains in LocalCredential, not User. See AGENTS.md for mandatory declaration order, lower-camel-case entity association names and single-line JoinColumn annotations. The inventory below records the Identity mappings.
 
-| Model | Table | Physical fields | Named constraints |
-|---|---|---|---|
-| User | T_00_02_02 | F_00 id; F_01 username; F_02 email; F_03 employeeId; F_04 profilePictureFileId; F_05 identityProvider; F_06 userStatus; A_01 version | UK_01 (F_05,F_01); UK_02 (F_02); FK_01 identityProvider; FK_02 userStatus |
-| IdentityProvider | T_00_02_08 | F_00 id; F_01 code; F_02 displayName; F_03 enabled | UK_01 code |
-| LocalCredential | T_00_02_09 | F_00 id; F_01 passwordHash; F_02 passwordChangedAt; F_03 user | UK_01 user; FK_01 user |
-| UserStatus | T_00_02_10 | F_00 id; F_01 code; F_02 displayName | UK_01 code |
+The inventory starts with entities that have no internal foreign-key dependencies. Each subsequent level can depend on entities from earlier levels. The dependencies shown are distinct Identity entities referenced by the model.
+
+| Level | Model | Table | Internal dependencies | Physical fields, purpose and constraints |
+|---|---|---|---|---|
+| 1 | IdentityProvider | T_00_02_08 | None | F_00 id; F_01 code; F_02 displayName; F_03 enabled. Constraints — UK_01 code. |
+| 1 | UserStatus | T_00_02_10 | None | F_00 id; F_01 code; F_02 displayName. Constraints — UK_01 code. |
+| 1 | Group | T_10_01_01 | None | Security group. Immutable unique code, display name and retirement. |
+| 1 | Role | T_10_01_03 | None | Controlled role catalog. Immutable unique code, display name and retirement. |
+| 1 | Action | T_10_01_04 | None | Immutable unique operation code and label. |
+| 1 | ResourceType | T_10_01_05 | None | Immutable unique resource-type code and label. |
+| 2 | User | T_00_02_02 | IdentityProvider, UserStatus | F_00 id; F_01 username; F_02 email; F_03 employeeId; F_04 profilePictureFileId; F_05 identityProvider; F_06 userStatus; A_01 version. Constraints — UK_01 (F_05,F_01); UK_02 (F_02); FK_01 identityProvider; FK_02 userStatus. |
+| 2 | Permission | T_10_01_07 | Action, ResourceType | Unique code and unique action/resource-type pair. |
+| 3 | LocalCredential | T_00_02_09 | User | F_00 id; F_01 passwordHash; F_02 passwordChangedAt; F_03 user. Constraints — UK_01 user; FK_01 user. |
+| 3 | LoginSession | T_10_01_15 | User | User-linked session with expiry and revocation. |
+| 3 | AuthenticationEvent | T_10_01_16 | IdentityProvider, User | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
+| 3 | GroupMembership | T_10_01_11 | User, Group | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
+| 3 | RolePermission | T_10_01_12 | Role, Permission | Unique role/permission link. Effective scope belongs to role grants. |
+| 3 | UserRoleGrant | T_10_01_17 | User, Role | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
+| 3 | GroupRoleGrant | T_10_01_13 | Group, Role, User | Group and role links, embedded scope, interval, reason, and actor attribution. |
+| 4 | RefreshToken | T_10_01_18 | LoginSession | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
 
 The four pre-existing tables retain their `T_00_02` names. The new allocations use the proposed Foundation / Identity prefix `T_10_01`; no older identifier has been reassigned. Existing column layouts changed for the disposable development schema. A previously populated schema requires a separately reviewed compatibility change. The `employeeId` and `profilePictureFileId` columns are scalar owner references. They do not create physical cross-module foreign keys. `IdentityProvider` remains LOCAL only, and `UserStatus` uses persisted rows with stable codes.
-
-| Model | Table | Purpose and constraints |
-|---|---|---|
-| Group | T_10_01_01 | Security group. Immutable unique code, display name and retirement. |
-| Role | T_10_01_03 | Controlled role catalog. Immutable unique code, display name and retirement. |
-| Action | T_10_01_04 | Immutable unique operation code and label. |
-| ResourceType | T_10_01_05 | Immutable unique resource-type code and label. |
-| Permission | T_10_01_07 | Unique code and unique action/resource-type pair. |
-| GroupMembership | T_10_01_11 | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
-| RolePermission | T_10_01_12 | Unique role/permission link. Effective scope belongs to role grants. |
-| GroupRoleGrant | T_10_01_13 | Group and role links, embedded scope, interval, reason, and actor attribution. |
-| LoginSession | T_10_01_15 | User-linked session with expiry and revocation. |
-| AuthenticationEvent | T_10_01_16 | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
-| UserRoleGrant | T_10_01_17 | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
-| RefreshToken | T_10_01_18 | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
 
 A login session can retain multiple refresh token digests as tokens rotate. The model records consumption once and uses optimistic locking to detect competing updates to a token row. Session expiry and revocation govern token usability. Atomic rotation and session revocation on reuse belong to the future refresh service. Access JWTs require no token table.
 
