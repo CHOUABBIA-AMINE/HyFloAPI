@@ -1,12 +1,19 @@
 package dz.sh.hyflo;
 
+import java.time.Instant;
+
+import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HyFloApiTest {
 
@@ -15,6 +22,30 @@ class HyFloApiTest {
         var mapped = Mappers.getMapper(BuildProbeMapper.class)
                 .map(new BuildProbeSource("synthetic"));
         assertThat(mapped.getValue()).isEqualTo("synthetic");
+    }
+
+    @Test
+    void activationRequiresOwnCredentialAndDisabledAccountsCannotBeReactivated() {
+        var provider = IdentityProvider.local();
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null);
+        var other = new User(provider, "other", "other@example.invalid", null);
+        String hash = new BCryptPasswordEncoder().encode("synthetic-account-password");
+        var changedAt = Instant.parse("2026-11-24T00:00:00Z");
+        var foreignCredential = new LocalCredential(other, hash, changedAt);
+        var ownCredential = new LocalCredential(account, hash, changedAt);
+
+        assertThat(account.getNormalizedUsername()).isEqualTo("synthetic.user");
+        assertThatThrownBy(() -> account.activate(foreignCredential))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThat(account.getStatus()).isEqualTo(User.Status.PENDING);
+
+        account.activate(ownCredential);
+        account.suspend();
+        assertThat(account.getStatus()).isEqualTo(User.Status.SUSPENDED);
+        account.activate(ownCredential);
+        account.disable();
+        assertThatThrownBy(() -> account.activate(ownCredential)).isInstanceOf(IllegalStateException.class);
+        assertThat(account.getStatus()).isEqualTo(User.Status.DISABLED);
     }
 
     @Test

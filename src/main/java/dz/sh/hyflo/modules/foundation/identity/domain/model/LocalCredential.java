@@ -1,0 +1,78 @@
+/**
+ *
+ * @Project     : HyFloAPI
+ * @Product     : HyFlo - Hydrocarbon Flow Management Platform
+ * @Author      : OpenAI Codex
+ * @Owner       : SONATRACH / TRC : Digitalization Initiative
+ *
+ * @Name        : LocalCredential
+ * @CreatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-24-2026
+ *
+ * @Type        : Class
+ * @Layer       : Model
+ * @Module      : Modules / Foundation / Identity
+ * @Package     : dz.sh.hyflo.modules.foundation.identity.domain.model
+ *
+ * @Description : Stores an encoded password for a HyFlo local account.
+ *
+ */
+
+package dz.sh.hyflo.modules.foundation.identity.domain.model;
+
+import java.time.Instant;
+import java.util.Objects;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "identity_local_credential", uniqueConstraints =
+        @UniqueConstraint(name = "uk_identity_local_credential_user", columnNames = "user_id"))
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class LocalCredential {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
+
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "password_hash", length = 255, nullable = false)
+    private String passwordHash;
+
+    @Column(name = "password_changed_at", nullable = false)
+    private Instant passwordChangedAt;
+
+    public LocalCredential(User user, String passwordHash, Instant passwordChangedAt) {
+        this.user = Objects.requireNonNull(user, "User is required");
+        if (passwordHash == null || passwordHash.isBlank() || passwordHash.length() > 255) {
+            throw new IllegalArgumentException("An encoded password within the storage limit is required");
+        }
+        this.passwordHash = passwordHash;
+        this.passwordChangedAt = Objects.requireNonNull(passwordChangedAt, "Password change time is required");
+    }
+
+    boolean belongsTo(User account) {
+        Long accountId = account.getId();
+        return user == account || (accountId != null && accountId.equals(user.getId()));
+    }
+}

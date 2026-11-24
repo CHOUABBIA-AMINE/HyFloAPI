@@ -6,8 +6,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 
+import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -15,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -70,6 +75,33 @@ class HyFloApiIT {
         assertThat(jdbc.queryForObject(
                 "SELECT label FROM hyflo_test_probe WHERE id = ?", String.class, 1L))
                 .isEqualTo("synthetic");
+    }
+
+    @Test
+    @Transactional
+    void persistsLocalAccountAndCredentialSeparately() {
+        var provider = IdentityProvider.local();
+        entityManager.persist(provider);
+
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null);
+        entityManager.persist(account);
+
+        var encoder = new BCryptPasswordEncoder();
+        String hash = encoder.encode("synthetic-account-password");
+        var credential = new LocalCredential(account, hash, Instant.parse("2026-11-24T00:00:00Z"));
+        entityManager.persist(credential);
+        account.activate(credential);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        var savedAccount = entityManager.find(User.class, account.getId());
+        var savedCredential = entityManager.find(LocalCredential.class, credential.getId());
+        assertThat(savedAccount.getNormalizedUsername()).isEqualTo("synthetic.user");
+        assertThat(savedAccount.getStatus()).isEqualTo(User.Status.ACTIVE);
+        assertThat(savedAccount.getProvider().getCode()).isEqualTo(IdentityProvider.LOCAL_CODE);
+        assertThat(savedCredential.getUser().getId()).isEqualTo(savedAccount.getId());
+        assertThat(savedCredential.getPasswordHash()).isEqualTo(hash);
     }
 
     @Test
