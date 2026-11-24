@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mysql.MySQLContainer;
@@ -46,15 +49,27 @@ class HyFloApiIT {
     @Autowired
     JdbcTemplate jdbc;
 
+    @PersistenceContext
+    EntityManager entityManager;
+
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10)).build();
 
     @Test
-    void mysqlAndFlywayInitializeASyntheticSchema() {
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM flyway_schema_history WHERE version = '1' AND success = 1", Integer.class))
-                .isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM hyflo_test_probe", Integer.class))
-                .isZero();
+    @Transactional
+    void hibernateCreatesSchemaAndPersistsSyntheticDataInMySql() {
+        assertThat(jdbc.queryForObject("SELECT DATABASE()", String.class))
+                .isEqualTo("hyflo_test");
+
+        entityManager.persist(new SchemaProbe(1L, "synthetic"));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(entityManager.find(SchemaProbe.class, 1L).getLabel())
+                .isEqualTo("synthetic");
+        assertThat(jdbc.queryForObject(
+                "SELECT label FROM hyflo_test_probe WHERE id = ?", String.class, 1L))
+                .isEqualTo("synthetic");
     }
 
     @Test

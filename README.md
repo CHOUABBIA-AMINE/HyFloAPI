@@ -16,7 +16,7 @@ Linux/macOS:
 
 Windows: use `mvnw.cmd` with the same arguments.
 
-Surefire runs unit tests and Failsafe runs the MySQL integration tests. Both reject an empty suite. The integration suite starts the real MySQL 8.4 LTS container, runs a synthetic Flyway migration, starts the application, and checks health and default local authentication. Docker unavailability is a failure, not a silent skip. No real operating data or credentials are needed. MySQL's 8.4 image tag follows the LTS line; exact pulled image digest is runtime-dependent.
+Surefire runs unit tests and Failsafe runs the MySQL integration tests. Both reject an empty suite. The integration suite starts the real MySQL 8.4 LTS container, starts the application, generates a synthetic schema from a test-only JPA entity, verifies a persisted record through JPA and JDBC, and checks health and default local authentication. The test profile uses Hibernate create-drop exclusively against the disposable container. Docker unavailability is a failure, not a silent skip. No real operating data or credentials are needed. MySQL's 8.4 image tag follows the LTS line; exact pulled image digest is runtime-dependent.
 
 ## Local development
 
@@ -28,7 +28,7 @@ Use an empty disposable MySQL database and a dedicated account; never use root o
 
 The default base path is `/hyflo/api`. Development OpenAPI is available at `/hyflo/api/api-docs`, protected by the temporary default local authentication. Health is at `/hyflo/api/actuator/health`. The dev profile enables SQL logging. Do not expose this development application to an untrusted network.
 
-Flyway owns new schema changes; no business migrations are fabricated in the reset state. Hibernate validates rather than updating schemas. Test-only migrations are separate from runtime migrations. Legacy AI, Envers, storage, JWT and business policy settings are preserved in Git history, not represented as working features. Restore typed configuration alongside the responsible implementation. JJWT retains its own Jackson 2 serializer; new MVC code uses Boot's Jackson stack. JWT functionality is not exposed by this skeleton.
+The owner has deferred Flyway until production preparation. The dev profile uses Hibernate `ddl-auto=update` to create and evolve tables in the development database as JPA entities are introduced. The default profile retains `validate` to avoid implicit schema changes outside development. Hibernate update is not a production migration strategy and does not reliably perform all destructive or structural changes. Use disposable data only. Before any production deployment, establish and verify a versioned Flyway baseline, disable Hibernate schema updates, and retain `validate` for production. No production migration or rollout is selected. Legacy AI, Envers, storage, JWT and business policy settings are preserved in Git history, not represented as working features. Restore typed configuration alongside the responsible implementation. JJWT retains its own Jackson 2 serializer; new MVC code uses Boot's Jackson stack. JWT functionality is not exposed by this skeleton.
 
 Any historical real credential or signing key must be rotated by its owner; removing configuration from the current tree does not erase Git history.
 
