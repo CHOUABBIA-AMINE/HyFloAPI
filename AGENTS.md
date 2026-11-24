@@ -47,12 +47,12 @@ Preserve the historical HyFlo numeric physical identifiers. Logical Java class/f
 
 | Object | Format | Example |
 |---|---|---|
-| Entity table | T_NN_NN_NN | T_00_02_02 (User) |
+| Entity table | T_NN_NN_NN | T_10_01_07 (User) |
 | Primary key | F_00 | User.id |
 | Business column / FK column | F_NN | F_01, F_08 |
 | Technical optimistic-lock version | A_01 (historical GenericModel convention) | User.version |
-| Unique constraint | <table>_UK_NN | T_00_02_02_UK_01 |
-| Foreign key | <table>_FK_NN | T_00_02_02_FK_02 |
+| Unique constraint | <table>_UK_NN | T_10_01_07_UK_01 |
+| Foreign key | <table>_FK_NN | T_10_01_07_FK_02 |
 | Historical many-to-many join table | R_TNNNNNN_TNNNNNN | R_T000202_T000203 |
 
 Use uppercase physical identifiers, two-digit numeric components, explicit referencedColumnName=F_00 for entity-ID joins, and explicit constraint names. Preserve established table identifiers and avoid collisions with historical table allocations. Within each entity table, F_00 is the primary key and F_01, F_02, F_03, ... are assigned consecutively in persistent field declaration order, without gaps or reserved number ranges for foreign keys or former fields. Scalar cross-module IDs and same-module join columns use the same sequence. A_01 is reserved for the technical optimistic-lock version and does not consume an F_NN number. Unique and foreign key constraint numbers each follow their own independent sequence, beginning at 01. During the current empty/disposable-schema development stage, owner-authorized changes may renumber fields and constraints to enforce this rule; update every dependent mapping, constraint, test and documented inventory together. After schema stabilization or production adoption, renumbering requires separately approved migration and compatibility handling. New table identifiers must be checked against current and historical source, registered in the architecture inventory, and not silently renumbered. Preserve identifier case via the configured Hibernate standard physical naming strategy. Test-only probe tables are not business-schema names. Where a referenced module is not implemented yet, a scalar ID is not evidence of an actual FK; the owner integration must add the proper constraint when selected.
@@ -72,11 +72,11 @@ Declare fields in the following order, as applicable:
 
 Write each complete `@JoinColumn(...)` annotation on a single physical source line, including its nested `@ForeignKey(...)` expression, regardless of line length. Do not split its arguments across lines. Preserve the required name, referenced column, nullability, updateability and named FK constraint. Association annotations themselves remain on their own lines.
 
-Illustration (target naming for the current User mapping, not a claim that the two Java associations have already been renamed):
+Illustration using the User mapping:
 
 ```java
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_01"))
+@JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_07_FK_01"))
 private IdentityProvider identityProvider;
 ```
 

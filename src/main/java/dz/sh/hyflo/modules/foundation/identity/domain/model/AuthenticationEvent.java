@@ -39,7 +39,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_16")
+@Table(name = "T_10_01_11")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthenticationEvent {
@@ -65,11 +65,11 @@ public class AuthenticationEvent {
     private String correlationId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_16_FK_01"))
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_11_FK_01"))
     private IdentityProvider identityProvider;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = true, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_16_FK_02"))
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = true, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_11_FK_02"))
     private User user;
 
 

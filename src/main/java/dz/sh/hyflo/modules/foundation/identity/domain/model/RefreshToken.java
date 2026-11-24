@@ -41,8 +41,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_01_18", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_01_18_UK_01", columnNames = "F_01"))
+@Table(name = "T_10_01_16", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_01_16_UK_01", columnNames = "F_01"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken {
@@ -64,7 +64,7 @@ public class RefreshToken {
     private Instant consumedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_18_FK_01"))
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_16_FK_01"))
     private LoginSession loginSession;
 
     @Version

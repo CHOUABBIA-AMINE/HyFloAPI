@@ -44,9 +44,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_00_02_02", uniqueConstraints = {
-    @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = {"F_05", "F_01"}),
-    @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = {"F_02"})
+@Table(name = "T_10_01_07", uniqueConstraints = {
+    @UniqueConstraint(name = "T_10_01_07_UK_01", columnNames = {"F_05", "F_01"}),
+    @UniqueConstraint(name = "T_10_01_07_UK_02", columnNames = {"F_02"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -76,11 +76,11 @@ public class User {
     private Long profilePictureFileId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_01"))
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_07_FK_01"))
     private IdentityProvider identityProvider;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_02"))
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_01_07_FK_02"))
     private UserStatus userStatus;
 
     @Version

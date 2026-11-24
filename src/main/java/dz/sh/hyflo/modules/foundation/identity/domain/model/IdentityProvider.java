@@ -32,8 +32,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_00_02_08", uniqueConstraints =
-        @UniqueConstraint(name = "T_00_02_08_UK_01", columnNames = "F_01"))
+@Table(name = "T_10_01_01", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_01_01_UK_01", columnNames = "F_01"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class IdentityProvider {

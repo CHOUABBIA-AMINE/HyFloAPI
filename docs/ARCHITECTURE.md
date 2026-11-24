@@ -148,24 +148,24 @@ The inventory starts with entities that have no internal foreign-key dependencie
 
 | Level | Model | Table | Internal dependencies | Physical fields, purpose and constraints |
 |---|---|---|---|---|
-| 1 | IdentityProvider | T_00_02_08 | None | F_00 id; F_01 code; F_02 displayName; F_03 enabled. Constraints — UK_01 code. |
-| 1 | UserStatus | T_00_02_10 | None | F_00 id; F_01 code; F_02 displayName. Constraints — UK_01 code. |
-| 1 | Group | T_10_01_01 | None | Security group. Immutable unique code, display name and retirement. |
-| 1 | Role | T_10_01_03 | None | Controlled role catalog. Immutable unique code, display name and retirement. |
-| 1 | Action | T_10_01_04 | None | Immutable unique operation code and label. |
-| 1 | ResourceType | T_10_01_05 | None | Immutable unique resource-type code and label. |
-| 2 | User | T_00_02_02 | IdentityProvider, UserStatus | F_00 id; F_01 username; F_02 email; F_03 employeeId; F_04 profilePictureFileId; F_05 identityProvider; F_06 userStatus; A_01 version. Constraints — UK_01 (F_05,F_01); UK_02 (F_02); FK_01 identityProvider; FK_02 userStatus. |
-| 2 | Permission | T_10_01_07 | Action, ResourceType | Unique code and unique action/resource-type pair. |
-| 3 | LocalCredential | T_00_02_09 | User | F_00 id; F_01 passwordHash; F_02 passwordChangedAt; F_03 user. Constraints — UK_01 user; FK_01 user. |
-| 3 | LoginSession | T_10_01_15 | User | User-linked session with expiry and revocation. |
-| 3 | AuthenticationEvent | T_10_01_16 | IdentityProvider, User | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
-| 3 | GroupMembership | T_10_01_11 | User, Group | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
-| 3 | RolePermission | T_10_01_12 | Role, Permission | Unique role/permission link. Effective scope belongs to role grants. |
-| 3 | UserRoleGrant | T_10_01_17 | User, Role | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
-| 3 | GroupRoleGrant | T_10_01_13 | Group, Role, User | Group and role links, embedded scope, interval, reason, and actor attribution. |
-| 4 | RefreshToken | T_10_01_18 | LoginSession | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
+| 1 | IdentityProvider | T_10_01_01 | None | F_00 id; F_01 code; F_02 displayName; F_03 enabled. Constraints — UK_01 code. |
+| 1 | UserStatus | T_10_01_02 | None | F_00 id; F_01 code; F_02 displayName. Constraints — UK_01 code. |
+| 1 | Group | T_10_01_03 | None | Security group. Immutable unique code, display name and retirement. |
+| 1 | Role | T_10_01_04 | None | Controlled role catalog. Immutable unique code, display name and retirement. |
+| 1 | Action | T_10_01_05 | None | Immutable unique operation code and label. |
+| 1 | ResourceType | T_10_01_06 | None | Immutable unique resource-type code and label. |
+| 2 | User | T_10_01_07 | IdentityProvider, UserStatus | F_00 id; F_01 username; F_02 email; F_03 employeeId; F_04 profilePictureFileId; F_05 identityProvider; F_06 userStatus; A_01 version. Constraints — UK_01 (F_05,F_01); UK_02 (F_02); FK_01 identityProvider; FK_02 userStatus. |
+| 2 | Permission | T_10_01_08 | Action, ResourceType | Unique code and unique action/resource-type pair. |
+| 3 | LocalCredential | T_10_01_09 | User | F_00 id; F_01 passwordHash; F_02 passwordChangedAt; F_03 user. Constraints — UK_01 user; FK_01 user. |
+| 3 | LoginSession | T_10_01_10 | User | User-linked session with expiry and revocation. |
+| 3 | AuthenticationEvent | T_10_01_11 | IdentityProvider, User | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
+| 3 | GroupMembership | T_10_01_12 | User, Group | Effective interval, User actor links at F_04 (grant) and F_05 (revocation), member User at F_06 and Group at F_07. |
+| 3 | RolePermission | T_10_01_13 | Role, Permission | Unique role/permission link. Effective scope belongs to role grants. |
+| 3 | UserRoleGrant | T_10_01_14 | User, Role | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
+| 3 | GroupRoleGrant | T_10_01_15 | Group, Role, User | Group and role links, embedded scope, interval, reason, and actor attribution. |
+| 4 | RefreshToken | T_10_01_16 | LoginSession | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
 
-The four pre-existing tables retain their `T_00_02` names. The new allocations use the proposed Foundation / Identity prefix `T_10_01`; no older identifier has been reassigned. Existing column layouts changed for the disposable development schema. A previously populated schema requires a separately reviewed compatibility change. The `employeeId` and `profilePictureFileId` columns are scalar owner references. They do not create physical cross-module foreign keys. `IdentityProvider` remains LOCAL only, and `UserStatus` uses persisted rows with stable codes.
+All Identity tables use `T_10_01_NN`, where `10` is Foundation, `01` is Identity, and `NN` is the one-based position in the inventory above. This allocation supersedes the previous Identity table names for fresh development schemas. Several table codes previously identified different entities. An existing schema with Identity tables requires a separately reviewed migration before reuse. The `employeeId` and `profilePictureFileId` columns are scalar owner references. They do not create physical cross-module foreign keys. `IdentityProvider` remains LOCAL only, and `UserStatus` uses persisted rows with stable codes.
 
 A login session can retain multiple refresh token digests as tokens rotate. The model records consumption once and uses optimistic locking to detect competing updates to a token row. Session expiry and revocation govern token usability. Atomic rotation and session revocation on reuse belong to the future refresh service. Access JWTs require no token table.
 
@@ -178,7 +178,7 @@ A login session can retain multiple refresh token digests as tokens rotate. The 
 | PIPELINE | Pipeline ID | The named pipeline and its associated resources within the company, as resolved by their owners. |
 | INFRASTRUCTURE | Infrastructure ID | The named infrastructure within the company, such as a station, terminal, or valve. |
 
-Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Both role grant tables reference Identity User (T_00_02_02) through F_10 (grantedBy, required and immutable) and F_11 (revokedBy, set together with revokedAt). The field names distinguish the two audit roles from the recipient association. The application service must derive each actor from the authenticated context. This column layout is for disposable development schemas. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
+Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Both role grant tables reference Identity User (T_10_01_07) through F_10 (grantedBy, required and immutable) and F_11 (revokedBy, set together with revokedAt). The field names distinguish the two audit roles from the recipient association. The application service must derive each actor from the authenticated context. This column layout is for disposable development schemas. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
 
 ## 8. Security and operational trust
 
