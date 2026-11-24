@@ -41,3 +41,21 @@ Update:
 Delete: none.
 
 Acceptance: compile and existing unit tests; synthetic MySQL integration test persists/reloads catalog, profile, nationality IDs, geography and dated assignment data; verify sequential physical columns and named constraints, existing transfer and overlap rejection, finite codes and invalid birth/period/code tests. Exact-SHA HyFloAPI Build must pass before acceptance. Cross-module scalar owner eligibility/FKs and profile read/write authorization require later explicitly selected integration; no runtime proof is claimed by registration.
+
+### ORG-DATA-001 corrective envelope — owner amendment, 2026-11-24
+
+Status: IN PROGRESS. [Build #22 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45471419353) failed at testCompile on ccc57653e5cd4fe44ad1661e2708ede8c70f3d71. Main compilation succeeded; no integration tests ran. The broad previous test edit changed the unrelated Role constructor at line 206; the Position fixture at line 351 was left on the obsolete signature. Restore Role's original two-argument fixture and pass persisted classification fixtures and descriptions to Position. No test suppression or production Role change.
+
+The owner explicitly supersedes the earlier OrganizationUnitType preservation decision: append descriptionAr/Fr/En and active, exclude kind and OrganizationUnitKind. Preserve T_10_02_01, F_00–F_04, code uniqueness and all other entity tables. New types default active; retirement retains references. Optional descriptions use the existing Position text mapping. Do not seed catalog rows or extend assignment/authorization behavior. Dependencies: existing implemented Organization module and disposable MySQL schema.
+
+Approval/scope amendment commit: docs(organization): record CI failure and approved unit type extension
+
+Corrective implementation commit: fix(organization): repair test fixtures and enrich unit types
+
+Exact corrective allowlist (update only):
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/domain/model/OrganizationUnitType.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiTest.java`
+- `docs/ARCHITECTURE.md`
+
+Create/delete: none. Acceptance: exact-SHA HyFloAPI Build must compile tests and pass existing unit and MySQL integration assertions, including corrected Identity fixture, Position persistence, type descriptions/active round-trip, retirement preservation and F_00–F_08 physical columns. Prior scope and evidence remain retained except the explicitly superseded type-field restriction.
