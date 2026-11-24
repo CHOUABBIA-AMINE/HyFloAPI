@@ -129,12 +129,12 @@ class HyFloApiIT {
         assertThat(jdbc.queryForObject("SELECT F_02 FROM T_00_02_09 WHERE F_00 = ?", String.class,
                 savedCredential.getId())).isEqualTo(hash);
 
-        assertIdentityColumns("T_00_02_02", "F_00", "A_01", "F_01", "F_02", "F_08", "F_09", "F_10");
+        assertIdentityColumns("T_00_02_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "A_01");
         assertIdentityColumns("T_00_02_08", "F_00", "F_01", "F_02", "F_03");
         assertIdentityColumns("T_00_02_09", "F_00", "F_01", "F_02", "F_03");
         assertIdentityColumns("T_00_02_10", "F_00", "F_01", "F_02");
         assertIdentityConstraints("T_00_02_02", "T_00_02_02_UK_01", "T_00_02_02_UK_02",
-                "T_00_02_02_FK_02", "T_00_02_02_FK_03");
+                "T_00_02_02_FK_01", "T_00_02_02_FK_02");
         assertIdentityConstraints("T_00_02_08", "T_00_02_08_UK_01");
         assertIdentityConstraints("T_00_02_09", "T_00_02_09_UK_01", "T_00_02_09_FK_01");
         assertIdentityConstraints("T_00_02_10", "T_00_02_10_UK_01");

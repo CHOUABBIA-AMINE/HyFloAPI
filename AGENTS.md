@@ -55,9 +55,32 @@ Preserve the historical HyFlo numeric physical identifiers. Logical Java class/f
 | Foreign key | <table>_FK_NN | T_00_02_02_FK_02 |
 | Historical many-to-many join table | R_TNNNNNN_TNNNNNN | R_T000202_T000203 |
 
-Use uppercase physical identifiers, two-digit numeric components, explicit referencedColumnName=F_00 for entity-ID joins, and explicit constraint names. Preserve established IDs and field meaning; never recycle retired table/column/constraint numbers or allocate colliding identifiers. New identifiers must be checked against current and historical source, registered in the architecture inventory, and not silently renumbered. Preserve identifier case via the configured Hibernate standard physical naming strategy. Test-only probe tables are not business-schema names. Where a referenced module is not implemented yet, a scalar ID is not evidence of an actual FK; the owner integration must add the proper constraint when selected.
+Use uppercase physical identifiers, two-digit numeric components, explicit referencedColumnName=F_00 for entity-ID joins, and explicit constraint names. Preserve established table identifiers and avoid collisions with historical table allocations. Within each entity table, F_00 is the primary key and F_01, F_02, F_03, ... are assigned consecutively in persistent field declaration order, without gaps or reserved number ranges for foreign keys or former fields. Scalar cross-module IDs and same-module join columns use the same sequence. A_01 is reserved for the technical optimistic-lock version and does not consume an F_NN number. Unique and foreign key constraint numbers each follow their own independent sequence, beginning at 01. During the current empty/disposable-schema development stage, owner-authorized changes may renumber fields and constraints to enforce this rule; update every dependent mapping, constraint, test and documented inventory together. After schema stabilization or production adoption, renumbering requires separately approved migration and compatibility handling. New table identifiers must be checked against current and historical source, registered in the architecture inventory, and not silently renumbered. Preserve identifier case via the configured Hibernate standard physical naming strategy. Test-only probe tables are not business-schema names. Where a referenced module is not implemented yet, a scalar ID is not evidence of an actual FK; the owner integration must add the proper constraint when selected.
 
 Business classifications/statuses/providers use classes and finite database-managed reference rows, not Java enum declarations or @Enumerated. JPA annotation enums (e.g., FetchType and GenerationType) are framework APIs, not business classifications. Keep immutable stable codes and controlled transitions independent of labels. Seed approved reference values only in a separately selected task; synthetic test fixtures may create rows now. Server-side translation is the target; a single displayName field is not a completed localization workflow.
+
+### Java entity field organization — mandatory
+
+Declare fields in the following order, as applicable:
+
+1. Primary key: `id`, annotated with `@Id` and `@Column(name = "F_00")`.
+2. Ordinary persistent business fields, in consecutive F_NN order.
+3. Extra-module foreign references: scalar IDs such as `employeeId` for an Employee owned by Organization. Do not import another module's private entity; a scalar ID alone does not establish a physical foreign key.
+4. Same-module entity associations: `@ManyToOne`, `@OneToOne` and other appropriate associations. For a singular entity reference, the Java field name must be the entity's simple class name converted to lower camel case: `IdentityProvider identityProvider`, `UserStatus userStatus`, `User user`. Do not abbreviate to `provider` or `status`. Collection associations use descriptive plural lower camel case and preserve ownership rules.
+5. Optimistic-lock `version`, if needed, annotated with `@Version` and `@Column(name = "A_01", nullable = false)`. This is the last persistent field.
+6. Constructors, factories and other methods follow all fields. Static constants may precede the primary key as in User.java; they are not persistent fields and do not participate in the numbering.
+
+Write each complete `@JoinColumn(...)` annotation on a single physical source line, including its nested `@ForeignKey(...)` expression, regardless of line length. Do not split its arguments across lines. Preserve the required name, referenced column, nullability, updateability and named FK constraint. Association annotations themselves remain on their own lines.
+
+Illustration (target naming for the current User mapping, not a claim that the two Java associations have already been renamed):
+
+```java
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_01"))
+private IdentityProvider identityProvider;
+```
+
+Use `username` for the normalized stored username, as in the owner-edited User model; retain normalization and uniqueness behavior. Apply the same field ordering and naming to new or explicitly remediated entities. Do not automatically rewrite unrelated entities, DTOs or public contracts.
 
 ## 4. Data, localization and security
 
