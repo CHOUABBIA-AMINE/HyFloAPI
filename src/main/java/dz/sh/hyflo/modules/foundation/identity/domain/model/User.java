@@ -5,13 +5,13 @@
  * @Author      : Abir MEDJERAB
  * @Owner       : SONATRACH / TRC : Digitalization Initiative
  *
- * @Name        : HyFloApi
+ * @Name        : User
  * @CreatedOn   : 06-26-2025
  * @UpdatedOn   : 02-13-2026
  *
  * @Type        : Class
  * @Layer       : Model
- * @Module      : Foundation / Identity
+ * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.domain.model
  *
  * @Description : .
@@ -30,8 +30,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import dz.sh.trc.hyflo.core.general.organization.model.Employee;
-import dz.sh.trc.hyflo.platform.kernel.GenericModel;
+//import dz.sh.hyflo.core.general.organization.model.Employee;
+import dz.sh.hyflo.kernel.template.GenericModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
