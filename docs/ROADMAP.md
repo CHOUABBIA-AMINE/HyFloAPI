@@ -145,3 +145,16 @@ Update:
 Delete: none.
 
 Acceptance: existing exact-SHA build passes; update all Java scope getters, preserve F_06 and other fields; real MySQL integration creates a persisted COMPANY-typed unit and child with a different type, verifies accepted GLOBAL and specific scopes, rejects missing/non-company references with identical failure, persists/reloads user and group grants using actual company-unit ID, preserves actor and revocation tests. Unit scope tests retain all four shape cases and check renamed accessor; no skipped tests. No production authorization or schema compatibility claim.
+
+### FDN-SCOPE-001 CI #26 correction — 2026-11-24
+
+Status: IN PROGRESS. [Build #26 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45491336790) at 2b0efe235693e7374eabe8454aa0f0fcdefbd220: production and test compilation passed; Surefire 9/9 passed; MySQL 8.4 Failsafe 8 tests, 0 failures, 1 error, 0 skips. Error at HyFloApiIT.persistsDirectAndGroupRoleGrantsWithIndependentResourceScopes line 241: duplicate ACTIVE code for T_10_02_06_UK_01. The prior committed assignment fixture and the new transactional grant fixture both tried to create the same unique OrganizationUnitStatus row. This is a fixture isolation defect, not permission to relax the catalog constraint.
+
+Corrective scope: reuse the existing ACTIVE catalog row when present, create a synthetic one only when absent, within the existing transactional grant test. Do not depend on test ordering; keep original committed assignment/transfer scenario and all assertions intact. Run expected service rejection checks after successful persistence/readback/revocation assertions, since expected exceptions propagated through participating transaction proxies can mark the test transaction rollback-only. The test is rolled back by Spring; no production transaction semantics are changed. Preserve all model/service/repository code, physical constraints, CI configuration, tests and original task acceptance. No seed, production change or subsequent task.
+
+Correction documentation: docs(foundation): record scope integration test fixture failure
+Corrective implementation: test(foundation): reuse organization status fixture in scope integration test
+
+Exact corrective allowlist: update only `src/test/java/dz/sh/hyflo/HyFloApiIT.java`. Create/delete: none.
+
+Acceptance: mandatory exact-SHA CI passes all 9 unit and 8 MySQL integration tests with no errors/failures/skips, retains all existing grant/company validation and assignment tests, and verifies required evidence. No local runtime claim.
