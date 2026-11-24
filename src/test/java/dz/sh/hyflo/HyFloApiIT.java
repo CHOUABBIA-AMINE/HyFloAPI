@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Base64;
 
+import dz.sh.hyflo.modules.foundation.identity.application.service.AuthorizationScopeService;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthorizationScope;
@@ -96,6 +97,9 @@ class HyFloApiIT {
 
     @Autowired
     EmployeeAssignmentService employeeAssignments;
+
+    @Autowired
+    AuthorizationScopeService authorizationScopes;
 
     @Autowired
     PlatformTransactionManager transactions;
@@ -229,9 +233,37 @@ class HyFloApiIT {
         entityManager.persist(rolePermission);
         entityManager.persist(membership);
 
-        var direct = new UserRoleGrant(account, role, AuthorizationScope.infrastructure(1, 3),
+        var companyType = new OrganizationUnitType(OrganizationUnitType.COMPANY_CODE, null, null, "Synthetic company type");
+        var divisionType = new OrganizationUnitType("DIVISION", null, null, "Company");
+        var unitStatus = new OrganizationUnitStatus(OrganizationUnitStatus.ACTIVE_CODE, null, null, "Active");
+        entityManager.persist(companyType);
+        entityManager.persist(divisionType);
+        entityManager.persist(unitStatus);
+        var company = new OrganizationUnit("SYNTH_COMPANY", null, null, "Synthetic company", companyType, null,
+                LocalDate.of(2026, 1, 1), null, unitStatus);
+        entityManager.persist(company);
+        var division = new OrganizationUnit("SYNTH_DIVISION", null, null, "Synthetic division", divisionType, company,
+                LocalDate.of(2026, 1, 1), null, unitStatus);
+        entityManager.persist(division);
+        entityManager.flush();
+
+        long organizationUnitId = company.getId();
+        assertThat(authorizationScopes.validateCompanyBoundary(AuthorizationScope.global(organizationUnitId))
+                .getOrganizationUnitId()).isEqualTo(organizationUnitId);
+        assertThat(authorizationScopes.validateCompanyBoundary(AuthorizationScope.region(organizationUnitId, 2))
+                .getScopeReferenceId()).isEqualTo(2L);
+        assertThatThrownBy(() -> authorizationScopes.validateCompanyBoundary(AuthorizationScope.global(division.getId())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid company organization-unit reference");
+        assertThatThrownBy(() -> authorizationScopes.validateCompanyBoundary(AuthorizationScope.pipeline(Long.MAX_VALUE, 2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid company organization-unit reference");
+
+        var direct = new UserRoleGrant(account, role,
+                authorizationScopes.validateCompanyBoundary(AuthorizationScope.infrastructure(organizationUnitId, 3)),
                 "Regional station assignment", starts, ends, actor);
-        var inherited = new GroupRoleGrant(group, role, AuthorizationScope.pipeline(1, 2),
+        var inherited = new GroupRoleGrant(group, role,
+                authorizationScopes.validateCompanyBoundary(AuthorizationScope.pipeline(organizationUnitId, 2)),
                 "Assigned-region station access", starts, ends, actor);
         entityManager.persist(direct);
         entityManager.persist(inherited);
@@ -248,7 +280,8 @@ class HyFloApiIT {
         var savedInherited = entityManager.find(GroupRoleGrant.class, inherited.getId());
         assertThat(savedDirect.getAuthorizationScope().getScopeType()).isEqualTo(AuthorizationScope.INFRASTRUCTURE);
         assertThat(savedDirect.getAuthorizationScope().getScopeReferenceId()).isEqualTo(3L);
-        assertThat(savedDirect.getAuthorizationScope().getCompanyId()).isEqualTo(1L);
+        assertThat(savedDirect.getAuthorizationScope().getOrganizationUnitId()).isEqualTo(organizationUnitId);
+        assertThat(savedInherited.getAuthorizationScope().getOrganizationUnitId()).isEqualTo(organizationUnitId);
         assertThat(savedDirect.getGrantedBy().getId()).isEqualTo(actor.getId());
         assertThat(savedDirect.getRevokedBy().getId()).isEqualTo(revoker.getId());
         assertThat(savedDirect.getRevokedAt()).isEqualTo(now);

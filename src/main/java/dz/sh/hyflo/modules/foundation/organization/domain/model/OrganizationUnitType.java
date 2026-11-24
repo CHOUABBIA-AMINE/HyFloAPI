@@ -42,6 +42,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrganizationUnitType {
 
+    public static final String COMPANY_CODE = "COMPANY";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "F_00")

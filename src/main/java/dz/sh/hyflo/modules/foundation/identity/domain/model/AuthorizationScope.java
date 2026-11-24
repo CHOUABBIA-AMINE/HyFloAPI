@@ -40,33 +40,33 @@ public class AuthorizationScope {
     private String scopeType;
 
     @Column(name = "F_06", nullable = false, updatable = false)
-    private long companyId;
+    private long organizationUnitId;
 
     @Column(name = "F_07", updatable = false)
     private Long scopeReferenceId;
 
-    private AuthorizationScope(String scopeType, long companyId, Long scopeReferenceId) {
-        if (companyId <= 0 || (scopeReferenceId != null && scopeReferenceId <= 0)) {
+    private AuthorizationScope(String scopeType, long organizationUnitId, Long scopeReferenceId) {
+        if (organizationUnitId <= 0 || (scopeReferenceId != null && scopeReferenceId <= 0)) {
             throw new IllegalArgumentException("Scope references must be positive");
         }
         this.scopeType = scopeType;
-        this.companyId = companyId;
+        this.organizationUnitId = organizationUnitId;
         this.scopeReferenceId = scopeReferenceId;
     }
 
-    public static AuthorizationScope global(long companyId) {
-        return new AuthorizationScope(GLOBAL, companyId, null);
+    public static AuthorizationScope global(long organizationUnitId) {
+        return new AuthorizationScope(GLOBAL, organizationUnitId, null);
     }
 
-    public static AuthorizationScope region(long companyId, long regionId) {
-        return new AuthorizationScope(REGION, companyId, regionId);
+    public static AuthorizationScope region(long organizationUnitId, long regionId) {
+        return new AuthorizationScope(REGION, organizationUnitId, regionId);
     }
 
-    public static AuthorizationScope pipeline(long companyId, long pipelineId) {
-        return new AuthorizationScope(PIPELINE, companyId, pipelineId);
+    public static AuthorizationScope pipeline(long organizationUnitId, long pipelineId) {
+        return new AuthorizationScope(PIPELINE, organizationUnitId, pipelineId);
     }
 
-    public static AuthorizationScope infrastructure(long companyId, long infrastructureId) {
-        return new AuthorizationScope(INFRASTRUCTURE, companyId, infrastructureId);
+    public static AuthorizationScope infrastructure(long organizationUnitId, long infrastructureId) {
+        return new AuthorizationScope(INFRASTRUCTURE, organizationUnitId, infrastructureId);
     }
 }

@@ -25,7 +25,7 @@ The exact Java package pattern is `dz.sh.hyflo.modules.<set>.<module>`. Set name
 |---|---|---|
 | [foundation/infra](../src/main/java/dz/sh/hyflo/modules/foundation/infra) | Shared file identity, metadata and storage references. | Identity, Party, Topology and Documents refer to files by stable ID. |
 | [foundation/identity](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/identity) | Local users, credentials, principals, roles, permissions, grants and authorization evidence. | Organization supplies employee/company scope; platform.security implements enforcement. No external identity provider. |
-| [foundation/organization](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/organization) | Companies, organizational units, employees, positions, assignments, hierarchy and responsibilities/operational scope. | Owns internal organization; uses Reference for shared geography, not identity credentials or external party profiles. |
+| [foundation/organization](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/organization) | Organizational units (including companies classified by OrganizationUnitType code COMPANY), employees, positions, assignments, hierarchy and responsibilities/operational scope. | Owns internal organization; uses Reference for shared geography, not identity credentials or external party profiles. |
 | [foundation/reference](https://github.com/CHOUABBIA-AMINE/HyFloAPI/tree/e5134870a11469a77eb5bf0e1d81fb2455ef3e74/src/main/java/dz/sh/hyflo/modules/foundation/reference) | Shared countries/geography, units, languages, common catalogs and localized reference labels. | HyFlo-specific additional module; owns only shared catalogs. Module-specific classifications remain in their owner; platform.localization resolves application messages. |
 
 ### C2 — Coordination
@@ -111,6 +111,8 @@ These are proposed consumers, not implemented exported contracts or a universal 
 | Analytics / Risk | Approved owner evidence and versioned engineering context |
 | Simulation | Published topology/asset inputs, qualified measurements, planning targets and explicit scenario inputs |
 | Workflow / Audit / Notification | Explicit target/actor contracts; avoid cyclic service graphs and private repository access |
+
+FDN-SCOPE-001 admits the Organization-owned OrganizationUnitScopeService.requireCompanyUnit(long organizationUnitId) contract to Identity application only. It returns normally for a persisted unit whose type code is exactly COMPANY and throws the same IllegalArgumentException for missing, invalid or non-company IDs. No JPA entities are exchanged, no HTTP exposure; the invoking use case must independently authorize the caller before using this internal check. Identity's AuthorizationScopeService validates the boundary with that contract. Full protected grant operations and resource-ownership evaluation remain deferred.
 
 A real contract is admitted per task with exact owner, consumer, inputs, result, authorization, scope and failure behavior. Never expose an unrestricted generic entity API. Owner module remains authoritative and validates mutations.
 

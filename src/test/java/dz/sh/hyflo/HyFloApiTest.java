@@ -63,14 +63,14 @@ class HyFloApiTest {
     void distinguishesCompanyWideAndSpecificResourceScopes() {
         var global = AuthorizationScope.global(1);
         assertThat(global.getScopeType()).isEqualTo(AuthorizationScope.GLOBAL);
-        assertThat(global.getCompanyId()).isEqualTo(1L);
+        assertThat(global.getOrganizationUnitId()).isEqualTo(1L);
         assertThat(global.getScopeReferenceId()).isNull();
 
         for (var scope : java.util.List.of(
                 AuthorizationScope.region(1, 2),
                 AuthorizationScope.pipeline(1, 2),
                 AuthorizationScope.infrastructure(1, 2))) {
-            assertThat(scope.getCompanyId()).isEqualTo(1L);
+            assertThat(scope.getOrganizationUnitId()).isEqualTo(1L);
             assertThat(scope.getScopeReferenceId()).isEqualTo(2L);
         }
         assertThat(AuthorizationScope.region(1, 2).getScopeType()).isEqualTo(AuthorizationScope.REGION);
