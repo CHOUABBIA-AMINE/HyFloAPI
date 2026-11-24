@@ -110,3 +110,9 @@ Update:
 Delete: none.
 
 Acceptance: compile and existing tests pass with explicit UserType fixtures and all old behavior retained; new unit tests reject unsupported user type, missing names, bad language code/symbol/coordinates (including nonfinite elevation); synthetic MySQL integration persists/reloads both account classifications, multilingual language and RTL metadata, measurement symbols and retirement, Location with/without locality and optional elevation, named constraints, sequential columns and updated actor FK targets; verify mandatory UserType FK and optional Location FK. Exact-SHA HyFloAPI Build pass required, no skipped MySQL test accepted. Fresh-schema testing only; do not run Hibernate update against an existing populated or old-mapped database.
+
+### FDN-DATA-001 acceptance — 2026-11-24
+
+Status: COMPLETED — exact implementation SHA 5e333c57a51eebc8354feb8ebaf0fee059011a77, [HyFloAPI Build #24 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45482369400) success. Surefire: 9 tests; Failsafe: 8 integration tests against real disposable MySQL 8.4; both zero failures, errors or skips. Maven verify, required test/JaCoCo/SBOM evidence and verified JAR upload passed. Optional security scan skipped. Acceptance is development/software only, not production schema migration, complete authentication/authorization, catalog seeding, surveyed engineering coordinates or industrial qualification. Company and AuthorizationScope remain unchanged; companyId ownership semantics are unresolved and require a separate owner decision. No next task is registered or selected. Preserve preceding scope and evidence append-only.
+
+Acceptance documentation commit: docs(foundation): accept approved identity and reference catalogs
