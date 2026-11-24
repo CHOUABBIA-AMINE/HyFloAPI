@@ -43,7 +43,7 @@ public interface EmployeeAssignmentRepository extends Repository<EmployeeAssignm
             """)
     List<EmployeeAssignment> findCurrentOrFutureForUpdate(@Param("employeeId") long employeeId, @Param("date") LocalDate date);
 
-    @EntityGraph(attributePaths = {"employee", "organizationUnit", "position"})
+    @EntityGraph(attributePaths = {"employee", "organizationUnit", "position", "assignmentType", "assignmentStatus"})
     @Query("""
             select a from EmployeeAssignment a
             where a.employee.id = :employeeId and a.validFrom <= :date and (a.validTo is null or a.validTo > :date)

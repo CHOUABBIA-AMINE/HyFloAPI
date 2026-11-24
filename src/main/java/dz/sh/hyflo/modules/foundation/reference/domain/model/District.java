@@ -43,7 +43,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "T_10_03_03", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_03_03_UK_01", columnNames = {"F_05", "F_01"}))
+        @UniqueConstraint(name = "T_10_03_03_UK_01", columnNames = {"F_06", "F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class District {
@@ -70,8 +70,11 @@ public class District {
     @Column(name = "F_04", length = 120)
     private String nameEn;
 
+    @Column(name = "F_05", nullable = false)
+    private boolean active;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_03_FK_01"))
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_03_FK_01"))
     private State state;
 
     public District(String code, String nameAr, String nameFr, String nameEn, State state) {
@@ -85,6 +88,10 @@ public class District {
         this.nameAr = nameAr;
         this.nameFr = nameFr;
         this.nameEn = nameEn;
+        this.active = true;
         this.state = Objects.requireNonNull(state, "State is required");
+    }
+    public void retire() {
+        active = false;
     }
 }

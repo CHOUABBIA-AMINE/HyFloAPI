@@ -40,8 +40,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_02_05", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_02_05_UK_01", columnNames = {"F_05", "F_01"}))
+@Table(name = "T_10_02_12", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_02_12_UK_01", columnNames = {"F_05", "F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmployeeAssignment {
@@ -58,27 +58,41 @@ public class EmployeeAssignment {
     private LocalDate validTo;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_03", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_05_FK_01"))
+    @JoinColumn(name = "F_03", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_12_FK_01"))
     private OrganizationUnit organizationUnit;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_05_FK_02"))
+    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_12_FK_02"))
     private Position position;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_05_FK_03"))
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_12_FK_03"))
     private Employee employee;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_12_FK_04"))
+    private AssignmentType assignmentType;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_02_12_FK_05"))
+    private AssignmentStatus assignmentStatus;
 
     @Version
     @Column(name = "A_01", nullable = false)
     private Long version;
 
-    public EmployeeAssignment(Employee employee, OrganizationUnit organizationUnit, Position position, LocalDate validFrom) {
+    public EmployeeAssignment(Employee employee, OrganizationUnit organizationUnit, Position position, LocalDate validFrom,
+            AssignmentType assignmentType, AssignmentStatus assignmentStatus) {
         this.employee = Objects.requireNonNull(employee, "Employee is required");
         this.organizationUnit = Objects.requireNonNull(organizationUnit, "Organization unit is required");
         this.position = Objects.requireNonNull(position, "Position is required");
         this.validFrom = Objects.requireNonNull(validFrom, "Assignment start is required");
         this.validTo = employee.getEmploymentEndsOn();
+        this.assignmentType = Objects.requireNonNull(assignmentType, "Assignment type is required");
+        this.assignmentStatus = Objects.requireNonNull(assignmentStatus, "Assignment status is required");
+        if (!assignmentStatus.hasCode(AssignmentStatus.ACTIVE_CODE)) {
+            throw new IllegalArgumentException("New assignments require ACTIVE status");
+        }
         if (validFrom.isBefore(employee.getHiredOn()) || (validTo != null && !validFrom.isBefore(validTo))) {
             throw new IllegalArgumentException("Assignment start must be within the employment period");
         }
@@ -89,11 +103,15 @@ public class EmployeeAssignment {
         return !date.isBefore(validFrom) && (validTo == null || date.isBefore(validTo));
     }
 
-    public void endOn(LocalDate date) {
+    public void endOn(LocalDate date, AssignmentStatus endedStatus) {
+        if (endedStatus == null || !endedStatus.hasCode(AssignmentStatus.ENDED_CODE)) {
+            throw new IllegalArgumentException("Ending an assignment requires ENDED status");
+        }
         Objects.requireNonNull(date, "Assignment end is required");
         if (!date.isAfter(validFrom) || (validTo != null && !date.isBefore(validTo))) {
             throw new IllegalArgumentException("Assignment end must shorten the current period without making it empty");
         }
         validTo = date;
+        assignmentStatus = endedStatus;
     }
 }

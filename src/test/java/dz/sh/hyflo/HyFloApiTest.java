@@ -78,6 +78,28 @@ class HyFloApiTest {
     }
 
     @Test
+    void organizationDataRejectsInvalidCodesBirthAndValidity() {
+        var type = new dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeType("PERMANENT", null, null, "Permanent");
+        var status = new dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeStatus("ACTIVE", null, null, "Active");
+        var hire = java.time.LocalDate.of(2020, 1, 1);
+        var employee = new dz.sh.hyflo.modules.foundation.organization.domain.model.Employee(
+                "SYN-01", null, null, "Sample", "Employee", hire, null, type, status);
+        assertThatThrownBy(() -> employee.updatePersonalDetails(java.time.LocalDate.of(2021, 1, 1),
+                null, null, null, null, null, null, null, null, null, null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> employee.updatePersonalDetails(null, null, null, null, null,
+                null, null, null, null, 0L, null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeStatus("UNKNOWN", null, null, "Unknown"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.reference.domain.model.Country("DZ", null, null, "Invalid"))
+                .isInstanceOf(IllegalArgumentException.class);
+        var unitType = new dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType("UNIT", null, null, "Unit");
+        var unitStatus = new dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitStatus("ACTIVE", null, null, "Active");
+        assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit(
+                "SYN", null, null, "Synthetic", unitType, null, hire, hire, unitStatus))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void jwtSigningAndParsingWorkWithTheRuntimeSerializer() {
         var key = Jwts.SIG.HS256.key().build();
         var token = Jwts.builder().subject("synthetic-user").signWith(key).compact();

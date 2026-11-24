@@ -22,6 +22,12 @@ package dz.sh.hyflo.modules.foundation.organization.domain.model;
 
 import java.util.stream.Stream;
 
+import java.util.Objects;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,8 +42,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_02_03", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_02_03_UK_01", columnNames = {"F_01"}))
+@Table(name = "T_10_02_10", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_02_10_UK_01", columnNames = {"F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Position {
@@ -64,7 +70,25 @@ public class Position {
     @Column(name = "F_04", length = 120)
     private String titleEn;
 
-    public Position(String code, String titleAr, String titleFr, String titleEn) {
+    @Column(name = "F_05", columnDefinition = "text")
+    private String descriptionAr;
+
+    @Column(name = "F_06", columnDefinition = "text")
+    private String descriptionFr;
+
+    @Column(name = "F_07", columnDefinition = "text")
+    private String descriptionEn;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_02_10_FK_01"))
+    private PositionLevel positionLevel;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_02_10_FK_02"))
+    private PositionStatus positionStatus;
+
+    public Position(String code, String titleAr, String titleFr, String titleEn,
+            String descriptionAr, String descriptionFr, String descriptionEn, PositionLevel positionLevel, PositionStatus positionStatus) {
         this.code = code;
         if (Stream.of(titleAr, titleFr, titleEn).noneMatch(value -> value != null && !value.isBlank())) {
             throw new IllegalArgumentException("At least one localized title is required");
@@ -72,5 +96,10 @@ public class Position {
         this.titleAr = titleAr;
         this.titleFr = titleFr;
         this.titleEn = titleEn;
+        this.descriptionAr = descriptionAr;
+        this.descriptionFr = descriptionFr;
+        this.descriptionEn = descriptionEn;
+        this.positionLevel = Objects.requireNonNull(positionLevel, "Position level is required");
+        this.positionStatus = Objects.requireNonNull(positionStatus, "Position status is required");
     }
 }

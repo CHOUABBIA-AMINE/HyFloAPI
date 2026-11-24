@@ -49,8 +49,8 @@ public class Country {
     private Long id;
 
     @NotBlank
-    @Size(max = 64)
-    @Column(name = "F_01", length = 64, nullable = false, updatable = false)
+    @Size(min = 3, max = 3)
+    @Column(name = "F_01", length = 3, nullable = false, updatable = false)
     private String code;
 
     @Size(max = 120)
@@ -65,9 +65,12 @@ public class Country {
     @Column(name = "F_04", length = 120)
     private String nameEn;
 
+    @Column(name = "F_05", nullable = false)
+    private boolean active;
+
     public Country(String code, String nameAr, String nameFr, String nameEn) {
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("A geographic code is required");
+        if (code == null || !code.strip().matches("[A-Za-z]{3}")) {
+            throw new IllegalArgumentException("A three-letter country code is required");
         }
         if (Stream.of(nameAr, nameFr, nameEn).noneMatch(value -> value != null && !value.isBlank())) {
             throw new IllegalArgumentException("At least one localized name is required");
@@ -76,5 +79,9 @@ public class Country {
         this.nameAr = nameAr;
         this.nameFr = nameFr;
         this.nameEn = nameEn;
+        this.active = true;
+    }
+    public void retire() {
+        active = false;
     }
 }

@@ -43,7 +43,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "T_10_03_04", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_03_04_UK_01", columnNames = {"F_05", "F_01"}))
+        @UniqueConstraint(name = "T_10_03_04_UK_01", columnNames = {"F_07", "F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Locality {
@@ -70,8 +70,15 @@ public class Locality {
     @Column(name = "F_04", length = 120)
     private String nameEn;
 
+    @Column(name = "F_05", nullable = false)
+    private boolean active;
+
+    @Size(max = 40)
+    @Column(name = "F_06", length = 40)
+    private String postalCode;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_04_FK_01"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_04_FK_01"))
     private District district;
 
     public Locality(String code, String nameAr, String nameFr, String nameEn, District district) {
@@ -85,6 +92,17 @@ public class Locality {
         this.nameAr = nameAr;
         this.nameFr = nameFr;
         this.nameEn = nameEn;
+        this.active = true;
         this.district = Objects.requireNonNull(district, "District is required");
+    }
+    public void retire() {
+        active = false;
+    }
+
+    public void updatePostalCode(String postalCode) {
+        if (postalCode != null && postalCode.length() > 40) {
+            throw new IllegalArgumentException("Postal code must not exceed 40 characters");
+        }
+        this.postalCode = postalCode;
     }
 }

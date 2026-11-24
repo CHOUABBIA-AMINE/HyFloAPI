@@ -28,6 +28,13 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.organization.application.service.EmployeeAssignmentService;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeType;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeStatus;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.PositionLevel;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.PositionStatus;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitStatus;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.AssignmentType;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.AssignmentStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.Employee;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType;
@@ -196,7 +203,7 @@ class HyFloApiIT {
 
         var action = new Action("update", "Update");
         var resourceType = new ResourceType("station", "Station");
-        var role = new Role("station-engineer", "Station Engineer");
+        var role = new Role("station-engineer", "Station Engineer", null, "Ingénierie", "Engineering", positionLevel, positionStatus);
         var group = new Group("gz2-engineers", "GZ2 Engineers");
         entityManager.persist(action);
         entityManager.persist(resourceType);
@@ -330,24 +337,52 @@ class HyFloApiIT {
         var transfer = hire.plusDays(20);
         var endOfEmployment = hire.plusDays(40);
         var type = new OrganizationUnitType("OPS_UNIT", null, "Unité d’exploitation", "Operations unit");
-        var root = new OrganizationUnit("OPS", null, null, "Operations", type, null);
-        var origin = new OrganizationUnit("OPS_A", null, null, "Operations A", type, root);
-        var destination = new OrganizationUnit("OPS_B", null, null, "Operations B", type, root);
+        var employeeType = new EmployeeType(EmployeeType.PERMANENT_CODE, null, null, "Permanent");
+        var employeeStatus = new EmployeeStatus(EmployeeStatus.ACTIVE_CODE, null, null, "Active");
+        var positionLevel = new PositionLevel(PositionLevel.ENGINEER_CODE, null, null, "Engineer");
+        var positionStatus = new PositionStatus(PositionStatus.ACTIVE_CODE, null, null, "Active");
+        var unitStatus = new OrganizationUnitStatus(OrganizationUnitStatus.ACTIVE_CODE, null, null, "Active");
+        var assignmentType = new AssignmentType(AssignmentType.PRIMARY_CODE, null, null, "Primary");
+        var activeStatus = new AssignmentStatus(AssignmentStatus.ACTIVE_CODE, null, null, "Active");
+        var endedStatus = new AssignmentStatus(AssignmentStatus.ENDED_CODE, null, null, "Ended");
+        var root = new OrganizationUnit("OPS", null, null, "Operations", type, null, hire, null, unitStatus);
+        var origin = new OrganizationUnit("OPS_A", null, null, "Operations A", type, root, hire, null, unitStatus);
+        var destination = new OrganizationUnit("OPS_B", null, null, "Operations B", type, root, hire, null, unitStatus);
         var engineer = new Position("STATION_ENGINEER", null, null, "Station Engineer");
-        var employee = new Employee("SYN-ORG-01", null, null, "Sample", "Employee", hire, endOfEmployment);
+        var employee = new Employee("SYN-ORG-01", null, null, "Sample", "Employee", hire, endOfEmployment, employeeType, employeeStatus);
         new TransactionTemplate(transactions).executeWithoutResult(transaction -> {
+            for (var catalog : java.util.List.of(employeeType, employeeStatus, positionLevel, positionStatus, unitStatus,
+                    assignmentType, activeStatus, endedStatus)) {
+                entityManager.persist(catalog);
+            }
+            var nationality = new Country("DZA", null, null, "Synthetic nationality");
+            entityManager.persist(nationality);
+            var state = new State("ORG-S", null, null, "State", nationality);
+            entityManager.persist(state);
+            var district = new District("ORG-D", null, null, "District", state);
+            entityManager.persist(district);
+            var locality = new Locality("ORG-L", null, null, "Locality", district);
+            entityManager.persist(locality);
+            locality.updatePostalCode("16000");
+            var picture = new File("synthetic/org-profile.png", "profile.png", "image/png", 100,
+                    Instant.parse("2026-11-24T12:00:00Z"));
+            entityManager.persist(picture);
+            employee.updatePersonalDetails(LocalDate.of(1990, 1, 2), "مكان", "Birthplace",
+                    "عنوان", "Address", "employee@example.invalid", "0123456789",
+                    locality.getId(), locality.getId(), nationality.getId(), picture.getId());
             entityManager.persist(type);
             entityManager.persist(root);
             entityManager.persist(origin);
             entityManager.persist(destination);
             entityManager.persist(engineer);
             entityManager.persist(employee);
+            entityManager.flush();
         });
 
-        employeeAssignments.assign(employee.getId(), origin, engineer, hire);
-        assertThatThrownBy(() -> employeeAssignments.assign(employee.getId(), destination, engineer, hire.plusDays(1)))
+        employeeAssignments.assign(employee.getId(), origin, engineer, hire, assignmentType, activeStatus);
+        assertThatThrownBy(() -> employeeAssignments.assign(employee.getId(), destination, engineer, hire.plusDays(1), assignmentType, activeStatus))
                 .isInstanceOf(IllegalStateException.class);
-        employeeAssignments.transfer(employee.getId(), destination, engineer, transfer);
+        employeeAssignments.transfer(employee.getId(), destination, engineer, transfer, assignmentType, activeStatus, endedStatus);
 
         var previous = employeeAssignments.findEffectiveOn(employee.getId(), transfer.minusDays(1)).orElseThrow();
         var current = employeeAssignments.findEffectiveOn(employee.getId(), transfer).orElseThrow();
@@ -358,19 +393,67 @@ class HyFloApiIT {
         assertThat(current.getValidTo()).isEqualTo(endOfEmployment);
         assertThat(employeeAssignments.findEffectiveOn(employee.getId(), endOfEmployment)).isEmpty();
         assertThat(employeeAssignments.findEffectiveOn(employee.getId(), hire.minusDays(1))).isEmpty();
-        assertThat(jdbc.queryForObject("SELECT F_06 FROM T_10_02_04 WHERE F_00 = ?", Long.class,
+        assertThat(previous.getAssignmentStatus().getCode()).isEqualTo(AssignmentStatus.ENDED_CODE);
+        assertThat(current.getAssignmentStatus().getCode()).isEqualTo(AssignmentStatus.ACTIVE_CODE);
+        assertThat(current.getAssignmentType().getCode()).isEqualTo(AssignmentType.PRIMARY_CODE);
+        new TransactionTemplate(transactions).executeWithoutResult(transaction -> {
+            var saved = entityManager.find(Employee.class, employee.getId());
+            assertThat(saved.getBirthDate()).isEqualTo(LocalDate.of(1990, 1, 2));
+            assertThat(saved.getBirthPlaceAr()).isEqualTo("مكان");
+            assertThat(saved.getBirthPlaceLt()).isEqualTo("Birthplace");
+            assertThat(saved.getAddressAr()).isEqualTo("عنوان");
+            assertThat(saved.getAddressLt()).isEqualTo("Address");
+            assertThat(saved.getEmail()).isEqualTo("employee@example.invalid");
+            assertThat(saved.getPhone()).isEqualTo("0123456789");
+            assertThat(entityManager.find(Country.class, saved.getNationalityCountryId()).getCode()).isEqualTo("DZA");
+            assertThat(entityManager.find(Locality.class, saved.getBirthLocalityId()).getPostalCode()).isEqualTo("16000");
+            assertThat(saved.getAddressLocalityId()).isEqualTo(saved.getBirthLocalityId());
+            assertThat(entityManager.find(File.class, saved.getPictureFileId()).getOriginalName()).isEqualTo("profile.png");
+            assertThat(saved.getEmployeeType().getCode()).isEqualTo(EmployeeType.PERMANENT_CODE);
+            assertThat(saved.getEmployeeStatus().getCode()).isEqualTo(EmployeeStatus.ACTIVE_CODE);
+            var savedPosition = entityManager.find(Position.class, engineer.getId());
+            assertThat(savedPosition.getPositionLevel().getCode()).isEqualTo(PositionLevel.ENGINEER_CODE);
+            assertThat(savedPosition.getPositionStatus().getCode()).isEqualTo(PositionStatus.ACTIVE_CODE);
+            assertThat(savedPosition.getDescriptionEn()).isEqualTo("Engineering");
+            var savedUnit = entityManager.find(OrganizationUnit.class, destination.getId());
+            assertThat(savedUnit.getOrganizationUnitStatus().getCode()).isEqualTo(OrganizationUnitStatus.ACTIVE_CODE);
+            assertThat(savedUnit.getValidFrom()).isEqualTo(hire);
+            assertThat(savedUnit.getParentUnit().getId()).isEqualTo(root.getId());
+        });
+        assertThat(jdbc.queryForObject("SELECT F_08 FROM T_10_02_11 WHERE F_00 = ?", Long.class,
                 destination.getId())).isEqualTo(root.getId());
-        assertTableColumns("T_10_02_05", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "A_01");
-        assertTableConstraints("T_10_02_05", "T_10_02_05_UK_01", "T_10_02_05_FK_01",
-                "T_10_02_05_FK_02", "T_10_02_05_FK_03");
+        assertTableColumns("T_10_02_01", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_01", "T_10_02_01_UK_01");
+        assertTableColumns("T_10_02_02", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_02", "T_10_02_02_UK_01");
+        assertTableColumns("T_10_02_03", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_03", "T_10_02_03_UK_01");
+        assertTableColumns("T_10_02_04", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_04", "T_10_02_04_UK_01");
+        assertTableColumns("T_10_02_05", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_05", "T_10_02_05_UK_01");
+        assertTableColumns("T_10_02_06", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_06", "T_10_02_06_UK_01");
+        assertTableColumns("T_10_02_07", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_07", "T_10_02_07_UK_01");
+        assertTableColumns("T_10_02_08", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableConstraints("T_10_02_08", "T_10_02_08_UK_01");
+        assertTableColumns("T_10_02_09", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09", "F_10", "F_11", "F_12", "F_13", "F_14", "F_15", "F_16", "F_17", "F_18", "F_19", "F_20");
+        assertTableConstraints("T_10_02_09", "T_10_02_09_UK_01", "T_10_02_09_FK_01", "T_10_02_09_FK_02");
+        assertTableColumns("T_10_02_10", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
+        assertTableConstraints("T_10_02_10", "T_10_02_10_UK_01", "T_10_02_10_FK_01", "T_10_02_10_FK_02");
+        assertTableColumns("T_10_02_11", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
+        assertTableConstraints("T_10_02_11", "T_10_02_11_UK_01", "T_10_02_11_FK_01", "T_10_02_11_FK_02", "T_10_02_11_FK_03");
+        assertTableColumns("T_10_02_12", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "A_01");
+        assertTableConstraints("T_10_02_12", "T_10_02_12_UK_01", "T_10_02_12_FK_01", "T_10_02_12_FK_02", "T_10_02_12_FK_03", "T_10_02_12_FK_04", "T_10_02_12_FK_05");
     }
 
     @Test
     @Transactional
     void persistsTheReferenceHierarchyAndSharedFileMetadata() {
         var created = Instant.parse("2026-11-24T12:00:00Z");
-        var country = new Country(" x1 ", null, null, "Synthetic country");
-        var otherCountry = new Country("X2", null, null, "Another synthetic country");
+        var country = new Country(" xaa ", null, null, "Synthetic country");
+        var otherCountry = new Country("XBB", null, null, "Another synthetic country");
         entityManager.persist(country);
         entityManager.persist(otherCountry);
         var state = new State("S01", null, null, "Synthetic state", country);
@@ -380,20 +463,27 @@ class HyFloApiIT {
         entityManager.persist(district);
         var locality = new Locality("L01", null, null, "Synthetic locality", district);
         entityManager.persist(locality);
+        locality.updatePostalCode("12345");
         var file = new File("synthetic/sample.png", "sample.png", "image/png", 128L, created);
         entityManager.persist(file);
         entityManager.flush();
         entityManager.clear();
 
         var savedLocality = entityManager.find(Locality.class, locality.getId());
+        assertThat(savedLocality.getPostalCode()).isEqualTo("12345");
+        assertThat(savedLocality.isActive()).isTrue();
         assertThat(savedLocality.getDistrict().getNameFr()).isEqualTo("District synthétique");
-        assertThat(savedLocality.getDistrict().getState().getCountry().getCode()).isEqualTo("X1");
+        assertThat(savedLocality.getDistrict().getState().getCountry().getCode()).isEqualTo("XAA");
         var savedFile = entityManager.find(File.class, file.getId());
         assertThat(savedFile.getStorageKey()).isEqualTo("synthetic/sample.png");
         assertThat(savedFile.getOriginalName()).isEqualTo("sample.png");
         assertThat(savedFile.getMediaType()).isEqualTo("image/png");
         assertThat(savedFile.getSizeBytes()).isEqualTo(128L);
         assertThat(savedFile.getCreatedAt()).isEqualTo(created);
+        assertTableColumns("T_10_03_01", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05");
+        assertTableColumns("T_10_03_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertTableColumns("T_10_03_03", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertTableColumns("T_10_03_04", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
         assertTableConstraints("T_10_03_01", "T_10_03_01_UK_01");
         assertTableConstraints("T_10_03_02", "T_10_03_02_UK_01", "T_10_03_02_FK_01");
         assertTableConstraints("T_10_03_03", "T_10_03_03_UK_01", "T_10_03_03_FK_01");

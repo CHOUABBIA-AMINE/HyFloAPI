@@ -186,11 +186,20 @@ Foundation Organization uses the `T_10_02_NN` prefix. Entity codes follow depend
 
 | Model | Table | Internal dependencies |
 |---|---|---|
-| OrganizationUnitType | T_10_02_01 | None |
-| Employee | T_10_02_02 | None |
-| Position | T_10_02_03 | None |
-| OrganizationUnit | T_10_02_04 | OrganizationUnitType and optional parent OrganizationUnit |
-| EmployeeAssignment | T_10_02_05 | OrganizationUnit, Position and Employee |
+| OrganizationUnitType | T_10_02_01 | None (unchanged) |
+| EmployeeType | T_10_02_02 | None |
+| EmployeeStatus | T_10_02_03 | None |
+| PositionLevel | T_10_02_04 | None |
+| PositionStatus | T_10_02_05 | None |
+| OrganizationUnitStatus | T_10_02_06 | None |
+| AssignmentType | T_10_02_07 | None |
+| AssignmentStatus | T_10_02_08 | None |
+| Employee | T_10_02_09 | EmployeeType, EmployeeStatus |
+| Position | T_10_02_10 | PositionLevel, PositionStatus |
+| OrganizationUnit | T_10_02_11 | OrganizationUnitType, optional parent OrganizationUnit, OrganizationUnitStatus |
+| EmployeeAssignment | T_10_02_12 | OrganizationUnit, Position, Employee, AssignmentType, AssignmentStatus |
+
+Employee includes optional birth date, Arabic/Latin birthplace and address, email, phone, birth/address locality IDs, nationality country ID and employee picture file ID. Geography and File are foreign-owner scalar references: no cross-module JPA association, physical FK or owner validation is claimed by this task. User email and user profile picture remain independent account fields. No OrganizationUnitKind or additional OrganizationUnitType fields. The existing self-association keeps the mandatory entity-name field convention; getParentUnit exposes its meaning. Position descriptions are optional trilingual text. Organization units have validity dates and a status catalog. Status/type catalogs have finite stable codes and localized labels; no seed values are provisioned. Assignment status is recorded lifecycle metadata; the date lookup remains historical and does not infer authorization. Only ACTIVE creation and ENDED transfer are supported; suspension, cancellation and concurrent secondary assignments require later selection. Renumbering is for disposable fresh schemas only.
 
 The baseline allows one effective assignment per employee on a given date. An assignment starts on an inclusive date and ends on an exclusive date. When employment has an end date, it bounds the assignment. Positions can be reused across units. A transfer ends the previous assignment and creates the replacement in one transaction. The assignment service locks the employee before checking periods or writing changes. Its date lookup returns the historical unit and position in effect on the requested date.
 
@@ -206,7 +215,7 @@ The hierarchy and directory are persisted through JPA. Assignment, transfer and 
 | Reference | Locality | T_10_03_04 | District |
 | Infra | File | T_10_00_01 | None |
 
-Reference stores Arabic, French and English names. Country codes are unique across the catalog. State, district and locality codes are unique within their parent. The required parent joins preserve the full geographic hierarchy.
+Reference stores Arabic, French and English names. Country codes are unique across the catalog. State, district and locality codes are unique within their parent. The required parent joins preserve the full geographic hierarchy. Country codes are normalized to three uppercase ASCII letters (shape only, not ISO membership verification). All four geographic records retain an active flag; Locality also stores an optional postal code. Retirement does not delete historical geography.
 
 Infra stores a unique opaque storage key, original filename, media type, size in bytes and creation time for each file. Other modules can refer to this record by ID. The persistence model is in place for file metadata. Content storage, uploads and downloads require application wiring.
 

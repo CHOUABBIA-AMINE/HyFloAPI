@@ -20,6 +20,7 @@
 
 package dz.sh.hyflo.modules.foundation.organization.domain.model;
 
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -41,8 +42,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "T_10_02_04", uniqueConstraints =
-        @UniqueConstraint(name = "T_10_02_04_UK_01", columnNames = {"F_01"}))
+@Table(name = "T_10_02_11", uniqueConstraints =
+        @UniqueConstraint(name = "T_10_02_11_UK_01", columnNames = {"F_01"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrganizationUnit {
@@ -69,17 +70,28 @@ public class OrganizationUnit {
     @Column(name = "F_04", length = 120)
     private String nameEn;
 
+    @Column(name = "F_05", nullable = false, updatable = false)
+    private LocalDate validFrom;
+
+    @Column(name = "F_06")
+    private LocalDate validTo;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_04_FK_01"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_02_11_FK_01"))
     private OrganizationUnitType organizationUnitType;
 
     /** The parent unit for a non-root unit. */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", updatable = false, foreignKey = @ForeignKey(name = "T_10_02_04_FK_02"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", updatable = false, foreignKey = @ForeignKey(name = "T_10_02_11_FK_02"))
     private OrganizationUnit organizationUnit;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_02_11_FK_03"))
+    private OrganizationUnitStatus organizationUnitStatus;
+
     public OrganizationUnit(String code, String nameAr, String nameFr, String nameEn,
-            OrganizationUnitType organizationUnitType, OrganizationUnit organizationUnit) {
+            OrganizationUnitType organizationUnitType, OrganizationUnit organizationUnit,
+            LocalDate validFrom, LocalDate validTo, OrganizationUnitStatus organizationUnitStatus) {
         this.code = code;
         if (Stream.of(nameAr, nameFr, nameEn).noneMatch(value -> value != null && !value.isBlank())) {
             throw new IllegalArgumentException("At least one localized name is required");
@@ -89,5 +101,15 @@ public class OrganizationUnit {
         this.nameEn = nameEn;
         this.organizationUnitType = Objects.requireNonNull(organizationUnitType, "Organization unit type is required");
         this.organizationUnit = organizationUnit;
+        this.validFrom = Objects.requireNonNull(validFrom, "Unit validity start is required");
+        if (validTo != null && !validTo.isAfter(validFrom)) {
+            throw new IllegalArgumentException("Unit validity end must follow start");
+        }
+        this.validTo = validTo;
+        this.organizationUnitStatus = Objects.requireNonNull(organizationUnitStatus, "Organization unit status is required");
+    }
+    /** Semantic parent accessor; the persistent association retains the repository naming convention. */
+    public OrganizationUnit getParentUnit() {
+        return organizationUnit;
     }
 }

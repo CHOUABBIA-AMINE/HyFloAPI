@@ -24,6 +24,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
+import dz.sh.hyflo.modules.foundation.organization.domain.model.AssignmentType;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.AssignmentStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.Employee;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeAssignment;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
@@ -45,9 +47,10 @@ public class EmployeeAssignmentService {
     }
 
     @Transactional
-    public EmployeeAssignment assign(long employeeId, OrganizationUnit organizationUnit, Position position, LocalDate start) {
+    public EmployeeAssignment assign(long employeeId, OrganizationUnit organizationUnit, Position position, LocalDate start,
+            AssignmentType assignmentType, AssignmentStatus activeStatus) {
         Employee employee = lockEmployee(employeeId);
-        EmployeeAssignment assignment = new EmployeeAssignment(employee, organizationUnit, position, start);
+        EmployeeAssignment assignment = new EmployeeAssignment(employee, organizationUnit, position, start, assignmentType, activeStatus);
         if (!assignments.findCurrentOrFutureForUpdate(employeeId, start).isEmpty()) {
             throw new IllegalStateException("Assignment would overlap an existing period");
         }
@@ -55,14 +58,15 @@ public class EmployeeAssignmentService {
     }
 
     @Transactional
-    public EmployeeAssignment transfer(long employeeId, OrganizationUnit organizationUnit, Position position, LocalDate date) {
+    public EmployeeAssignment transfer(long employeeId, OrganizationUnit organizationUnit, Position position, LocalDate date,
+            AssignmentType assignmentType, AssignmentStatus activeStatus, AssignmentStatus endedStatus) {
         Employee employee = lockEmployee(employeeId);
-        EmployeeAssignment replacement = new EmployeeAssignment(employee, organizationUnit, position, date);
+        EmployeeAssignment replacement = new EmployeeAssignment(employee, organizationUnit, position, date, assignmentType, activeStatus);
         var candidates = assignments.findCurrentOrFutureForUpdate(employeeId, date);
         if (candidates.size() != 1 || !candidates.getFirst().isEffectiveOn(date)) {
             throw new IllegalStateException("Transfer requires one effective assignment and no later assignment");
         }
-        candidates.getFirst().endOn(date);
+        candidates.getFirst().endOn(date, endedStatus);
         return assignments.save(replacement);
     }
 
