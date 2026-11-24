@@ -60,34 +60,36 @@ public class GroupRoleGrant {
     @Column(name = "F_03")
     private Instant revokedAt;
 
-    @Column(name = "F_04", nullable = false, updatable = false)
-    private long grantedByUserId;
-
-    @Column(name = "F_05")
-    private Long revokedByUserId;
-
     @NotBlank
     @Size(max = 255)
-    @Column(name = "F_06", length = 255, nullable = false, updatable = false)
+    @Column(name = "F_04", length = 255, nullable = false, updatable = false)
     private String reason;
 
     @Embedded
     private AuthorizationScope authorizationScope;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_10", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_01"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_01"))
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_11", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_02"))
+    @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_02"))
     private Role role;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_10", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_13_FK_03"))
+    private User grantedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_11", referencedColumnName = "F_00", foreignKey = @ForeignKey(name = "T_10_01_13_FK_04"))
+    private User revokedBy;
 
     @Version
     @Column(name = "A_01", nullable = false)
     private Long version;
 
     public GroupRoleGrant(Group group, Role role, AuthorizationScope authorizationScope, String reason,
-            Instant validFrom, Instant validTo, long grantedByUserId) {
+            Instant validFrom, Instant validTo, User grantedBy) {
         this.group = Objects.requireNonNull(group, "Group is required");
         this.role = Objects.requireNonNull(role, "Role is required");
         this.authorizationScope = Objects.requireNonNull(authorizationScope, "Scope is required");
@@ -97,10 +99,10 @@ public class GroupRoleGrant {
             throw new IllegalArgumentException("Validity end must be after its start");
         }
         this.validTo = validTo;
-        if (grantedByUserId <= 0) {
+        if (grantedBy == null || grantedBy.getId() == null || grantedBy.getId() <= 0) {
             throw new IllegalArgumentException("Granting actor must be a persisted user");
         }
-        this.grantedByUserId = grantedByUserId;
+        this.grantedBy = grantedBy;
     }
 
     public boolean isActiveAt(Instant instant) {
@@ -110,15 +112,15 @@ public class GroupRoleGrant {
                 && (revokedAt == null || instant.isBefore(revokedAt));
     }
 
-    public void revoke(Instant instant, long actorUserId) {
+    public void revoke(Instant instant, User revokedBy) {
         Objects.requireNonNull(instant, "Revocation time is required");
-        if (actorUserId <= 0) {
+        if (revokedBy == null || revokedBy.getId() == null || revokedBy.getId() <= 0) {
             throw new IllegalArgumentException("Revoking actor must be a persisted user");
         }
         if (revokedAt != null) {
             throw new IllegalStateException("Already revoked");
         }
         revokedAt = instant;
-        revokedByUserId = actorUserId;
+        this.revokedBy = revokedBy;
     }
 }

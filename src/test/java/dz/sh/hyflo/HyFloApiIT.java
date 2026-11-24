@@ -167,9 +167,11 @@ class HyFloApiIT {
         entityManager.persist(provider);
         entityManager.persist(pending);
         var actor = new User(provider, "grant-admin", "admin@example.invalid", null, pending);
+        var revoker = new User(provider, "grant-revoker", "revoker@example.invalid", null, pending);
         var account = new User(provider, "station-engineer", "engineer@example.invalid", null, pending);
         account.changeProfilePicture(42L);
         entityManager.persist(actor);
+        entityManager.persist(revoker);
         entityManager.persist(account);
 
         var action = new Action("update", "Update");
@@ -188,12 +190,12 @@ class HyFloApiIT {
         entityManager.persist(membership);
 
         var direct = new UserRoleGrant(account, role, AuthorizationScope.infrastructure(1, 3),
-                "Regional station assignment", starts, ends, actor.getId());
+                "Regional station assignment", starts, ends, actor);
         var inherited = new GroupRoleGrant(group, role, AuthorizationScope.pipeline(1, 2),
-                "Assigned-region station access", starts, ends, actor.getId());
+                "Assigned-region station access", starts, ends, actor);
         entityManager.persist(direct);
         entityManager.persist(inherited);
-        direct.revoke(now, actor.getId());
+        direct.revoke(now, revoker);
 
         var session = new LoginSession(account, starts, ends);
         var event = new AuthenticationEvent(AuthenticationEvent.LOGIN_FAILED, starts, "synthetic-login", provider, null);
@@ -207,7 +209,12 @@ class HyFloApiIT {
         assertThat(savedDirect.getAuthorizationScope().getScopeType()).isEqualTo(AuthorizationScope.INFRASTRUCTURE);
         assertThat(savedDirect.getAuthorizationScope().getScopeReferenceId()).isEqualTo(3L);
         assertThat(savedDirect.getAuthorizationScope().getCompanyId()).isEqualTo(1L);
-        assertThat(savedDirect.getRevokedByUserId()).isEqualTo(actor.getId());
+        assertThat(savedDirect.getGrantedBy().getId()).isEqualTo(actor.getId());
+        assertThat(savedDirect.getRevokedBy().getId()).isEqualTo(revoker.getId());
+        assertThat(savedDirect.getRevokedAt()).isEqualTo(now);
+        assertThat(savedInherited.getGrantedBy().getId()).isEqualTo(actor.getId());
+        assertThat(savedInherited.getRevokedBy()).isNull();
+        assertThat(savedInherited.getRevokedAt()).isNull();
         assertThat(savedDirect.isActiveAt(now)).isFalse();
         assertThat(savedInherited.isActiveAt(now)).isTrue();
         assertThat(savedInherited.isActiveAt(ends)).isFalse();
@@ -222,8 +229,32 @@ class HyFloApiIT {
 
         assertIdentityColumns("T_10_01_17", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
                 "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
+        assertIdentityColumns("T_10_01_13", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
+                "F_07", "F_08", "F_09", "F_10", "F_11", "A_01");
+        assertRoleGrantActorForeignKeys("T_10_01_17");
+        assertRoleGrantActorForeignKeys("T_10_01_13");
         assertIdentityConstraints("T_10_01_17", "T_10_01_17_FK_01", "T_10_01_17_FK_02");
+        assertIdentityConstraints("T_10_01_13", "T_10_01_13_FK_01", "T_10_01_13_FK_02");
         assertIdentityConstraints("T_10_01_12", "T_10_01_12_UK_01", "T_10_01_12_FK_01", "T_10_01_12_FK_02");
+
+        savedInherited.revoke(now, entityManager.getReference(User.class, revoker.getId()));
+        entityManager.flush();
+        entityManager.clear();
+
+        var revokedInherited = entityManager.find(GroupRoleGrant.class, inherited.getId());
+        assertThat(revokedInherited.getRevokedAt()).isEqualTo(now);
+        assertThat(revokedInherited.getRevokedBy().getId()).isEqualTo(revoker.getId());
+        assertThat(revokedInherited.isActiveAt(now)).isFalse();
+    }
+
+    private void assertRoleGrantActorForeignKeys(String table) {
+        assertThat(jdbc.queryForList("""
+                SELECT CONCAT(CONSTRAINT_NAME, ':', COLUMN_NAME)
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?
+                    AND BINARY REFERENCED_TABLE_NAME = BINARY 'T_00_02_02' AND REFERENCED_COLUMN_NAME = 'F_00'
+                    AND COLUMN_NAME IN ('F_10', 'F_11')
+                """, String.class, table)).containsExactlyInAnyOrder(table + "_FK_03:F_10", table + "_FK_04:F_11");
     }
 
     private void assertIdentityColumns(String table, String... columns) {

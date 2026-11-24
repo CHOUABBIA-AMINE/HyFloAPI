@@ -36,13 +36,13 @@ public class AuthorizationScope {
     public static final String PIPELINE = "PIPELINE";
     public static final String INFRASTRUCTURE = "INFRASTRUCTURE";
 
-    @Column(name = "F_07", length = 16, nullable = false, updatable = false)
+    @Column(name = "F_05", length = 16, nullable = false, updatable = false)
     private String scopeType;
 
-    @Column(name = "F_08", nullable = false, updatable = false)
+    @Column(name = "F_06", nullable = false, updatable = false)
     private long companyId;
 
-    @Column(name = "F_09", updatable = false)
+    @Column(name = "F_07", updatable = false)
     private Long scopeReferenceId;
 
     private AuthorizationScope(String scopeType, long companyId, Long scopeReferenceId) {

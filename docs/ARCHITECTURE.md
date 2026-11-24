@@ -167,7 +167,7 @@ The four pre-existing tables retain their `T_00_02` names. The new allocations u
 | AuthenticationEvent | T_10_01_16 | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
 | UserRoleGrant | T_10_01_17 | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
 
-`AuthorizationScope` is embedded in both role grant tables. F_07 is the scope type, F_08 is the company ID, and F_09 is the optional target ID. F_10 is the user or group foreign key and F_11 is the role foreign key. The scope types are stable codes carried by the class.
+`AuthorizationScope` is embedded in both role grant tables. F_04 is the grant reason. F_05 is the scope type, F_06 is the company ID, and F_07 is the optional target ID. F_08 is the user or group foreign key and F_09 is the role foreign key. The scope types are stable codes carried by the class.
 
 | Scope type | Target ID | Authorization boundary |
 |---|---|---|
@@ -176,7 +176,7 @@ The four pre-existing tables retain their `T_00_02` names. The new allocations u
 | PIPELINE | Pipeline ID | The named pipeline and its associated resources within the company, as resolved by their owners. |
 | INFRASTRUCTURE | Infrastructure ID | The named infrastructure within the company, such as a station, terminal, or valve. |
 
-Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Grant actor IDs record attribution and must be assigned from the authenticated actor. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
+Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Both role grant tables reference Identity User (T_00_02_02) through F_10 (grantedBy, required and immutable) and F_11 (revokedBy, set together with revokedAt). The field names distinguish the two audit roles from the recipient association. The application service must derive each actor from the authenticated context. This column layout is for disposable development schemas. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
 
 ## 8. Security and operational trust
 
