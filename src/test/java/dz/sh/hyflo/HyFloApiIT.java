@@ -19,6 +19,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.RefreshToken;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
@@ -258,6 +259,50 @@ class HyFloApiIT {
         assertThat(revokedMembership.getRevokedAt()).isEqualTo(now);
         assertThat(revokedMembership.getRevokedBy().getId()).isEqualTo(revoker.getId());
         assertThat(revokedMembership.isActiveAt(now)).isFalse();
+    }
+
+    @Test
+    @Transactional
+    void persistsConsumedAndReplacementRefreshTokensForTheSameSession() {
+        var startedAt = Instant.parse("2026-11-24T10:00:00Z");
+        var expiresAt = startedAt.plusSeconds(3600);
+        var rotatedAt = startedAt.plusSeconds(300);
+        var provider = IdentityProvider.local();
+        var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        entityManager.persist(provider);
+        entityManager.persist(pending);
+        var account = new User(provider, "refresh-user", "refresh@example.invalid", null, pending);
+        entityManager.persist(account);
+        var session = new LoginSession(account, startedAt, expiresAt);
+        entityManager.persist(session);
+
+        var originalToken = new RefreshToken(session, "a".repeat(64), startedAt);
+        entityManager.persist(originalToken);
+        originalToken.consume(rotatedAt);
+        var replacementToken = new RefreshToken(session, "b".repeat(64), rotatedAt);
+        entityManager.persist(replacementToken);
+        entityManager.flush();
+        entityManager.clear();
+
+        var savedOriginal = entityManager.find(RefreshToken.class, originalToken.getId());
+        var savedReplacement = entityManager.find(RefreshToken.class, replacementToken.getId());
+        assertThat(savedOriginal.getLoginSession().getId()).isEqualTo(session.getId());
+        assertThat(savedOriginal.getTokenDigest()).isEqualTo("a".repeat(64));
+        assertThat(savedOriginal.getIssuedAt()).isEqualTo(startedAt);
+        assertThat(savedOriginal.getConsumedAt()).isEqualTo(rotatedAt);
+        assertThat(savedReplacement.getLoginSession().getId()).isEqualTo(session.getId());
+        assertThat(savedReplacement.getConsumedAt()).isNull();
+        assertThatThrownBy(() -> savedOriginal.consume(rotatedAt.plusSeconds(1)))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> savedReplacement.consume(expiresAt))
+                .isInstanceOf(IllegalStateException.class);
+        savedReplacement.getLoginSession().revoke(rotatedAt.plusSeconds(1));
+        assertThatThrownBy(() -> savedReplacement.consume(rotatedAt.plusSeconds(2)))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(savedReplacement.getConsumedAt()).isNull();
+
+        assertIdentityColumns("T_10_01_18", "F_00", "F_01", "F_02", "F_03", "F_04", "A_01");
+        assertIdentityConstraints("T_10_01_18", "T_10_01_18_UK_01", "T_10_01_18_FK_01");
     }
 
     private void assertActorForeignKeys(String table, String grantedByColumn, String revokedByColumn) {

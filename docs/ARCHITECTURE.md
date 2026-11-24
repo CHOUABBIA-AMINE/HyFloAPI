@@ -166,6 +166,9 @@ The four pre-existing tables retain their `T_00_02` names. The new allocations u
 | LoginSession | T_10_01_15 | User-linked session with expiry and revocation. |
 | AuthenticationEvent | T_10_01_16 | Provider, event code, timestamp, correlation and optional user for unresolved login failures. |
 | UserRoleGrant | T_10_01_17 | Direct user and role links, embedded scope, interval, reason, and actor attribution. |
+| RefreshToken | T_10_01_18 | Unique SHA-256 digest (F_01), issuance (F_02), optional consumption (F_03), and required LoginSession link (F_04). |
+
+A login session can retain multiple refresh token digests as tokens rotate. The model records consumption once and uses optimistic locking to detect competing updates to a token row. Session expiry and revocation govern token usability. Atomic rotation and session revocation on reuse belong to the future refresh service. Access JWTs require no token table.
 
 `AuthorizationScope` is embedded in both role grant tables. F_04 is the grant reason. F_05 is the scope type, F_06 is the company ID, and F_07 is the optional target ID. F_08 is the user or group foreign key and F_09 is the role foreign key. The scope types are stable codes carried by the class.
 
