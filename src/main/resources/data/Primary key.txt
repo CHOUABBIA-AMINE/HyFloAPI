@@ -1,2 +1,0 @@
-@PrimaryKeyJoinColumn(name = "F_00", referencedColumnName = "F_00", 
-                      foreignKey=@ForeignKey(name="T_02_03_04_FK_00"))
