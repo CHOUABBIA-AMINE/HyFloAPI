@@ -42,15 +42,15 @@ class HyFloApiTest {
         assertThat(account.getUsername()).isEqualTo("synthetic.user");
         assertThatThrownBy(() -> account.activate(foreignCredential, active))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);
+        assertThat(account.getUserStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);
 
         account.activate(ownCredential, active);
         account.suspend(suspended);
-        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.SUSPENDED_CODE);
+        assertThat(account.getUserStatus().getCode()).isEqualTo(UserStatus.SUSPENDED_CODE);
         account.activate(ownCredential, active);
         account.disable(disabled);
         assertThatThrownBy(() -> account.activate(ownCredential, active)).isInstanceOf(IllegalStateException.class);
-        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.DISABLED_CODE);
+        assertThat(account.getUserStatus().getCode()).isEqualTo(UserStatus.DISABLED_CODE);
     }
 
     @Test

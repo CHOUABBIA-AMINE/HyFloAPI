@@ -9,9 +9,21 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthorizationScope;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Group;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupMembership;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -109,7 +121,7 @@ class HyFloApiIT {
         entityManager.persist(credential);
         assertThatThrownBy(() -> account.activate(credential, disabled))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThat(account.getStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);
+        assertThat(account.getUserStatus().getCode()).isEqualTo(UserStatus.PENDING_CODE);
         account.activate(credential, active);
         account.suspend(suspended);
         account.activate(credential, active);
@@ -120,16 +132,16 @@ class HyFloApiIT {
         var savedAccount = entityManager.find(User.class, account.getId());
         var savedCredential = entityManager.find(LocalCredential.class, credential.getId());
         assertThat(savedAccount.getUsername()).isEqualTo("synthetic.user");
-        assertThat(savedAccount.getStatus().getCode()).isEqualTo(UserStatus.ACTIVE_CODE);
-        assertThat(savedAccount.getProvider().getCode()).isEqualTo(IdentityProvider.LOCAL_CODE);
+        assertThat(savedAccount.getUserStatus().getCode()).isEqualTo(UserStatus.ACTIVE_CODE);
+        assertThat(savedAccount.getIdentityProvider().getCode()).isEqualTo(IdentityProvider.LOCAL_CODE);
         assertThat(savedCredential.getUser().getId()).isEqualTo(savedAccount.getId());
         assertThat(savedCredential.getPasswordHash()).isEqualTo(hash);
         assertThat(jdbc.queryForObject("SELECT F_01 FROM T_00_02_02 WHERE F_00 = ?", String.class,
                 savedAccount.getId())).isEqualTo("synthetic.user");
-        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_00_02_09 WHERE F_00 = ?", String.class,
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_00_02_09 WHERE F_00 = ?", String.class,
                 savedCredential.getId())).isEqualTo(hash);
 
-        assertIdentityColumns("T_00_02_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "A_01");
+        assertIdentityColumns("T_00_02_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "A_01");
         assertIdentityColumns("T_00_02_08", "F_00", "F_01", "F_02", "F_03");
         assertIdentityColumns("T_00_02_09", "F_00", "F_01", "F_02", "F_03");
         assertIdentityColumns("T_00_02_10", "F_00", "F_01", "F_02");
@@ -142,6 +154,75 @@ class HyFloApiIT {
         savedAccount.disable(entityManager.find(UserStatus.class, disabled.getId()));
         assertThatThrownBy(() -> savedAccount.activate(savedCredential, entityManager.find(UserStatus.class, active.getId())))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    @Transactional
+    void persistsDirectAndGroupRoleGrantsWithIndependentStationScopes() {
+        var starts = Instant.parse("2026-11-24T10:00:00Z");
+        var ends = starts.plusSeconds(3600);
+        var now = starts.plusSeconds(600);
+        var provider = IdentityProvider.local();
+        var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        entityManager.persist(provider);
+        entityManager.persist(pending);
+        var actor = new User(provider, "grant-admin", "admin@example.invalid", null, pending);
+        var account = new User(provider, "station-engineer", "engineer@example.invalid", null, pending);
+        account.changeProfilePicture(42L);
+        entityManager.persist(actor);
+        entityManager.persist(account);
+
+        var action = new Action("update", "Update");
+        var resourceType = new ResourceType("station", "Station");
+        var role = new Role("station-engineer", "Station Engineer");
+        var group = new Group("gz2-engineers", "GZ2 Engineers");
+        entityManager.persist(action);
+        entityManager.persist(resourceType);
+        entityManager.persist(role);
+        entityManager.persist(group);
+        var permission = new Permission("station.update", "Update station", action, resourceType);
+        entityManager.persist(permission);
+        var rolePermission = new RolePermission(role, permission);
+        var membership = new GroupMembership(account, group, starts, ends, actor.getId());
+        entityManager.persist(rolePermission);
+        entityManager.persist(membership);
+
+        var direct = new UserRoleGrant(account, role, AuthorizationScope.selectedRegion(1, 2L, 3),
+                "Regional station assignment", starts, ends, actor.getId());
+        var inherited = new GroupRoleGrant(group, role, AuthorizationScope.assignedRegion(1, 2L),
+                "Assigned-region station access", starts, ends, actor.getId());
+        entityManager.persist(direct);
+        entityManager.persist(inherited);
+        direct.revoke(now, actor.getId());
+
+        var session = new LoginSession(account, starts, ends);
+        var event = new AuthenticationEvent(AuthenticationEvent.LOGIN_FAILED, starts, "synthetic-login", provider, null);
+        entityManager.persist(session);
+        entityManager.persist(event);
+        entityManager.flush();
+        entityManager.clear();
+
+        var savedDirect = entityManager.find(UserRoleGrant.class, direct.getId());
+        var savedInherited = entityManager.find(GroupRoleGrant.class, inherited.getId());
+        assertThat(savedDirect.getAuthorizationScope().getStationUpdateMode()).isEqualTo(AuthorizationScope.SELECTED_REGION);
+        assertThat(savedDirect.getAuthorizationScope().getSelectedRegionId()).isEqualTo(3L);
+        assertThat(savedDirect.getAuthorizationScope().getPipelineSystemId()).isEqualTo(2L);
+        assertThat(savedDirect.getRevokedByUserId()).isEqualTo(actor.getId());
+        assertThat(savedDirect.isActiveAt(now)).isFalse();
+        assertThat(savedInherited.isActiveAt(now)).isTrue();
+        assertThat(savedInherited.isActiveAt(ends)).isFalse();
+        assertThat(savedInherited.getAuthorizationScope().getStationUpdateMode()).isEqualTo(AuthorizationScope.ASSIGNED_REGION);
+        assertThat(entityManager.find(GroupMembership.class, membership.getId()).isActiveAt(now)).isTrue();
+        assertThat(entityManager.find(RolePermission.class, rolePermission.getId()).getPermission().getCode())
+                .isEqualTo("station.update");
+        assertThat(entityManager.find(LoginSession.class, session.getId()).isActiveAt(now)).isTrue();
+        assertThat(entityManager.find(AuthenticationEvent.class, event.getId()).getUser()).isNull();
+        assertThat(entityManager.find(User.class, account.getId()).getProfilePictureFileId()).isEqualTo(42L);
+
+        assertIdentityColumns("T_10_01_17", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",
+                "F_07", "F_08", "F_09", "F_10", "F_11", "F_12", "A_01");
+        assertIdentityConstraints("T_10_01_17", "T_10_01_17_FK_01", "T_10_01_17_FK_02");
+        assertIdentityConstraints("T_10_01_12", "T_10_01_12_UK_01", "T_10_01_12_FK_01", "T_10_01_12_FK_02");
     }
 
     private void assertIdentityColumns(String table, String... columns) {

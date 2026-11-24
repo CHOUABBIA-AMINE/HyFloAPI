@@ -45,7 +45,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "T_00_02_02", uniqueConstraints = {
-    @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = {"F_04", "F_01"}),
+    @UniqueConstraint(name = "T_00_02_02_UK_01", columnNames = {"F_05", "F_01"}),
     @UniqueConstraint(name = "T_00_02_02_UK_02", columnNames = {"F_02"})
 })
 @Getter
@@ -72,24 +72,34 @@ public class User {
     @Column(name = "F_03")
     private Long employeeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_04", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_01"))
-    private IdentityProvider provider;
+    @Column(name = "F_04")
+    private Long profilePictureFileId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_02"))
-    private UserStatus status;
+    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_01"))
+    private IdentityProvider identityProvider;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_00_02_02_FK_02"))
+    private UserStatus userStatus;
 
     @Version
     @Column(name = "A_01", nullable = false)
     private Long version;
 
-    public User(IdentityProvider provider, String username, String email, Long employeeId, UserStatus pendingStatus) {
-        this.provider = Objects.requireNonNull(provider, "Identity provider is required");
+    public User(IdentityProvider identityProvider, String username, String email, Long employeeId, UserStatus pendingStatus) {
+        this.identityProvider = Objects.requireNonNull(identityProvider, "Identity provider is required");
         this.username = normalizeUsername(username);
         this.email = Objects.requireNonNull(email, "Email is required");
         this.employeeId = employeeId;
-        this.status = requireStatus(pendingStatus, UserStatus.PENDING_CODE);
+        this.userStatus = requireStatus(pendingStatus, UserStatus.PENDING_CODE);
+    }
+
+    public void changeProfilePicture(Long fileId) {
+        if (fileId != null && fileId <= 0) {
+            throw new IllegalArgumentException("Profile picture file ID must be positive");
+        }
+        profilePictureFileId = fileId;
     }
 
     public static String normalizeUsername(String username) {
@@ -101,27 +111,27 @@ public class User {
     }
 
     public void activate(LocalCredential credential, UserStatus activeStatus) {
-        if (!status.hasCode(UserStatus.PENDING_CODE) && !status.hasCode(UserStatus.SUSPENDED_CODE)) {
+        if (!userStatus.hasCode(UserStatus.PENDING_CODE) && !userStatus.hasCode(UserStatus.SUSPENDED_CODE)) {
             throw new IllegalStateException("Only pending or suspended accounts can be activated");
         }
-        if (!provider.isEnabled()) {
+        if (!identityProvider.isEnabled()) {
             throw new IllegalStateException("The identity provider is disabled");
         }
         if (credential == null || !credential.belongsTo(this)) {
             throw new IllegalArgumentException("An account credential is required for activation");
         }
-        status = requireStatus(activeStatus, UserStatus.ACTIVE_CODE);
+        userStatus = requireStatus(activeStatus, UserStatus.ACTIVE_CODE);
     }
 
     public void suspend(UserStatus suspendedStatus) {
-        if (!status.hasCode(UserStatus.ACTIVE_CODE)) {
+        if (!userStatus.hasCode(UserStatus.ACTIVE_CODE)) {
             throw new IllegalStateException("Only active accounts can be suspended");
         }
-        status = requireStatus(suspendedStatus, UserStatus.SUSPENDED_CODE);
+        userStatus = requireStatus(suspendedStatus, UserStatus.SUSPENDED_CODE);
     }
 
     public void disable(UserStatus disabledStatus) {
-        status = requireStatus(disabledStatus, UserStatus.DISABLED_CODE);
+        userStatus = requireStatus(disabledStatus, UserStatus.DISABLED_CODE);
     }
 
     private static UserStatus requireStatus(UserStatus candidate, String requiredCode) {
