@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Base64;
 
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
@@ -26,6 +27,11 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
+import dz.sh.hyflo.modules.foundation.organization.application.service.EmployeeAssignmentService;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.Employee;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.Position;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
@@ -37,7 +43,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mysql.MySQLContainer;
@@ -69,6 +77,12 @@ class HyFloApiIT {
 
     @Autowired
     JdbcTemplate jdbc;
+
+    @Autowired
+    EmployeeAssignmentService employeeAssignments;
+
+    @Autowired
+    PlatformTransactionManager transactions;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -303,6 +317,47 @@ class HyFloApiIT {
 
         assertIdentityColumns("T_10_01_16", "F_00", "F_01", "F_02", "F_03", "F_04", "A_01");
         assertIdentityConstraints("T_10_01_16", "T_10_01_16_UK_01", "T_10_01_16_FK_01");
+    }
+
+    @Test
+    void transfersEmployeeAndResolvesTheAssignmentAsOfEachDate() {
+        var hire = LocalDate.of(2026, 11, 1);
+        var transfer = hire.plusDays(20);
+        var endOfEmployment = hire.plusDays(40);
+        var type = new OrganizationUnitType("OPS_UNIT", null, "Unité d’exploitation", "Operations unit");
+        var root = new OrganizationUnit("OPS", null, null, "Operations", type, null);
+        var origin = new OrganizationUnit("OPS_A", null, null, "Operations A", type, root);
+        var destination = new OrganizationUnit("OPS_B", null, null, "Operations B", type, root);
+        var engineer = new Position("STATION_ENGINEER", null, null, "Station Engineer");
+        var employee = new Employee("SYN-ORG-01", null, null, "Sample", "Employee", hire, endOfEmployment);
+        new TransactionTemplate(transactions).executeWithoutResult(transaction -> {
+            entityManager.persist(type);
+            entityManager.persist(root);
+            entityManager.persist(origin);
+            entityManager.persist(destination);
+            entityManager.persist(engineer);
+            entityManager.persist(employee);
+        });
+
+        employeeAssignments.assign(employee.getId(), origin, engineer, hire);
+        assertThatThrownBy(() -> employeeAssignments.assign(employee.getId(), destination, engineer, hire.plusDays(1)))
+                .isInstanceOf(IllegalStateException.class);
+        employeeAssignments.transfer(employee.getId(), destination, engineer, transfer);
+
+        var previous = employeeAssignments.findEffectiveOn(employee.getId(), transfer.minusDays(1)).orElseThrow();
+        var current = employeeAssignments.findEffectiveOn(employee.getId(), transfer).orElseThrow();
+        assertThat(previous.getOrganizationUnit().getId()).isEqualTo(origin.getId());
+        assertThat(previous.getValidTo()).isEqualTo(transfer);
+        assertThat(current.getOrganizationUnit().getId()).isEqualTo(destination.getId());
+        assertThat(current.getPosition().getId()).isEqualTo(engineer.getId());
+        assertThat(current.getValidTo()).isEqualTo(endOfEmployment);
+        assertThat(employeeAssignments.findEffectiveOn(employee.getId(), endOfEmployment)).isEmpty();
+        assertThat(employeeAssignments.findEffectiveOn(employee.getId(), hire.minusDays(1))).isEmpty();
+        assertThat(jdbc.queryForObject("SELECT F_06 FROM T_10_02_04 WHERE F_00 = ?", Long.class,
+                destination.getId())).isEqualTo(root.getId());
+        assertIdentityColumns("T_10_02_05", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "A_01");
+        assertIdentityConstraints("T_10_02_05", "T_10_02_05_UK_01", "T_10_02_05_FK_01",
+                "T_10_02_05_FK_02", "T_10_02_05_FK_03");
     }
 
     private void assertActorForeignKeys(String table, String grantedByColumn, String revokedByColumn) {

@@ -180,6 +180,22 @@ A login session can retain multiple refresh token digests as tokens rotate. The 
 
 Scope target IDs are scalar references. The authorized application service must verify the target type and company ownership through the owning module. A request that cannot be matched to the grant's company, permission and scope must be denied. Both role grant tables reference Identity User (T_10_01_07) through F_10 (grantedBy, required and immutable) and F_11 (revokedBy, set together with revokedAt). The field names distinguish the two audit roles from the recipient association. The application service must derive each actor from the authenticated context. This column layout is for disposable development schemas. These models store scope and grant data. Request-time authorization, login, administrative APIs and catalog seeding require application wiring.
 
+### Organization persistence
+
+Foundation Organization uses the `T_10_02_NN` prefix. Entity codes follow dependency order.
+
+| Model | Table | Internal dependencies |
+|---|---|---|
+| OrganizationUnitType | T_10_02_01 | None |
+| Employee | T_10_02_02 | None |
+| Position | T_10_02_03 | None |
+| OrganizationUnit | T_10_02_04 | OrganizationUnitType and optional parent OrganizationUnit |
+| EmployeeAssignment | T_10_02_05 | OrganizationUnit, Position and Employee |
+
+The baseline allows one effective assignment per employee on a given date. An assignment starts on an inclusive date and ends on an exclusive date. When employment has an end date, it bounds the assignment. Positions can be reused across units. A transfer ends the previous assignment and creates the replacement in one transaction. The assignment service locks the employee before checking periods or writing changes. Its date lookup returns the historical unit and position in effect on the requested date.
+
+The hierarchy and directory are persisted through JPA. Assignment, transfer and date lookup are internal application operations. Organization REST endpoints and company-bound appointment rules are outside this baseline.
+
 ## 8. Security and operational trust
 
 Local accounts, password hashes, grants and effective permissions belong to Identity. Spring Security and token verification belong to platform.security. Bootstrap default user is temporary; target persistent local authentication must replace it without bypassing authorization. Enforce company/operational scope before disclosing data or existence, counts, export/history. Use authenticated actor attribution and least privilege, fail closed, independent decisions where required. External systems, OT, live SCADA, enterprise SSO and real data are not authorized. Audit evidence records who did what and when; Workflow owns transitions and approvals.
