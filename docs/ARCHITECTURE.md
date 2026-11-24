@@ -186,7 +186,7 @@ Foundation Organization uses the `T_10_02_NN` prefix. Entity codes follow depend
 
 | Model | Table | Internal dependencies |
 |---|---|---|
-| OrganizationUnitType | T_10_02_01 | None (unchanged) |
+| OrganizationUnitType | T_10_02_01 | None |
 | EmployeeType | T_10_02_02 | None |
 | EmployeeStatus | T_10_02_03 | None |
 | PositionLevel | T_10_02_04 | None |
@@ -199,7 +199,7 @@ Foundation Organization uses the `T_10_02_NN` prefix. Entity codes follow depend
 | OrganizationUnit | T_10_02_11 | OrganizationUnitType, optional parent OrganizationUnit, OrganizationUnitStatus |
 | EmployeeAssignment | T_10_02_12 | OrganizationUnit, Position, Employee, AssignmentType, AssignmentStatus |
 
-Employee includes optional birth date, Arabic/Latin birthplace and address, email, phone, birth/address locality IDs, nationality country ID and employee picture file ID. Geography and File are foreign-owner scalar references: no cross-module JPA association, physical FK or owner validation is claimed by this task. User email and user profile picture remain independent account fields. No OrganizationUnitKind or additional OrganizationUnitType fields. The existing self-association keeps the mandatory entity-name field convention; getParentUnit exposes its meaning. Position descriptions are optional trilingual text. Organization units have validity dates and a status catalog. Status/type catalogs have finite stable codes and localized labels; no seed values are provisioned. Assignment status is recorded lifecycle metadata; the date lookup remains historical and does not infer authorization. Only ACTIVE creation and ENDED transfer are supported; suspension, cancellation and concurrent secondary assignments require later selection. Renumbering is for disposable fresh schemas only.
+Employee includes optional birth date, Arabic/Latin birthplace and address, email, phone, birth/address locality IDs, nationality country ID and employee picture file ID. Geography and File are foreign-owner scalar references: no cross-module JPA association, physical FK or owner validation is claimed by this task. User email and user profile picture remain independent account fields. OrganizationUnitType retains its table and stable code and adds optional Arabic/French/English descriptions and an active flag (default active, retirement retains historical references). No OrganizationUnitKind or kind field. The existing self-association keeps the mandatory entity-name field convention; getParentUnit exposes its meaning. Position descriptions are optional trilingual text. Organization units have validity dates and a status catalog. Status/type catalogs have finite stable codes and localized labels; no seed values are provisioned. Assignment status is recorded lifecycle metadata; the date lookup remains historical and does not infer authorization. Only ACTIVE creation and ENDED transfer are supported; suspension, cancellation and concurrent secondary assignments require later selection. Renumbering is for disposable fresh schemas only.
 
 The baseline allows one effective assignment per employee on a given date. An assignment starts on an inclusive date and ends on an exclusive date. When employment has an end date, it bounds the assignment. Positions can be reused across units. A transfer ends the previous assignment and creates the replacement in one transaction. The assignment service locks the employee before checking periods or writing changes. Its date lookup returns the historical unit and position in effect on the requested date.
 

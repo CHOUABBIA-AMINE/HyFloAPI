@@ -203,7 +203,7 @@ class HyFloApiIT {
 
         var action = new Action("update", "Update");
         var resourceType = new ResourceType("station", "Station");
-        var role = new Role("station-engineer", "Station Engineer", null, "Ingénierie", "Engineering", positionLevel, positionStatus);
+        var role = new Role("station-engineer", "Station Engineer");
         var group = new Group("gz2-engineers", "GZ2 Engineers");
         entityManager.persist(action);
         entityManager.persist(resourceType);
@@ -336,7 +336,8 @@ class HyFloApiIT {
         var hire = LocalDate.of(2026, 11, 1);
         var transfer = hire.plusDays(20);
         var endOfEmployment = hire.plusDays(40);
-        var type = new OrganizationUnitType("OPS_UNIT", null, "Unité d’exploitation", "Operations unit");
+        var type = new OrganizationUnitType("OPS_UNIT", null, "Unité d’exploitation", "Operations unit",
+                "وحدة تشغيل", "Unité chargée de l’exploitation", "Operational responsibility unit");
         var employeeType = new EmployeeType(EmployeeType.PERMANENT_CODE, null, null, "Permanent");
         var employeeStatus = new EmployeeStatus(EmployeeStatus.ACTIVE_CODE, null, null, "Active");
         var positionLevel = new PositionLevel(PositionLevel.ENGINEER_CODE, null, null, "Engineer");
@@ -348,7 +349,7 @@ class HyFloApiIT {
         var root = new OrganizationUnit("OPS", null, null, "Operations", type, null, hire, null, unitStatus);
         var origin = new OrganizationUnit("OPS_A", null, null, "Operations A", type, root, hire, null, unitStatus);
         var destination = new OrganizationUnit("OPS_B", null, null, "Operations B", type, root, hire, null, unitStatus);
-        var engineer = new Position("STATION_ENGINEER", null, null, "Station Engineer");
+        var engineer = new Position("STATION_ENGINEER", null, null, "Station Engineer", null, "Ingénierie", "Engineering", positionLevel, positionStatus);
         var employee = new Employee("SYN-ORG-01", null, null, "Sample", "Employee", hire, endOfEmployment, employeeType, employeeStatus);
         new TransactionTemplate(transactions).executeWithoutResult(transaction -> {
             for (var catalog : java.util.List.of(employeeType, employeeStatus, positionLevel, positionStatus, unitStatus,
@@ -416,13 +417,25 @@ class HyFloApiIT {
             assertThat(savedPosition.getPositionStatus().getCode()).isEqualTo(PositionStatus.ACTIVE_CODE);
             assertThat(savedPosition.getDescriptionEn()).isEqualTo("Engineering");
             var savedUnit = entityManager.find(OrganizationUnit.class, destination.getId());
+            var savedType = savedUnit.getOrganizationUnitType();
+            assertThat(savedType.getDescriptionAr()).isEqualTo("وحدة تشغيل");
+            assertThat(savedType.getDescriptionFr()).isEqualTo("Unité chargée de l’exploitation");
+            assertThat(savedType.getDescriptionEn()).isEqualTo("Operational responsibility unit");
+            assertThat(savedType.isActive()).isTrue();
             assertThat(savedUnit.getOrganizationUnitStatus().getCode()).isEqualTo(OrganizationUnitStatus.ACTIVE_CODE);
             assertThat(savedUnit.getValidFrom()).isEqualTo(hire);
             assertThat(savedUnit.getParentUnit().getId()).isEqualTo(root.getId());
+            savedType.retire();
+            entityManager.flush();
+            entityManager.clear();
+            var historicalUnit = entityManager.find(OrganizationUnit.class, destination.getId());
+            assertThat(historicalUnit.getOrganizationUnitType().getId()).isEqualTo(type.getId());
+            assertThat(historicalUnit.getOrganizationUnitType().isActive()).isFalse();
+            assertThat(historicalUnit.getOrganizationUnitType().getDescriptionEn()).isEqualTo("Operational responsibility unit");
         });
         assertThat(jdbc.queryForObject("SELECT F_08 FROM T_10_02_11 WHERE F_00 = ?", Long.class,
                 destination.getId())).isEqualTo(root.getId());
-        assertTableColumns("T_10_02_01", "F_00", "F_01", "F_02", "F_03", "F_04");
+        assertTableColumns("T_10_02_01", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08");
         assertTableConstraints("T_10_02_01", "T_10_02_01_UK_01");
         assertTableColumns("T_10_02_02", "F_00", "F_01", "F_02", "F_03", "F_04");
         assertTableConstraints("T_10_02_02", "T_10_02_02_UK_01");

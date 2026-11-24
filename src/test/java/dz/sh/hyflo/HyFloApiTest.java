@@ -100,6 +100,25 @@ class HyFloApiTest {
     }
 
     @Test
+    void organizationUnitTypeRetirementPreservesCodeAndDescriptions() {
+        var type = new dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType(
+                "UNIT", null, "Unité", "Unit", "وحدة", "Description", "Unit description");
+        assertThat(type.isActive()).isTrue();
+        assertThat(type.getDescriptionAr()).isEqualTo("وحدة");
+        assertThat(type.getDescriptionFr()).isEqualTo("Description");
+        assertThat(type.getDescriptionEn()).isEqualTo("Unit description");
+        type.retire();
+        assertThat(type.isActive()).isFalse();
+        assertThat(type.getCode()).isEqualTo("UNIT");
+        assertThat(type.getDescriptionEn()).isEqualTo("Unit description");
+
+        var minimal = new dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType(
+                "OTHER", null, null, "Other");
+        assertThat(minimal.isActive()).isTrue();
+        assertThat(minimal.getDescriptionEn()).isNull();
+    }
+
+    @Test
     void jwtSigningAndParsingWorkWithTheRuntimeSerializer() {
         var key = Jwts.SIG.HS256.key().build();
         var token = Jwts.builder().subject("synthetic-user").signWith(key).compact();

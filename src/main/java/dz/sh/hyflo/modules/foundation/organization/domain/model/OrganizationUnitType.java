@@ -64,7 +64,24 @@ public class OrganizationUnitType {
     @Column(name = "F_04", length = 120)
     private String nameEn;
 
+    @Column(name = "F_05", columnDefinition = "text")
+    private String descriptionAr;
+
+    @Column(name = "F_06", columnDefinition = "text")
+    private String descriptionFr;
+
+    @Column(name = "F_07", columnDefinition = "text")
+    private String descriptionEn;
+
+    @Column(name = "F_08", nullable = false)
+    private boolean active;
+
     public OrganizationUnitType(String code, String nameAr, String nameFr, String nameEn) {
+        this(code, nameAr, nameFr, nameEn, null, null, null);
+    }
+
+    public OrganizationUnitType(String code, String nameAr, String nameFr, String nameEn,
+            String descriptionAr, String descriptionFr, String descriptionEn) {
         this.code = code;
         if (Stream.of(nameAr, nameFr, nameEn).noneMatch(value -> value != null && !value.isBlank())) {
             throw new IllegalArgumentException("At least one localized name is required");
@@ -72,5 +89,13 @@ public class OrganizationUnitType {
         this.nameAr = nameAr;
         this.nameFr = nameFr;
         this.nameEn = nameEn;
+        this.descriptionAr = descriptionAr;
+        this.descriptionFr = descriptionFr;
+        this.descriptionEn = descriptionEn;
+        this.active = true;
+    }
+
+    public void retire() {
+        active = false;
     }
 }
