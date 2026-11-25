@@ -347,3 +347,23 @@ Update:
 Delete: none.
 
 Acceptance: real isolated MySQL 8.4 integration test invokes the actual command handler in a non-web application context, asserts no automatic initialization and rejects missing opt-in, additional args, invalid input, missing/non-company/inactive/expired/future company, and retired type; forces late DB failure using test-only trigger and proves complete rollback; races two different administrator requests and requires exactly one successful initialization. Verify all exact catalog codes/role associations, admin active HUMAN, one encoded credential, disabled SERVICE attribution account without credential/session/grants, one GLOBAL grant with correct company, persisted actor and provenance. Prove re-invocation after revocation does not change credentials, create a new admin or restore privileges. Retain existing 9 unit/10 integration tests, repository discovery and service skeleton checks; new independent MySQL context, no skipped tests or CI gate changes. Verify exact-SHA build before acceptance. Packaged external command invocation/deployment is not performed in this task; real integration covers its handler and wiring.
+
+### IDN-01 CI #32 correction — 2026-11-25
+
+Status: IN PROGRESS. [Build #32 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45579718319) at 8ea5a41a9d2c4ffb1582dfb6723944ac667baac9: compilation passed, Surefire 9/9 passed; Failsafe 11 tests, 1 failure, 0 errors, 0 skips. IdentityBootstrapIT passed its full real-MySQL scenario, including synthetic rollback trigger and competing LOCAL insert. HyFloApiIT.openApiRequiresLocalAuthentication line 723 expected 200 but got 401. Security log reports DelegatingPasswordEncoder rejecting the unprefixed password of the existing auto-configured in-memory user after the new global PasswordEncoder bean was registered. This is a regression in temporary HTTP authentication, not a demonstrated bootstrap transaction failure. Shutdown also exceeded the 30-second fork exit timeout while cached contexts attempted schema cleanup after MySQL containers had stopped.
+
+Corrective scope: isolate the persistent Identity encoder behind a typed platform IdentityPasswordEncoder bean that does not implement Spring Security PasswordEncoder; internally delegate to the same PasswordEncoderFactories.createDelegatingPasswordEncoder() for encode/matches. Inject that explicit type in IdentityBootstrapService and its integration test. No global PasswordEncoder bean, no NoOp fallback, no change to temporary account configuration or HTTP security, no weaker bcrypt policy or changed stored format. Assert that no PasswordEncoder bean is globally discoverable in the bootstrap context and retain hash matching and the existing authenticated/unauthenticated HTTP checks. Close both MySQL-backed Spring test contexts after their test classes with DirtiesContext AFTER_CLASS to avoid cached-context cleanup against stopped containers; no timeouts or CI changes. Preserve all original business acceptance scenarios and constraints.
+
+Correction documentation: docs(identity): register bootstrap encoder isolation correction
+Corrective implementation: fix(identity): isolate persistent credential encoder from temporary authentication
+
+Exact corrective allowlist — update:
+- `src/main/java/dz/sh/hyflo/platform/security/PasswordEncodingConfiguration.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/IdentityBootstrapService.java`
+- `src/test/java/dz/sh/hyflo/IdentityBootstrapIT.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+- `docs/ARCHITECTURE.md`
+
+Create/delete: none.
+
+Acceptance: exact-SHA CI passes 9 unit and 11 MySQL integration tests, existing OpenAPI anonymous/wrong password 401 and correct password 200, unchanged bootstrap scope, stored {bcrypt} hash and matching, no global encoder bean, no skipped tests; retain mandatory evidence and artifact gates. Verify actual shutdown evidence, not merely annotations. No subsequent package or runtime login implementation.
