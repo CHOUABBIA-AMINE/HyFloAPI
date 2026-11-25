@@ -7,7 +7,7 @@
  *
  * @Name        : LocalCredential
  * @CreatedOn   : 11-24-2026
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-25-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -22,6 +22,7 @@ package dz.sh.hyflo.modules.foundation.identity.domain.model;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,6 +48,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LocalCredential {
 
+    private static final Pattern BCRYPT = Pattern.compile("\\{bcrypt}\\$2[aby]\\$(0[4-9]|1[0-4])\\$[./A-Za-z0-9]{53}");
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "F_00")
@@ -71,6 +74,23 @@ public class LocalCredential {
         }
         this.passwordHash = passwordHash;
         this.passwordChangedAt = Objects.requireNonNull(passwordChangedAt, "Password change time is required");
+    }
+
+    /** Exact tagged bcrypt format supported by local authentication. */
+    public static boolean supportsPasswordHash(String hash) {
+        return hash != null && BCRYPT.matcher(hash).matches();
+    }
+
+    /** Replace a persisted credential under the owning account's write lock. */
+    public void replacePasswordHash(String encodedPassword, Instant changedAt) {
+        if (!supportsPasswordHash(encodedPassword) || changedAt == null || changedAt.isBefore(passwordChangedAt)) {
+            throw new IllegalArgumentException("Invalid replacement credential");
+        }
+        if (user.getUserStatus().hasCode(UserStatus.DISABLED_CODE)) {
+            throw new IllegalStateException("Disabled account credential cannot be reset");
+        }
+        this.passwordHash = encodedPassword;
+        this.passwordChangedAt = changedAt;
     }
 
     boolean belongsTo(User account) {

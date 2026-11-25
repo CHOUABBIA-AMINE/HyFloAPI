@@ -63,7 +63,9 @@ public class IdentitySecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/v1/identity/users", "/v1/identity/users/{userId}").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/identity/users", "/v1/identity/users/{userId}/activate",
                                 "/v1/identity/users/{userId}/suspend", "/v1/identity/users/{userId}/reactivate",
-                                "/v1/identity/users/{userId}/disable").authenticated()
+                                "/v1/identity/users/{userId}/disable",
+                                "/v1/identity/users/{userId}/credential/initialize",
+                                "/v1/identity/users/{userId}/credential/reset").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new BearerAuthenticationFilter(tokens, sessions), AnonymousAuthenticationFilter.class)
                 .build();

@@ -24,6 +24,7 @@ import java.util.function.Function;
 
 import dz.sh.hyflo.modules.foundation.identity.api.mapper.UserAccountMapper;
 import dz.sh.hyflo.modules.foundation.identity.api.request.CreateUserRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.LocalCredentialRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.UserLifecycleRequest;
 import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
 import dz.sh.hyflo.modules.foundation.identity.application.service.UserAdministrationService;
@@ -103,6 +104,28 @@ public class UserAdministrationController {
             @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
             @Valid @RequestBody UserLifecycleRequest request) {
         return transition(principal, company, userId, "disable", request);
+    }
+
+    @PostMapping(path = "/{userId}/credential/initialize", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> initializeCredential(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @Valid @RequestBody LocalCredentialRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.initializeCredential(principal, positive(company), positive(userId),
+                    request.password(), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
+    @PostMapping(path = "/{userId}/credential/reset", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> resetCredential(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @Valid @RequestBody LocalCredentialRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.resetCredential(principal, positive(company), positive(userId),
+                    request.password(), request.reason(), correlation);
+            return null;
+        }, false);
     }
 
     private ResponseEntity<?> transition(CurrentIdentity principal, String company, String userId, String operation,

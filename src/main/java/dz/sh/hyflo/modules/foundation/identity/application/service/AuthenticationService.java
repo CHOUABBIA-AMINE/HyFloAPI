@@ -50,7 +50,6 @@ import org.springframework.transaction.annotation.Transactional;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class AuthenticationService {
 
-    private static final Pattern BCRYPT = Pattern.compile("\\{bcrypt}\\$2[aby]\\$(0[4-9]|1[0-4])\\$[./A-Za-z0-9]{53}");
     private static final Pattern REFRESH_SECRET = Pattern.compile("[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]");
     private final IdentityProviderRepository providers;
     private final UserRepository users;
@@ -88,7 +87,7 @@ public class AuthenticationService {
         User user = users.findForAuthentication(provider.getId(), User.normalizeUsername(username)).orElse(null);
         LocalCredential credential = user == null ? null : credentials.findByUser_Id(user.getId()).orElse(null);
         boolean eligible = user != null && SessionAuthenticationService.eligible(user) && credential != null
-                && BCRYPT.matcher(credential.getPasswordHash()).matches();
+                && LocalCredential.supportsPasswordHash(credential.getPasswordHash());
         boolean matches;
         try {
             matches = encoder.matches(password, eligible ? credential.getPasswordHash() : dummyHash);

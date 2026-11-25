@@ -19,6 +19,7 @@
 
 package dz.sh.hyflo.modules.foundation.identity.application.service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -31,6 +32,7 @@ import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthen
 import dz.sh.hyflo.modules.foundation.identity.domain.model.*;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.*;
 import dz.sh.hyflo.modules.foundation.organization.application.service.OrganizationUnitScopeService;
+import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -52,11 +54,13 @@ public class UserAdministrationService {
     private final UserTypeRepository types;
     private final LocalCredentialRepository credentials;
     private final UserLifecycleEventService events;
+    private final IdentityPasswordEncoder encoder;
 
     public UserAdministrationService(EffectiveAuthorizationService authorization, UserRepository users,
             LoginSessionRepository sessions, IdentityProviderRepository providers, UserRoleGrantRepository grants,
             RolePermissionRepository permissions, OrganizationUnitScopeService companies, UserStatusRepository statuses,
-            UserTypeRepository types, LocalCredentialRepository credentials, UserLifecycleEventService events) {
+            UserTypeRepository types, LocalCredentialRepository credentials, UserLifecycleEventService events,
+            IdentityPasswordEncoder encoder) {
         this.authorization = authorization;
         this.users = users;
         this.sessions = sessions;
@@ -68,6 +72,7 @@ public class UserAdministrationService {
         this.types = types;
         this.credentials = credentials;
         this.events = events;
+        this.encoder = encoder;
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -151,6 +156,59 @@ public class UserAdministrationService {
         actor = lockAuthority(principal, companyId, permission);
         events.record(event, now, correlation, reason, previous, target, actor);
         return account(target);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void initializeCredential(CurrentIdentity principal, long companyId, long userId,
+            String password, String reason, String correlation) {
+        mutateCredential(principal, companyId, userId, password, reason, correlation, true);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void resetCredential(CurrentIdentity principal, long companyId, long userId,
+            String password, String reason, String correlation) {
+        mutateCredential(principal, companyId, userId, password, reason, correlation, false);
+    }
+
+    private void mutateCredential(CurrentIdentity principal, long companyId, long userId,
+            String password, String reason, String correlation, boolean initialize) {
+        String permission = initialize ? "credential.initialize" : "credential.reset";
+        User actor = lockAuthority(principal, companyId, permission);
+        if (actor.getId() == userId) throw denied();
+        User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        actor = lockAuthority(principal, companyId, permission);
+        if (target.getOwningOrganizationUnitId() != companyId || "hyflo-bootstrap".equals(target.getUsername())
+                || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
+                || !target.getIdentityProvider().isEnabled()) throw denied();
+        if (password == null || password.isBlank() || password.codePointCount(0, password.length()) < 15
+                || password.getBytes(StandardCharsets.UTF_8).length > 72
+                || reason == null || reason.isBlank() || reason.length() > 255 || reason.contains(password)) {
+            throw new IllegalArgumentException("Invalid credential input");
+        }
+        String previous = target.getUserStatus().getCode();
+        boolean pending = UserStatus.PENDING_CODE.equals(previous);
+        if (initialize ? !pending : !(pending || UserStatus.ACTIVE_CODE.equals(previous)
+                || UserStatus.SUSPENDED_CODE.equals(previous))) throw rejected();
+
+        LocalCredential existing = credentials.findByUser_Id(userId).orElse(null);
+        if (initialize == (existing != null)) throw rejected();
+        if (existing != null && LocalCredential.supportsPasswordHash(existing.getPasswordHash())
+                && encoder.matches(password, existing.getPasswordHash())) throw rejected();
+
+        String encoded = encoder.encode(password);
+        if (!LocalCredential.supportsPasswordHash(encoded)) throw new IllegalStateException("Unsupported encoded credential");
+        // Encoding is deliberately inside the user/authority locks; recheck after the expensive work.
+        actor = lockAuthority(principal, companyId, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (initialize) {
+            credentials.save(new LocalCredential(target, encoded, now));
+        } else {
+            existing.replacePasswordHash(encoded, now);
+            revokeSessions(userId, now);
+        }
+        actor = lockAuthority(principal, companyId, permission);
+        events.record(initialize ? UserLifecycleEvent.CREDENTIAL_INITIALIZED : UserLifecycleEvent.CREDENTIAL_RESET,
+                now, correlation, reason, previous, target, actor);
     }
 
     private void revokeSessions(long userId, Instant now) {

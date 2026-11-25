@@ -40,6 +40,8 @@ public class UserLifecycleEvent {
     public static final String SUSPENDED = "SUSPENDED";
     public static final String REACTIVATED = "REACTIVATED";
     public static final String DISABLED = "DISABLED";
+    public static final String CREDENTIAL_INITIALIZED = "CREDENTIAL_INITIALIZED";
+    public static final String CREDENTIAL_RESET = "CREDENTIAL_RESET";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -104,6 +106,11 @@ public class UserLifecycleEvent {
             case REACTIVATED -> UserStatus.SUSPENDED_CODE.equals(previousStatusCode) && UserStatus.ACTIVE_CODE.equals(resultingStatusCode);
             case DISABLED -> (UserStatus.PENDING_CODE.equals(previousStatusCode) || UserStatus.ACTIVE_CODE.equals(previousStatusCode)
                     || UserStatus.SUSPENDED_CODE.equals(previousStatusCode)) && UserStatus.DISABLED_CODE.equals(resultingStatusCode);
+            case CREDENTIAL_INITIALIZED -> UserStatus.PENDING_CODE.equals(previousStatusCode)
+                    && UserStatus.PENDING_CODE.equals(resultingStatusCode);
+            case CREDENTIAL_RESET -> (UserStatus.PENDING_CODE.equals(previousStatusCode)
+                    || UserStatus.ACTIVE_CODE.equals(previousStatusCode) || UserStatus.SUSPENDED_CODE.equals(previousStatusCode))
+                    && previousStatusCode.equals(resultingStatusCode);
             default -> false;
         };
         if (!valid || owningOrganizationUnitId <= 0) {

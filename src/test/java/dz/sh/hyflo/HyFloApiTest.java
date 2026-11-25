@@ -44,6 +44,17 @@ class HyFloApiTest {
         var changedAt = Instant.parse("2026-11-24T00:00:00Z");
         var foreignCredential = new LocalCredential(other, hash, changedAt);
         var ownCredential = new LocalCredential(account, hash, changedAt);
+        String replacement = "{bcrypt}" + new BCryptPasswordEncoder().encode("synthetic-replacement-password");
+        assertThat(LocalCredential.supportsPasswordHash(replacement)).isTrue();
+        assertThat(LocalCredential.supportsPasswordHash(hash)).isFalse();
+        assertThat(LocalCredential.supportsPasswordHash(null)).isFalse();
+        assertThatThrownBy(() -> ownCredential.replacePasswordHash("plaintext", changedAt.plusSeconds(1)))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ownCredential.replacePasswordHash(replacement, changedAt.minusSeconds(1)))
+                .isInstanceOf(IllegalArgumentException.class);
+        ownCredential.replacePasswordHash(replacement, changedAt.plusSeconds(1));
+        assertThat(ownCredential.getPasswordHash()).isEqualTo(replacement);
+        assertThat(ownCredential.getPasswordChangedAt()).isEqualTo(changedAt.plusSeconds(1));
 
         assertThat(account.getUsername()).isEqualTo("synthetic.user");
         assertThatThrownBy(() -> account.activate(foreignCredential, active))
@@ -57,6 +68,10 @@ class HyFloApiTest {
         account.disable(disabled);
         assertThatThrownBy(() -> account.activate(ownCredential, active)).isInstanceOf(IllegalStateException.class);
         assertThat(account.getUserStatus().getCode()).isEqualTo(UserStatus.DISABLED_CODE);
+        assertThatThrownBy(() -> ownCredential.replacePasswordHash(replacement, changedAt.plusSeconds(2)))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(new dz.sh.hyflo.modules.foundation.identity.api.request.LocalCredentialRequest("synthetic-secret", "reason").toString())
+                .doesNotContain("synthetic-secret", "reason");
     }
 
     @Test
