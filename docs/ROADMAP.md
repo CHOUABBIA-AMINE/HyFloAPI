@@ -270,3 +270,16 @@ Update:
 Delete: none.
 
 Acceptance: 37 entity-specific service classes registered as unique Spring beans, all 36 skeletons have exactly one constructor taking their corresponding owner repository and no declared business methods, existing EmployeeAssignmentService and both scope services preserved and registered. Test in existing real-MySQL integration context using JPA metamodel and Spring bean lookup, verify 37 entity mappings and repository constructor types; preserve repository discovery and all prior assertions, no new dependencies or CI changes. Exact-SHA build must pass all unit and integration tests without failures, errors or skips; no business functionality or deployment claimed.
+
+### FDN-SVC-001 CI #29 correction — 2026-11-25
+
+Status: IN PROGRESS. [Build #29 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45566954436) at ae03858c811a41fc88c9b3d8824cc7a7fc3d6c5a: production and test compilation passed, Surefire 9/9 passed, Failsafe 10 tests against MySQL with 1 failure, 0 errors, 0 skips. Repository scanning found 37 interfaces. Failure: HyFloApiIT.registersOneApplicationServiceForEveryFoundationEntity line 158 expected getDeclaredMethods() to be empty, but UserStatusService contains the synthetic private static JaCoCo $jacocoInit method added by the coverage agent. This is an instrumentation-aware reflection assertion defect, not a demonstrated service registration or constructor defect.
+
+Corrective scope: retain the zero-business-method invariant for all 36 new skeletons. Exclude only the synthetic private static method named $jacocoInit from the declared-method assertion; reject every other declared method, including private methods. Preserve unique bean registration, all constructor/repository binding checks, existing tests, production source, JaCoCo instrumentation, Maven configuration and CI gates. Add a service-specific assertion diagnostic. No additional functionality, schema, dependencies or subsequent task.
+
+Correction documentation commit: docs(foundation): record service coverage instrumentation failure
+Corrective implementation commit: test(foundation): account for JaCoCo service instrumentation
+
+Exact corrective allowlist: update only `src/test/java/dz/sh/hyflo/HyFloApiIT.java`. Create/delete: none.
+
+Acceptance: exact-SHA HyFloAPI Build passes all 9 unit and 10 integration tests, including repository discovery and service registration with coverage instrumentation enabled; no failures, errors or skips, required test/JaCoCo/SBOM evidence and verified artifact steps pass. No local runtime claim.
