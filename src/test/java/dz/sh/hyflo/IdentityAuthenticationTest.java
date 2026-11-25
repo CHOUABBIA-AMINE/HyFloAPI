@@ -19,7 +19,11 @@
 
 package dz.sh.hyflo;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
@@ -30,7 +34,14 @@ import dz.sh.hyflo.modules.foundation.identity.api.request.LoginRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.RefreshRequest;
 import jakarta.validation.Validation;
 import dz.sh.hyflo.modules.foundation.identity.api.response.TokenResponse;
+import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService;
 import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService.LoginResult;
+import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.*;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.*;
+import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import dz.sh.hyflo.platform.security.IdentityAuthenticationProperties;
 import dz.sh.hyflo.platform.security.JwtTokenService;
 import dz.sh.hyflo.platform.security.LoginAttemptLimiter;
@@ -41,6 +52,7 @@ import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 class IdentityAuthenticationTest {
 
@@ -164,6 +176,73 @@ class IdentityAuthenticationTest {
         assertThat(limiter.retryAfterRefresh("peer2", NOW)).isZero();
         assertThat(limiter.retryAfterRefresh("peer3", NOW)).isEqualTo(60);
         assertThat(limiter.retryAfterRefresh("peer3", NOW.plusSeconds(60))).isZero();
+    }
+
+    @Test
+    void rejectsRevocationWithinSameSecondAndRetainsSubsecondRefreshIssuance() {
+        Instant issuedAt = NOW.plusNanos(100_000_000);
+        Instant revokedAt = NOW.plusNanos(500_000_000);
+        Instant decisionAt = NOW.plusNanos(750_000_000);
+        var settings = properties(ENCODED, 600, 28800, 60, 120, 20, 10, 100);
+        var tokens = new JwtTokenService(settings);
+        var users = mock(UserRepository.class);
+        var sessions = mock(LoginSessionRepository.class);
+        var refreshTokens = mock(RefreshTokenRepository.class);
+        var events = mock(AuthenticationEventRepository.class);
+        var encoder = mock(IdentityPasswordEncoder.class);
+        var provider = IdentityProvider.local();
+        var user = mock(User.class);
+        when(user.getId()).thenReturn(12L);
+        when(user.getUsername()).thenReturn("synthetic-user");
+        when(user.getIdentityProvider()).thenReturn(provider);
+        when(user.getUserStatus()).thenReturn(new UserStatus(UserStatus.ACTIVE_CODE, "Active"));
+        when(user.getUserType()).thenReturn(new UserType(UserType.HUMAN_CODE, null, null, "Human"));
+        when(users.findForUpdate(12L)).thenReturn(Optional.of(user));
+        var service = new AuthenticationService(mock(IdentityProviderRepository.class), users,
+                mock(LocalCredentialRepository.class), sessions, refreshTokens, events, encoder,
+                tokens, settings, Clock.fixed(decisionAt, ZoneOffset.UTC));
+
+        // A refresh token issued at whole seconds must not rotate after a subsecond revocation.
+        String secret = tokens.newRefreshSecret();
+        String digest = JwtTokenService.digestRefreshSecret(secret);
+        var revoked = spy(new LoginSession(user, NOW.minusSeconds(1), NOW.plusSeconds(60)));
+        when(revoked.getId()).thenReturn(34L);
+        var previous = new RefreshToken(revoked, digest, NOW);
+        revoked.revoke(revokedAt);
+        assertThat(revoked.isActiveAt(NOW)).isTrue();
+        assertThat(revoked.isActiveAt(decisionAt)).isFalse();
+        when(sessions.findUserIdBySessionId(34L)).thenReturn(Optional.of(12L));
+        when(sessions.findForUpdate(34L)).thenReturn(Optional.of(revoked));
+        when(refreshTokens.findSessionIdByDigest(digest)).thenReturn(Optional.of(34L));
+        when(refreshTokens.findForUpdate(digest)).thenReturn(Optional.of(previous));
+        assertThat(service.refresh(secret, "revoked")).isEmpty();
+        assertThat(previous.getConsumedAt()).isNull();
+        verify(refreshTokens, never()).save(any());
+        verifyNoInteractions(events);
+
+        var principal = new CurrentIdentity(12L, "synthetic-user", 34L);
+        var context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal, null, List.of()));
+        SecurityContextHolder.setContext(context);
+        try {
+            assertThat(service.logout(principal, "revoked")).isFalse();
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+        assertThat(revoked.getRevokedAt()).isEqualTo(revokedAt);
+        verifyNoInteractions(events);
+
+        // A live token issued within that same second must be accepted without timestamp regression.
+        var live = spy(new LoginSession(user, NOW.minusSeconds(1), NOW.plusSeconds(60)));
+        when(live.getId()).thenReturn(34L);
+        var liveToken = new RefreshToken(live, digest, issuedAt);
+        when(sessions.findForUpdate(34L)).thenReturn(Optional.of(live));
+        when(refreshTokens.findForUpdate(digest)).thenReturn(Optional.of(liveToken));
+        assertThat(service.refresh(secret, "live")).isPresent();
+        assertThat(liveToken.getConsumedAt()).isEqualTo(decisionAt);
+        verify(refreshTokens).save(argThat(successor -> successor.getIssuedAt().equals(decisionAt)));
+        verify(events).save(argThat(event -> event.getEventCode().equals(AuthenticationEvent.REFRESH_SUCCEEDED)
+                && event.getOccurredAt().equals(decisionAt)));
     }
 
     @Test

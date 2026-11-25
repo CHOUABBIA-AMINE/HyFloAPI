@@ -19,6 +19,7 @@
 
 package dz.sh.hyflo.modules.foundation.identity.application.service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -40,6 +41,7 @@ import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.reposi
 import dz.sh.hyflo.platform.security.IdentityAuthenticationProperties;
 import dz.sh.hyflo.platform.security.JwtTokenService;
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -61,11 +63,22 @@ public class AuthenticationService {
     private final JwtTokenService tokens;
     private final IdentityAuthenticationProperties settings;
     private final String dummyHash;
+    private final Clock clock;
 
+    @Autowired
     public AuthenticationService(IdentityProviderRepository providers, UserRepository users,
             LocalCredentialRepository credentials, LoginSessionRepository sessions,
             RefreshTokenRepository refreshTokens, AuthenticationEventRepository events,
             IdentityPasswordEncoder encoder, JwtTokenService tokens, IdentityAuthenticationProperties settings) {
+        this(providers, users, credentials, sessions, refreshTokens, events, encoder, tokens, settings, Clock.systemUTC());
+    }
+
+    public AuthenticationService(IdentityProviderRepository providers, UserRepository users,
+            LocalCredentialRepository credentials, LoginSessionRepository sessions,
+            RefreshTokenRepository refreshTokens, AuthenticationEventRepository events,
+            IdentityPasswordEncoder encoder, JwtTokenService tokens, IdentityAuthenticationProperties settings,
+            Clock clock) {
+        this.clock = java.util.Objects.requireNonNull(clock, "Clock is required");
         this.providers = providers;
         this.users = users;
         this.credentials = credentials;
@@ -80,7 +93,7 @@ public class AuthenticationService {
 
     @Transactional
     public Optional<LoginResult> login(String username, String password, String correlationId) {
-        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant now = clock.instant().truncatedTo(ChronoUnit.SECONDS);
         IdentityProvider provider = providers.findByCode(IdentityProvider.LOCAL_CODE)
                 .filter(p -> IdentityProvider.LOCAL_CODE.equals(p.getCode()))
                 .orElseThrow(() -> new IllegalStateException("Identity is not initialized"));
@@ -127,7 +140,8 @@ public class AuthenticationService {
         RefreshToken previous = refreshTokens.findForUpdate(digest).orElse(null);
         if (previous == null || !digest.equals(previous.getTokenDigest())
                 || !sessionId.equals(previous.getLoginSession().getId())) return Optional.empty();
-        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        // Persisted revocation/issuance instants can include microseconds. Do not round the decision back to a whole second.
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
         if (!SessionAuthenticationService.eligible(user) || !session.isActiveAt(now)
                 || now.isBefore(previous.getIssuedAt())) return Optional.empty();
 
@@ -156,7 +170,7 @@ public class AuthenticationService {
         User user = users.findForUpdate(principal.userId()).orElse(null);
         if (user == null) return false;
         LoginSession session = sessions.findForUpdate(principal.sessionId()).orElse(null);
-        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
         if (session == null || !user.getId().equals(session.getUser().getId())
                 || !user.getUsername().equals(principal.username())
                 || !SessionAuthenticationService.eligible(user) || !session.isActiveAt(now)) return false;
