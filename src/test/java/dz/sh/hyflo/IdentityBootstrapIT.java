@@ -70,6 +70,8 @@ class IdentityBootstrapIT {
     private static final String SYNTHETIC_PASSWORD = "Synthetic-only-password-2026!";
     private static final List<String> EXPECTED_PERMISSIONS = List.of(
             "user.read",
+            "user-employee.read",
+            "user-employee.associate",
             "user.create",
             "user.activate",
             "user.suspend",
@@ -195,6 +197,8 @@ class IdentityBootstrapIT {
         assertThat(count("T_10_01_08")).isEqualTo(2L);
         assertThat(jdbc.queryForList("SELECT F_05 FROM T_10_01_08", Long.class)).containsOnly(fixture.companyId());
         assertThat(count("T_10_01_18")).isZero();
+        assertThat(count("T_10_01_19")).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_08 WHERE F_03 IS NOT NULL", Long.class)).isZero();
         assertThat(count("T_10_01_10")).isEqualTo(1L);
         assertThat(count("T_10_01_15")).isEqualTo(1L);
         for (String suffix : List.of("03", "11", "12", "13", "16", "17", "18")) {

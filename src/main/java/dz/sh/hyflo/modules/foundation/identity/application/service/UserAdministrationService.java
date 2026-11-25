@@ -33,6 +33,7 @@ import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthen
 import dz.sh.hyflo.modules.foundation.identity.domain.model.*;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.*;
 import dz.sh.hyflo.modules.foundation.organization.application.service.OrganizationUnitScopeService;
+import dz.sh.hyflo.modules.foundation.organization.application.service.EmployeeAssignmentService;
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -56,12 +57,15 @@ public class UserAdministrationService {
     private final LocalCredentialRepository credentials;
     private final UserLifecycleEventService events;
     private final IdentityPasswordEncoder encoder;
+    private final EmployeeAssignmentService employeeAssignments;
+    private final UserEmployeeAssociationEventService employeeEvents;
 
     public UserAdministrationService(EffectiveAuthorizationService authorization, UserRepository users,
             LoginSessionRepository sessions, IdentityProviderRepository providers, UserRoleGrantRepository grants,
             RolePermissionRepository permissions, OrganizationUnitScopeService companies, UserStatusRepository statuses,
             UserTypeRepository types, LocalCredentialRepository credentials, UserLifecycleEventService events,
-            IdentityPasswordEncoder encoder) {
+            IdentityPasswordEncoder encoder, EmployeeAssignmentService employeeAssignments,
+            UserEmployeeAssociationEventService employeeEvents) {
         this.authorization = authorization;
         this.users = users;
         this.sessions = sessions;
@@ -74,6 +78,8 @@ public class UserAdministrationService {
         this.credentials = credentials;
         this.events = events;
         this.encoder = encoder;
+        this.employeeAssignments = employeeAssignments;
+        this.employeeEvents = employeeEvents;
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -118,6 +124,59 @@ public class UserAdministrationService {
         }
         return candidate;
     }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public EmployeeAssociation employeeAssociation(CurrentIdentity principal, long companyId, long userId) {
+        authorization.requireCompanyPermission(principal, companyId, "user-employee.read");
+        if (principal.userId() == userId) throw denied();
+        User target = users.findOwned(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        requireEmployeeTarget(target, companyId);
+        return new EmployeeAssociation(target.getId(), target.getEmployeeId());
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void changeEmployeeAssociation(CurrentIdentity principal, long companyId, long userId,
+            Long employeeId, String reason, String correlation) {
+        if (employeeId != null && employeeId <= 0 || reason == null || reason.isBlank() || reason.length() > 255) {
+            throw new IllegalArgumentException("Invalid employee association request");
+        }
+        String permission = "user-employee.associate";
+        User actor = lockAuthority(principal, companyId, permission);
+        if (actor.getId() == userId) throw denied();
+        User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        requireEmployeeTarget(target, companyId);
+        String status = target.getUserStatus().getCode();
+        boolean linking = employeeId != null;
+        if (!(UserStatus.PENDING_CODE.equals(status) || UserStatus.ACTIVE_CODE.equals(status)
+                || UserStatus.SUSPENDED_CODE.equals(status) || (!linking && UserStatus.DISABLED_CODE.equals(status)))) {
+            throw denied();
+        }
+        Long previous = target.getEmployeeId();
+        LocalDate decisionDate = LocalDate.now(ZoneOffset.UTC);
+        if (linking) {
+            if (!employeeAssignments.lockEligibleEmployeeForIdentity(employeeId, companyId, decisionDate)) throw denied();
+            if (previous != null || users.countLinkedEmployee(employeeId) != 0) throw rejected();
+        } else if (previous == null) {
+            throw rejected();
+        }
+        actor = lockAuthority(principal, companyId, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (linking && !decisionDate.equals(LocalDate.ofInstant(now, ZoneOffset.UTC))) throw denied();
+        if (linking) target.linkEmployee(employeeId);
+        else target.unlinkEmployee();
+        employeeEvents.record(linking ? UserEmployeeAssociationEvent.LINKED : UserEmployeeAssociationEvent.UNLINKED,
+                now, correlation, reason, previous, target, actor);
+    }
+
+    private static void requireEmployeeTarget(User target, long companyId) {
+        if (target.getOwningOrganizationUnitId() != companyId || "hyflo-bootstrap".equals(target.getUsername())
+                || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
+                || !target.getIdentityProvider().isEnabled() || !target.getUserType().hasCode(UserType.HUMAN_CODE)) {
+            throw denied();
+        }
+    }
+
+    public record EmployeeAssociation(long userId, Long employeeId) {}
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Account create(CurrentIdentity principal, long companyId, String username, String email,

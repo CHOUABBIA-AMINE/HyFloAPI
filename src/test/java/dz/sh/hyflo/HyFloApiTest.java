@@ -75,6 +75,34 @@ class HyFloApiTest {
     }
 
     @Test
+    void employeeAssociationIsOptionalHumanOnlyAndRequiresExplicitUnlink() {
+        var provider = IdentityProvider.local();
+        var pending = new UserStatus(UserStatus.PENDING_CODE, "Pending");
+        var disabled = new UserStatus(UserStatus.DISABLED_CODE, "Disabled");
+        var human = new UserType(UserType.HUMAN_CODE, null, null, "Human");
+        var service = new UserType(UserType.SERVICE_CODE, null, null, "Service");
+        var user = new User(provider, "link-human", "link-human@example.invalid", null, 1L, pending, human);
+        assertThat(user.getEmployeeId()).isNull();
+        assertThatThrownBy(user::unlinkEmployee).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> user.linkEmployee(0)).isInstanceOf(IllegalArgumentException.class);
+        user.linkEmployee(10);
+        assertThat(user.getEmployeeId()).isEqualTo(10L);
+        assertThatThrownBy(() -> user.linkEmployee(11)).isInstanceOf(IllegalStateException.class);
+        user.unlinkEmployee();
+        user.linkEmployee(11);
+        user.disable(disabled);
+        user.unlinkEmployee();
+        assertThat(user.getEmployeeId()).isNull();
+        assertThatThrownBy(() -> user.linkEmployee(11)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new User(provider, "link-service", "link-service@example.invalid", 1L, 1L, pending, service))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new User(provider, "link-invalid", "link-invalid@example.invalid", -1L, 1L, pending, human))
+                .isInstanceOf(IllegalArgumentException.class);
+        var serviceAccount = new User(provider, "link-service", "link-service@example.invalid", null, 1L, pending, service);
+        assertThatThrownBy(() -> serviceAccount.linkEmployee(1)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void distinguishesCompanyWideAndSpecificResourceScopes() {
         var global = AuthorizationScope.global(1);
         assertThat(global.getScopeType()).isEqualTo(AuthorizationScope.GLOBAL);

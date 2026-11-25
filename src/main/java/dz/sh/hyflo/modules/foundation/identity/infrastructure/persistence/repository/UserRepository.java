@@ -32,6 +32,9 @@ public interface UserRepository extends Repository<User, Long> {
 
     User save(User entity);
 
+    @Query("select count(u) from User u where u.employeeId = :employeeId")
+    long countLinkedEmployee(@Param("employeeId") long employeeId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u where u.id = :id")
     Optional<User> findForUpdate(@Param("id") long id);

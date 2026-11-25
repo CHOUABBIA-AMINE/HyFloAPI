@@ -37,6 +37,11 @@ public interface EmployeeAssignmentRepository extends Repository<EmployeeAssignm
     EmployeeAssignment save(EmployeeAssignment assignment);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from EmployeeAssignment a join fetch a.assignmentStatus "
+            + "where a.employee.id = :employeeId and (a.validTo is null or a.validTo > :date) order by a.id")
+    List<EmployeeAssignment> findForAssociation(@Param("employeeId") long employeeId, @Param("date") LocalDate date);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
             select a from EmployeeAssignment a
             where a.employee.id = :employeeId and (a.validTo is null or a.validTo > :date)

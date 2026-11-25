@@ -46,7 +46,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "T_10_01_08", uniqueConstraints = {
     @UniqueConstraint(name = "T_10_01_08_UK_01", columnNames = {"F_06", "F_01"}),
-    @UniqueConstraint(name = "T_10_01_08_UK_02", columnNames = {"F_02"})
+    @UniqueConstraint(name = "T_10_01_08_UK_02", columnNames = {"F_02"}),
+    @UniqueConstraint(name = "T_10_01_08_UK_03", columnNames = {"F_03"})
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -98,13 +99,30 @@ public class User {
         this.identityProvider = Objects.requireNonNull(identityProvider, "Identity provider is required");
         this.username = normalizeUsername(username);
         this.email = Objects.requireNonNull(email, "Email is required");
-        this.employeeId = employeeId;
         if (owningOrganizationUnitId <= 0) {
             throw new IllegalArgumentException("Owning company must be positive");
         }
         this.owningOrganizationUnitId = owningOrganizationUnitId;
         this.userStatus = requireStatus(pendingStatus, UserStatus.PENDING_CODE);
         this.userType = Objects.requireNonNull(userType, "User type is required");
+        if (employeeId != null) linkEmployee(employeeId);
+    }
+
+    public void linkEmployee(long employeeId) {
+        if (employeeId <= 0 || !userType.hasCode(UserType.HUMAN_CODE)) {
+            throw new IllegalArgumentException("Invalid employee association");
+        }
+        if (this.employeeId != null || userStatus.hasCode(UserStatus.DISABLED_CODE)) {
+            throw new IllegalStateException("Employee association rejected");
+        }
+        this.employeeId = employeeId;
+    }
+
+    public void unlinkEmployee() {
+        if (!userType.hasCode(UserType.HUMAN_CODE) || employeeId == null) {
+            throw new IllegalStateException("Employee association rejected");
+        }
+        employeeId = null;
     }
 
     public void changeProfilePicture(Long fileId) {

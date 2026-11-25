@@ -125,7 +125,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(38);
+        assertThat(entities).hasSize(39);
         for (var entity : entities) {
             var expectedInterface = entity.getPackageName().replace(".domain.model", ".infrastructure.persistence.repository")
                     + "." + entity.getSimpleName() + "Repository";
@@ -147,7 +147,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(38);
+        assertThat(entities).hasSize(39);
         for (var entity : entities) {
             var expectedService = entity.getPackageName().replace(".domain.model", ".application.service")
                     + "." + entity.getSimpleName() + "Service";
@@ -164,7 +164,8 @@ class HyFloApiIT {
                                 && java.lang.reflect.Modifier.isStatic(method.getModifiers())
                                 && method.getName().equals("$jacocoInit")))
                         .toList();
-                if (entity.getSimpleName().equals("UserLifecycleEvent")) {
+                if (entity.getSimpleName().equals("UserLifecycleEvent")
+                        || entity.getSimpleName().equals("UserEmployeeAssociationEvent")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("record");
                 } else {
                     assertThat(declaredBusinessMethods)
@@ -262,8 +263,12 @@ class HyFloApiIT {
         assertTableColumns("T_10_01_01", "F_00", "F_01", "F_02", "F_03");
         assertTableColumns("T_10_01_10", "F_00", "F_01", "F_02", "F_03");
         assertTableColumns("T_10_01_02", "F_00", "F_01", "F_02");
-        assertTableConstraints("T_10_01_08", "T_10_01_08_UK_01", "T_10_01_08_UK_02",
-                "T_10_01_08_FK_01", "T_10_01_08_FK_02", "T_10_01_08_FK_03");
+        assertTableConstraints("T_10_01_08", "T_10_01_08_UK_01", "T_10_01_08_UK_02", "T_10_01_08_UK_03",
+                "T_10_01_08_FK_01", "T_10_01_08_FK_02", "T_10_01_08_FK_03", "T_10_01_08_FK_04");
+        assertForeignKey("T_10_01_08", "F_03", "T_10_02_09", "T_10_01_08_FK_04", true);
+        assertTableColumns("T_10_01_19", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
+        assertForeignKey("T_10_01_19", "F_08", "T_10_01_08", "T_10_01_19_FK_01", false);
+        assertForeignKey("T_10_01_19", "F_09", "T_10_01_08", "T_10_01_19_FK_02", false);
         assertTableConstraints("T_10_01_01", "T_10_01_01_UK_01");
         assertTableConstraints("T_10_01_10", "T_10_01_10_UK_01", "T_10_01_10_FK_01");
         assertTableConstraints("T_10_01_02", "T_10_01_02_UK_01");
@@ -723,6 +728,28 @@ class HyFloApiIT {
         assertThat(jdbc.queryForList(
                 "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND BINARY TABLE_NAME = BINARY ?",
                 String.class, table)).contains(constraints);
+    }
+
+    @Test
+    void validatesEmployeeReferenceWithoutRepairingDefaultSchema() {
+        var environment = new org.springframework.mock.env.MockEnvironment()
+                .withProperty("spring.jpa.hibernate.ddl-auto", "validate");
+        var validator = new dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.UserEmployeeReferenceConstraint(
+                jdbc, environment);
+        validator.afterPropertiesSet();
+        jdbc.execute("ALTER TABLE T_10_01_08 DROP FOREIGN KEY T_10_01_08_FK_04");
+        try {
+            assertThatThrownBy(validator::afterPropertiesSet).isInstanceOf(IllegalStateException.class);
+            assertThat(jdbc.queryForObject("""
+                    SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                    WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='T_10_01_08'
+                        AND CONSTRAINT_NAME='T_10_01_08_FK_04'
+                    """, Long.class)).isZero();
+        } finally {
+            jdbc.execute("ALTER TABLE T_10_01_08 ADD CONSTRAINT T_10_01_08_FK_04 "
+                    + "FOREIGN KEY (F_03) REFERENCES T_10_02_09(F_00) ON DELETE RESTRICT ON UPDATE RESTRICT");
+        }
+        validator.afterPropertiesSet();
     }
 
     @Test

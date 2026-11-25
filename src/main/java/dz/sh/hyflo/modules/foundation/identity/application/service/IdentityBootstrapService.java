@@ -67,6 +67,8 @@ public class IdentityBootstrapService {
     private static final Pattern OPERATOR_REFERENCE = Pattern.compile("[A-Za-z0-9][A-Za-z0-9_.@:/-]{0,119}");
     private static final List<String> INITIAL_PERMISSIONS = List.of(
             "user.read",
+            "user-employee.read",
+            "user-employee.associate",
             "user.create",
             "user.activate",
             "user.suspend",

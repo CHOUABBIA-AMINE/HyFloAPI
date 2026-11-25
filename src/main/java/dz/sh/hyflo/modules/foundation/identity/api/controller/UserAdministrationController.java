@@ -24,6 +24,8 @@ import java.util.function.Function;
 
 import dz.sh.hyflo.modules.foundation.identity.api.mapper.UserAccountMapper;
 import dz.sh.hyflo.modules.foundation.identity.api.request.CreateUserRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.LinkEmployeeRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.response.UserEmployeeAssociationResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.request.AssignUserRoleGrantRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.response.UserRoleGrantResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LocalCredentialRequest;
@@ -141,6 +143,36 @@ public class UserAdministrationController {
             @Valid @RequestBody UserLifecycleRequest request) {
         return execute(HttpStatus.NO_CONTENT, correlation -> {
             accounts.revokeAccountSessions(principal, positive(company), positive(userId), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
+    @GetMapping("/{userId}/employee")
+    public ResponseEntity<?> employeeAssociation(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId) {
+        return execute(HttpStatus.OK, correlation -> {
+            var value = accounts.employeeAssociation(principal, positive(company), positive(userId));
+            return new UserEmployeeAssociationResponse(value.userId(), value.employeeId());
+        }, false);
+    }
+
+    @PostMapping(path = "/{userId}/employee/link", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> linkEmployee(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @Valid @RequestBody LinkEmployeeRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.changeEmployeeAssociation(principal, positive(company), positive(userId),
+                    request.employeeId(), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
+    @PostMapping(path = "/{userId}/employee/unlink", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> unlinkEmployee(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.changeEmployeeAssociation(principal, positive(company), positive(userId), null, request.reason(), correlation);
             return null;
         }, false);
     }

@@ -48,6 +48,16 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
+import dz.sh.hyflo.modules.foundation.organization.application.service.EmployeeAssignmentService;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.AssignmentStatus;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.AssignmentType;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.Employee;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeAssignment;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeStatus;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeType;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.Position;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.PositionLevel;
+import dz.sh.hyflo.modules.foundation.organization.domain.model.PositionStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType;
@@ -72,6 +82,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mysql.MySQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Testcontainers
 @ActiveProfiles("test")
@@ -86,7 +97,7 @@ class IdentityAuthorizationIT {
     private static final String RESET_PASSWORD = "Synthetic-replacement-password!";
     private static final List<String> EXPECTED = List.of("credential.initialize", "credential.reset",
             "identity-catalog.read", "login-session.revoke", "permission.read", "role.read",
-            "user-role-grant.assign", "user-role-grant.read", "user-role-grant.revoke", "user.activate",
+            "user-employee.associate", "user-employee.read", "user-role-grant.assign", "user-role-grant.read", "user-role-grant.revoke", "user.activate",
             "user.create", "user.disable", "user.reactivate", "user.read", "user.suspend");
 
     @SuppressWarnings("resource")
@@ -109,6 +120,7 @@ class IdentityAuthorizationIT {
     @Autowired JwtTokenService tokens;
     @Autowired JdbcTemplate jdbc;
     @Autowired PlatformTransactionManager transactions;
+    @Autowired EmployeeAssignmentService employeeAssignments;
     @PersistenceContext EntityManager entityManager;
 
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
@@ -146,6 +158,7 @@ class IdentityAuthorizationIT {
         var fixture = createGrantFixtures(companies, adminId, otherId);
         exerciseAccountAdministration(companies, adminId, otherId, admin, other, fixture);
         exerciseAccountSearch(companies, admin, other, fixture);
+        exerciseEmployeeAssociation(companies, adminId, otherId, admin, other, fixture);
         var malformedCatalog = get("/v1/identity/permissions?companyId=" + companies.first(), admin);
         assertThat(malformedCatalog.statusCode()).isEqualTo(200);
         List<Map<String, Object>> definitions = JsonPath.read(malformedCatalog.body(), "$[*]");
@@ -234,6 +247,253 @@ class IdentityAuthorizationIT {
         assertProblem(get(permissions(companies.second()), other), 401, "AUTHENTICATION_REQUIRED");
     }
 
+
+    private void exerciseEmployeeAssociation(Companies c, long adminId, long otherId, String admin, String other,
+            GrantFixture fixture) throws Exception {
+        var f = createEmployeeAssociationFixtures(c, adminId);
+        long a = userId("search_0");
+        long b = userId("search_1");
+        long disabled = userId("managed.user");
+        long service = userId("managed-service");
+        long bootstrapId = userId("hyflo-bootstrap");
+        String first = "?companyId=" + c.first();
+        String second = "?companyId=" + c.second();
+        String root = "/v1/identity/users/";
+        String live = root + f.liveUser() + "/employee";
+        String reason = "{\"reason\":\"synthetic unlink\"}";
+        String liveAccess = login("employee-live");
+        String beforeHash = storedHash(f.liveUser());
+        long beforeSessions = jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=?", Long.class, f.liveUser());
+        long beforeGrants = jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, f.liveUser());
+
+        assertProblem(get(live + first, null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post(live + "/link" + first, linkBody(f.descendant()), null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get(live + first, other), 403, "ACCESS_DENIED");
+        assertProblem(post(live + "/link" + first, linkBody(f.descendant()), other), 403, "ACCESS_DENIED");
+        assertProblem(get(live, admin), 400, "INVALID_REQUEST");
+        assertProblem(get(live + second, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(live + "/link" + first, "{\"employeeId\":0,\"reason\":\"invalid\"}", admin), 400, "INVALID_REQUEST");
+        assertProblem(post(live + "/link" + first, "{\"employeeId\":null,\"reason\":\"invalid\"}", admin), 400, "INVALID_REQUEST");
+        assertProblem(post(live + "/link" + first, "{\"employeeId\":" + f.descendant() + ",\"reason\":\" \"}", admin), 400, "INVALID_REQUEST");
+        assertProblem(post(live + "/unlink" + first, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertAssociation(get(live + first, admin), f.liveUser(), null);
+        String denial = null;
+        for (long target : List.of(adminId, otherId, disabled, service, bootstrapId, Long.MAX_VALUE)) {
+            var rejected = post(root + target + "/employee/link" + first, linkBody(f.descendant()), admin);
+            assertProblem(rejected, 403, "ACCESS_DENIED");
+            if (denial == null) denial = detail(rejected);
+            else assertThat(detail(rejected)).isEqualTo(denial);
+        }
+        for (long employee : f.deniedEmployees()) {
+            var rejected = post(live + "/link" + first, linkBody(employee), admin);
+            assertProblem(rejected, 403, "ACCESS_DENIED");
+            assertThat(detail(rejected)).isEqualTo(denial);
+        }
+        assertProblem(post(live + "/link" + first, linkBody(Long.MAX_VALUE), admin), 403, "ACCESS_DENIED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_19", Long.class)).isZero();
+
+        long write = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='user-employee.associate'", Long.class);
+        long read = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='user-employee.read'", Long.class);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), write);
+        try {
+            assertAssociation(get(live + first, admin), f.liveUser(), null);
+            assertProblem(post(live + "/link" + first, linkBody(f.descendant()), admin), 403, "ACCESS_DENIED");
+        } finally {
+            jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), write);
+        }
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_employee_event_failure BEFORE INSERT ON T_10_01_19 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic association evidence failure'");
+        try {
+            assertProblem(post(live + "/link" + first, linkBody(f.descendant()), admin), 503, "IDENTITY_UNAVAILABLE");
+            assertAssociation(get(live + first, admin), f.liveUser(), null);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_19", Long.class)).isZero();
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_employee_event_failure");
+        }
+
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), read);
+        try {
+            assertProblem(get(live + first, admin), 403, "ACCESS_DENIED");
+            var linked = post(live + "/link" + first, linkBody(f.descendant()), admin);
+            assertThat(linked.statusCode()).isEqualTo(204);
+            assertThat(linked.body()).isEmpty();
+            assertThat(linked.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        } finally {
+            jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), read);
+        }
+        assertAssociation(get(live + first, admin), f.liveUser(), f.descendant());
+        assertProblem(post(live + "/link" + first, linkBody(f.direct()), admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertProblem(post(root + a + "/employee/link" + first, linkBody(f.descendant()), admin), 409, "ACCOUNT_OPERATION_REJECTED");
+
+        // Database constraints independently reject dangling and duplicated scalar references.
+        assertThatThrownBy(() -> jdbc.update("UPDATE T_10_01_08 SET F_03=? WHERE F_00=?", Long.MAX_VALUE, a))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> jdbc.update("UPDATE T_10_01_08 SET F_03=? WHERE F_00=?", f.descendant(), a))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+        assertAssociation(get(root + a + "/employee" + first, admin), a, null);
+        assertAssociation(get(root + b + "/employee" + first, admin), b, null);
+
+        // Transfer through the existing Organization service; Identity must not follow the assignment.
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var assignment = entityManager.createQuery(
+                    "select a from EmployeeAssignment a where a.employee.id=:id", EmployeeAssignment.class)
+                    .setParameter("id", f.descendant()).getSingleResult();
+            var ended = entityManager.createQuery("select s from AssignmentStatus s where s.code='ENDED'", AssignmentStatus.class)
+                    .getSingleResult();
+            employeeAssignments.transfer(f.descendant(), entityManager.find(OrganizationUnit.class, c.second()),
+                    assignment.getPosition(), LocalDate.now(ZoneOffset.UTC), assignment.getAssignmentType(),
+                    assignment.getAssignmentStatus(), ended);
+        });
+        assertAssociation(get(live + first, admin), f.liveUser(), f.descendant());
+        assertThat(jdbc.queryForObject("SELECT F_05 FROM T_10_01_08 WHERE F_00=?", Long.class, f.liveUser())).isEqualTo(c.first());
+        assertThat(post(live + "/unlink" + first, reason, admin).statusCode()).isEqualTo(204);
+        assertAssociation(get(live + first, admin), f.liveUser(), null);
+        assertProblem(post(live + "/link" + first, linkBody(f.descendant()), admin), 403, "ACCESS_DENIED");
+        assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_19 WHERE F_08=? ORDER BY F_00", String.class, f.liveUser()))
+                .containsExactly("LINKED", "UNLINKED");
+        assertThat(jdbc.queryForList("SELECT F_06 FROM T_10_01_19 WHERE F_08=? ORDER BY F_00", Long.class, f.liveUser()))
+                .containsExactly(null, f.descendant());
+        assertThat(jdbc.queryForList("SELECT F_07 FROM T_10_01_19 WHERE F_08=? ORDER BY F_00", Long.class, f.liveUser()))
+                .containsExactly(f.descendant(), null);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM T_10_01_19 WHERE F_08=? AND F_09=? AND F_05=?
+                    AND F_02 IS NOT NULL AND F_03 IS NOT NULL AND F_04 IN ('synthetic link','synthetic unlink')
+                """, Long.class, f.liveUser(), adminId, c.first())).isEqualTo(2L);
+        assertThat(storedHash(f.liveUser())).isEqualTo(beforeHash);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NULL", Long.class, f.liveUser()))
+                .isEqualTo(beforeSessions);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, f.liveUser()))
+                .isEqualTo(beforeGrants);
+        assertThat(get("/v1/me", liveAccess).statusCode()).isEqualTo(200);
+        assertCodes(get(permissions(c.first()), liveAccess), c.first(), List.of("user.read"));
+        assertThat((String) JsonPath.read(get(root + f.liveUser() + first, admin).body(), "$.userStatusCode")).isEqualTo("ACTIVE");
+
+        String pa = root + a + "/employee";
+        String pb = root + b + "/employee";
+        var x = client.sendAsync(postRequest(pa + "/link" + first, linkBody(f.direct()), admin), HttpResponse.BodyHandlers.ofString());
+        var y = client.sendAsync(postRequest(pb + "/link" + first, linkBody(f.direct()), admin), HttpResponse.BodyHandlers.ofString());
+        var results = List.of(x.get(30, java.util.concurrent.TimeUnit.SECONDS), y.get(30, java.util.concurrent.TimeUnit.SECONDS));
+        assertThat(results.stream().map(HttpResponse::statusCode).toList()).containsExactlyInAnyOrder(204, 409);
+        long winner = results.getFirst().statusCode() == 204 ? a : b;
+        long loser = winner == a ? b : a;
+        assertAssociation(get(root + winner + "/employee" + first, admin), winner, f.direct());
+        assertAssociation(get(root + loser + "/employee" + first, admin), loser, null);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_19 WHERE F_07=?", Long.class, f.direct())).isEqualTo(1L);
+        // A disabled linked account retains its reference until an explicit authorized unlink.
+        assertThat(post(root + winner + "/disable" + first, reason, admin).statusCode()).isEqualTo(200);
+        assertProblem(post(root + loser + "/employee/link" + first, linkBody(f.direct()), admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(post(root + winner + "/employee/unlink" + first, reason, admin).statusCode()).isEqualTo(204);
+        assertThat(post(root + loser + "/employee/link" + first, linkBody(f.direct()), admin).statusCode()).isEqualTo(204);
+        assertThat(post(root + loser + "/employee/unlink" + first, reason, admin).statusCode()).isEqualTo(204);
+        assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users/{userId}/employee",
+                "/v1/identity/users/{userId}/employee/link", "/v1/identity/users/{userId}/employee/unlink");
+    }
+
+    private long userId(String username) {
+        return jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01=?", Long.class, username);
+    }
+
+    private static String linkBody(long employee) {
+        return "{\"employeeId\":" + employee + ",\"reason\":\"synthetic link\"}";
+    }
+
+    private static void assertAssociation(HttpResponse<String> response, long userId, Long employeeId) {
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        Map<String, Object> value = JsonPath.read(response.body(), "$");
+        assertThat(value).containsOnlyKeys("userId", "employeeId");
+        assertThat(((Number) value.get("userId")).longValue()).isEqualTo(userId);
+        if (employeeId == null) assertThat(value.get("employeeId")).isNull();
+        else assertThat(((Number) value.get("employeeId")).longValue()).isEqualTo(employeeId);
+    }
+
+    private EmployeeLinkFixture createEmployeeAssociationFixtures(Companies c, long adminId) {
+        var fixture = new TransactionTemplate(transactions).execute(tx -> {
+            LocalDate today = LocalDate.now(ZoneOffset.UTC);
+            var first = entityManager.find(OrganizationUnit.class, c.first());
+            var second = entityManager.find(OrganizationUnit.class, c.second());
+            var divisionType = entityManager.find(OrganizationUnit.class, c.division()).getOrganizationUnitType();
+            var activeUnit = first.getOrganizationUnitStatus();
+            var nested = new OrganizationUnit("LINK_NESTED", null, null, "Nested company",
+                    first.getOrganizationUnitType(), first, today.minusDays(10), null, activeUnit);
+            var child = new OrganizationUnit("LINK_CHILD", null, null, "Child unit", divisionType, first,
+                    today.minusDays(10), null, activeUnit);
+            var cyclic = new OrganizationUnit("LINK_CYCLE", null, null, "Cycle probe", divisionType, first,
+                    today.minusDays(10), null, activeUnit);
+            var inactiveChild = new OrganizationUnit("LINK_INACTIVE", null, null, "Inactive child", divisionType, first,
+                    today.minusDays(10), null, entityManager.find(OrganizationUnit.class, c.inactive()).getOrganizationUnitStatus());
+            var type = new EmployeeType(EmployeeType.PERMANENT_CODE, null, null, "Permanent");
+            var active = new EmployeeStatus(EmployeeStatus.ACTIVE_CODE, null, null, "Active");
+            var suspended = new EmployeeStatus(EmployeeStatus.SUSPENDED_CODE, null, null, "Suspended");
+            var level = new PositionLevel(PositionLevel.ENGINEER_CODE, null, null, "Engineer");
+            var positionStatus = new PositionStatus(PositionStatus.ACTIVE_CODE, null, null, "Active");
+            var assignmentType = new AssignmentType(AssignmentType.PRIMARY_CODE, null, null, "Primary");
+            var assigned = new AssignmentStatus(AssignmentStatus.ACTIVE_CODE, null, null, "Active");
+            var ended = new AssignmentStatus(AssignmentStatus.ENDED_CODE, null, null, "Ended");
+            var suspendedAssignment = new AssignmentStatus(AssignmentStatus.SUSPENDED_CODE, null, null, "Suspended");
+            for (var item : List.of(nested, child, cyclic, inactiveChild, type, active, suspended, level,
+                    positionStatus, assignmentType, assigned, ended, suspendedAssignment)) entityManager.persist(item);
+            var position = new Position("LINK_POSITION", null, null, "Engineer", null, null, "Engineer", level, positionStatus);
+            entityManager.persist(position);
+            var descendant = employee("LINK-DESC", type, active, today.minusDays(10), null);
+            var direct = employee("LINK-DIRECT", type, active, today.minusDays(10), null);
+            var foreign = employee("LINK-FOREIGN", type, active, today.minusDays(10), null);
+            var inactive = employee("LINK-STATUS", type, suspended, today.minusDays(10), null);
+            var expired = employee("LINK-EMP-END", type, active, today.minusDays(10), today);
+            var future = employee("LINK-FUTURE", type, active, today.minusDays(10), null);
+            var old = employee("LINK-OLD", type, active, today.minusDays(10), null);
+            var ambiguous = employee("LINK-AMBIG", type, active, today.minusDays(10), null);
+            var badAssignment = employee("LINK-ASSIGN-STATUS", type, active, today.minusDays(10), null);
+            var nestedEmployee = employee("LINK-NEST", type, active, today.minusDays(10), null);
+            var cycleEmployee = employee("LINK-CYCLE", type, active, today.minusDays(10), null);
+            var noCompany = employee("LINK-NOCOMPANY", type, active, today.minusDays(10), null);
+            var inactiveUnitEmployee = employee("LINK-INACTIVE-UNIT", type, active, today.minusDays(10), null);
+            var unassigned = employee("LINK-UNASSIGNED", type, active, today.minusDays(10), null);
+            var notHired = employee("LINK-NOTHIRED", type, active, today.plusDays(1), null);
+            var start = today.minusDays(2);
+            for (var pair : List.of(new Object[]{descendant, child}, new Object[]{direct, first},
+                    new Object[]{foreign, second}, new Object[]{inactive, first}, new Object[]{expired, first},
+                    new Object[]{ambiguous, first}, new Object[]{badAssignment, first}, new Object[]{nestedEmployee, nested},
+                    new Object[]{cycleEmployee, cyclic}, new Object[]{noCompany, entityManager.find(OrganizationUnit.class, c.division())},
+                    new Object[]{inactiveUnitEmployee, inactiveChild})) {
+                entityManager.persist(new EmployeeAssignment((Employee) pair[0], (OrganizationUnit) pair[1], position,
+                        start, assignmentType, assigned));
+            }
+            entityManager.persist(new EmployeeAssignment(ambiguous, child, position, today.minusDays(1), assignmentType, assigned));
+            entityManager.persist(new EmployeeAssignment(future, first, position, today.plusDays(1), assignmentType, assigned));
+            var endedAssignment = new EmployeeAssignment(old, first, position, start, assignmentType, assigned);
+            endedAssignment.endOn(today.minusDays(1), ended);
+            entityManager.persist(endedAssignment);
+            var admin = entityManager.find(User.class, adminId);
+            var live = new User(admin.getIdentityProvider(), "employee-live", "employee-live@example.invalid", null,
+                    c.first(), status("PENDING"), admin.getUserType());
+            entityManager.persist(live);
+            var credential = new LocalCredential(live, encoder.encode(PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            live.activate(credential, status("ACTIVE"));
+            grant(live, role("EMPLOYEE_LINK_READER", permission("user.read")), AuthorizationScope.global(c.first()),
+                    Instant.now().minusSeconds(1), null, admin);
+            entityManager.flush();
+            return new EmployeeLinkFixture(live.getId(), descendant.getId(), direct.getId(), cyclic.getId(),
+                    badAssignment.getId(), suspendedAssignment.getId(), List.of(foreign.getId(), inactive.getId(),
+                    expired.getId(), future.getId(), old.getId(), ambiguous.getId(), badAssignment.getId(), nestedEmployee.getId(),
+                    cycleEmployee.getId(), noCompany.getId(), inactiveUnitEmployee.getId(), unassigned.getId(), notHired.getId()));
+        });
+        // Intentional malformed database fixtures, never exposed as production mutation APIs.
+        jdbc.update("UPDATE T_10_02_11 SET F_08=F_00 WHERE F_00=?", fixture.cycleUnit());
+        jdbc.update("UPDATE T_10_02_12 SET F_07=? WHERE F_05=?", fixture.suspendedStatus(), fixture.suspendedEmployee());
+        return fixture;
+    }
+
+    private Employee employee(String number, EmployeeType type, EmployeeStatus status, LocalDate hire, LocalDate end) {
+        var employee = new Employee(number, null, null, "Synthetic", "Employee", hire, end, type, status);
+        entityManager.persist(employee);
+        return employee;
+    }
+
+    private record EmployeeLinkFixture(long liveUser, long descendant, long direct, long cycleUnit,
+            long suspendedEmployee, long suspendedStatus, List<Long> deniedEmployees) {}
 
     private void exerciseAccountSearch(Companies c, String admin, String other, GrantFixture fixture) throws Exception {
         String root = "/v1/identity/users";

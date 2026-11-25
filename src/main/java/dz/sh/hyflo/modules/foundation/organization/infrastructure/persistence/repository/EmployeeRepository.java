@@ -34,4 +34,8 @@ public interface EmployeeRepository extends Repository<Employee, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from Employee e where e.id = :id")
     Optional<Employee> findByIdForUpdate(@Param("id") long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select e from Employee e join fetch e.employeeStatus where e.id = :id")
+    Optional<Employee> findForAssociation(@Param("id") long id);
 }
