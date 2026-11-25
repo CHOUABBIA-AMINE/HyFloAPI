@@ -14,7 +14,7 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.application.service
  *
- * @Description : Coordinates local login, security evidence and token issuance in one transaction.
+ * @Description : Coordinates local login, refresh rotation and own-session revocation transactionally.
  */
 
 package dz.sh.hyflo.modules.foundation.identity.application.service;
@@ -42,6 +42,8 @@ import dz.sh.hyflo.platform.security.JwtTokenService;
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -49,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthenticationService {
 
     private static final Pattern BCRYPT = Pattern.compile("\\{bcrypt}\\$2[aby]\\$(0[4-9]|1[0-4])\\$[./A-Za-z0-9]{53}");
+    private static final Pattern REFRESH_SECRET = Pattern.compile("[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]");
     private final IdentityProviderRepository providers;
     private final UserRepository users;
     private final LocalCredentialRepository credentials;
@@ -105,6 +108,63 @@ public class AuthenticationService {
         events.save(new AuthenticationEvent(AuthenticationEvent.LOGIN_SUCCEEDED, now, correlationId, provider, user));
         var access = tokens.issue(user.getId(), session.getId(), now, sessionExpiry);
         return Optional.of(new LoginResult(access.value(), access.expiresAt(), refreshSecret, sessionExpiry));
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Optional<LoginResult> refresh(String secret, String correlationId) {
+        if (secret == null || !REFRESH_SECRET.matcher(secret).matches()) {
+            return Optional.empty();
+        }
+        String digest = JwtTokenService.digestRefreshSecret(secret);
+        // Scalar lookups do not pre-load mutable entities before the serialization locks.
+        Long sessionId = refreshTokens.findSessionIdByDigest(digest).orElse(null);
+        if (sessionId == null) return Optional.empty();
+        Long userId = sessions.findUserIdBySessionId(sessionId).orElse(null);
+        if (userId == null) return Optional.empty();
+        User user = users.findForUpdate(userId).orElse(null);
+        if (user == null) return Optional.empty();
+        LoginSession session = sessions.findForUpdate(sessionId).orElse(null);
+        if (session == null || !userId.equals(session.getUser().getId())) return Optional.empty();
+        RefreshToken previous = refreshTokens.findForUpdate(digest).orElse(null);
+        if (previous == null || !digest.equals(previous.getTokenDigest())
+                || !sessionId.equals(previous.getLoginSession().getId())) return Optional.empty();
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        if (!SessionAuthenticationService.eligible(user) || !session.isActiveAt(now)
+                || now.isBefore(previous.getIssuedAt())) return Optional.empty();
+
+        if (previous.getConsumedAt() != null) {
+            session.revoke(now);
+            events.save(new AuthenticationEvent(AuthenticationEvent.REFRESH_REPLAY, now, correlationId,
+                    user.getIdentityProvider(), user));
+            // A normal rejection commits the revocation and evidence before HTTP 401.
+            return Optional.empty();
+        }
+
+        previous.consume(now);
+        String successor = tokens.newRefreshSecret();
+        refreshTokens.save(new RefreshToken(session, JwtTokenService.digestRefreshSecret(successor), now));
+        var access = tokens.issue(userId, sessionId, now, session.getExpiresAt());
+        events.save(new AuthenticationEvent(AuthenticationEvent.REFRESH_SUCCEEDED, now, correlationId,
+                user.getIdentityProvider(), user));
+        return Optional.of(new LoginResult(access.value(), access.expiresAt(), successor, session.getExpiresAt()));
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public boolean logout(SessionAuthenticationService.CurrentIdentity principal, String correlationId) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (principal == null || authentication == null || !authentication.isAuthenticated()
+                || !principal.equals(authentication.getPrincipal())) return false;
+        User user = users.findForUpdate(principal.userId()).orElse(null);
+        if (user == null) return false;
+        LoginSession session = sessions.findForUpdate(principal.sessionId()).orElse(null);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        if (session == null || !user.getId().equals(session.getUser().getId())
+                || !user.getUsername().equals(principal.username())
+                || !SessionAuthenticationService.eligible(user) || !session.isActiveAt(now)) return false;
+        session.revoke(now);
+        events.save(new AuthenticationEvent(AuthenticationEvent.LOGOUT, now, correlationId,
+                user.getIdentityProvider(), user));
+        return true;
     }
 
     public record LoginResult(String accessToken, Instant accessExpiresAt, String refreshToken, Instant sessionExpiresAt) {

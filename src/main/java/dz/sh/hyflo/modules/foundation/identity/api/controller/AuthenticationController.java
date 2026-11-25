@@ -14,7 +14,7 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.api.controller
  *
- * @Description : Exposes local login and the current authenticated identity only.
+ * @Description : Exposes local authentication, own-session lifecycle and current identity.
  */
 
 package dz.sh.hyflo.modules.foundation.identity.api.controller;
@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import dz.sh.hyflo.modules.foundation.identity.api.mapper.AuthenticationMapper;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LoginRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.RefreshRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.response.CurrentIdentityResponse;
 import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService;
 import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
@@ -86,6 +87,32 @@ public class AuthenticationController {
             }
             return ResponseEntity.ok().header("Cache-Control", "no-store")
                     .header("Pragma", "no-cache").body(mapper.toTokenResponse(result.orElseThrow()));
+        } catch (RuntimeException unavailable) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    @PostMapping(path = "/auth/refresh", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request, HttpServletRequest httpRequest) {
+        String correlation = UUID.randomUUID().toString();
+        long retry = limiter.retryAfterRefresh(httpRequest.getRemoteAddr(), Instant.now());
+        if (retry > 0) return problem(HttpStatus.TOO_MANY_REQUESTS, correlation, retry);
+        try {
+            var result = authentication.refresh(request.refreshToken(), correlation);
+            if (result.isEmpty()) return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+            return ResponseEntity.ok().header("Cache-Control", "no-store")
+                    .header("Pragma", "no-cache").body(mapper.toTokenResponse(result.orElseThrow()));
+        } catch (RuntimeException unavailable) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CurrentIdentity identity) {
+        String correlation = UUID.randomUUID().toString();
+        try {
+            if (!authentication.logout(identity, correlation)) return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+            return ResponseEntity.noContent().header("Cache-Control", "no-store").build();
         } catch (RuntimeException unavailable) {
             return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
         }

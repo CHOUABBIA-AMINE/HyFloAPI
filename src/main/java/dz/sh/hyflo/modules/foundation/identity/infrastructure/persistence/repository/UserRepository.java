@@ -33,6 +33,10 @@ public interface UserRepository extends Repository<User, Long> {
     User save(User entity);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id")
+    Optional<User> findForUpdate(@Param("id") long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u where u.identityProvider.id = :providerId and u.username = :username")
     Optional<User> findForAuthentication(@Param("providerId") long providerId, @Param("username") String username);
 }

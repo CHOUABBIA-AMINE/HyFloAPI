@@ -41,6 +41,15 @@ public class LoginAttemptLimiter {
 
     /** Return zero when admitted, otherwise seconds until the next window. */
     public synchronized long retryAfter(String peer, String normalizedUsername, Instant now) {
+        return admit(peer, "user:" + normalizedUsername, now);
+    }
+
+    /** Shares global and direct-peer limits without retaining refresh credentials or digests. */
+    public synchronized long retryAfterRefresh(String peer, Instant now) {
+        return admit(peer, null, now);
+    }
+
+    private long admit(String peer, String username, Instant now) {
         long second = now.getEpochSecond();
         long current = Math.floorDiv(second, settings.windowSeconds());
         if (current > window) {
@@ -50,16 +59,16 @@ public class LoginAttemptLimiter {
         }
         long retry = Math.max(1, (window + 1) * settings.windowSeconds() - second);
         String ip = "ip:" + peer;
-        String username = "user:" + normalizedUsername;
-        int required = (buckets.containsKey(ip) ? 0 : 1) + (buckets.containsKey(username) ? 0 : 1);
+        int required = (buckets.containsKey(ip) ? 0 : 1)
+                + (username == null || buckets.containsKey(username) ? 0 : 1);
         if (global >= settings.globalLimit() || buckets.getOrDefault(ip, 0) >= settings.ipLimit()
-                || buckets.getOrDefault(username, 0) >= settings.usernameLimit()
+                || (username != null && buckets.getOrDefault(username, 0) >= settings.usernameLimit())
                 || buckets.size() + required > settings.bucketCapacity()) {
             return retry;
         }
         global++;
         buckets.merge(ip, 1, Integer::sum);
-        buckets.merge(username, 1, Integer::sum);
+        if (username != null) buckets.merge(username, 1, Integer::sum);
         return 0;
     }
 }

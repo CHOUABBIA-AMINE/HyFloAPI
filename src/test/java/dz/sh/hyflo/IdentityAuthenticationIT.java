@@ -260,6 +260,180 @@ class IdentityAuthenticationIT {
         assertProblem(throttled, 429, "LOGIN_RATE_LIMITED");
         assertThat(Long.parseLong(throttled.headers().firstValue("Retry-After").orElseThrow())).isPositive();
         assertThat(eventCount("LOGIN_FAILED")).isEqualTo(failuresBeforeLimit + 10);
+        exerciseSessionLifecycle();
+    }
+
+    private void exerciseSessionLifecycle() throws Exception {
+        createAccount("lifecycle-user", "ACTIVE", true);
+        var first = login("lifecycle-user", PASSWORD);
+        assertThat(first.statusCode()).isEqualTo(200);
+        String originalAccess = field(first, "$.accessToken");
+        String original = field(first, "$.refreshToken");
+        long sid = tokens.verify(originalAccess, Instant.now()).sessionId();
+        var independent = login("lifecycle-user", PASSWORD);
+        assertThat(independent.statusCode()).isEqualTo(200);
+        String independentAccess = field(independent, "$.accessToken");
+        long otherSid = tokens.verify(independentAccess, Instant.now()).sessionId();
+        long initialEvents = eventCount("REFRESH_SUCCEEDED");
+        assertProblem(send("/v1/auth/refresh", "{}", null), 400, "INVALID_REQUEST");
+        assertProblem(send("/v1/auth/refresh", "{\"refreshToken\":\"bad\"}", null), 400, "INVALID_REQUEST");
+        assertProblem(refresh(tokens.newRefreshSecret()), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(send("/v1/auth/logout", "", null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(send("/v1/auth/logout", "", "invalid.jwt"), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(send("/v1/auth/refresh", "{\"refreshToken\":\"" + original + "\"}", "invalid.jwt"),
+                401, "AUTHENTICATION_REQUIRED");
+        jdbc.update("UPDATE T_10_01_01 SET F_03=FALSE WHERE F_01='LOCAL'");
+        try {
+            assertProblem(refresh(original), 401, "AUTHENTICATION_REQUIRED");
+        } finally {
+            jdbc.update("UPDATE T_10_01_01 SET F_03=TRUE WHERE F_01='LOCAL'");
+        }
+        assertThat(tokenCount(sid)).isEqualTo(1);
+        assertThat(consumed(original)).isFalse();
+
+        // Force the final evidence insert to fail; no rotation or revocation can escape rollback.
+        installLifecycleFailure();
+        try {
+            assertProblem(refresh(original), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(tokenCount(sid)).isEqualTo(1);
+            assertThat(consumed(original)).isFalse();
+            assertProblem(send("/v1/auth/logout", "", originalAccess), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(get("/v1/me", "Bearer " + originalAccess).statusCode()).isEqualTo(200);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_lifecycle_failure");
+        }
+
+        var rotated = refresh(original);
+        assertThat(rotated.statusCode()).isEqualTo(200);
+        String successor = field(rotated, "$.refreshToken");
+        String successorAccess = field(rotated, "$.accessToken");
+        assertThat(successor).isNotEqualTo(original);
+        assertThat(tokens.verify(successorAccess, Instant.now())).isEqualTo(tokens.verify(originalAccess, Instant.now()));
+        assertThat(field(rotated, "$.sessionExpiresAt")).isEqualTo(field(first, "$.sessionExpiresAt"));
+        assertThat(Instant.parse(field(rotated, "$.accessExpiresAt")))
+                .isBeforeOrEqualTo(Instant.parse(field(rotated, "$.sessionExpiresAt")));
+        assertThat(rotated.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertThat(rotated.headers().allValues("Set-Cookie")).isEmpty();
+        assertThat(rotated.body()).doesNotContain(JwtTokenService.digestRefreshSecret(successor), original);
+        assertThat(consumed(original)).isTrue();
+        assertThat(consumed(successor)).isFalse();
+        assertThat(tokenCount(sid)).isEqualTo(2);
+        assertThat(eventCount("REFRESH_SUCCEEDED")).isEqualTo(initialEvents + 1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_12 WHERE F_01='REFRESH_SUCCEEDED' "
+                + "AND F_05=? AND F_03 IS NOT NULL", Long.class,
+                tokens.verify(successorAccess, Instant.now()).userId())).isEqualTo(1L);
+        assertThat(get("/v1/me", "Bearer " + originalAccess).statusCode()).isEqualTo(200);
+        assertThat(get("/api-docs", "Bearer " + successorAccess).body()).contains("/v1/auth/refresh", "/v1/auth/logout");
+
+        long beforeReplay = eventCount("REFRESH_REPLAY");
+        installLifecycleFailure();
+        try {
+            assertProblem(refresh(original), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(get("/v1/me", "Bearer " + successorAccess).statusCode()).isEqualTo(200);
+            assertThat(eventCount("REFRESH_REPLAY")).isEqualTo(beforeReplay);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_lifecycle_failure");
+        }
+        assertProblem(refresh(original), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(refresh(successor), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/me", "Bearer " + originalAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/me", "Bearer " + successorAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(eventCount("REFRESH_REPLAY")).isEqualTo(beforeReplay + 1);
+        assertThat(get("/v1/me", "Bearer " + independentAccess).statusCode()).isEqualTo(200);
+
+        var raceLogin = login("lifecycle-user", PASSWORD);
+        assertThat(raceLogin.statusCode()).isEqualTo(200);
+        String raceSecret = field(raceLogin, "$.refreshToken");
+        String raceAccess = field(raceLogin, "$.accessToken");
+        long raceSid = tokens.verify(raceAccess, Instant.now()).sessionId();
+        var one = client.sendAsync(refreshRequest(raceSecret), HttpResponse.BodyHandlers.ofString());
+        var two = client.sendAsync(refreshRequest(raceSecret), HttpResponse.BodyHandlers.ofString());
+        var left = one.get(20, java.util.concurrent.TimeUnit.SECONDS);
+        var right = two.get(20, java.util.concurrent.TimeUnit.SECONDS);
+        assertThat(List.of(left.statusCode(), right.statusCode())).containsExactlyInAnyOrder(200, 401);
+        var winner = left.statusCode() == 200 ? left : right;
+        assertThat(tokenCount(raceSid)).isEqualTo(2);
+        assertThat(eventCount("REFRESH_REPLAY")).isEqualTo(beforeReplay + 2);
+        assertProblem(get("/v1/me", "Bearer " + field(winner, "$.accessToken")), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(refresh(field(winner, "$.refreshToken")), 401, "AUTHENTICATION_REQUIRED");
+
+        var logoutRace = login("lifecycle-user", PASSWORD);
+        assertThat(logoutRace.statusCode()).isEqualTo(200);
+        String logoutAccess = field(logoutRace, "$.accessToken");
+        String logoutSecret = field(logoutRace, "$.refreshToken");
+        long logoutSid = tokens.verify(logoutAccess, Instant.now()).sessionId();
+        long beforeLogout = eventCount("LOGOUT");
+        var refreshing = client.sendAsync(refreshRequest(logoutSecret), HttpResponse.BodyHandlers.ofString());
+        var loggingOut = client.sendAsync(request("/v1/auth/logout?sessionId=" + otherSid, "", logoutAccess),
+                HttpResponse.BodyHandlers.ofString());
+        var refreshOutcome = refreshing.get(20, java.util.concurrent.TimeUnit.SECONDS);
+        var logoutOutcome = loggingOut.get(20, java.util.concurrent.TimeUnit.SECONDS);
+        assertThat(logoutOutcome.statusCode()).isEqualTo(204);
+        assertThat(logoutOutcome.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertThat(refreshOutcome.statusCode()).isIn(200, 401);
+        assertThat(tokenCount(logoutSid)).isEqualTo(refreshOutcome.statusCode() == 200 ? 2 : 1);
+        if (refreshOutcome.statusCode() == 200) {
+            assertProblem(refresh(field(refreshOutcome, "$.refreshToken")), 401, "AUTHENTICATION_REQUIRED");
+            assertProblem(get("/v1/me", "Bearer " + field(refreshOutcome, "$.accessToken")), 401, "AUTHENTICATION_REQUIRED");
+        }
+        assertProblem(refresh(logoutSecret), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/me", "Bearer " + logoutAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(send("/v1/auth/logout", "", logoutAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(eventCount("LOGOUT")).isEqualTo(beforeLogout + 1);
+        assertThat(get("/v1/me", "Bearer " + independentAccess).statusCode()).isEqualTo(200);
+
+        // Explicit expiry and account suspension reject refresh without consuming the token.
+        var expired = login("lifecycle-user", PASSWORD);
+        assertThat(expired.statusCode()).isEqualTo(200);
+        String expiredSecret = field(expired, "$.refreshToken");
+        long expiredSid = tokens.verify(field(expired, "$.accessToken"), Instant.now()).sessionId();
+        jdbc.update("UPDATE T_10_01_11 SET F_01=?,F_02=? WHERE F_00=?",
+                Timestamp.from(Instant.now().minusSeconds(120)), Timestamp.from(Instant.now().minusSeconds(60)), expiredSid);
+        assertProblem(refresh(expiredSecret), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(consumed(expiredSecret)).isFalse();
+        String otherSecret = field(independent, "$.refreshToken");
+        long userId = tokens.verify(independentAccess, Instant.now()).userId();
+        new TransactionTemplate(transactions).executeWithoutResult(tx ->
+                entityManager.find(User.class, userId).suspend(status("SUSPENDED")));
+        assertProblem(refresh(otherSecret), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(consumed(otherSecret)).isFalse();
+        new TransactionTemplate(transactions).executeWithoutResult(tx ->
+                entityManager.find(User.class, userId).disable(status("DISABLED")));
+        assertProblem(refresh(otherSecret), 401, "AUTHENTICATION_REQUIRED");
+    }
+
+    private long tokenCount(long sid) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_17 WHERE F_04=?", Long.class, sid);
+    }
+
+    private boolean consumed(String secret) {
+        return jdbc.queryForObject("SELECT F_03 IS NOT NULL FROM T_10_01_17 WHERE F_01=?", Boolean.class,
+                JwtTokenService.digestRefreshSecret(secret));
+    }
+
+    private void installLifecycleFailure() {
+        jdbc.execute("CREATE TRIGGER hyflo_test_lifecycle_failure BEFORE INSERT ON T_10_01_12 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic lifecycle rollback'");
+    }
+
+    private HttpRequest refreshRequest(String secret) {
+        return request("/v1/auth/refresh", "{\"refreshToken\":\"" + secret + "\"}", null);
+    }
+
+    private HttpResponse<String> refresh(String secret) throws Exception {
+        return client.send(refreshRequest(secret), HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpRequest request(String path, String json, String access) {
+        var builder = HttpRequest.newBuilder(uri(path)).timeout(Duration.ofSeconds(15))
+                .header("Content-Type", "application/json").header("Accept", "application/json, application/problem+json")
+                .POST(HttpRequest.BodyPublishers.ofString(json));
+        if (access != null) builder.header("Authorization", "Bearer " + access);
+        return builder.build();
+    }
+
+    private HttpResponse<String> send(String path, String json, String access) throws Exception {
+        return client.send(request(path, json, access), HttpResponse.BodyHandlers.ofString());
     }
 
     private long createCompany() {

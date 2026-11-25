@@ -27,6 +27,8 @@ import java.util.Set;
 import javax.crypto.spec.SecretKeySpec;
 
 import dz.sh.hyflo.modules.foundation.identity.api.request.LoginRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.RefreshRequest;
+import jakarta.validation.Validation;
 import dz.sh.hyflo.modules.foundation.identity.api.response.TokenResponse;
 import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService.LoginResult;
 import dz.sh.hyflo.platform.security.IdentityAuthenticationProperties;
@@ -127,6 +129,41 @@ class IdentityAuthenticationTest {
         assertThat(bounded.retryAfter("peer", "bob", NOW)).isEqualTo(60);
         assertThat(bounded.retryAfter("other", "alice", NOW)).isEqualTo(60);
         assertThat(bounded.retryAfter("other", "bob", NOW.plusSeconds(60))).isZero();
+    }
+
+    @Test
+    void refreshShapeAndSharedAttemptBudgetAreBounded() {
+        var service = new JwtTokenService(properties(ENCODED, 600, 28800, 60, 120, 20, 10, 100));
+        String secret = service.newRefreshSecret();
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var validator = factory.getValidator();
+            assertThat(validator.validate(new RefreshRequest(secret))).isEmpty();
+            for (String invalid : new String[]{"", "A".repeat(42), "A".repeat(42) + "B",
+                    secret + "=", " " + secret}) {
+                assertThat(validator.validate(new RefreshRequest(invalid))).isNotEmpty();
+            }
+            assertThat(validator.validate(new RefreshRequest(null))).isNotEmpty();
+        }
+        assertThat(new RefreshRequest(secret).toString()).doesNotContain(secret);
+        var provider = dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider.local();
+        var user = org.mockito.Mockito.mock(dz.sh.hyflo.modules.foundation.identity.domain.model.User.class);
+        for (String event : new String[]{"REFRESH_SUCCEEDED", "REFRESH_REPLAY", "LOGOUT"}) {
+            assertThat(new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
+                    event, NOW, "synthetic-correlation", provider, user).getEventCode()).isEqualTo(event);
+            assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
+                    event, NOW, "synthetic-correlation", provider, null)).isInstanceOf(IllegalArgumentException.class);
+        }
+        assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
+                "UNKNOWN", NOW, "synthetic-correlation", provider, user)).isInstanceOf(IllegalArgumentException.class);
+        var limiter = new LoginAttemptLimiter(properties(ENCODED, 600, 28800, 60, 4, 2, 1, 10));
+        assertThat(limiter.retryAfter("peer1", "alice", NOW)).isZero();
+        assertThat(limiter.retryAfterRefresh("peer1", NOW)).isZero();
+        assertThat(limiter.retryAfterRefresh("peer1", NOW)).isEqualTo(60);
+        assertThat(limiter.retryAfterRefresh("peer2", NOW)).isZero();
+        assertThat(limiter.retryAfter("peer2", "alice", NOW)).isEqualTo(60);
+        assertThat(limiter.retryAfterRefresh("peer2", NOW)).isZero();
+        assertThat(limiter.retryAfterRefresh("peer3", NOW)).isEqualTo(60);
+        assertThat(limiter.retryAfterRefresh("peer3", NOW.plusSeconds(60))).isZero();
     }
 
     @Test
