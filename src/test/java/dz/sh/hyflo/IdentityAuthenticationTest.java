@@ -169,6 +169,12 @@ class IdentityAuthenticationTest {
         }
         assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
                 "UNKNOWN", NOW, "synthetic-correlation", provider, user)).isInstanceOf(IllegalArgumentException.class);
+        // Explicit persisted identities: Mockito's default boxed numeric return is zero.
+        when(user.getId()).thenReturn(101L);
+        User foreignUser = mock(User.class);
+        when(foreignUser.getId()).thenReturn(202L);
+        User samePersistedUser = mock(User.class);
+        when(samePersistedUser.getId()).thenReturn(101L);
         var target = new LoginSession(user, NOW.minusSeconds(1), NOW.plusSeconds(30));
         assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
                 NOW, "synthetic-correlation", provider, user)).isInstanceOf(IllegalArgumentException.class);
@@ -177,8 +183,14 @@ class IdentityAuthenticationTest {
         target.revoke(NOW);
         assertThat(new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
                 NOW, "synthetic-correlation", provider, user, target).getLoginSession()).isSameAs(target);
+        assertThat(new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW, "synthetic-correlation", provider, samePersistedUser, target).getLoginSession()).isSameAs(target);
         assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
-                NOW, "synthetic-correlation", provider, mock(User.class), target)).isInstanceOf(IllegalArgumentException.class);
+                NOW, "synthetic-correlation", provider, foreignUser, target)).isInstanceOf(IllegalArgumentException.class);
+        User transientUser = mock(User.class);
+        when(transientUser.getId()).thenReturn(null);
+        assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW, "synthetic-correlation", provider, transientUser, target)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
                 NOW.plusSeconds(1), "synthetic-correlation", provider, user, target)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.LOGOUT,
