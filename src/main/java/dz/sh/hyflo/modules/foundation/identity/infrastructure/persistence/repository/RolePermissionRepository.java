@@ -19,10 +19,19 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.List;
+import java.util.Set;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
 public interface RolePermissionRepository extends Repository<RolePermission, Long> {
 
     RolePermission save(RolePermission entity);
+
+    @Query("select rp from RolePermission rp join fetch rp.role join fetch rp.permission p "
+            + "join fetch p.action join fetch p.resourceType where rp.role.id in :roleIds")
+    List<RolePermission> findForRoles(@Param("roleIds") Set<Long> roleIds);
 }

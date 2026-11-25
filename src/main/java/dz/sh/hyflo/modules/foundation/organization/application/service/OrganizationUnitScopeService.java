@@ -64,4 +64,17 @@ public class OrganizationUnitScopeService {
             throw new IllegalArgumentException("Invalid or ineligible company organization-unit reference");
         }
     }
+
+    /** Authorization-only read, after Identity has resolved an applicable direct permission. */
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
+    public boolean isEligibleCompanyUnit(long organizationUnitId, LocalDate effectiveDate) {
+        Objects.requireNonNull(effectiveDate, "Effective date is required");
+        return organizationUnitId > 0 && organizationUnits.findForEligibility(organizationUnitId)
+                .filter(unit -> OrganizationUnitType.COMPANY_CODE.equals(unit.getOrganizationUnitType().getCode()))
+                .filter(unit -> unit.getOrganizationUnitType().isActive())
+                .filter(unit -> unit.getOrganizationUnitStatus().hasCode(OrganizationUnitStatus.ACTIVE_CODE))
+                .filter(unit -> !effectiveDate.isBefore(unit.getValidFrom())
+                        && (unit.getValidTo() == null || effectiveDate.isBefore(unit.getValidTo())))
+                .isPresent();
+    }
 }

@@ -56,7 +56,8 @@ public class IdentitySecurityConfiguration {
                 .authorizeHttpRequests(access -> access
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/me", "/api-docs", "/api-docs/**",
+                        .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions",
+                                "/v1/identity/user-statuses", "/api-docs", "/api-docs/**",
                                 "/swagger-ui.html", "/swagger-ui/**").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new BearerAuthenticationFilter(tokens, sessions), AnonymousAuthenticationFilter.class)

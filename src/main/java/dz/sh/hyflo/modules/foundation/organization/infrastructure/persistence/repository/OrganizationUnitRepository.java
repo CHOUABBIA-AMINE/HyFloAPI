@@ -36,4 +36,7 @@ public interface OrganizationUnitRepository extends Repository<OrganizationUnit,
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("select u from OrganizationUnit u join fetch u.organizationUnitType join fetch u.organizationUnitStatus where u.id = :id")
     Optional<OrganizationUnit> findForInitialization(@Param("id") long id);
+
+    @Query("select u from OrganizationUnit u join fetch u.organizationUnitType join fetch u.organizationUnitStatus where u.id = :id")
+    Optional<OrganizationUnit> findForEligibility(@Param("id") long id);
 }
