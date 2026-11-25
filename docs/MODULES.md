@@ -164,3 +164,6 @@ IDN-04 extends the Identity-owned AuthenticationService with refresh rotation an
 
 
 IDN-09 extends Identity-owned IdentityCatalogService and AuthorizationController with protected shared role, permission and role-bundle definition reads. Reuses the existing EffectiveAuthorizationService company gate before any definition query; bundle consultation requires both exact role.read and permission.read. No cross-module ownership changes, repository exposure, grant/member/actor projection, new permission, or mutation contract. Structural permission validity is not proof of route availability or effective access.
+
+
+IDN-10 extends Identity-owned AuthenticationService and AuthenticationController with self-service local password change (original W18). The live CurrentIdentity is the exclusive subject; no selected company or administrative grant confers access to another credential. LocalCredential's existing named replacement and LoginSession revocation operations retain ownership and temporal invariants under the User serialization lock. Existing AuthenticationEvent stores attributable password-change success/failure evidence. No cross-module contract, role/grant mutation, new catalog or secret exposure.

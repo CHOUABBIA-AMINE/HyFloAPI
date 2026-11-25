@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import dz.sh.hyflo.modules.foundation.identity.api.request.ChangePasswordRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LoginRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.RefreshRequest;
 import jakarta.validation.Validation;
@@ -159,7 +160,8 @@ class IdentityAuthenticationTest {
         assertThat(new RefreshRequest(secret).toString()).doesNotContain(secret);
         var provider = dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider.local();
         var user = org.mockito.Mockito.mock(dz.sh.hyflo.modules.foundation.identity.domain.model.User.class);
-        for (String event : new String[]{"REFRESH_SUCCEEDED", "REFRESH_REPLAY", "LOGOUT"}) {
+        for (String event : new String[]{"REFRESH_SUCCEEDED", "REFRESH_REPLAY", "LOGOUT",
+                "PASSWORD_CHANGED", "PASSWORD_CHANGE_FAILED"}) {
             assertThat(new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
                     event, NOW, "synthetic-correlation", provider, user).getEventCode()).isEqualTo(event);
             assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
@@ -248,6 +250,12 @@ class IdentityAuthenticationTest {
     @Test
     void redactsSecretsInDiagnosticRepresentationsAndUsesStableErrors() {
         assertThat(new LoginRequest("user", "synthetic-secret").toString()).doesNotContain("synthetic-secret");
+        assertThat(new ChangePasswordRequest("old-secret", "new-secret").toString())
+                .doesNotContain("old-secret", "new-secret");
+        assertThat(AuthenticationService.validPasswordChangeInput("old-secret", "a".repeat(15))).isTrue();
+        assertThat(AuthenticationService.validPasswordChangeInput("old-secret", "a".repeat(14))).isFalse();
+        assertThat(AuthenticationService.validPasswordChangeInput("old-secret", "é".repeat(37))).isFalse();
+        assertThat(AuthenticationService.validPasswordChangeInput("é".repeat(37), "a".repeat(15))).isFalse();
         assertThat(new LoginResult("access-secret", NOW, "refresh-secret", NOW).toString())
                 .doesNotContain("access-secret", "refresh-secret");
         assertThat(new TokenResponse("access-secret", "Bearer", NOW, "refresh-secret", NOW).toString())

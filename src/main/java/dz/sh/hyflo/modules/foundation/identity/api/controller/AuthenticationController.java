@@ -14,7 +14,7 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.api.controller
  *
- * @Description : Exposes local authentication, own-session lifecycle and current identity.
+ * @Description : Exposes local authentication, own-session lifecycle, own password change and current identity.
  */
 
 package dz.sh.hyflo.modules.foundation.identity.api.controller;
@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import dz.sh.hyflo.modules.foundation.identity.api.mapper.AuthenticationMapper;
+import dz.sh.hyflo.modules.foundation.identity.api.request.ChangePasswordRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LoginRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.RefreshRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.response.CurrentIdentityResponse;
@@ -112,6 +113,26 @@ public class AuthenticationController {
         String correlation = UUID.randomUUID().toString();
         try {
             if (!authentication.logout(identity, correlation)) return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+            return ResponseEntity.noContent().header("Cache-Control", "no-store").build();
+        } catch (RuntimeException unavailable) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    @PostMapping(path = "/auth/password/change", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal CurrentIdentity identity,
+            @Valid @RequestBody ChangePasswordRequest request, HttpServletRequest httpRequest) {
+        String correlation = UUID.randomUUID().toString();
+        if (identity == null) return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+        if (!AuthenticationService.validPasswordChangeInput(request.currentPassword(), request.newPassword())) {
+            return problem(HttpStatus.BAD_REQUEST, correlation, 0);
+        }
+        long retry = limiter.retryAfter(httpRequest.getRemoteAddr(), identity.username(), Instant.now());
+        if (retry > 0) return problem(HttpStatus.TOO_MANY_REQUESTS, correlation, retry);
+        try {
+            if (!authentication.changePassword(identity, request.currentPassword(), request.newPassword(), correlation)) {
+                return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+            }
             return ResponseEntity.noContent().header("Cache-Control", "no-store").build();
         } catch (RuntimeException unavailable) {
             return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);

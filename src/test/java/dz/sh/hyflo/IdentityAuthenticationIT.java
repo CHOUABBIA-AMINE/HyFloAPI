@@ -261,6 +261,7 @@ class IdentityAuthenticationIT {
         assertThat(Long.parseLong(throttled.headers().firstValue("Retry-After").orElseThrow())).isPositive();
         assertThat(eventCount("LOGIN_FAILED")).isEqualTo(failuresBeforeLimit + 10);
         exerciseSessionLifecycle();
+        exerciseOwnPasswordChange();
     }
 
     private void exerciseSessionLifecycle() throws Exception {
@@ -400,6 +401,105 @@ class IdentityAuthenticationIT {
         new TransactionTemplate(transactions).executeWithoutResult(tx ->
                 entityManager.find(User.class, userId).disable(status("DISABLED")));
         assertProblem(refresh(otherSecret), 401, "AUTHENTICATION_REQUIRED");
+    }
+
+    private void exerciseOwnPasswordChange() throws Exception {
+        final String path = "/v1/auth/password/change";
+        final String username = "password-user";
+        final String replacement = "Synthetic-new-password-2026!";
+        createAccount(username, "ACTIVE", true);
+        createAccount("password-other", "ACTIVE", true);
+        var first = login(username, PASSWORD);
+        var second = login(username, PASSWORD);
+        var unrelated = login("password-other", PASSWORD);
+        assertThat(List.of(first.statusCode(), second.statusCode(), unrelated.statusCode())).containsOnly(200);
+        String firstAccess = field(first, "$.accessToken");
+        String secondAccess = field(second, "$.accessToken");
+        String unrelatedAccess = field(unrelated, "$.accessToken");
+        long userId = tokens.verify(firstAccess, Instant.now()).userId();
+        long firstSid = tokens.verify(firstAccess, Instant.now()).sessionId();
+        long secondSid = tokens.verify(secondAccess, Instant.now()).sessionId();
+        String oldHash = jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, userId);
+        Timestamp oldChangedAt = jdbc.queryForObject("SELECT F_02 FROM T_10_01_10 WHERE F_03=?", Timestamp.class, userId);
+        long credentialId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_10 WHERE F_03=?", Long.class, userId);
+        long oldStatus = jdbc.queryForObject("SELECT F_07 FROM T_10_01_08 WHERE F_00=?", Long.class, userId);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, userId)).isZero();
+        long failures = eventCount("PASSWORD_CHANGE_FAILED");
+        long successes = eventCount("PASSWORD_CHANGED");
+        String body = passwordChangeBody(PASSWORD, replacement);
+
+        assertProblem(send(path, body, null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(send(path, "{\"currentPassword\":\"synthetic\"}", firstAccess), 400, "INVALID_REQUEST");
+        assertProblem(send(path, passwordChangeBody(PASSWORD, "short"), firstAccess), 400, "INVALID_REQUEST");
+        assertProblem(send(path, passwordChangeBody(PASSWORD, "é".repeat(37)), firstAccess), 400, "INVALID_REQUEST");
+        assertThat(eventCount("PASSWORD_CHANGE_FAILED")).isEqualTo(failures);
+        var wrong = send(path, passwordChangeBody("wrong-current", replacement), firstAccess);
+        assertProblem(wrong, 401, "AUTHENTICATION_REQUIRED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_12 WHERE F_01='PASSWORD_CHANGE_FAILED' "
+                + "AND F_03=? AND F_05=?", Long.class, field(wrong, "$.correlationId"), userId)).isEqualTo(1L);
+        assertProblem(send(path, passwordChangeBody(PASSWORD, PASSWORD), firstAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(eventCount("PASSWORD_CHANGE_FAILED")).isEqualTo(failures + 2);
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, userId))
+                .isEqualTo(oldHash);
+
+        installLifecycleFailure();
+        try {
+            assertProblem(send(path, body, firstAccess), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, userId))
+                    .isEqualTo(oldHash);
+            assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_10 WHERE F_03=?", Timestamp.class, userId))
+                    .isEqualTo(oldChangedAt);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_00 IN (?,?) AND F_03 IS NULL",
+                    Long.class, firstSid, secondSid)).isEqualTo(2L);
+            assertThat(get("/v1/me", "Bearer " + firstAccess).statusCode()).isEqualTo(200);
+            assertThat(get("/v1/me", "Bearer " + secondAccess).statusCode()).isEqualTo(200);
+            assertThat(eventCount("PASSWORD_CHANGED")).isEqualTo(successes);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_lifecycle_failure");
+        }
+
+        var a = client.sendAsync(request(path, body, firstAccess), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(path, body, secondAccess), HttpResponse.BodyHandlers.ofString());
+        var outcomes = List.of(a.get(20, java.util.concurrent.TimeUnit.SECONDS),
+                b.get(20, java.util.concurrent.TimeUnit.SECONDS));
+        assertThat(outcomes.stream().map(HttpResponse::statusCode).toList()).containsExactlyInAnyOrder(204, 401);
+        var success = outcomes.stream().filter(response -> response.statusCode() == 204).findFirst().orElseThrow();
+        assertThat(success.body()).isEmpty();
+        assertThat(success.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertThat(success.headers().allValues("Set-Cookie")).isEmpty();
+        String newHash = jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, userId);
+        assertThat(newHash).isNotEqualTo(oldHash).doesNotContain(replacement);
+        assertThat(LocalCredential.supportsPasswordHash(newHash)).isTrue();
+        assertThat(encoder.matches(replacement, newHash)).isTrue();
+        assertThat(encoder.matches(PASSWORD, newHash)).isFalse();
+        assertThat(jdbc.queryForObject("SELECT F_00 FROM T_10_01_10 WHERE F_03=?", Long.class, userId))
+                .isEqualTo(credentialId);
+        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_10 WHERE F_03=?", Timestamp.class, userId)
+                .toInstant()).isAfterOrEqualTo(oldChangedAt.toInstant());
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NULL",
+                Long.class, userId)).isZero();
+        assertThat(jdbc.queryForObject("SELECT F_07 FROM T_10_01_08 WHERE F_00=?", Long.class, userId))
+                .isEqualTo(oldStatus);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, userId)).isZero();
+        assertThat(eventCount("PASSWORD_CHANGED")).isEqualTo(successes + 1);
+        assertThat(eventCount("PASSWORD_CHANGE_FAILED")).isEqualTo(failures + 2);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_12 WHERE F_01='PASSWORD_CHANGED' "
+                + "AND F_05=? AND F_03 IS NOT NULL AND F_04=(SELECT F_00 FROM T_10_01_01 WHERE F_01='LOCAL')",
+                Long.class, userId)).isEqualTo(1L);
+        for (var previous : List.of(first, second)) {
+            assertProblem(get("/v1/me", "Bearer " + field(previous, "$.accessToken")), 401, "AUTHENTICATION_REQUIRED");
+            assertProblem(refresh(field(previous, "$.refreshToken")), 401, "AUTHENTICATION_REQUIRED");
+        }
+        assertThat(get("/v1/me", "Bearer " + unrelatedAccess).statusCode()).isEqualTo(200);
+        assertProblem(login(username, PASSWORD), 401, "AUTHENTICATION_REQUIRED");
+        var fresh = login(username, replacement);
+        assertThat(fresh.statusCode()).isEqualTo(200);
+        assertThat(get("/v1/me", "Bearer " + field(fresh, "$.accessToken")).statusCode()).isEqualTo(200);
+        assertThat(get("/api-docs", "Bearer " + unrelatedAccess).body()).contains(path);
+    }
+
+    private static String passwordChangeBody(String current, String replacement) {
+        return "{\"currentPassword\":\"" + current + "\",\"newPassword\":\"" + replacement + "\"}";
     }
 
     private long tokenCount(long sid) {

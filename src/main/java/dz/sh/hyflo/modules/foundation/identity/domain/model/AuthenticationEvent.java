@@ -14,7 +14,7 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.domain.model
  *
- * @Description : Records attributable local login, refresh and logout events.
+ * @Description : Records attributable local authentication and credential lifecycle events.
  *
  */
 
@@ -49,6 +49,8 @@ public class AuthenticationEvent {
     public static final String LOGOUT = "LOGOUT";
     public static final String REFRESH_SUCCEEDED = "REFRESH_SUCCEEDED";
     public static final String REFRESH_REPLAY = "REFRESH_REPLAY";
+    public static final String PASSWORD_CHANGED = "PASSWORD_CHANGED";
+    public static final String PASSWORD_CHANGE_FAILED = "PASSWORD_CHANGE_FAILED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,7 +80,8 @@ public class AuthenticationEvent {
     public AuthenticationEvent(String eventCode, Instant occurredAt, String correlationId,
             IdentityProvider identityProvider, User user) {
         if (!LOGIN_SUCCEEDED.equals(eventCode) && !LOGIN_FAILED.equals(eventCode) && !LOGOUT.equals(eventCode)
-                && !REFRESH_SUCCEEDED.equals(eventCode) && !REFRESH_REPLAY.equals(eventCode)) {
+                && !REFRESH_SUCCEEDED.equals(eventCode) && !REFRESH_REPLAY.equals(eventCode)
+                && !PASSWORD_CHANGED.equals(eventCode) && !PASSWORD_CHANGE_FAILED.equals(eventCode)) {
             throw new IllegalArgumentException("Unsupported authentication event");
         }
         if (user == null && !LOGIN_FAILED.equals(eventCode)) {

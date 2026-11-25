@@ -14,11 +14,12 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.application.service
  *
- * @Description : Coordinates local login, refresh rotation and own-session revocation transactionally.
+ * @Description : Coordinates local authentication, session lifecycle and own password change transactionally.
  */
 
 package dz.sh.hyflo.modules.foundation.identity.application.service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -178,6 +179,77 @@ public class AuthenticationService {
         events.save(new AuthenticationEvent(AuthenticationEvent.LOGOUT, now, correlationId,
                 user.getIdentityProvider(), user));
         return true;
+    }
+
+    /** Self-service only: password replacement and every existing unrevoked session commit together. */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public boolean changePassword(SessionAuthenticationService.CurrentIdentity principal, String currentPassword,
+            String newPassword, String correlationId) {
+        if (!validPasswordChangeInput(currentPassword, newPassword)) {
+            throw new IllegalArgumentException("Invalid credential input");
+        }
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (principal == null || authentication == null || !authentication.isAuthenticated()
+                || !principal.equals(authentication.getPrincipal())) return false;
+        User user = users.findForUpdate(principal.userId()).orElse(null);
+        if (user == null) return false;
+        LoginSession current = sessions.findForUpdate(principal.sessionId()).orElse(null);
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        if (!ownsLiveSession(principal, user, current, now)) return false;
+
+        LocalCredential credential = credentials.findByUser_Id(user.getId()).orElse(null);
+        boolean verified = false;
+        if (credential != null && user.getId().equals(credential.getUser().getId())
+                && LocalCredential.supportsPasswordHash(credential.getPasswordHash())) {
+            try {
+                verified = encoder.matches(currentPassword, credential.getPasswordHash())
+                        && !encoder.matches(newPassword, credential.getPasswordHash());
+            } catch (IllegalArgumentException invalidHash) {
+                verified = false;
+            }
+        }
+        if (!verified) {
+            now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+            if (!ownsLiveSession(principal, user, current, now)) return false;
+            events.save(new AuthenticationEvent(AuthenticationEvent.PASSWORD_CHANGE_FAILED, now, correlationId,
+                    user.getIdentityProvider(), user));
+            return false;
+        }
+
+        String encoded = encoder.encode(newPassword);
+        if (!LocalCredential.supportsPasswordHash(encoded)) {
+            throw new IllegalStateException("Unsupported encoded credential");
+        }
+        var accountSessions = sessions.findUnrevokedForUpdate(user.getId());
+        now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        if (!ownsLiveSession(principal, user, current, now)) return false;
+        if (accountSessions.stream().noneMatch(session -> current.getId().equals(session.getId()))) {
+            throw new IllegalStateException("Current session missing from account lock");
+        }
+        credential.replacePasswordHash(encoded, now);
+        for (LoginSession session : accountSessions) {
+            session.revoke(now.isBefore(session.getStartedAt()) ? session.getStartedAt() : now);
+        }
+        events.save(new AuthenticationEvent(AuthenticationEvent.PASSWORD_CHANGED, now, correlationId,
+                user.getIdentityProvider(), user));
+        return true;
+    }
+
+    private static boolean ownsLiveSession(SessionAuthenticationService.CurrentIdentity principal, User user,
+            LoginSession session, Instant now) {
+        return session != null && user.getId().equals(session.getUser().getId())
+                && user.getUsername().equals(principal.username()) && SessionAuthenticationService.eligible(user)
+                && session.getRevokedAt() == null && session.isActiveAt(now);
+    }
+
+    public static boolean validPasswordChangeInput(String currentPassword, String newPassword) {
+        return validPasswordInput(currentPassword) && validPasswordInput(newPassword)
+                && newPassword.codePointCount(0, newPassword.length()) >= 15;
+    }
+
+    private static boolean validPasswordInput(String password) {
+        return password != null && !password.isBlank() && password.length() <= 72
+                && password.getBytes(StandardCharsets.UTF_8).length <= 72;
     }
 
     public record LoginResult(String accessToken, Instant accessExpiresAt, String refreshToken, Instant sessionExpiresAt) {
