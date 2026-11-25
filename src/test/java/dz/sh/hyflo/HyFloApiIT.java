@@ -30,6 +30,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
 import dz.sh.hyflo.modules.foundation.organization.application.service.EmployeeAssignmentService;
+import dz.sh.hyflo.modules.foundation.organization.application.service.OrganizationUnitScopeService;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeType;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.EmployeeStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.PositionLevel;
@@ -135,6 +136,30 @@ class HyFloApiIT {
         }
         assertThat(repositories.getRepositoryFor(AuthorizationScope.class)).isEmpty();
         assertThat(repositories.getRepositoryFor(SchemaProbe.class)).isEmpty();
+    }
+
+    @Test
+    void registersOneApplicationServiceForEveryFoundationEntity() throws ClassNotFoundException {
+        var repositories = new Repositories(applicationContext);
+        var entities = entityManager.getMetamodel().getEntities().stream()
+                .map(entity -> entity.getJavaType())
+                .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
+                .toList();
+        assertThat(entities).hasSize(37);
+        for (var entity : entities) {
+            var expectedService = entity.getPackageName().replace(".domain.model", ".application.service")
+                    + "." + entity.getSimpleName() + "Service";
+            Class<?> serviceType = Class.forName(expectedService);
+            assertThat(applicationContext.getBeansOfType(serviceType)).hasSize(1);
+            if (serviceType != EmployeeAssignmentService.class) {
+                var repositoryType = repositories.getRepositoryInformationFor(entity).orElseThrow().getRepositoryInterface();
+                assertThat(serviceType.getDeclaredConstructors()).hasSize(1);
+                assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).containsExactly(repositoryType);
+                assertThat(serviceType.getDeclaredMethods()).isEmpty();
+            }
+        }
+        assertThat(applicationContext.getBeansOfType(AuthorizationScopeService.class)).hasSize(1);
+        assertThat(applicationContext.getBeansOfType(OrganizationUnitScopeService.class)).hasSize(1);
     }
 
     @Test
