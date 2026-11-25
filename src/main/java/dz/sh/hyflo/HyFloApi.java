@@ -20,11 +20,7 @@
  
 package dz.sh.hyflo;
 
-import java.util.Arrays;
-
-import dz.sh.hyflo.bootstrap.IdentityBootstrapCommand;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 
@@ -32,22 +28,6 @@ import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoCon
 public class HyFloApi {
 
 	public static void main(String[] args) {
-        if (Arrays.asList(args).contains(IdentityBootstrapCommand.FLAG)) {
-            if (!IdentityBootstrapCommand.isRequested(args)) {
-                throw new IllegalArgumentException("Identity bootstrap requires its sole explicit command argument");
-            }
-            SpringApplication application = new SpringApplication(HyFloApi.class);
-            application.setWebApplicationType(WebApplicationType.NONE);
-            try (var context = application.run("--spring.main.web-application-type=none")) {
-                context.getBean(IdentityBootstrapCommand.class).execute(args, System.getenv());
-                System.out.println("Identity initialization completed.");
-            } catch (RuntimeException failure) {
-                // Do not print configuration, command inputs, credential data or database exception details.
-                throw new IllegalStateException("Identity initialization failed; verify fresh-schema prerequisites and operator configuration");
-            }
-            return;
-        }
         SpringApplication.run(HyFloApi.class, args);
-	}
-
+    }
 }

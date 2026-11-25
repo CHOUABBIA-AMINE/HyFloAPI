@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit
 import org.springframework.data.repository.Repository;
 
 public interface OrganizationUnitTypeRepository extends Repository<OrganizationUnitType, Long> {
+    long count();
+
+    OrganizationUnitType save(OrganizationUnitType entity);
 }

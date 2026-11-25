@@ -133,18 +133,11 @@ public class IdentityBootstrapService {
         this.validator = validator;
     }
 
-    /** Only the explicitly selected non-HTTP bootstrap command may call this initialization operation. */
+    /** Internal installation operation; external callers enter through IdentitySetupService. */
     @Transactional
     public long initialize(long companyUnitId, String username, String email, String password, String operatorReference) {
-        String normalizedUsername = User.normalizeUsername(username);
-        if (companyUnitId <= 0 || email == null || email.equalsIgnoreCase(BOOTSTRAP_EMAIL)
-                || normalizedUsername.equals(BOOTSTRAP_USERNAME)
-                || !validator.validateValue(User.class, "email", email).isEmpty()
-                || password == null || password.isBlank() || password.codePointCount(0, password.length()) < 15
-                || password.getBytes(StandardCharsets.UTF_8).length > 72
-                || operatorReference == null || !OPERATOR_REFERENCE.matcher(operatorReference).matches()) {
-            throw new IllegalArgumentException("Invalid identity initialization input");
-        }
+        if (companyUnitId <= 0) throw new IllegalArgumentException("Invalid company reference");
+        String normalizedUsername = validateInput(username, email, password, operatorReference);
 
         Instant now = Instant.now();
         organizationScopes.requireEligibleCompanyUnit(companyUnitId, LocalDate.ofInstant(now, ZoneOffset.UTC));
@@ -188,10 +181,28 @@ public class IdentityBootstrapService {
         return administrator.getId();
     }
 
+    String validateInput(String username, String email, String password, String operatorReference) {
+        if (username == null) throw new IllegalArgumentException("Invalid identity initialization input");
+        String normalizedUsername = User.normalizeUsername(username);
+        if (email == null || email.isBlank() || email.equalsIgnoreCase(BOOTSTRAP_EMAIL)
+                || normalizedUsername.equals(BOOTSTRAP_USERNAME)
+                || !validator.validateValue(User.class, "email", email).isEmpty()
+                || password == null || password.isBlank() || password.codePointCount(0, password.length()) < 15
+                || password.getBytes(StandardCharsets.UTF_8).length > 72
+                || operatorReference == null || !OPERATOR_REFERENCE.matcher(operatorReference).matches()) {
+            throw new IllegalArgumentException("Invalid identity initialization input");
+        }
+        return normalizedUsername;
+    }
+
+    public boolean isFresh() {
+        // Every independent Identity root; dependent rows have required owner foreign keys.
+        return providers.count() == 0 && statuses.count() == 0 && types.count() == 0 && actions.count() == 0
+                && resourceTypes.count() == 0 && roles.count() == 0 && groups.count() == 0;
+    }
+
     private void requireFreshIdentity() {
-        // These are every independent Identity root; other records have required owner foreign keys.
-        if (providers.count() != 0 || statuses.count() != 0 || types.count() != 0 || actions.count() != 0
-                || resourceTypes.count() != 0 || roles.count() != 0 || groups.count() != 0) {
+        if (!isFresh()) {
             throw new IllegalStateException("Identity initialization requires an empty Identity schema");
         }
     }

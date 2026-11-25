@@ -29,6 +29,9 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 public interface OrganizationUnitRepository extends Repository<OrganizationUnit, Long> {
+    long count();
+
+    OrganizationUnit save(OrganizationUnit entity);
 
     @Query("select u.organizationUnitType.code from OrganizationUnit u where u.id = :id")
     Optional<String> findTypeCodeById(@Param("id") long id);

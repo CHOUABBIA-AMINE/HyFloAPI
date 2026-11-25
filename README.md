@@ -1,6 +1,6 @@
 # HyFloAPI
 
-Development-only functional testing foundation for hydrocarbon transportation. Existing architecture, Java 25, Spring Boot 4.2.0 and MySQL are retained. The reset tree contains no business modules; the default Spring Security user is a temporary local bootstrap, not an implemented identity or authorization module. No external identity provider, AI runtime, or deployment is enabled.
+Development-only functional testing foundation for hydrocarbon transportation. Existing architecture, Java 25, Spring Boot 4.2.0 and MySQL are retained. Foundation Identity and Organization data and the registered persistent LOCAL authentication/authorization workflows are implemented; broader operational capabilities remain roadmap-controlled. No external identity provider, AI runtime, or deployment is enabled.
 
 ## Build
 
@@ -16,19 +16,29 @@ Linux/macOS:
 
 Windows: use `mvnw.cmd` with the same arguments.
 
-Surefire runs unit tests and Failsafe runs the MySQL integration tests. Both reject an empty suite. The integration suite starts the real MySQL 8.4 LTS container, starts the application, generates a synthetic schema from a test-only JPA entity, verifies a persisted record through JPA and JDBC, and checks health and default local authentication. The test profile uses Hibernate create-drop exclusively against the disposable container. Docker unavailability is a failure, not a silent skip. No real operating data or credentials are needed. MySQL's 8.4 image tag follows the LTS line; exact pulled image digest is runtime-dependent.
+Surefire runs unit tests and Failsafe runs the MySQL integration tests. Both reject an empty suite. The integration suite starts the real MySQL 8.4 LTS container, starts the application, generates a synthetic schema from a test-only JPA entity, verifies a persisted record through JPA and JDBC, and checks health, persistent local authentication, company-scoped authorization and first-use setup. The test profile uses Hibernate create-drop exclusively against the disposable container. Docker unavailability is a failure, not a silent skip. No real operating data or credentials are needed. MySQL's 8.4 image tag follows the LTS line; exact pulled image digest is runtime-dependent.
 
 ## Local development
 
-Use an empty disposable MySQL database and a dedicated account; never use root or production data. Set the environment variables listed in `.env.example` in your shell (Spring Boot does not load this file automatically). Set a local bootstrap password. Start with:
+Use an empty disposable MySQL database and a dedicated account; never use root or production data. Set the environment variables listed in `.env.example` in your shell (Spring Boot does not load this file automatically). Set the external JWT signing key (base64 of at least 32 random bytes). For first-use setup, also supply a separate random base64 installation secret of at least 32 bytes and a bounded operator reference. Start normally with:
 
 ```sh
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-The default base path is `/hyflo/api`. Development OpenAPI is available at `/hyflo/api/api-docs`, protected by the temporary default local authentication. Health is at `/hyflo/api/actuator/health`. The dev profile enables SQL logging. Do not expose this development application to an untrusted network.
+The default base path is `/hyflo/api`. Development OpenAPI is available at `/hyflo/api/api-docs`, protected by persistent bearer authentication. Health is at `/hyflo/api/actuator/health`. The dev profile enables SQL logging. Do not expose this development application to an untrusted network.
 
-The owner has deferred Flyway until production preparation. The dev profile uses Hibernate `ddl-auto=update` to create and evolve tables in the development database as JPA entities are introduced. The default profile retains `validate` to avoid implicit schema changes outside development. Hibernate update is not a production migration strategy and does not reliably perform all destructive or structural changes. Use disposable data only. Before any production deployment, establish and verify a versioned Flyway baseline, disable Hibernate schema updates, and retain `validate` for production. No production migration or rollout is selected. Legacy AI, Envers, storage, JWT and business policy settings are preserved in Git history, not represented as working features. Restore typed configuration alongside the responsible implementation. JJWT retains its own Jackson 2 serializer; new MVC code uses Boot's Jackson stack. JWT functionality is not exposed by this skeleton.
+### First-use setup (IDN-01-HTTP)
+
+Use the normal running application, not a separate command or SQL script. On a fresh disposable schema:
+
+1. GET `/hyflo/api/v1/setup/status` returns only `{"available":true}` when installation authority is configured and the required roots are empty.
+2. POST JSON to `/hyflo/api/v1/setup/initialize` with `X-Hyflo-Setup-Secret` containing the configured installation secret. Supply companyCode, one or more of companyNameAr/companyNameFr/companyNameEn, username, email and password (at least 15 code points and at most 72 UTF-8 bytes). Do not put secrets in a URL or log requests. A successful request returns 204 and atomically initializes the first company and its Identity administrator. No default password or automatic login.
+3. Use `POST /hyflo/api/v1/auth/login` for normal authentication. Setup is unavailable while initialized or partially populated roots remain. Remove the installation secret from deployment configuration after successful setup. Missing/invalid setup configuration disables setup without disabling ordinary authentication.
+
+Use restricted installer access and trusted HTTPS outside local development. No network perimeter, production deployment or frontend setup wizard is established by this backend change. The old non-HTTP bootstrap command is removed.
+
+The owner has deferred Flyway until production preparation. The dev profile uses Hibernate `ddl-auto=update` to create and evolve tables in the development database as JPA entities are introduced. The default profile retains `validate` to avoid implicit schema changes outside development. Hibernate update is not a production migration strategy and does not reliably perform all destructive or structural changes. Use disposable data only. Before any production deployment, establish and verify a versioned Flyway baseline, disable Hibernate schema updates, and retain `validate` for production. No production migration or rollout is selected. Legacy AI, Envers, storage, JWT and business policy settings are preserved in Git history, not represented as working features. Restore typed configuration alongside the responsible implementation. JJWT retains its own Jackson 2 serializer; new MVC code uses Boot's Jackson stack. Current persistent LOCAL JWT authentication is documented in the architecture and roadmap; no external identity provider is enabled.
 
 Any historical real credential or signing key must be rotated by its owner; removing configuration from the current tree does not erase Git history.
 

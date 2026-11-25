@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.jayway.jsonpath.JsonPath;
-import dz.sh.hyflo.bootstrap.IdentityBootstrapCommand;
+import dz.sh.hyflo.modules.foundation.identity.application.service.IdentityBootstrapService;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
@@ -96,7 +96,7 @@ class IdentityAuthenticationIT {
     }
 
     @LocalServerPort int port;
-    @Autowired IdentityBootstrapCommand bootstrap;
+    @Autowired IdentityBootstrapService bootstrap;
     @Autowired IdentityPasswordEncoder encoder;
     @Autowired JwtTokenService tokens;
     @Autowired JdbcTemplate jdbc;
@@ -117,13 +117,13 @@ class IdentityAuthenticationIT {
         assertProblem(login(ADMIN, PASSWORD), 503, "IDENTITY_UNAVAILABLE");
         assertThat(count("T_10_01_12")).isZero();
 
+        assertThat(get("/v1/setup/status", null).body()).isEqualTo("{\"available\":false}");
         long companyId = createCompany();
-        long adminId = bootstrap.execute(new String[]{IdentityBootstrapCommand.FLAG}, Map.of(
-                "HYFLO_BOOTSTRAP_COMPANY_ID", Long.toString(companyId),
-                "HYFLO_BOOTSTRAP_USERNAME", ADMIN,
-                "HYFLO_BOOTSTRAP_EMAIL", ADMIN + "@example.invalid",
-                "HYFLO_BOOTSTRAP_PASSWORD", PASSWORD,
-                "HYFLO_BOOTSTRAP_OPERATOR", "synthetic-operator"));
+        long adminId = bootstrap.initialize(companyId, ADMIN, ADMIN + "@example.invalid", PASSWORD, "synthetic-operator");
+        assertThat(get("/v1/setup/status", null).body()).isEqualTo("{\"available\":false}");
+        assertThat(send("/v1/setup/initialize", "{\"companyCode\":\"OTHER\",\"companyNameEn\":\"Other\","
+                + "\"username\":\"new-admin\",\"email\":\"new@example.invalid\",\"password\":\"" + PASSWORD + "\"}", null)
+                .statusCode()).isEqualTo(403);
         createAccount("pending-user", "PENDING", true);
         createAccount("suspended-user", "SUSPENDED", true);
         createAccount("disabled-user", "DISABLED", true);

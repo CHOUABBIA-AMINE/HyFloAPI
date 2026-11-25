@@ -54,7 +54,8 @@ public class IdentitySecurityConfiguration {
                         .accessDeniedHandler((request, response, failure) ->
                                 AuthenticationProblems.write(response, HttpStatus.FORBIDDEN)))
                 .authorizeHttpRequests(access -> access
-                        .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh", "/v1/setup/initialize").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/setup/status").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change",
                                 "/v1/auth/sessions/{sessionId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()

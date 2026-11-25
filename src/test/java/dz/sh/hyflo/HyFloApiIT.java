@@ -175,6 +175,10 @@ class HyFloApiIT {
         }
         assertThat(applicationContext.getBeansOfType(AuthorizationScopeService.class)).hasSize(1);
         assertThat(applicationContext.getBeansOfType(OrganizationUnitScopeService.class)).hasSize(1);
+        assertThat(applicationContext.getBeansOfType(
+                dz.sh.hyflo.modules.foundation.organization.application.service.OrganizationSetupService.class)).hasSize(1);
+        assertThat(applicationContext.getBeansOfType(
+                dz.sh.hyflo.modules.foundation.identity.application.service.IdentitySetupService.class)).hasSize(1);
     }
 
     @Test

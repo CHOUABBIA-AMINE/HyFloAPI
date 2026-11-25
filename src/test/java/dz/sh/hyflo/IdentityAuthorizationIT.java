@@ -61,7 +61,7 @@ import dz.sh.hyflo.modules.foundation.organization.domain.model.PositionStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType;
-import dz.sh.hyflo.bootstrap.IdentityBootstrapCommand;
+import dz.sh.hyflo.modules.foundation.identity.application.service.IdentityBootstrapService;
 import dz.sh.hyflo.platform.security.JwtTokenService;
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import jakarta.persistence.EntityManager;
@@ -115,7 +115,7 @@ class IdentityAuthorizationIT {
     }
 
     @LocalServerPort int port;
-    @Autowired IdentityBootstrapCommand bootstrap;
+    @Autowired IdentityBootstrapService bootstrap;
     @Autowired IdentityPasswordEncoder encoder;
     @Autowired JwtTokenService tokens;
     @Autowired JdbcTemplate jdbc;
@@ -128,12 +128,7 @@ class IdentityAuthorizationIT {
     @Test
     void evaluatesCompanyPermissionsAndRevocationsWithTheSameLiveJwt() throws Exception {
         var companies = createCompanies();
-        long adminId = bootstrap.execute(new String[]{IdentityBootstrapCommand.FLAG}, Map.of(
-                "HYFLO_BOOTSTRAP_COMPANY_ID", Long.toString(companies.first()),
-                "HYFLO_BOOTSTRAP_USERNAME", "authz-admin",
-                "HYFLO_BOOTSTRAP_EMAIL", "authz-admin@example.invalid",
-                "HYFLO_BOOTSTRAP_PASSWORD", PASSWORD,
-                "HYFLO_BOOTSTRAP_OPERATOR", "synthetic-operator"));
+        long adminId = bootstrap.initialize(companies.first(), "authz-admin", "authz-admin@example.invalid", PASSWORD, "synthetic-operator");
         long otherId = createAccount(companies.second());
         String admin = login("authz-admin");
         String other = login("authz-user");
