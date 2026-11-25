@@ -19,10 +19,13 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,6 +36,15 @@ public interface LoginSessionRepository extends Repository<LoginSession, Long> {
     LoginSession save(LoginSession entity);
 
     Optional<LoginSession> findById(Long id);
+
+    @Query("select s from LoginSession s where s.user.id = :userId and s.id > :afterId "
+            + "and s.revokedAt is null and s.startedAt <= :now and s.expiresAt > :now order by s.id")
+    List<LoginSession> findOwnActivePage(@Param("userId") long userId, @Param("afterId") long afterId,
+            @Param("now") Instant now, Pageable page);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from LoginSession s where s.user.id = :userId and s.id = :sessionId")
+    Optional<LoginSession> findOwnedForUpdate(@Param("userId") long userId, @Param("sessionId") long sessionId);
 
     @Query("select s.user.id from LoginSession s where s.id = :id")
     Optional<Long> findUserIdBySessionId(@Param("id") long id);

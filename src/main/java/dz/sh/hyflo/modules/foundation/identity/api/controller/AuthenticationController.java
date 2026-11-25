@@ -40,13 +40,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -137,6 +141,57 @@ public class AuthenticationController {
         } catch (RuntimeException unavailable) {
             return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
         }
+    }
+
+    @GetMapping("/auth/sessions")
+    public ResponseEntity<?> ownSessions(@AuthenticationPrincipal CurrentIdentity identity,
+            @RequestParam(name = "afterId", required = false) String afterId) {
+        String correlation = UUID.randomUUID().toString();
+        long cursor;
+        try {
+            cursor = afterId == null ? 0 : parseSessionNumber(afterId);
+        } catch (IllegalArgumentException invalid) {
+            return problem(HttpStatus.BAD_REQUEST, correlation, 0);
+        }
+        try {
+            return ResponseEntity.ok().header("Cache-Control", "no-store")
+                    .body(authentication.ownSessions(identity, cursor).stream()
+                            .map(mapper::toOwnSessionResponse).toList());
+        } catch (AuthenticationException unauthenticated) {
+            return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+        } catch (RuntimeException unavailable) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    @PostMapping("/auth/sessions/{sessionId}/revoke")
+    public ResponseEntity<?> revokeOwnSession(@AuthenticationPrincipal CurrentIdentity identity,
+            @PathVariable("sessionId") String sessionId) {
+        String correlation = UUID.randomUUID().toString();
+        long target;
+        try {
+            target = parseSessionNumber(sessionId);
+            if (target <= 0) throw new IllegalArgumentException("Invalid session ID");
+        } catch (IllegalArgumentException invalid) {
+            return problem(HttpStatus.BAD_REQUEST, correlation, 0);
+        }
+        try {
+            authentication.revokeOwnSession(identity, target, correlation);
+            return ResponseEntity.noContent().header("Cache-Control", "no-store").build();
+        } catch (AuthenticationException unauthenticated) {
+            return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+        } catch (AccessDeniedException denied) {
+            return problem(HttpStatus.FORBIDDEN, correlation, 0);
+        } catch (RuntimeException unavailable) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    private static long parseSessionNumber(String value) {
+        if (!value.matches("[0-9]{1,19}")) {
+            throw new IllegalArgumentException("Invalid session number");
+        }
+        return Long.parseLong(value);
     }
 
     @GetMapping("/me")

@@ -20,8 +20,10 @@
 package dz.sh.hyflo.modules.foundation.identity.api.mapper;
 
 import dz.sh.hyflo.modules.foundation.identity.api.response.CurrentIdentityResponse;
+import dz.sh.hyflo.modules.foundation.identity.api.response.OwnSessionResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.response.TokenResponse;
 import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService.LoginResult;
+import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService.OwnSession;
 import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +33,10 @@ public class AuthenticationMapper {
     public TokenResponse toTokenResponse(LoginResult result) {
         return new TokenResponse(result.accessToken(), "Bearer", result.accessExpiresAt(),
                 result.refreshToken(), result.sessionExpiresAt());
+    }
+
+    public OwnSessionResponse toOwnSessionResponse(OwnSession session) {
+        return new OwnSessionResponse(session.sessionId(), session.startedAt(), session.expiresAt(), session.current());
     }
 
     public CurrentIdentityResponse toCurrentIdentityResponse(CurrentIdentity identity) {

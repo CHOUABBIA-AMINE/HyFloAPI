@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -43,6 +44,9 @@ import dz.sh.hyflo.platform.security.IdentityAuthenticationProperties;
 import dz.sh.hyflo.platform.security.JwtTokenService;
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -234,6 +238,60 @@ public class AuthenticationService {
                 user.getIdentityProvider(), user));
         return true;
     }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<OwnSession> ownSessions(SessionAuthenticationService.CurrentIdentity principal, long afterId) {
+        requireOwnPrincipal(principal);
+        if (afterId < 0) throw new IllegalArgumentException("Invalid session cursor");
+        LoginSession current = sessions.findById(principal.sessionId()).orElseThrow(
+                () -> new InsufficientAuthenticationException("Authentication required"));
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        User user = current.getUser();
+        if (!user.getId().equals(principal.userId()) || !ownsLiveSession(principal, user, current, now)) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+        return sessions.findOwnActivePage(principal.userId(), afterId, now, PageRequest.of(0, 100)).stream()
+                .map(session -> new OwnSession(session.getId(), session.getStartedAt(), session.getExpiresAt(),
+                        session.getId().equals(principal.sessionId())))
+                .toList();
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void revokeOwnSession(SessionAuthenticationService.CurrentIdentity principal, long sessionId,
+            String correlationId) {
+        requireOwnPrincipal(principal);
+        if (sessionId <= 0) throw new IllegalArgumentException("Invalid session ID");
+        User user = users.findForUpdate(principal.userId()).orElseThrow(
+                () -> new InsufficientAuthenticationException("Authentication required"));
+        LoginSession current = sessions.findForUpdate(principal.sessionId()).orElse(null);
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        if (!ownsLiveSession(principal, user, current, now)) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+        if (sessionId == principal.sessionId()) throw new AccessDeniedException("Access denied");
+        LoginSession target = sessions.findOwnedForUpdate(user.getId(), sessionId).orElse(null);
+        now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        if (!ownsLiveSession(principal, user, current, now)) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+        if (target == null || !user.getId().equals(target.getUser().getId())
+                || target.getRevokedAt() != null || !target.isActiveAt(now)) {
+            throw new AccessDeniedException("Access denied");
+        }
+        target.revoke(now);
+        events.save(new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED, now, correlationId,
+                user.getIdentityProvider(), user, target));
+    }
+
+    private static void requireOwnPrincipal(SessionAuthenticationService.CurrentIdentity principal) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (principal == null || authentication == null || !authentication.isAuthenticated()
+                || !principal.equals(authentication.getPrincipal())) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+    }
+
+    public record OwnSession(long sessionId, Instant startedAt, Instant expiresAt, boolean current) {}
 
     private static boolean ownsLiveSession(SessionAuthenticationService.CurrentIdentity principal, User user,
             LoginSession session, Instant now) {

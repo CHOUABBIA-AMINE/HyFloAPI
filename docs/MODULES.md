@@ -167,3 +167,6 @@ IDN-09 extends Identity-owned IdentityCatalogService and AuthorizationController
 
 
 IDN-10 extends Identity-owned AuthenticationService and AuthenticationController with self-service local password change (original W18). The live CurrentIdentity is the exclusive subject; no selected company or administrative grant confers access to another credential. LocalCredential's existing named replacement and LoginSession revocation operations retain ownership and temporal invariants under the User serialization lock. Existing AuthenticationEvent stores attributable password-change success/failure evidence. No cross-module contract, role/grant mutation, new catalog or secret exposure.
+
+
+IDN-11 extends Identity-owned AuthenticationService, AuthenticationController and LoginSessionRepository for own-session consultation and selective revocation (W16/W17). CurrentIdentity remains the exclusive subject; an administrative grant never authorizes selecting a foreign account's session here. AuthenticationEvent links selective revocation to the exact owned target LoginSession with the same revocation timestamp. No new cross-module contract, permission, account or grant mutation. Existing administrative all-session revocation and current-session logout are unchanged.

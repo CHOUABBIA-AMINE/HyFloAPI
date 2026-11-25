@@ -37,6 +37,7 @@ import com.jayway.jsonpath.JsonPath;
 import dz.sh.hyflo.bootstrap.IdentityBootstrapCommand;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
@@ -262,6 +263,7 @@ class IdentityAuthenticationIT {
         assertThat(eventCount("LOGIN_FAILED")).isEqualTo(failuresBeforeLimit + 10);
         exerciseSessionLifecycle();
         exerciseOwnPasswordChange();
+        exerciseOwnSessionManagement();
     }
 
     private void exerciseSessionLifecycle() throws Exception {
@@ -500,6 +502,126 @@ class IdentityAuthenticationIT {
 
     private static String passwordChangeBody(String current, String replacement) {
         return "{\"currentPassword\":\"" + current + "\",\"newPassword\":\"" + replacement + "\"}";
+    }
+
+    private void exerciseOwnSessionManagement() throws Exception {
+        String path = "/v1/auth/sessions";
+        createAccount("own-session-user", "ACTIVE", true);
+        createAccount("own-session-foreign", "ACTIVE", true);
+        var current = login("own-session-user", PASSWORD);
+        var target = login("own-session-user", PASSWORD);
+        var survivor = login("own-session-user", PASSWORD);
+        var foreign = login("own-session-foreign", PASSWORD);
+        assertThat(List.of(current.statusCode(), target.statusCode(), survivor.statusCode(), foreign.statusCode()))
+                .containsOnly(200);
+        String access = field(current, "$.accessToken");
+        String authorization = "Bearer " + access;
+        var currentIdentity = tokens.verify(access, Instant.now());
+        long userId = currentIdentity.userId();
+        long currentId = currentIdentity.sessionId();
+        long targetId = tokens.verify(field(target, "$.accessToken"), Instant.now()).sessionId();
+        long survivorId = tokens.verify(field(survivor, "$.accessToken"), Instant.now()).sessionId();
+        long foreignId = tokens.verify(field(foreign, "$.accessToken"), Instant.now()).sessionId();
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        long[] inactive = new TransactionTemplate(transactions).execute(tx -> {
+            User user = entityManager.find(User.class, userId);
+            var expired = new LoginSession(user, now.minusSeconds(120), now.minusSeconds(60));
+            var future = new LoginSession(user, now.plusSeconds(3600), now.plusSeconds(7200));
+            var revoked = new LoginSession(user, now.minusSeconds(60), now.plusSeconds(3600));
+            revoked.revoke(now);
+            for (var session : List.of(expired, future, revoked)) entityManager.persist(session);
+            entityManager.flush();
+            return new long[]{expired.getId(), future.getId(), revoked.getId()};
+        });
+        long before = eventCount("SESSION_REVOKED");
+        assertProblem(get(path, null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(send(path + "/" + targetId + "/revoke", "", null), 401, "AUTHENTICATION_REQUIRED");
+        for (String cursor : List.of("-1", "bad", "9223372036854775808")) {
+            assertProblem(get(path + "?afterId=" + cursor, authorization), 400, "INVALID_REQUEST");
+        }
+        var page = get(path + "?userId=" + tokens.verify(field(foreign, "$.accessToken"), Instant.now()).userId(),
+                authorization);
+        assertThat(page.statusCode()).isEqualTo(200);
+        List<Map<String, Object>> entries = JsonPath.read(page.body(), "$[*]");
+        assertThat(entries).hasSize(3).allSatisfy(entry -> {
+            assertThat(entry).containsOnlyKeys("sessionId", "startedAt", "expiresAt", "current");
+            assertThat(entry.get("current")).isEqualTo(((Number) entry.get("sessionId")).longValue() == currentId);
+        });
+        List<Number> ids = JsonPath.read(page.body(), "$[*].sessionId");
+        assertThat(ids.stream().map(Number::longValue).toList()).containsExactly(currentId, targetId, survivorId);
+        assertThat(page.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertThat(page.body()).doesNotContain("token", "password", "digest", "username");
+        assertThat(get(path + "?afterId=" + Long.MAX_VALUE, authorization).body()).isEqualTo("[]");
+        assertProblem(send(path + "/0/revoke", "", access), 400, "INVALID_REQUEST");
+        assertProblem(send(path + "/bad/revoke", "", access), 400, "INVALID_REQUEST");
+        String detail = null;
+        for (long denied : List.of(currentId, foreignId, Long.MAX_VALUE, inactive[0], inactive[1], inactive[2])) {
+            var rejection = send(path + "/" + denied + "/revoke", "", access);
+            assertProblem(rejection, 403, "ACCESS_DENIED");
+            if (detail == null) detail = field(rejection, "$.detail");
+            else assertThat(field(rejection, "$.detail")).isEqualTo(detail);
+        }
+        assertThat(eventCount("SESSION_REVOKED")).isEqualTo(before);
+
+        String revoke = path + "/" + targetId + "/revoke";
+        installLifecycleFailure();
+        try {
+            assertProblem(send(revoke, "", access), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(jdbc.queryForObject("SELECT F_03 IS NULL FROM T_10_01_11 WHERE F_00=?",
+                    Boolean.class, targetId)).isTrue();
+            assertThat(get("/v1/me", "Bearer " + field(target, "$.accessToken")).statusCode()).isEqualTo(200);
+            assertThat(eventCount("SESSION_REVOKED")).isEqualTo(before);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_lifecycle_failure");
+        }
+
+        var a = client.sendAsync(request(revoke, "", access), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(revoke, "", access), HttpResponse.BodyHandlers.ofString());
+        var results = List.of(a.get(20, java.util.concurrent.TimeUnit.SECONDS),
+                b.get(20, java.util.concurrent.TimeUnit.SECONDS));
+        assertThat(results.stream().map(HttpResponse::statusCode).toList()).containsExactlyInAnyOrder(204, 403);
+        var success = results.stream().filter(response -> response.statusCode() == 204).findFirst().orElseThrow();
+        assertThat(success.body()).isEmpty();
+        assertThat(success.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertThat(eventCount("SESSION_REVOKED")).isEqualTo(before + 1);
+        assertThat(jdbc.queryForObject("""
+                SELECT COUNT(*) FROM T_10_01_12 e JOIN T_10_01_11 s ON e.F_06=s.F_00
+                WHERE e.F_01='SESSION_REVOKED' AND e.F_05=? AND e.F_06=? AND e.F_02=s.F_03
+                    AND e.F_03 IS NOT NULL AND e.F_04=(SELECT F_00 FROM T_10_01_01 WHERE F_01='LOCAL')
+                """, Long.class, userId, targetId)).isEqualTo(1L);
+        assertProblem(get("/v1/me", "Bearer " + field(target, "$.accessToken")), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(refresh(field(target, "$.refreshToken")), 401, "AUTHENTICATION_REQUIRED");
+        for (var unaffected : List.of(current, survivor, foreign)) {
+            assertThat(get("/v1/me", "Bearer " + field(unaffected, "$.accessToken")).statusCode()).isEqualTo(200);
+        }
+        var remaining = get(path, authorization);
+        assertThat(remaining.statusCode()).isEqualTo(200);
+        List<Number> remainingIds = JsonPath.read(remaining.body(), "$[*].sessionId");
+        assertThat(remainingIds.stream().map(Number::longValue).toList()).containsExactly(currentId, survivorId);
+        assertProblem(send(revoke, "", access), 403, "ACCESS_DENIED");
+        assertProblem(send(path, "", access), 403, "ACCESS_DENIED");
+        assertProblem(get(revoke, authorization), 403, "ACCESS_DENIED");
+
+        // More than one page, without creating credentials or refresh secrets for these synthetic records.
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            User user = entityManager.find(User.class, userId);
+            for (int i = 0; i < 101; i++) {
+                entityManager.persist(new LoginSession(user, now.minusSeconds(1), now.plusSeconds(3600)));
+            }
+            entityManager.flush();
+        });
+        var firstPage = get(path, authorization);
+        assertThat(firstPage.statusCode()).isEqualTo(200);
+        List<Number> firstIds = JsonPath.read(firstPage.body(), "$[*].sessionId");
+        assertThat(firstIds).hasSize(100);
+        assertThat(firstIds.stream().map(Number::longValue).toList()).isSorted();
+        var secondPage = get(path + "?afterId=" + firstIds.getLast(), authorization);
+        assertThat(secondPage.statusCode()).isEqualTo(200);
+        List<Number> nextIds = JsonPath.read(secondPage.body(), "$[*].sessionId");
+        assertThat(nextIds).hasSize(3).allSatisfy(id ->
+                assertThat(id.longValue()).isGreaterThan(firstIds.getLast().longValue()));
+        assertThat(nextIds.stream().map(Number::longValue).toList()).isSorted();
+        assertThat(get("/api-docs", authorization).body()).contains(path, "/v1/auth/sessions/{sessionId}/revoke");
     }
 
     private long tokenCount(long sid) {

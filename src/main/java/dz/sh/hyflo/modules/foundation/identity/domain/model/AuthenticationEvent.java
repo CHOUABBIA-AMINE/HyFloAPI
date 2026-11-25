@@ -51,6 +51,7 @@ public class AuthenticationEvent {
     public static final String REFRESH_REPLAY = "REFRESH_REPLAY";
     public static final String PASSWORD_CHANGED = "PASSWORD_CHANGED";
     public static final String PASSWORD_CHANGE_FAILED = "PASSWORD_CHANGE_FAILED";
+    public static final String SESSION_REVOKED = "SESSION_REVOKED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,17 +77,37 @@ public class AuthenticationEvent {
     @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = true, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_12_FK_02"))
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = true, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_12_FK_03"))
+    private LoginSession loginSession;
 
     public AuthenticationEvent(String eventCode, Instant occurredAt, String correlationId,
             IdentityProvider identityProvider, User user) {
+        this(eventCode, occurredAt, correlationId, identityProvider, user, null);
+    }
+
+    public AuthenticationEvent(String eventCode, Instant occurredAt, String correlationId,
+            IdentityProvider identityProvider, User user, LoginSession loginSession) {
         if (!LOGIN_SUCCEEDED.equals(eventCode) && !LOGIN_FAILED.equals(eventCode) && !LOGOUT.equals(eventCode)
                 && !REFRESH_SUCCEEDED.equals(eventCode) && !REFRESH_REPLAY.equals(eventCode)
-                && !PASSWORD_CHANGED.equals(eventCode) && !PASSWORD_CHANGE_FAILED.equals(eventCode)) {
+                && !PASSWORD_CHANGED.equals(eventCode) && !PASSWORD_CHANGE_FAILED.equals(eventCode)
+                && !SESSION_REVOKED.equals(eventCode)) {
             throw new IllegalArgumentException("Unsupported authentication event");
         }
         if (user == null && !LOGIN_FAILED.equals(eventCode)) {
             throw new IllegalArgumentException("Only a failed login may lack a user");
         }
+        if (SESSION_REVOKED.equals(eventCode)) {
+            if (loginSession == null || user == null
+                    || !(loginSession.getUser() == user || (user.getId() != null
+                            && user.getId().equals(loginSession.getUser().getId())))
+                    || occurredAt == null || !occurredAt.equals(loginSession.getRevokedAt())) {
+                throw new IllegalArgumentException("Revocation event requires the owned revoked session");
+            }
+        } else if (loginSession != null) {
+            throw new IllegalArgumentException("Only selective revocation records a target session");
+        }
+        this.loginSession = loginSession;
         this.eventCode = eventCode;
         this.occurredAt = Objects.requireNonNull(occurredAt, "Event time is required");
         this.correlationId = correlationId;

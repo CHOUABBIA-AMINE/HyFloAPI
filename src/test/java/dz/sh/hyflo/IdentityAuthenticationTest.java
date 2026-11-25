@@ -169,6 +169,20 @@ class IdentityAuthenticationTest {
         }
         assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
                 "UNKNOWN", NOW, "synthetic-correlation", provider, user)).isInstanceOf(IllegalArgumentException.class);
+        var target = new LoginSession(user, NOW.minusSeconds(1), NOW.plusSeconds(30));
+        assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW, "synthetic-correlation", provider, user)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW, "synthetic-correlation", provider, user, target)).isInstanceOf(IllegalArgumentException.class);
+        target.revoke(NOW);
+        assertThat(new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW, "synthetic-correlation", provider, user, target).getLoginSession()).isSameAs(target);
+        assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW, "synthetic-correlation", provider, mock(User.class), target)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED,
+                NOW.plusSeconds(1), "synthetic-correlation", provider, user, target)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new AuthenticationEvent(AuthenticationEvent.LOGOUT,
+                NOW, "synthetic-correlation", provider, user, target)).isInstanceOf(IllegalArgumentException.class);
         var limiter = new LoginAttemptLimiter(properties(ENCODED, 600, 28800, 60, 4, 2, 1, 10));
         assertThat(limiter.retryAfter("peer1", "alice", NOW)).isZero();
         assertThat(limiter.retryAfterRefresh("peer1", NOW)).isZero();

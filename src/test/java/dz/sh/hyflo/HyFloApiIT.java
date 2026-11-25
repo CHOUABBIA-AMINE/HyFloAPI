@@ -378,6 +378,9 @@ class HyFloApiIT {
                 .isEqualTo("station.update");
         assertThat(entityManager.find(LoginSession.class, session.getId()).isActiveAt(now)).isTrue();
         assertThat(entityManager.find(AuthenticationEvent.class, event.getId()).getUser()).isNull();
+        assertThat(entityManager.find(AuthenticationEvent.class, event.getId()).getLoginSession()).isNull();
+        assertTableColumns("T_10_01_12", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertForeignKey("T_10_01_12", "F_06", "T_10_01_11", "T_10_01_12_FK_03", true);
         assertThat(entityManager.find(User.class, account.getId()).getProfilePictureFileId()).isEqualTo(42L);
 
         assertTableColumns("T_10_01_15", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06",

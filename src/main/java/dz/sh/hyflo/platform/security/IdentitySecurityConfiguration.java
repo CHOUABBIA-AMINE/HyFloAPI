@@ -55,9 +55,10 @@ public class IdentitySecurityConfiguration {
                                 AuthenticationProblems.write(response, HttpStatus.FORBIDDEN)))
                 .authorizeHttpRequests(access -> access
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change",
+                                "/v1/auth/sessions/{sessionId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions",
+                        .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions", "/v1/auth/sessions",
                                 "/v1/identity/user-statuses", "/v1/identity/roles",
                                 "/v1/identity/permissions", "/v1/identity/roles/{roleId}/permissions",
                                 "/api-docs", "/api-docs/**",
