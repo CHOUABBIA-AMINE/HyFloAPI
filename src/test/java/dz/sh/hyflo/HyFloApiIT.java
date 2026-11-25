@@ -155,7 +155,16 @@ class HyFloApiIT {
                 var repositoryType = repositories.getRepositoryInformationFor(entity).orElseThrow().getRepositoryInterface();
                 assertThat(serviceType.getDeclaredConstructors()).hasSize(1);
                 assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).containsExactly(repositoryType);
-                assertThat(serviceType.getDeclaredMethods()).isEmpty();
+                // JaCoCo injects a private static synthetic method into instrumented classes.
+                var declaredBusinessMethods = java.util.Arrays.stream(serviceType.getDeclaredMethods())
+                        .filter(method -> !(method.isSynthetic()
+                                && java.lang.reflect.Modifier.isPrivate(method.getModifiers())
+                                && java.lang.reflect.Modifier.isStatic(method.getModifiers())
+                                && method.getName().equals("$jacocoInit")))
+                        .toList();
+                assertThat(declaredBusinessMethods)
+                        .as("Declared business methods of %s", serviceType.getName())
+                        .isEmpty();
             }
         }
         assertThat(applicationContext.getBeansOfType(AuthorizationScopeService.class)).hasSize(1);
