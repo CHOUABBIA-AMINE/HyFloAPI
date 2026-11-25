@@ -1018,3 +1018,33 @@ Status: PLANNED — approved and registered for next execution, not implemented.
 - Delete none. Registration updates only docs/ROADMAP.md; no dependency or workflow changes. Preserve all existing accepted tests. Inspect exact current source, historical table allocation, schema lifecycle behavior, callers and fixture assumptions before executing.
 - Acceptance: retain >=19 unit and >=13 real MySQL integration methods; existing entity/repository/service count changes 38->39 solely due to evidence entity, reflection assertions adjusted precisely for new owner service and published Organization contract. Verify fresh bootstrap exact 17 permissions and no implicit association, no extension of foreign grant allowlist; actual authenticated HTTP GET/link/unlink, independent read/write permission removal same JWT, unauthorized/foreign/self/reserved/service/disabled link denial, missing/expired/inactive employee, future/expired/suspended/ambiguous assignment, nested-company and malformed/cyclic ancestry denial, current direct and descendant assignment success, explicit unlink after transfer, one account per employee under concurrent link attempts, no account owner/status/grant/session/credential mutation, durable before/after actor/time/reason/correlation, rollback on forced event failure, physical FK/UK names and database rejection of dangling/duplicate references, multiple null links allowed, safe error and DTO, runtime OpenAPI, no schema mutation in default validate. Mandatory exact-SHA Build and required artifacts, no failures/errors/skips. Synthetic disposable schema only. No subsequent stage selected.
 
+
+
+### IDN-13 acceptance — 2026-11-25
+
+Status: COMPLETED — exact implementation SHA fc18ccd05c671bc8c4c669749a0f792f280cd3f1, [Build #57 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45674835590), verify job 139419476372 success; Surefire 20/20 and Failsafe 14/14 actual MySQL integration methods, zero failures/errors/skips, required test/JaCoCo/SBOM and verified JAR evidence passed; optional security scan skipped. W11 accepted for registered optional HUMAN association, assignment-derived company at link time, explicit unlink after transfer, unique physical reference, transactional evidence and dedicated permissions; no implicit authorization or transfer effects. W41 remains cross-cutting. Five of nine earlier residual workflows accepted. Preserve prior records.
+
+## IDN-14 — Action and resource-type definition consultation (W20/W21)
+
+Status: IN PROGRESS — owner Next, baseline fc18ccd05c671bc8c4c669749a0f792f280cd3f1, Build #57 success. Dependencies IDN-01, IDN-03, IDN-09, IDN-13. One coherent read-only task; no split of a previously registered implementation. Original W20/W21 remain partial after this task until ongoing controlled registration is separately authorized.
+
+Registration commit: `docs(identity): accept employee association and register definition consultation`
+Implementation commit: `feat(identity): expose action and resource type catalogs`
+
+- GET /v1/identity/actions and GET /v1/identity/resource-types, required positive companyId and optional nonnegative afterId default zero. Both require existing exact permission.read (these are permission definition components), live principal, direct GLOBAL company grant and eligible selected company in same read-only REPEATABLE_READ transaction before querying. Shared definition rows are not company-owned; no employee/account/grant data, no totals. Return explicit id/code/displayName metadata, ascending ID keyset, max 100, empty page 200 []; no-store, existing generic 400/401/403/503. Stored definitions do not prove implemented operations or supported resource-owner authorization. No new seed, mutation, permission or schema; POST/PUT/PATCH/DELETE remain default deny.
+- Exact create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/response/DefinitionCatalogResponse.java`
+- Exact update:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/IdentityCatalogService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/controller/AuthorizationController.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/mapper/AuthorizationMapper.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/ActionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/ResourceTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/platform/security/IdentitySecurityConfiguration.java`
+- `src/test/java/dz/sh/hyflo/IdentityAuthorizationTest.java`
+- `src/test/java/dz/sh/hyflo/IdentityAuthorizationIT.java`
+- `docs/ARCHITECTURE.md`
+- `docs/MODULES.md`
+- Delete none. Registration updates only docs/ROADMAP.md.
+- Acceptance: retain 20 unit / 14 real MySQL integration methods, zero failures/errors/skips, mandatory evidence. Extend IdentityAuthorizationTest denial-before-repository check and IdentityAuthorizationIT actual HTTP definition consultation: exact initialized distinct action/resource codes and safe DTO; anonymous, wrong company, missing permission (same JWT), malformed cursors/selectors, 100-row keyset page/empty tail, persisted unused synthetic definitions visible without implying capabilities, generic repository failure 503, runtime OpenAPI and default-deny mutations. Preserve all existing tests and assertions. No new dependencies or workflow changes.
+- Remaining W20/W21/W22 and role mutations: current GLOBAL means company-wide, not platform-wide. Shared Action, ResourceType, Permission, Role definitions have no owning company. Do not use a company permission as authority to change globally shared metadata or role bundles, nor treat arbitrary inserted codes as executable capabilities. Recommended next decision: trusted explicit non-HTTP capability-registration workflow using owner-approved source manifest, with auditable actor/reason and no automatic grant; separately define authority for global role administration and preserve IDN-08 foreign delegation invariant. No permission seed or mutation authority implied by this consultation stage. Next candidate controlled registration subject to this policy decision.
