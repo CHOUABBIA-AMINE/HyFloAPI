@@ -23,4 +23,5 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Group;
 import org.springframework.data.repository.Repository;
 
 public interface GroupRepository extends Repository<Group, Long> {
+    long count();
 }

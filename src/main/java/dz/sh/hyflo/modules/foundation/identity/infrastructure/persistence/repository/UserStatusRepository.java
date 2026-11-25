@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import org.springframework.data.repository.Repository;
 
 public interface UserStatusRepository extends Repository<UserStatus, Long> {
+    long count();
+
+    UserStatus save(UserStatus entity);
 }

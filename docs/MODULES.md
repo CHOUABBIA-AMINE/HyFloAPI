@@ -114,6 +114,8 @@ These are proposed consumers, not implemented exported contracts or a universal 
 
 FDN-SCOPE-001 admits the Organization-owned OrganizationUnitScopeService.requireCompanyUnit(long organizationUnitId) contract to Identity application only. It returns normally for a persisted unit whose type code is exactly COMPANY and throws the same IllegalArgumentException for missing, invalid or non-company IDs. No JPA entities are exchanged, no HTTP exposure; the invoking use case must independently authorize the caller before using this internal check. Identity's AuthorizationScopeService validates the boundary with that contract. Full protected grant operations and resource-ownership evaluation remain deferred.
 
+IDN-01 admits OrganizationUnitScopeService.requireEligibleCompanyUnit(long organizationUnitId, LocalDate effectiveDate) for the trusted Identity initialization transaction only. Organization locks/reads its own unit and checks exact COMPANY type, active type, ACTIVE status and half-open date validity; no entity crosses the module boundary. The non-HTTP deployment operator command is the trust boundary, not an authenticated User. It fails closed for missing or ineligible units and never provisions Organization data. Identity owns the atomic initialization transaction and the narrowly approved disabled SERVICE attribution exception. No normal grant operation may use this exception.
+
 A real contract is admitted per task with exact owner, consumer, inputs, result, authorization, scope and failure behavior. Never expose an unrestricted generic entity API. Owner module remains authoritative and validates mutations.
 
 ## 5. Source basis and intentional adaptations

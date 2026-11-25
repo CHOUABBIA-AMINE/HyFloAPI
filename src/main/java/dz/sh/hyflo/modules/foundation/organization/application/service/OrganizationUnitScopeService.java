@@ -7,7 +7,7 @@
  *
  * @Name        : OrganizationUnitScopeService
  * @CreatedOn   : 11-24-2026
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-25-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -19,9 +19,14 @@
 
 package dz.sh.hyflo.modules.foundation.organization.application.service;
 
+import java.time.LocalDate;
+import java.util.Objects;
+
+import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType;
 import dz.sh.hyflo.modules.foundation.organization.infrastructure.persistence.repository.OrganizationUnitRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -42,6 +47,21 @@ public class OrganizationUnitScopeService {
         if (organizationUnitId <= 0 || organizationUnits.findTypeCodeById(organizationUnitId)
                 .filter(OrganizationUnitType.COMPANY_CODE::equals).isEmpty()) {
             throw new IllegalArgumentException("Invalid company organization-unit reference");
+        }
+    }
+
+    /** Initialization-only eligibility check; caller must hold an active write transaction. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void requireEligibleCompanyUnit(long organizationUnitId, LocalDate effectiveDate) {
+        Objects.requireNonNull(effectiveDate, "Effective date is required");
+        if (organizationUnitId <= 0 || organizationUnits.findForInitialization(organizationUnitId)
+                .filter(unit -> OrganizationUnitType.COMPANY_CODE.equals(unit.getOrganizationUnitType().getCode()))
+                .filter(unit -> unit.getOrganizationUnitType().isActive())
+                .filter(unit -> unit.getOrganizationUnitStatus().hasCode(OrganizationUnitStatus.ACTIVE_CODE))
+                .filter(unit -> !effectiveDate.isBefore(unit.getValidFrom())
+                        && (unit.getValidTo() == null || effectiveDate.isBefore(unit.getValidTo())))
+                .isEmpty()) {
+            throw new IllegalArgumentException("Invalid or ineligible company organization-unit reference");
         }
     }
 }

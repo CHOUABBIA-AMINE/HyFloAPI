@@ -23,4 +23,6 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import org.springframework.data.repository.Repository;
 
 public interface UserRoleGrantRepository extends Repository<UserRoleGrant, Long> {
+
+    UserRoleGrant save(UserRoleGrant entity);
 }

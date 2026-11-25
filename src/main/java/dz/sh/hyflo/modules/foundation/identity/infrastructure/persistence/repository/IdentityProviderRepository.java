@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import org.springframework.data.repository.Repository;
 
 public interface IdentityProviderRepository extends Repository<IdentityProvider, Long> {
+    long count();
+
+    IdentityProvider save(IdentityProvider entity);
 }

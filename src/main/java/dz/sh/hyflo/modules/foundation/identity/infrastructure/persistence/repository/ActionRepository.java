@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
 import org.springframework.data.repository.Repository;
 
 public interface ActionRepository extends Repository<Action, Long> {
+    long count();
+
+    Action save(Action entity);
 }

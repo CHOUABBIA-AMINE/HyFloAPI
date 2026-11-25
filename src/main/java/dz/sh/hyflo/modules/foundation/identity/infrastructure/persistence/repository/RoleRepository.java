@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
 import org.springframework.data.repository.Repository;
 
 public interface RoleRepository extends Repository<Role, Long> {
+    long count();
+
+    Role save(Role entity);
 }

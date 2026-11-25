@@ -23,4 +23,6 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
 import org.springframework.data.repository.Repository;
 
 public interface PermissionRepository extends Repository<Permission, Long> {
+
+    Permission save(Permission entity);
 }

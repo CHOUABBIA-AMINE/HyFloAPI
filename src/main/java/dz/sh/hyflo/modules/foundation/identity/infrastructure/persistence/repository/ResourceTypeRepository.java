@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
 import org.springframework.data.repository.Repository;
 
 public interface ResourceTypeRepository extends Repository<ResourceType, Long> {
+    long count();
+
+    ResourceType save(ResourceType entity);
 }

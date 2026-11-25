@@ -23,4 +23,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
 import org.springframework.data.repository.Repository;
 
 public interface UserTypeRepository extends Repository<UserType, Long> {
+    long count();
+
+    UserType save(UserType entity);
 }
