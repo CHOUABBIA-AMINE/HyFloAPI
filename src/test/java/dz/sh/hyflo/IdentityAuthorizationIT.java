@@ -88,7 +88,8 @@ class IdentityAuthorizationIT {
     @Container
     static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.4")
             .withDatabaseName("hyflo_authorization_test")
-            .withUsername("hyflo_test").withPassword("synthetic-db-password");
+            .withUsername("hyflo_test").withPassword("synthetic-db-password")
+            .withCommand("--log-bin-trust-function-creators=1");
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
