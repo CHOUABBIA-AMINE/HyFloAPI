@@ -34,4 +34,8 @@ public interface IdentityProviderRepository extends Repository<IdentityProvider,
     @org.springframework.data.jpa.repository.Query("select p from IdentityProvider p where p.code = :code")
     Optional<IdentityProvider> findByCodeForWrite(@org.springframework.data.repository.query.Param("code") String code);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select p from IdentityProvider p where p.code = :code")
+    Optional<IdentityProvider> findByCodeExclusive(@org.springframework.data.repository.query.Param("code") String code);
+
 }

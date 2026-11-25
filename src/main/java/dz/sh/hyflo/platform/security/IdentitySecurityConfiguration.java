@@ -57,7 +57,7 @@ public class IdentitySecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh", "/v1/setup/initialize").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/setup/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/platform/roles").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/v1/platform/roles").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/v1/platform/roles", "/v1/platform/capabilities/reconcile").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change",
                                 "/v1/auth/sessions/{sessionId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()

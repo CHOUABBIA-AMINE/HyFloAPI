@@ -42,6 +42,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.PlatformRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RoleDefinitionEvent;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.CapabilityReconciliationEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
@@ -365,7 +366,8 @@ class IdentityBootstrapIT {
         assertThat(codes("T_10_01_01")).containsExactly("LOCAL");
         assertThat(codes("T_10_01_09")).containsExactlyInAnyOrderElementsOf(
                 java.util.stream.Stream.concat(EXPECTED_PERMISSIONS.stream(),
-                        java.util.stream.Stream.of("platform-role.read", "platform-role.create")).toList());
+                        java.util.stream.Stream.of("platform-role.read", "platform-role.create",
+                                "platform-capability.reconcile")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -520,7 +522,8 @@ class IdentityBootstrapIT {
         assertThat(send(port, endpoint + "?afterId=" + remaining.getLast(), null, access).body()).isEqualTo("[]");
         var openapi = send(port, "/api-docs", null, access);
         Map<String, Object> paths = JsonPath.read(openapi.body(), "$.paths");
-        assertThat(paths.keySet().stream().filter(p -> p.startsWith("/v1/platform")).toList()).containsExactly(endpoint);
+        assertThat(paths.keySet().stream().filter(p -> p.startsWith("/v1/platform")).toList())
+                .containsExactlyInAnyOrder(endpoint, "/v1/platform/capabilities/reconcile");
         assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
         assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
 
@@ -596,6 +599,232 @@ class IdentityBootstrapIT {
         assertThat(count("T_10_01_21")).isEqualTo(3L);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_20 WHERE F_03 IS NOT NULL AND F_06 IS NOT NULL "
                 + "AND F_07 IS NOT NULL AND F_11 IS NOT NULL", Long.class)).isEqualTo(1L);
+    }
+
+    @Test
+    void reconcilesOnlySupportedDefinitionsThroughAuthorizedHttp() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize",
+                configuredBody("RECONCILE_COMPANY", "reconcile-admin", "CHOSEN_RECONCILER"), null, SETUP_SECRET), 204);
+        String endpoint = "/v1/platform/capabilities/reconcile";
+        String requestBody = "{\"reason\":\"synthetic capability synchronization\"}";
+        long companyId = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long adminId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='reconcile-admin'", Long.class);
+        long companyRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        long platformRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_01='CHOSEN_RECONCILER'", Long.class);
+        long capability = permissionId("platform-capability.reconcile");
+        assertThat(jdbc.queryForList("SELECT p.F_01 FROM T_10_01_14 rp JOIN T_10_01_09 p ON p.F_00=rp.F_02 "
+                + "WHERE rp.F_01=?", String.class, companyRole)).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
+        assertThat(jdbc.queryForList("SELECT p.F_01 FROM T_10_01_14 rp JOIN T_10_01_09 p ON p.F_00=rp.F_02 "
+                + "WHERE rp.F_01=?", String.class, platformRole)).containsExactlyInAnyOrder(
+                        "platform-role.read", "platform-role.create", "platform-capability.reconcile");
+        String access = loginAccess("reconcile-admin");
+        assertSafe(send(port, endpoint, requestBody, null), 401);
+        assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
+        assertSafe(send(port, endpoint, "{}", access), 400);
+        assertSafe(send(port, endpoint, "{\"reason\":\" \"}", access), 400);
+        assertSafe(send(port, endpoint, "{\"reason\":\"" + "x".repeat(256) + "\"}", access), 400);
+        assertSafe(send(port, endpoint, "{", access), 400);
+        assertSafe(send(port, endpoint, null, access), 403);
+        assertSafe(send(port, endpoint + "/unregistered", requestBody, access), 403);
+        assertThat(count("T_10_01_22")).isZero();
+
+        var initial = send(port, endpoint, requestBody, access);
+        assertSafe(initial, 200);
+        String manifestId = JsonPath.read(initial.body(), "$.manifestId");
+        String digest = JsonPath.read(initial.body(), "$.manifestDigest");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v1");
+        assertThat(digest).matches("[0-9a-f]{64}");
+        assertInserted(initial, List.of(), List.of(), List.of());
+        var repeat = send(port, endpoint, requestBody, access);
+        assertSafe(repeat, 200);
+        assertThat(repeat.body()).isEqualTo(initial.body());
+        assertThat(count("T_10_01_22")).isEqualTo(2L);
+
+        // Only disposable test data is altered to simulate a missing definition after an upgrade.
+        long readAction = jdbc.queryForObject("SELECT F_00 FROM T_10_01_05 WHERE F_01='read'", Long.class);
+        long userResource = jdbc.queryForObject("SELECT F_00 FROM T_10_01_06 WHERE F_01='user'", Long.class);
+        jdbc.update("INSERT INTO T_10_01_05(F_01,F_02) VALUES ('synthetic-only','Unrelated action')");
+        jdbc.update("INSERT INTO T_10_01_06(F_01,F_02) VALUES ('synthetic-only','Unrelated resource')");
+        jdbc.update("INSERT INTO T_10_01_09(F_01,F_02,F_03,F_04) VALUES ('synthetic-only.synthetic-only','Unrelated definition',"
+                + "(SELECT F_00 FROM T_10_01_05 WHERE F_01='synthetic-only'),"
+                + "(SELECT F_00 FROM T_10_01_06 WHERE F_01='synthetic-only'))");
+        long unrelated = permissionId("synthetic-only.synthetic-only");
+        removeDefinition("credential.initialize");
+        removeDefinition("identity-catalog.read");
+        removeDefinition("user.read");
+        jdbc.update("DELETE FROM T_10_01_05 WHERE F_01='initialize'");
+        jdbc.update("DELETE FROM T_10_01_06 WHERE F_01='identity-catalog'");
+        long linksBefore = count("T_10_01_14");
+        long companyGrantsBefore = count("T_10_01_15");
+        long platformGrantsBefore = count("T_10_01_20");
+        var repaired = send(port, endpoint, requestBody, access);
+        assertSafe(repaired, 200);
+        assertInserted(repaired, List.of("initialize"), List.of("identity-catalog"),
+                List.of("credential.initialize", "identity-catalog.read", "user.read"));
+        assertThat((String) JsonPath.read(repaired.body(), "$.manifestDigest")).isEqualTo(digest);
+        assertThat(jdbc.queryForObject("SELECT F_03 FROM T_10_01_09 WHERE F_01='user.read'", Long.class)).isEqualTo(readAction);
+        assertThat(jdbc.queryForObject("SELECT F_04 FROM T_10_01_09 WHERE F_01='user.read'", Long.class)).isEqualTo(userResource);
+        assertThat(count("T_10_01_14")).isEqualTo(linksBefore);
+        assertThat(count("T_10_01_15")).isEqualTo(companyGrantsBefore);
+        assertThat(count("T_10_01_20")).isEqualTo(platformGrantsBefore);
+        assertThat(permissionId("synthetic-only.synthetic-only")).isEqualTo(unrelated);
+        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_09 WHERE F_00=?", String.class, unrelated))
+                .isEqualTo("Unrelated definition");
+
+        // Exercise cross-account serialization, using a second synthetic platform grant, not a new public provisioning API.
+        long secondId = new TransactionTemplate(transactions).execute(tx -> {
+            User admin = entityManager.find(User.class, adminId);
+            User other = new User(admin.getIdentityProvider(), "second-reconciler", "second@example.invalid",
+                    null, companyId, entityManager.createQuery("select s from UserStatus s where s.code='PENDING'",
+                            UserStatus.class).getSingleResult(), admin.getUserType());
+            entityManager.persist(other);
+            LocalCredential credential = new LocalCredential(other, passwordEncoder.encode(SYNTHETIC_PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            other.activate(credential, entityManager.createQuery("select s from UserStatus s where s.code='ACTIVE'",
+                    UserStatus.class).getSingleResult());
+            entityManager.persist(new PlatformRoleGrant(other, entityManager.find(Role.class, platformRole),
+                    Instant.now().minusSeconds(1), null, "synthetic second actor", UUID.randomUUID().toString(), admin));
+            return other.getId();
+        });
+        String secondAccess = loginAccess("second-reconciler");
+        removeDefinition("credential.initialize");
+        jdbc.update("DELETE FROM T_10_01_05 WHERE F_01='initialize'");
+        long raceLinks = count("T_10_01_14");
+        var raceA = client.sendAsync(request(port, endpoint, requestBody, access), HttpResponse.BodyHandlers.ofString());
+        var raceB = client.sendAsync(request(port, endpoint, requestBody, secondAccess), HttpResponse.BodyHandlers.ofString());
+        var a = raceA.get(60, TimeUnit.SECONDS);
+        var b = raceB.get(60, TimeUnit.SECONDS);
+        assertSafe(a, 200);
+        assertSafe(b, 200);
+        List<String> aCodes = JsonPath.read(a.body(), "$.insertedPermissionCodes");
+        List<String> bCodes = JsonPath.read(b.body(), "$.insertedPermissionCodes");
+        assertThat(List.of(aCodes, bCodes)).containsExactlyInAnyOrder(List.of("credential.initialize"), List.of());
+        assertInserted(aCodes.isEmpty() ? a : b, List.of(), List.of(), List.of());
+        assertInserted(aCodes.isEmpty() ? b : a, List.of("initialize"), List.of(), List.of("credential.initialize"));
+        assertThat(count("T_10_01_14")).isEqualTo(raceLinks);
+        assertThat(count("T_10_01_22")).isEqualTo(5L);
+        assertThat(jdbc.queryForList("SELECT F_09 FROM T_10_01_22 ORDER BY F_00 DESC LIMIT 2", Long.class))
+                .containsExactlyInAnyOrder(adminId, secondId);
+
+        // All drift probes occur after an earlier missing manifest definition, so 409 must roll it back.
+        removeDefinition("credential.initialize");
+        jdbc.update("DELETE FROM T_10_01_05 WHERE F_01='initialize'");
+        long suspendPermission = permissionId("user.suspend");
+        String suspendLabel = jdbc.queryForObject("SELECT F_02 FROM T_10_01_09 WHERE F_00=?", String.class, suspendPermission);
+        jdbc.update("UPDATE T_10_01_09 SET F_02='Drifted label' WHERE F_00=?", suspendPermission);
+        assertReconcileDrift(endpoint, requestBody, access, 5L);
+        jdbc.update("UPDATE T_10_01_09 SET F_02=? WHERE F_00=?", suspendLabel, suspendPermission);
+        jdbc.update("UPDATE T_10_01_09 SET F_01='USER.suspend' WHERE F_00=?", suspendPermission);
+        assertReconcileDrift(endpoint, requestBody, access, 5L);
+        jdbc.update("UPDATE T_10_01_09 SET F_01='synthetic.suspend' WHERE F_00=?", suspendPermission);
+        assertReconcileDrift(endpoint, requestBody, access, 5L);
+        jdbc.update("UPDATE T_10_01_09 SET F_01='user.suspend' WHERE F_00=?", suspendPermission);
+        long suspendAction = jdbc.queryForObject("SELECT F_03 FROM T_10_01_09 WHERE F_00=?", Long.class, suspendPermission);
+        long unrelatedAction = jdbc.queryForObject("SELECT F_00 FROM T_10_01_05 WHERE F_01='synthetic-only'", Long.class);
+        jdbc.update("UPDATE T_10_01_09 SET F_03=? WHERE F_00=?", unrelatedAction, suspendPermission);
+        assertReconcileDrift(endpoint, requestBody, access, 5L);
+        jdbc.update("UPDATE T_10_01_09 SET F_03=? WHERE F_00=?", suspendAction, suspendPermission);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_reconcile_event_failure BEFORE INSERT ON T_10_01_22 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'");
+        try {
+            assertSafe(send(port, endpoint, requestBody, access), 503);
+            assertMissingInitialization(5L);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_reconcile_event_failure");
+        }
+        var finalRepair = send(port, endpoint, requestBody, access);
+        assertSafe(finalRepair, 200);
+        assertInserted(finalRepair, List.of("initialize"), List.of(), List.of("credential.initialize"));
+
+        // A live company-only account and a platform role without the exact permission must both fail closed.
+        long companyOnlyId = new TransactionTemplate(transactions).execute(tx -> {
+            User admin = entityManager.find(User.class, adminId);
+            User other = new User(admin.getIdentityProvider(), "company-reconciler", "company@example.invalid",
+                    null, companyId, entityManager.createQuery("select s from UserStatus s where s.code='PENDING'",
+                            UserStatus.class).getSingleResult(), admin.getUserType());
+            entityManager.persist(other);
+            LocalCredential credential = new LocalCredential(other, passwordEncoder.encode(SYNTHETIC_PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            other.activate(credential, entityManager.createQuery("select s from UserStatus s where s.code='ACTIVE'",
+                    UserStatus.class).getSingleResult());
+            entityManager.persist(new UserRoleGrant(other, entityManager.find(Role.class, companyRole),
+                    AuthorizationScope.global(companyId), "synthetic fixture", Instant.now().minusSeconds(1), null, admin));
+            return other.getId();
+        });
+        assertThat(companyOnlyId).isPositive();
+        assertSafe(send(port, endpoint, requestBody, loginAccess("company-reconciler")), 403);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", platformRole, capability);
+        assertSafe(send(port, endpoint, requestBody, access), 403);
+        assertSafe(send(port, "/v1/platform/roles", null, access), 200);
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", platformRole, capability);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var grant = entityManager.createQuery("select g from PlatformRoleGrant g where g.user.id=:id",
+                    PlatformRoleGrant.class).setParameter("id", secondId).getSingleResult();
+            grant.revoke(Instant.now(), grant.getUser(), "synthetic revocation", UUID.randomUUID().toString());
+        });
+        assertSafe(send(port, endpoint, requestBody, secondAccess), 403);
+        assertThat(count("T_10_01_22")).isEqualTo(6L);
+        var openapi = send(port, "/api-docs", null, access);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        Map<String, Object> paths = JsonPath.read(openapi.body(), "$.paths");
+        assertThat(paths.get(endpoint).toString()).contains("post=").doesNotContain("get=");
+        assertSafe(send(port, "/v1/auth/logout", "", access), 204);
+        assertSafe(send(port, endpoint, requestBody, access), 401);
+
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var events = entityManager.createQuery("select e from CapabilityReconciliationEvent e order by e.id",
+                    CapabilityReconciliationEvent.class).getResultList();
+            assertThat(events).hasSize(6).allSatisfy(event -> {
+                assertThat(event.getManifestId()).isEqualTo(manifestId);
+                assertThat(event.getManifestDigest()).isEqualTo(digest);
+                assertThat(event.getReason()).isEqualTo("synthetic capability synchronization");
+                assertThat(event.getOccurredAt()).isNotNull();
+                assertThat(event.getCorrelationId()).matches("[0-9a-f-]{36}");
+                assertThat(event.getPerformedBy().getId()).isIn(adminId, secondId);
+            });
+            assertThat(events.getFirst().getInsertedPermissionCodes()).isEmpty();
+            assertThat(events.get(2).getInsertedActionCodes()).isEqualTo("initialize");
+            assertThat(events.get(2).getInsertedResourceTypeCodes()).isEqualTo("identity-catalog");
+            assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
+            assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
+        });
+        assertThat(count("T_10_01_09")).isEqualTo(21L); // twenty supported, one unrelated synthetic definition
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
+                jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
+    }
+
+    private long permissionId(String code) {
+        return jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01=?", Long.class, code);
+    }
+
+    private void removeDefinition(String code) {
+        long id = permissionId(code);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_02=?", id);
+        jdbc.update("DELETE FROM T_10_01_09 WHERE F_00=?", id);
+    }
+
+    private void assertInserted(HttpResponse<String> response, List<String> actions,
+            List<String> resources, List<String> permissions) {
+        assertThat((List<String>) JsonPath.read(response.body(), "$.insertedActionCodes")).containsExactlyElementsOf(actions);
+        assertThat((List<String>) JsonPath.read(response.body(), "$.insertedResourceTypeCodes")).containsExactlyElementsOf(resources);
+        assertThat((List<String>) JsonPath.read(response.body(), "$.insertedPermissionCodes")).containsExactlyElementsOf(permissions);
+    }
+
+    private void assertReconcileDrift(String endpoint, String requestBody, String access, long eventCount) throws Exception {
+        var rejected = send(port, endpoint, requestBody, access);
+        assertSafe(rejected, 409);
+        assertThat(rejected.body()).contains("CAPABILITY_DEFINITION_CONFLICT")
+                .doesNotContain("user.suspend", "Drifted label");
+        assertMissingInitialization(eventCount);
+    }
+
+    private void assertMissingInitialization(long eventCount) {
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_05 WHERE F_01='initialize'", Long.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09 WHERE F_01='credential.initialize'", Long.class)).isZero();
+        assertThat(count("T_10_01_22")).isEqualTo(eventCount);
     }
 
     private void assertProtectedTarget(long companyId, long target, long companyRole, long grantId, String access) throws Exception {
@@ -702,7 +931,7 @@ class IdentityBootstrapIT {
     }
 
     private void assertEmptyIdentity() {
-        for (int index = 1; index <= 21; index++) {
+        for (int index = 1; index <= 22; index++) {
             assertThat(count(String.format("T_10_01_%02d", index))).as("Identity table %02d is empty", index).isZero();
         }
     }

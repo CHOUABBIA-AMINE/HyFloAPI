@@ -85,6 +85,10 @@ public class IdentityBootstrapService {
             "user-role-grant.revoke",
             "identity-catalog.read");
 
+    private static final List<String> INITIAL_PLATFORM_PERMISSIONS = List.of(
+            PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE,
+            PlatformAuthorizationService.CAPABILITY_RECONCILE);
+
     private final IdentityProviderRepository providers;
     private final UserStatusRepository statuses;
     private final UserTypeRepository types;
@@ -177,26 +181,19 @@ public class IdentityBootstrapService {
         Role role = roles.save(new Role(ADMIN_ROLE, "Identity administrator"));
         Map<String, Action> actionByCode = new LinkedHashMap<>();
         Map<String, ResourceType> resourceByCode = new LinkedHashMap<>();
-        for (String code : INITIAL_PERMISSIONS) {
-            String[] parts = code.split("\\.", 2);
-            String resourceCode = parts[0];
-            String actionCode = parts[1];
-            Action action = actionByCode.computeIfAbsent(actionCode, key -> actions.save(new Action(key, label(key))));
-            ResourceType resource = resourceByCode.computeIfAbsent(resourceCode,
-                    key -> resourceTypes.save(new ResourceType(key, label(key))));
-            Permission permission = permissions.save(new Permission(code, label(resourceCode) + " / " + label(actionCode),
+        if (initialPlatformRole != null) initialPlatformRole = roles.save(initialPlatformRole);
+        for (var entry : CapabilityManifest.entries()) {
+            // Internal synthetic fixtures retain only the original company definitions.
+            if (initialPlatformRole == null && !INITIAL_PERMISSIONS.contains(entry.permissionCode())) continue;
+            Action action = actionByCode.computeIfAbsent(entry.actionCode(),
+                    key -> actions.save(new Action(key, entry.actionLabel())));
+            ResourceType resource = resourceByCode.computeIfAbsent(entry.resourceCode(),
+                    key -> resourceTypes.save(new ResourceType(key, entry.resourceLabel())));
+            Permission permission = permissions.save(new Permission(entry.permissionCode(), entry.permissionLabel(),
                     action, resource));
-            rolePermissions.save(new RolePermission(role, permission));
-        }
-
-        if (initialPlatformRole != null) {
-            initialPlatformRole = roles.save(initialPlatformRole);
-            ResourceType resource = resourceTypes.save(new ResourceType("platform-role", "Platform role"));
-            for (String code : List.of(PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE)) {
-                String actionCode = code.substring(code.indexOf('.') + 1);
-                Action action = actionByCode.computeIfAbsent(actionCode, key -> actions.save(new Action(key, label(key))));
-                Permission permission = permissions.save(new Permission(code, "Platform role / " + label(actionCode),
-                        action, resource));
+            if (INITIAL_PERMISSIONS.contains(entry.permissionCode())) {
+                rolePermissions.save(new RolePermission(role, permission));
+            } else if (initialPlatformRole != null && INITIAL_PLATFORM_PERMISSIONS.contains(entry.permissionCode())) {
                 rolePermissions.save(new RolePermission(initialPlatformRole, permission));
             }
         }
@@ -244,8 +241,4 @@ public class IdentityBootstrapService {
         }
     }
 
-    private static String label(String code) {
-        String words = code.replace('-', ' ');
-        return Character.toUpperCase(words.charAt(0)) + words.substring(1);
-    }
 }

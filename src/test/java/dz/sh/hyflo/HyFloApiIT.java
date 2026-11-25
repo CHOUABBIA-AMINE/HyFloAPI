@@ -125,7 +125,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(41);
+        assertThat(entities).hasSize(42);
         for (var entity : entities) {
             var expectedInterface = entity.getPackageName().replace(".domain.model", ".infrastructure.persistence.repository")
                     + "." + entity.getSimpleName() + "Repository";
@@ -147,7 +147,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(41);
+        assertThat(entities).hasSize(42);
         for (var entity : entities) {
             var expectedService = entity.getPackageName().replace(".domain.model", ".application.service")
                     + "." + entity.getSimpleName() + "Service";
@@ -166,7 +166,8 @@ class HyFloApiIT {
                         .toList();
                 if (entity.getSimpleName().equals("UserLifecycleEvent")
                         || entity.getSimpleName().equals("UserEmployeeAssociationEvent")
-                        || entity.getSimpleName().equals("RoleDefinitionEvent")) {
+                        || entity.getSimpleName().equals("RoleDefinitionEvent")
+                        || entity.getSimpleName().equals("CapabilityReconciliationEvent")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("record");
                 } else if (entity.getSimpleName().equals("PlatformRoleGrant")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("provision");
@@ -287,6 +288,10 @@ class HyFloApiIT {
         assertForeignKey("T_10_01_21", "F_08", "T_10_01_04", "T_10_01_21_FK_01", false);
         assertForeignKey("T_10_01_21", "F_09", "T_10_01_08", "T_10_01_21_FK_02", false);
         assertTableConstraints("T_10_01_21", "T_10_01_21_FK_01", "T_10_01_21_FK_02");
+        assertTableColumns("T_10_01_22", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07",
+                "F_08", "F_09");
+        assertForeignKey("T_10_01_22", "F_09", "T_10_01_08", "T_10_01_22_FK_01", false);
+        assertTableConstraints("T_10_01_22", "T_10_01_22_FK_01");
         assertTableColumns("T_10_01_19", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
         assertForeignKey("T_10_01_19", "F_08", "T_10_01_08", "T_10_01_19_FK_01", false);
         assertForeignKey("T_10_01_19", "F_09", "T_10_01_08", "T_10_01_19_FK_02", false);

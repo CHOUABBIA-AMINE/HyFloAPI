@@ -27,6 +27,8 @@ import java.util.List;
 public interface ActionRepository extends Repository<Action, Long> {
     long count();
 
+    List<Action> findByCodeIgnoreCase(String code);
+
     Action save(Action entity);
 
     List<Action> findByIdGreaterThanOrderByIdAsc(long afterId, Pageable page);

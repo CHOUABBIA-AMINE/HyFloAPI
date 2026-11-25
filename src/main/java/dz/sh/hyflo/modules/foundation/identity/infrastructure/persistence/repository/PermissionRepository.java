@@ -31,6 +31,10 @@ public interface PermissionRepository extends Repository<Permission, Long> {
 
     Permission save(Permission entity);
 
+    List<Permission> findByCodeIgnoreCase(String code);
+
+    List<Permission> findByActionIdAndResourceTypeId(Long actionId, Long resourceTypeId);
+
     @Query("select p from Permission p join fetch p.action join fetch p.resourceType "
             + "where p.id > :afterId order by p.id")
     List<Permission> findCatalogPage(@Param("afterId") long afterId, Pageable page);

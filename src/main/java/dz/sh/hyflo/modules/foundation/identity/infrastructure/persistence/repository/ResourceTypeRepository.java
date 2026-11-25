@@ -27,6 +27,8 @@ import java.util.List;
 public interface ResourceTypeRepository extends Repository<ResourceType, Long> {
     long count();
 
+    List<ResourceType> findByCodeIgnoreCase(String code);
+
     ResourceType save(ResourceType entity);
 
     List<ResourceType> findByIdGreaterThanOrderByIdAsc(long afterId, Pageable page);
