@@ -26,4 +26,6 @@ public interface UserTypeRepository extends Repository<UserType, Long> {
     long count();
 
     UserType save(UserType entity);
+    java.util.Optional<UserType> findByCode(String code);
+
 }

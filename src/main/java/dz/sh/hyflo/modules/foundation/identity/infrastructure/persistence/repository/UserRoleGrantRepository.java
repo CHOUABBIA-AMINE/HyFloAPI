@@ -33,4 +33,9 @@ public interface UserRoleGrantRepository extends Repository<UserRoleGrant, Long>
     @Query("select g from UserRoleGrant g join fetch g.role join fetch g.user "
             + "where g.user.id = :userId and g.authorizationScope.organizationUnitId = :companyId")
     List<UserRoleGrant> findCompanyCandidates(@Param("userId") long userId, @Param("companyId") long companyId);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_READ)
+    @Query("select g from UserRoleGrant g join fetch g.role join fetch g.user "
+            + "where g.user.id = :userId and g.authorizationScope.organizationUnitId = :companyId")
+    List<UserRoleGrant> findCompanyCandidatesForWrite(@Param("userId") long userId, @Param("companyId") long companyId);
+
 }

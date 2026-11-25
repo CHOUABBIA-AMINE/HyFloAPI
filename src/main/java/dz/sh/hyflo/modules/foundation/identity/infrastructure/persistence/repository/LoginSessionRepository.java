@@ -40,4 +40,8 @@ public interface LoginSessionRepository extends Repository<LoginSession, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from LoginSession s where s.id = :id")
     Optional<LoginSession> findForUpdate(@Param("id") long id);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from LoginSession s where s.user.id = :userId and s.revokedAt is null order by s.id")
+    java.util.List<LoginSession> findUnrevokedForUpdate(@Param("userId") long userId);
+
 }

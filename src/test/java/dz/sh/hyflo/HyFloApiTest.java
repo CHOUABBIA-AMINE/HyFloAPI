@@ -38,8 +38,8 @@ class HyFloApiTest {
         var active = new UserStatus(UserStatus.ACTIVE_CODE, "Active");
         var suspended = new UserStatus(UserStatus.SUSPENDED_CODE, "Suspended");
         var disabled = new UserStatus(UserStatus.DISABLED_CODE, "Disabled");
-        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending, userType);
-        var other = new User(provider, "other", "other@example.invalid", null, pending, userType);
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, 1L, pending, userType);
+        var other = new User(provider, "other", "other@example.invalid", null, 1L, pending, userType);
         String hash = new BCryptPasswordEncoder().encode("synthetic-account-password");
         var changedAt = Instant.parse("2026-11-24T00:00:00Z");
         var foreignCredential = new LocalCredential(other, hash, changedAt);
@@ -132,9 +132,12 @@ class HyFloApiTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new UserType(UserType.HUMAN_CODE, null, " ", null))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new User(IdentityProvider.local(), "sample", "sample@example.invalid", null,
+        assertThatThrownBy(() -> new User(IdentityProvider.local(), "sample", "sample@example.invalid", null, 1L,
                 new UserStatus(UserStatus.PENDING_CODE, "Pending"), null))
                 .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> new User(IdentityProvider.local(), "sample", "sample@example.invalid", null, 0L,
+                new UserStatus(UserStatus.PENDING_CODE, "Pending"), human))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

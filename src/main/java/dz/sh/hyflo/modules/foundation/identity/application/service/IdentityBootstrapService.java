@@ -173,11 +173,11 @@ public class IdentityBootstrapService {
             rolePermissions.save(new RolePermission(role, permission));
         }
 
-        User attribution = new User(provider, BOOTSTRAP_USERNAME, BOOTSTRAP_EMAIL, null, pending, service);
+        User attribution = new User(provider, BOOTSTRAP_USERNAME, BOOTSTRAP_EMAIL, null, companyUnitId, pending, service);
         attribution.disable(disabled);
         attribution = users.save(attribution);
 
-        User administrator = users.save(new User(provider, normalizedUsername, email, null, pending, human));
+        User administrator = users.save(new User(provider, normalizedUsername, email, null, companyUnitId, pending, human));
         LocalCredential credential = credentials.save(new LocalCredential(administrator, passwordEncoder.encode(password), now));
         administrator.activate(credential, active);
         // This attribution exception is confined to the one-time trusted initialization transaction.

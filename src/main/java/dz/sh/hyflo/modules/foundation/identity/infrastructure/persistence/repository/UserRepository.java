@@ -39,4 +39,16 @@ public interface UserRepository extends Repository<User, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u where u.identityProvider.id = :providerId and u.username = :username")
     Optional<User> findForAuthentication(@Param("providerId") long providerId, @Param("username") String username);
+    @Query("select u from User u where u.id = :id and u.owningOrganizationUnitId = :companyId and u.username <> 'hyflo-bootstrap'")
+    Optional<User> findOwned(@Param("id") long id, @Param("companyId") long companyId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id = :id and u.owningOrganizationUnitId = :companyId and u.username <> 'hyflo-bootstrap'")
+    Optional<User> findOwnedForUpdate(@Param("id") long id, @Param("companyId") long companyId);
+
+    @Query("select u from User u where u.owningOrganizationUnitId = :companyId and u.id > :afterId "
+            + "and u.username <> 'hyflo-bootstrap' order by u.id")
+    java.util.List<User> findOwnedPage(@Param("companyId") long companyId, @Param("afterId") long afterId,
+            org.springframework.data.domain.Pageable page);
+
 }

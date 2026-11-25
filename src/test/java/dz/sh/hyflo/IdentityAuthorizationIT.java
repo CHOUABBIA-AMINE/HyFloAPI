@@ -116,7 +116,7 @@ class IdentityAuthorizationIT {
                 "HYFLO_BOOTSTRAP_EMAIL", "authz-admin@example.invalid",
                 "HYFLO_BOOTSTRAP_PASSWORD", PASSWORD,
                 "HYFLO_BOOTSTRAP_OPERATOR", "synthetic-operator"));
-        long otherId = createAccount();
+        long otherId = createAccount(companies.second());
         String admin = login("authz-admin");
         String other = login("authz-user");
         assertProblem(get(permissions(companies.first()), null), 401, "AUTHENTICATION_REQUIRED");
@@ -137,6 +137,7 @@ class IdentityAuthorizationIT {
         assertProblem(get(catalog(companies.first()), other), 403, "ACCESS_DENIED");
 
         var fixture = createGrantFixtures(companies, adminId, otherId);
+        exerciseAccountAdministration(companies, adminId, otherId, admin, other, fixture);
         assertCodes(get(permissions(companies.first()), admin), companies.first(), EXPECTED);
         assertCodes(get(permissions(companies.second()), admin), companies.second(), List.of("synthetic.observe", "user.read"));
         assertProblem(get(catalog(companies.second()), admin), 403, "ACCESS_DENIED");
@@ -184,9 +185,9 @@ class IdentityAuthorizationIT {
         }
 
         // Current account state is authoritative even with a valid JWT.
-        jdbc.update("UPDATE T_10_01_08 SET F_06=(SELECT F_00 FROM T_10_01_02 WHERE F_01='SUSPENDED') WHERE F_00=?", otherId);
+        jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='SUSPENDED') WHERE F_00=?", otherId);
         assertProblem(get(permissions(companies.second()), other), 401, "AUTHENTICATION_REQUIRED");
-        jdbc.update("UPDATE T_10_01_08 SET F_06=(SELECT F_00 FROM T_10_01_02 WHERE F_01='ACTIVE') WHERE F_00=?", otherId);
+        jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='ACTIVE') WHERE F_00=?", otherId);
         assertCodes(get(permissions(companies.second()), other), companies.second(), List.of("synthetic.observe", "user.read"));
 
         // Role retirement and permission removal immediately affect subsequent reads with the same access token.
@@ -210,8 +211,141 @@ class IdentityAuthorizationIT {
         jdbc.update("UPDATE T_10_01_01 SET F_03=FALSE WHERE F_01='LOCAL'");
         assertProblem(get(permissions(companies.second()), other), 401, "AUTHENTICATION_REQUIRED");
         jdbc.update("UPDATE T_10_01_01 SET F_03=TRUE WHERE F_01='LOCAL'");
-        jdbc.update("UPDATE T_10_01_08 SET F_06=(SELECT F_00 FROM T_10_01_02 WHERE F_01='DISABLED') WHERE F_00=?", otherId);
+        jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='DISABLED') WHERE F_00=?", otherId);
         assertProblem(get(permissions(companies.second()), other), 401, "AUTHENTICATION_REQUIRED");
+    }
+
+
+    private void exerciseAccountAdministration(Companies c, long adminId, long otherId, String admin, String other,
+            GrantFixture fixture) throws Exception {
+        String root = "/v1/identity/users";
+        String first = "?companyId=" + c.first();
+        String second = "?companyId=" + c.second();
+        String reason = "{\"reason\":\"synthetic lifecycle check\"}";
+        String create = "{\"username\":\"Managed.User\",\"email\":\"managed@example.invalid\",\"userTypeCode\":\"HUMAN\",\"reason\":\"synthetic registration\"}";
+        String service = "{\"username\":\"managed-service\",\"email\":\"managed-service@example.invalid\",\"userTypeCode\":\"SERVICE\",\"reason\":\"synthetic registration\"}";
+        assertProblem(get(root + first, null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get(root + first, other), 403, "ACCESS_DENIED");
+        assertProblem(get(root, admin), 400, "INVALID_REQUEST");
+        assertProblem(post(root + first, create, other), 403, "ACCESS_DENIED");
+        var created = post(root + first, create, admin);
+        assertThat(created.statusCode()).isEqualTo(201);
+        Number managedNumber = JsonPath.read(created.body(), "$.id");
+        long managed = managedNumber.longValue();
+        String managedPath = root + "/" + managed;
+        assertThat((String) JsonPath.read(created.body(), "$.username")).isEqualTo("managed.user");
+        assertThat((String) JsonPath.read(created.body(), "$.userStatusCode")).isEqualTo("PENDING");
+        assertThat(((Number) JsonPath.read(created.body(), "$.companyId")).longValue()).isEqualTo(c.first());
+        assertThat(created.body()).doesNotContain("password", "credential", "grant", "employee", "reason");
+        assertThat(post(root + first, service, admin).statusCode()).isEqualTo(201);
+        assertProblem(post(root + first, create, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertProblem(post(root + first, "{\"username\":\"hyflo-bootstrap\",\"email\":\"reserved@example.invalid\",\"userTypeCode\":\"SERVICE\",\"reason\":\"reserved\"}", admin), 400, "INVALID_REQUEST");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, managed)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_10 WHERE F_03=?", Long.class, managed)).isZero();
+        assertThat(jdbc.queryForObject("SELECT F_05 FROM T_10_01_08 WHERE F_00=?", Long.class, managed)).isEqualTo(c.first());
+
+        assertThat(get(managedPath + first, admin).statusCode()).isEqualTo(200);
+        var page = get(root + first, admin);
+        assertThat(page.statusCode()).isEqualTo(200);
+        assertThat(page.body()).contains("managed.user", "managed-service", "authz-admin").doesNotContain("hyflo-bootstrap", "authz-user");
+        assertThat(get(root + first + "&afterId=" + managed, admin).body()).doesNotContain("managed.user");
+        assertThat(get(root + second, admin).body()).contains("authz-user").doesNotContain("managed.user", "authz-admin");
+        var missing = get(root + "/" + Long.MAX_VALUE + first, admin);
+        var foreign = get(root + "/" + otherId + first, admin);
+        assertProblem(missing, 403, "ACCESS_DENIED");
+        assertProblem(foreign, 403, "ACCESS_DENIED");
+        assertThat(detail(missing)).isEqualTo(detail(foreign));
+        assertProblem(get(managedPath + second, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(root + "/" + adminId + "/disable" + first, reason, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(managedPath + "/activate" + first, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+
+        // Give the administrator the exact disable permission in the second company for a synthetic interval.
+        // It still cannot mutate a first-company target via that company selector.
+        long extraGrant = new TransactionTemplate(transactions).execute(tx -> {
+            var actor = entityManager.find(User.class, adminId);
+            var role = role("TEST_SECOND_DISABLE", permission("user.disable"));
+            return grant(actor, role, AuthorizationScope.global(c.second()), Instant.now().minusSeconds(5), null, actor).getId();
+        });
+        assertProblem(post(managedPath + "/disable" + second, reason, admin), 403, "ACCESS_DENIED");
+        jdbc.update("UPDATE T_10_01_15 SET F_03=?,F_11=? WHERE F_00=?",
+                Timestamp.from(Instant.now().minusSeconds(1)), adminId, extraGrant);
+        assertProblem(post(root + "/" + otherId + "/disable" + second, reason, admin), 403, "ACCESS_DENIED");
+
+        // Credential initialization is a later task; this synthetic fixture exercises the activation invariant only.
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var target = entityManager.find(User.class, managed);
+            entityManager.persist(new LocalCredential(target, encoder.encode(PASSWORD), Instant.now()));
+        });
+        assertProblem(post(managedPath + "/reactivate" + first, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(post(managedPath + "/activate" + first, reason, admin).statusCode()).isEqualTo(200);
+        var managedTokens = loginTokens("managed.user");
+        String managedAccess = JsonPath.read(managedTokens, "$.accessToken");
+        String managedRefresh = JsonPath.read(managedTokens, "$.refreshToken");
+        String secondAccess = login("managed.user");
+        long session = tokens.verify(managedAccess, Instant.now()).sessionId();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NULL", Long.class, managed)).isEqualTo(2L);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_lifecycle_failure BEFORE INSERT ON T_10_01_18 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'");
+        try {
+            assertProblem(post(managedPath + "/suspend" + first, reason, admin), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(get("/v1/me", managedAccess).statusCode()).isEqualTo(200);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NULL", Long.class, managed)).isEqualTo(2L);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_lifecycle_failure");
+        }
+
+        // Two identical transitions must not both commit. The actor and target locks serialize the operations.
+        var a = client.sendAsync(postRequest(managedPath + "/suspend" + first, reason, admin), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(postRequest(managedPath + "/suspend" + first, reason, admin), HttpResponse.BodyHandlers.ofString());
+        assertThat(List.of(a.get().statusCode(), b.get().statusCode())).containsExactlyInAnyOrder(200, 409);
+        assertProblem(get("/v1/me", managedAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/me", secondAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post("/v1/auth/refresh", "{\"refreshToken\":\"" + managedRefresh + "\"}", null), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NOT NULL", Long.class, managed)).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_00=? AND F_03 IS NOT NULL", Long.class, session)).isEqualTo(1L);
+
+        // Remove only the reactivation permission, then restore the exact link.
+        long reactivatePermission = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='user.reactivate'", Long.class);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), reactivatePermission);
+        assertProblem(post(managedPath + "/reactivate" + first, reason, admin), 403, "ACCESS_DENIED");
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), reactivatePermission);
+        assertProblem(post(managedPath + "/activate" + first, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(post(managedPath + "/reactivate" + first, reason, admin).statusCode()).isEqualTo(200);
+        assertProblem(get("/v1/me", managedAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post("/v1/auth/refresh", "{\"refreshToken\":\"" + managedRefresh + "\"}", null), 401, "AUTHENTICATION_REQUIRED");
+        var newTokens = loginTokens("managed.user");
+        String newAccess = JsonPath.read(newTokens, "$.accessToken");
+        String newRefresh = JsonPath.read(newTokens, "$.refreshToken");
+        assertThat(post(managedPath + "/disable" + first, reason, admin).statusCode()).isEqualTo(200);
+        assertProblem(get("/v1/me", newAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post("/v1/auth/refresh", "{\"refreshToken\":\"" + newRefresh + "\"}", null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post("/v1/auth/login", "{\"username\":\"managed.user\",\"password\":\"" + PASSWORD + "\"}", null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post(managedPath + "/reactivate" + first, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertProblem(post(managedPath + "/disable" + first, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_18 WHERE F_08=? ORDER BY F_00", String.class, managed))
+                .containsExactly("CREATED", "ACTIVATED", "SUSPENDED", "REACTIVATED", "DISABLED");
+        assertThat(jdbc.queryForList("SELECT F_06 FROM T_10_01_18 WHERE F_08=? ORDER BY F_00", String.class, managed))
+                .containsExactly("PENDING", "ACTIVE", "SUSPENDED", "ACTIVE", "DISABLED");
+        assertThat(jdbc.queryForList("SELECT F_05 FROM T_10_01_18 WHERE F_08=? ORDER BY F_00", String.class, managed))
+                .containsExactly(null, "PENDING", "ACTIVE", "SUSPENDED", "ACTIVE");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_18 WHERE F_08=? AND F_09=? AND F_07=? AND F_03 IS NOT NULL AND F_04 IS NOT NULL",
+                Long.class, managed, adminId, c.first())).isEqualTo(5L);
+        assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users", "/v1/identity/users/{userId}/activate",
+                "/v1/identity/users/{userId}/suspend", "/v1/identity/users/{userId}/reactivate", "/v1/identity/users/{userId}/disable");
+        assertProblem(post(managedPath + "/reset" + first, reason, admin), 403, "ACCESS_DENIED");
+    }
+
+    private HttpRequest postRequest(String path, String body, String access) {
+        var builder = HttpRequest.newBuilder(uri(path)).timeout(Duration.ofSeconds(20))
+                .header("Content-Type", "application/json").header("Accept", "application/json, application/problem+json")
+                .POST(HttpRequest.BodyPublishers.ofString(body));
+        if (access != null) builder.header("Authorization", "Bearer " + access);
+        return builder.build();
+    }
+
+    private HttpResponse<String> post(String path, String body, String access) throws Exception {
+        return client.send(postRequest(path, body, access), HttpResponse.BodyHandlers.ofString());
     }
 
     private Companies createCompanies() {
@@ -247,14 +381,14 @@ class IdentityAuthorizationIT {
         return value.getId();
     }
 
-    private long createAccount() {
+    private long createAccount(long companyId) {
         return new TransactionTemplate(transactions).execute(tx -> {
             var provider = entityManager.createQuery("select p from IdentityProvider p where p.code='LOCAL'", IdentityProvider.class)
                     .getSingleResult();
             var type = entityManager.createQuery("select t from UserType t where t.code='HUMAN'", UserType.class)
                     .getSingleResult();
             var pending = status("PENDING");
-            var user = new User(provider, "authz-user", "authz-user@example.invalid", null, pending, type);
+            var user = new User(provider, "authz-user", "authz-user@example.invalid", null, companyId, pending, type);
             entityManager.persist(user);
             var credential = new LocalCredential(user, encoder.encode(PASSWORD), Instant.now());
             entityManager.persist(credential);
@@ -337,12 +471,16 @@ class IdentityAuthorizationIT {
     }
 
     private String login(String username) throws Exception {
+        return JsonPath.read(loginTokens(username), "$.accessToken");
+    }
+
+    private String loginTokens(String username) throws Exception {
         var response = client.send(HttpRequest.newBuilder(uri("/v1/auth/login")).timeout(Duration.ofSeconds(15))
                 .header("Content-Type", "application/json").header("Accept", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("{\"username\":\"" + username + "\",\"password\":\"" + PASSWORD + "\"}"))
                 .build(), HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
-        return JsonPath.read(response.body(), "$.accessToken");
+        return response.body();
     }
 
     private HttpResponse<String> get(String path, String access) throws Exception {

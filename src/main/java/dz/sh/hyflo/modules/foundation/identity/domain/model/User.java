@@ -7,7 +7,7 @@
  *
  * @Name        : User
  * @CreatedOn   : 06-26-2025
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-25-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -45,7 +45,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "T_10_01_08", uniqueConstraints = {
-    @UniqueConstraint(name = "T_10_01_08_UK_01", columnNames = {"F_05", "F_01"}),
+    @UniqueConstraint(name = "T_10_01_08_UK_01", columnNames = {"F_06", "F_01"}),
     @UniqueConstraint(name = "T_10_01_08_UK_02", columnNames = {"F_02"})
 })
 @Getter
@@ -75,27 +75,34 @@ public class User {
     @Column(name = "F_04")
     private Long profilePictureFileId;
 
+    @Column(name = "F_05", nullable = false, updatable = false)
+    private long owningOrganizationUnitId;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_05", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_01"))
+    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_01"))
     private IdentityProvider identityProvider;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_06", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_02"))
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_02"))
     private UserStatus userStatus;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_03"))
+    @JoinColumn(name = "F_08", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_08_FK_03"))
     private UserType userType;
 
     @Version
     @Column(name = "A_01", nullable = false)
     private Long version;
 
-    public User(IdentityProvider identityProvider, String username, String email, Long employeeId, UserStatus pendingStatus, UserType userType) {
+    public User(IdentityProvider identityProvider, String username, String email, Long employeeId, long owningOrganizationUnitId, UserStatus pendingStatus, UserType userType) {
         this.identityProvider = Objects.requireNonNull(identityProvider, "Identity provider is required");
         this.username = normalizeUsername(username);
         this.email = Objects.requireNonNull(email, "Email is required");
         this.employeeId = employeeId;
+        if (owningOrganizationUnitId <= 0) {
+            throw new IllegalArgumentException("Owning company must be positive");
+        }
+        this.owningOrganizationUnitId = owningOrganizationUnitId;
         this.userStatus = requireStatus(pendingStatus, UserStatus.PENDING_CODE);
         this.userType = Objects.requireNonNull(userType, "User type is required");
     }
@@ -136,6 +143,9 @@ public class User {
     }
 
     public void disable(UserStatus disabledStatus) {
+        if (userStatus.hasCode(UserStatus.DISABLED_CODE)) {
+            throw new IllegalStateException("Account is already disabled");
+        }
         userStatus = requireStatus(disabledStatus, UserStatus.DISABLED_CODE);
     }
 

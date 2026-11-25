@@ -34,4 +34,9 @@ public interface RolePermissionRepository extends Repository<RolePermission, Lon
     @Query("select rp from RolePermission rp join fetch rp.role join fetch rp.permission p "
             + "join fetch p.action join fetch p.resourceType where rp.role.id in :roleIds")
     List<RolePermission> findForRoles(@Param("roleIds") Set<Long> roleIds);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_READ)
+    @Query("select rp from RolePermission rp join fetch rp.role join fetch rp.permission p "
+            + "join fetch p.action join fetch p.resourceType where rp.role.id in :roleIds")
+    List<RolePermission> findForRolesForWrite(@Param("roleIds") Set<Long> roleIds);
+
 }

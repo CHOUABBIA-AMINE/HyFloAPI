@@ -125,7 +125,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(37);
+        assertThat(entities).hasSize(38);
         for (var entity : entities) {
             var expectedInterface = entity.getPackageName().replace(".domain.model", ".infrastructure.persistence.repository")
                     + "." + entity.getSimpleName() + "Repository";
@@ -147,7 +147,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(37);
+        assertThat(entities).hasSize(38);
         for (var entity : entities) {
             var expectedService = entity.getPackageName().replace(".domain.model", ".application.service")
                     + "." + entity.getSimpleName() + "Service";
@@ -164,9 +164,12 @@ class HyFloApiIT {
                                 && java.lang.reflect.Modifier.isStatic(method.getModifiers())
                                 && method.getName().equals("$jacocoInit")))
                         .toList();
-                assertThat(declaredBusinessMethods)
-                        .as("Declared business methods of %s", serviceType.getName())
-                        .isEmpty();
+                if (entity.getSimpleName().equals("UserLifecycleEvent")) {
+                    assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("record");
+                } else {
+                    assertThat(declaredBusinessMethods)
+                            .as("Declared business methods of %s", serviceType.getName()).isEmpty();
+                }
             }
         }
         assertThat(applicationContext.getBeansOfType(AuthorizationScopeService.class)).hasSize(1);
@@ -209,10 +212,10 @@ class HyFloApiIT {
 
         assertThatThrownBy(() -> new UserStatus("UNKNOWN", "Unknown"))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new User(provider, "synthetic", "other@example.invalid", null, active, userType))
+        assertThatThrownBy(() -> new User(provider, "synthetic", "other@example.invalid", null, 1L, active, userType))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, pending, userType);
+        var account = new User(provider, "  Synthetic.User  ", "account@example.invalid", null, 1L, pending, userType);
         entityManager.persist(account);
 
         var encoder = new BCryptPasswordEncoder();
@@ -243,10 +246,19 @@ class HyFloApiIT {
         assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_00 = ?", String.class,
                 savedCredential.getId())).isEqualTo(hash);
 
-        assertTableColumns("T_10_01_08", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "A_01");
+        assertThat(savedAccount.getOwningOrganizationUnitId()).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT F_05 FROM T_10_01_08 WHERE F_00=?", Long.class, savedAccount.getId())).isEqualTo(1L);
+        assertTableColumns("T_10_01_08", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "A_01");
+        assertThat(jdbc.queryForObject("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='T_10_01_08' AND COLUMN_NAME='F_05'", String.class)).isEqualTo("NO");
+        assertTableColumns("T_10_01_18", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
+        assertForeignKey("T_10_01_18", "F_08", "T_10_01_08", "T_10_01_18_FK_01", false);
+        assertForeignKey("T_10_01_18", "F_09", "T_10_01_08", "T_10_01_18_FK_02", false);
+        assertTableConstraints("T_10_01_18", "T_10_01_18_FK_01", "T_10_01_18_FK_02");
         assertTableColumns("T_10_01_07", "F_00", "F_01", "F_02", "F_03", "F_04");
         assertTableConstraints("T_10_01_07", "T_10_01_07_UK_01");
-        assertForeignKey("T_10_01_08", "F_07", "T_10_01_07", "T_10_01_08_FK_03", false);
+        assertForeignKey("T_10_01_08", "F_06", "T_10_01_01", "T_10_01_08_FK_01", false);
+        assertForeignKey("T_10_01_08", "F_07", "T_10_01_02", "T_10_01_08_FK_02", false);
+        assertForeignKey("T_10_01_08", "F_08", "T_10_01_07", "T_10_01_08_FK_03", false);
         assertTableColumns("T_10_01_01", "F_00", "F_01", "F_02", "F_03");
         assertTableColumns("T_10_01_10", "F_00", "F_01", "F_02", "F_03");
         assertTableColumns("T_10_01_02", "F_00", "F_01", "F_02");
@@ -273,9 +285,9 @@ class HyFloApiIT {
         entityManager.persist(provider);
         entityManager.persist(pending);
         entityManager.persist(userType);
-        var actor = new User(provider, "grant-admin", "admin@example.invalid", null, pending, userType);
-        var revoker = new User(provider, "grant-revoker", "revoker@example.invalid", null, pending, userType);
-        var account = new User(provider, "station-engineer", "engineer@example.invalid", null, pending, userType);
+        var actor = new User(provider, "grant-admin", "admin@example.invalid", null, 1L, pending, userType);
+        var revoker = new User(provider, "grant-revoker", "revoker@example.invalid", null, 1L, pending, userType);
+        var account = new User(provider, "station-engineer", "engineer@example.invalid", null, 1L, pending, userType);
         account.changeProfilePicture(42L);
         entityManager.persist(actor);
         entityManager.persist(revoker);
@@ -417,7 +429,7 @@ class HyFloApiIT {
         entityManager.persist(provider);
         entityManager.persist(pending);
         entityManager.persist(userType);
-        var account = new User(provider, "refresh-user", "refresh@example.invalid", null, pending, userType);
+        var account = new User(provider, "refresh-user", "refresh@example.invalid", null, 1L, pending, userType);
         entityManager.persist(account);
         var session = new LoginSession(account, startedAt, expiresAt);
         entityManager.persist(session);

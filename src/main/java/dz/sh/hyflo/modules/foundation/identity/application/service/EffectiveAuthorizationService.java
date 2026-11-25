@@ -107,14 +107,14 @@ public class EffectiveAuthorizationService {
                 .collect(Collectors.toCollection(TreeSet::new));
     }
 
-    private static boolean matchesCompany(UserRoleGrant grant, long companyId, Instant now) {
+    static boolean matchesCompany(UserRoleGrant grant, long companyId, Instant now) {
         AuthorizationScope scope = grant.getAuthorizationScope();
         return scope != null && AuthorizationScope.GLOBAL.equals(scope.getScopeType())
                 && scope.getOrganizationUnitId() == companyId && scope.getScopeReferenceId() == null
                 && grant.isActiveAt(now) && grant.getRole().isEnabled();
     }
 
-    private static boolean validPermission(Permission permission) {
+    static boolean validPermission(Permission permission) {
         String resource = permission.getResourceType().getCode();
         String action = permission.getAction().getCode();
         return resource != null && action != null && CODE_PART.matcher(resource).matches()

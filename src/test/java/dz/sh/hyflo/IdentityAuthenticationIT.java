@@ -456,7 +456,8 @@ class IdentityAuthenticationIT {
                     .getSingleResult();
             var human = entityManager.createQuery("select t from UserType t where t.code='HUMAN'", UserType.class)
                     .getSingleResult();
-            var user = new User(provider, username, username + "@example.invalid", null, status("PENDING"), human);
+            long owner = entityManager.createQuery("select u.id from OrganizationUnit u where u.code='AUTH_COMPANY'", Long.class).getSingleResult();
+            var user = new User(provider, username, username + "@example.invalid", null, owner, status("PENDING"), human);
             entityManager.persist(user);
             var credential = new LocalCredential(user, encoder.encode(PASSWORD), Instant.now());
             if (persistCredential) {

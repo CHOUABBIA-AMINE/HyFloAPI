@@ -193,9 +193,11 @@ class IdentityBootstrapIT {
         assertThat(jdbc.queryForList("SELECT p.F_01 FROM T_10_01_14 rp JOIN T_10_01_09 p ON p.F_00 = rp.F_02",
                 String.class)).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
         assertThat(count("T_10_01_08")).isEqualTo(2L);
+        assertThat(jdbc.queryForList("SELECT F_05 FROM T_10_01_08", Long.class)).containsOnly(fixture.companyId());
+        assertThat(count("T_10_01_18")).isZero();
         assertThat(count("T_10_01_10")).isEqualTo(1L);
         assertThat(count("T_10_01_15")).isEqualTo(1L);
-        for (String suffix : List.of("03", "11", "12", "13", "16", "17")) {
+        for (String suffix : List.of("03", "11", "12", "13", "16", "17", "18")) {
             assertThat(count("T_10_01_" + suffix)).isZero();
         }
 
@@ -288,7 +290,7 @@ class IdentityBootstrapIT {
     }
 
     private void assertEmptyIdentity() {
-        for (int index = 1; index <= 17; index++) {
+        for (int index = 1; index <= 18; index++) {
             assertThat(count(String.format("T_10_01_%02d", index))).as("Identity table %02d is empty", index).isZero();
         }
     }

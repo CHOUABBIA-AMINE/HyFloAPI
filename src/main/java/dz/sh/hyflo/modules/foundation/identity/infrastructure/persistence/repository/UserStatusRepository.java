@@ -30,4 +30,6 @@ public interface UserStatusRepository extends Repository<UserStatus, Long> {
     UserStatus save(UserStatus entity);
 
     List<UserStatus> findAllByOrderByCodeAsc();
+    java.util.Optional<UserStatus> findByCode(String code);
+
 }

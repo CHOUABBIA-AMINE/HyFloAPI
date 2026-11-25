@@ -77,4 +77,17 @@ public class OrganizationUnitScopeService {
                         && (unit.getValidTo() == null || effectiveDate.isBefore(unit.getValidTo())))
                 .isPresent();
     }
+    /** Locks the authoritative company/type/status rows for the lifetime of an authorized write. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean lockEligibleCompanyForIdentityWrite(long organizationUnitId, LocalDate effectiveDate) {
+        Objects.requireNonNull(effectiveDate, "Effective date is required");
+        return organizationUnitId > 0 && organizationUnits.findForInitialization(organizationUnitId)
+                .filter(unit -> OrganizationUnitType.COMPANY_CODE.equals(unit.getOrganizationUnitType().getCode()))
+                .filter(unit -> unit.getOrganizationUnitType().isActive())
+                .filter(unit -> unit.getOrganizationUnitStatus().hasCode(OrganizationUnitStatus.ACTIVE_CODE))
+                .filter(unit -> !effectiveDate.isBefore(unit.getValidFrom())
+                        && (unit.getValidTo() == null || effectiveDate.isBefore(unit.getValidTo())))
+                .isPresent();
+    }
+
 }
