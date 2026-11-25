@@ -47,8 +47,14 @@ public interface UserRepository extends Repository<User, Long> {
     Optional<User> findOwnedForUpdate(@Param("id") long id, @Param("companyId") long companyId);
 
     @Query("select u from User u where u.owningOrganizationUnitId = :companyId and u.id > :afterId "
-            + "and u.username <> 'hyflo-bootstrap' order by u.id")
-    java.util.List<User> findOwnedPage(@Param("companyId") long companyId, @Param("afterId") long afterId,
+            + "and u.username <> 'hyflo-bootstrap' "
+            + "and (:usernamePrefix is null or locate(:usernamePrefix, u.username) = 1) "
+            + "and (:email is null or u.email = :email) "
+            + "and (:statusCode is null or u.userStatus.code = :statusCode) "
+            + "and (:typeCode is null or u.userType.code = :typeCode) order by u.id")
+    java.util.List<User> findOwnedSearchPage(@Param("companyId") long companyId, @Param("afterId") long afterId,
+            @Param("usernamePrefix") String usernamePrefix, @Param("email") String email,
+            @Param("statusCode") String statusCode, @Param("typeCode") String typeCode,
             org.springframework.data.domain.Pageable page);
 
 }

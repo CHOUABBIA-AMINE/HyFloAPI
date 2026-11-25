@@ -62,8 +62,13 @@ public class UserAdministrationController {
     @GetMapping
     public ResponseEntity<?> list(@AuthenticationPrincipal CurrentIdentity principal,
             @RequestParam(name = "companyId", required = false) String company,
-            @RequestParam(name = "afterId", defaultValue = "0") String afterId) {
-        return execute(HttpStatus.OK, correlation -> accounts.list(principal, positive(company), identifier(afterId))
+            @RequestParam(name = "afterId", required = false) String afterId,
+            @RequestParam(name = "usernamePrefix", required = false) String usernamePrefix,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "userStatusCode", required = false) String userStatusCode,
+            @RequestParam(name = "userTypeCode", required = false) String userTypeCode) {
+        return execute(HttpStatus.OK, correlation -> accounts.list(principal, positive(company),
+                afterId == null ? 0 : identifier(afterId), usernamePrefix, email, userStatusCode, userTypeCode)
                 .stream().map(mapper::toResponse).toList(), false);
     }
 

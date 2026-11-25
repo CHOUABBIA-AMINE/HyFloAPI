@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,10 +83,40 @@ public class UserAdministrationService {
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public List<Account> list(CurrentIdentity principal, long companyId, long afterId) {
+    public List<Account> list(CurrentIdentity principal, long companyId, long afterId,
+            String usernamePrefix, String email, String userStatusCode, String userTypeCode) {
+        if (afterId < 0) throw new IllegalArgumentException("Invalid account cursor");
+        String prefix = normalizeSearchPrefix(usernamePrefix);
+        String address = normalizeSearchEmail(email);
+        if (userStatusCode != null && !Set.of(UserStatus.PENDING_CODE, UserStatus.ACTIVE_CODE,
+                UserStatus.SUSPENDED_CODE, UserStatus.DISABLED_CODE).contains(userStatusCode)) {
+            throw new IllegalArgumentException("Invalid account status filter");
+        }
+        if (userTypeCode != null && !Set.of(UserType.HUMAN_CODE, UserType.SERVICE_CODE).contains(userTypeCode)) {
+            throw new IllegalArgumentException("Invalid account type filter");
+        }
         authorization.requireCompanyPermission(principal, companyId, "user.read");
-        return users.findOwnedPage(companyId, afterId, PageRequest.of(0, 100)).stream()
-                .map(UserAdministrationService::account).toList();
+        return users.findOwnedSearchPage(companyId, afterId, prefix, address, userStatusCode, userTypeCode,
+                PageRequest.of(0, 100)).stream().map(UserAdministrationService::account).toList();
+    }
+
+    private static String normalizeSearchPrefix(String value) {
+        if (value == null) return null;
+        String candidate = value.strip();
+        if (!candidate.matches("[a-zA-Z0-9._-]{1,20}")) {
+            throw new IllegalArgumentException("Invalid username prefix");
+        }
+        return candidate.toLowerCase(Locale.ROOT);
+    }
+
+    private static String normalizeSearchEmail(String value) {
+        if (value == null) return null;
+        String candidate = value.strip();
+        if (candidate.isEmpty() || candidate.length() > 100 || candidate.codePoints()
+                .anyMatch(c -> Character.isWhitespace(c) || Character.isSpaceChar(c) || Character.isISOControl(c))) {
+            throw new IllegalArgumentException("Invalid email filter");
+        }
+        return candidate;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)

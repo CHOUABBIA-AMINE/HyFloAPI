@@ -170,3 +170,6 @@ IDN-10 extends Identity-owned AuthenticationService and AuthenticationController
 
 
 IDN-11 extends Identity-owned AuthenticationService, AuthenticationController and LoginSessionRepository for own-session consultation and selective revocation (W16/W17). CurrentIdentity remains the exclusive subject; an administrative grant never authorizes selecting a foreign account's session here. AuthenticationEvent links selective revocation to the exact owned target LoginSession with the same revocation timestamp. No new cross-module contract, permission, account or grant mutation. Existing administrative all-session revocation and current-session logout are unchanged.
+
+
+IDN-12 extends the existing Identity-owned UserAdministrationService, UserAdministrationController and UserRepository account list for W06. Optional literal username prefix, email equality, status and type filters intersect within the selected immutable owning company; existing direct GLOBAL user.read and eligible company contract are unchanged. No additional Organization contract, write operation, grant or employee discovery.

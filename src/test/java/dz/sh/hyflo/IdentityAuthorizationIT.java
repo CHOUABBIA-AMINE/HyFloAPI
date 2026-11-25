@@ -145,6 +145,7 @@ class IdentityAuthorizationIT {
         exerciseDefinitionCatalogs(companies, admin, other);
         var fixture = createGrantFixtures(companies, adminId, otherId);
         exerciseAccountAdministration(companies, adminId, otherId, admin, other, fixture);
+        exerciseAccountSearch(companies, admin, other, fixture);
         var malformedCatalog = get("/v1/identity/permissions?companyId=" + companies.first(), admin);
         assertThat(malformedCatalog.statusCode()).isEqualTo(200);
         List<Map<String, Object>> definitions = JsonPath.read(malformedCatalog.body(), "$[*]");
@@ -186,6 +187,8 @@ class IdentityAuthorizationIT {
             assertProblem(get(catalog(companies.first()), admin), 503, "IDENTITY_UNAVAILABLE");
             assertProblem(get("/v1/identity/roles?companyId=" + companies.first(), admin), 503, "IDENTITY_UNAVAILABLE");
             assertProblem(get("/v1/identity/permissions?companyId=" + companies.first(), admin), 503, "IDENTITY_UNAVAILABLE");
+            assertProblem(get("/v1/identity/users?companyId=" + companies.first() + "&usernamePrefix=managed", admin),
+                    503, "IDENTITY_UNAVAILABLE");
         } finally {
             jdbc.execute("RENAME TABLE AUTHZ_TEST_ROLE_PERMISSION TO T_10_01_14");
         }
@@ -231,6 +234,96 @@ class IdentityAuthorizationIT {
         assertProblem(get(permissions(companies.second()), other), 401, "AUTHENTICATION_REQUIRED");
     }
 
+
+    private void exerciseAccountSearch(Companies c, String admin, String other, GrantFixture fixture) throws Exception {
+        String root = "/v1/identity/users";
+        String first = root + "?companyId=" + c.first();
+        String second = root + "?companyId=" + c.second();
+
+        assertProblem(get(first + "&usernamePrefix=managed", null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get(first + "&usernamePrefix=managed", other), 403, "ACCESS_DENIED");
+        assertProblem(get(root + "?usernamePrefix=managed", admin), 400, "INVALID_REQUEST");
+        assertProblem(get(root + "?companyId=0&usernamePrefix=managed", admin), 400, "INVALID_REQUEST");
+        for (String invalid : List.of("&usernamePrefix=", "&usernamePrefix=%25", "&usernamePrefix=a%20b",
+                "&usernamePrefix=" + "a".repeat(21), "&email=", "&email=a%20b",
+                "&email=" + "a".repeat(101), "&userStatusCode=", "&userStatusCode=active",
+                "&userStatusCode=UNKNOWN", "&userTypeCode=", "&userTypeCode=human",
+                "&userTypeCode=UNKNOWN", "&afterId=", "&afterId=-1", "&afterId=9223372036854775808")) {
+            assertProblem(get(first + invalid, admin), 400, "INVALID_REQUEST");
+        }
+        assertSearchNames(get(first + "&usernamePrefix=%20MANAGED.%20", admin), "managed.user");
+        assertSearchNames(get(first + "&usernamePrefix=managed&userTypeCode=HUMAN", admin), "managed.user");
+        assertSearchNames(get(first + "&usernamePrefix=managed&userTypeCode=SERVICE", admin), "managed-service");
+        assertSearchNames(get(first + "&usernamePrefix=managed&userStatusCode=DISABLED", admin), "managed.user");
+        assertSearchNames(get(first + "&email=managed%40example.invalid&userStatusCode=DISABLED&userTypeCode=HUMAN",
+                admin), "managed.user");
+        assertSearchNames(get(first + "&email=managed%40example.invalid&userTypeCode=SERVICE", admin));
+        assertSearchNames(get(first + "&usernamePrefix=nonexistent", admin));
+        assertSearchNames(get(first + "&usernamePrefix=hyflo-bootstrap", admin));
+        assertSearchNames(get(first + "&email=authz-user%40example.invalid", admin));
+        assertSearchNames(get(second + "&usernamePrefix=managed", admin));
+        assertSearchNames(get(second + "&usernamePrefix=AUTHZ", admin), "authz-user");
+        assertSearchNames(get(second + "&userStatusCode=ACTIVE&userTypeCode=HUMAN", other), "authz-user");
+
+        long permissionId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='user.read'", Long.class);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), permissionId);
+        try {
+            assertProblem(get(first + "&usernamePrefix=managed", admin), 403, "ACCESS_DENIED");
+            assertSearchNames(get(second + "&usernamePrefix=AUTHZ", admin), "authz-user");
+        } finally {
+            jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), permissionId);
+        }
+        assertSearchNames(get(first + "&usernamePrefix=managed.", admin), "managed.user");
+
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var provider = entityManager.createQuery("select p from IdentityProvider p where p.code='LOCAL'",
+                    IdentityProvider.class).getSingleResult();
+            var human = entityManager.createQuery("select t from UserType t where t.code='HUMAN'",
+                    UserType.class).getSingleResult();
+            var pending = status("PENDING");
+            for (int i = 0; i < 101; i++) {
+                String name = "search_" + i;
+                entityManager.persist(new User(provider, name, name + "@example.invalid", null, c.first(), pending, human));
+                if (i == 0) {
+                    entityManager.persist(new User(provider, "searchx0", "searchx0@example.invalid",
+                            null, c.first(), pending, human));
+                    entityManager.persist(new User(provider, "search_foreign", "search-foreign@example.invalid",
+                            null, c.second(), pending, human));
+                }
+            }
+            entityManager.flush();
+        });
+        String filtered = first + "&usernamePrefix=search_&userStatusCode=PENDING&userTypeCode=HUMAN";
+        var page = get(filtered, admin);
+        assertThat(page.statusCode()).isEqualTo(200);
+        assertThat(page.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        List<Map<String, Object>> rows = JsonPath.read(page.body(), "$[*]");
+        assertThat(rows).hasSize(100).allSatisfy(row -> {
+            assertThat(row).containsOnlyKeys("id", "username", "email", "companyId", "userTypeCode", "userStatusCode");
+            assertThat((String) row.get("username")).startsWith("search_").isNotEqualTo("search_foreign");
+            assertThat(((Number) row.get("companyId")).longValue()).isEqualTo(c.first());
+            assertThat(row.get("userStatusCode")).isEqualTo("PENDING");
+            assertThat(row.get("userTypeCode")).isEqualTo("HUMAN");
+        });
+        List<Number> ids = JsonPath.read(page.body(), "$[*].id");
+        assertThat(ids.stream().map(Number::longValue).toList()).isSorted();
+        var next = get(filtered + "&afterId=" + ids.getLast(), admin);
+        assertSearchNames(next, "search_100");
+        List<Number> nextIds = JsonPath.read(next.body(), "$[*].id");
+        assertThat(nextIds.getFirst().longValue()).isGreaterThan(ids.getLast().longValue());
+        assertSearchNames(get(filtered + "&afterId=" + nextIds.getFirst(), admin));
+        assertSearchNames(get(second + "&usernamePrefix=search_", admin), "search_foreign");
+        var openapi = get("/api-docs", admin);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        assertThat(openapi.body()).contains("usernamePrefix", "email", "userStatusCode", "userTypeCode", "afterId");
+    }
+
+    private static void assertSearchNames(HttpResponse<String> response, String... expected) {
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        List<String> names = JsonPath.read(response.body(), "$[*].username");
+        assertThat(names).containsExactly(expected);
+    }
 
     private void exerciseDefinitionCatalogs(Companies c, String admin, String other) throws Exception {
         String first = "?companyId=" + c.first();
