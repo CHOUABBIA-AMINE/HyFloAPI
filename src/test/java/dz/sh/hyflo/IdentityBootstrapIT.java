@@ -44,6 +44,12 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.PlatformRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RoleDefinitionEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.CapabilityReconciliationEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Group;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupRoleGrant;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
@@ -367,7 +373,8 @@ class IdentityBootstrapIT {
         assertThat(codes("T_10_01_09")).containsExactlyInAnyOrderElementsOf(
                 java.util.stream.Stream.concat(EXPECTED_PERMISSIONS.stream(),
                         java.util.stream.Stream.of("platform-role.read", "platform-role.create",
-                                "platform-capability.reconcile")).toList());
+                                "platform-capability.reconcile", "platform-permission.read",
+                                "platform-role-permission.associate", "platform-role-permission.remove")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -523,7 +530,10 @@ class IdentityBootstrapIT {
         var openapi = send(port, "/api-docs", null, access);
         Map<String, Object> paths = JsonPath.read(openapi.body(), "$.paths");
         assertThat(paths.keySet().stream().filter(p -> p.startsWith("/v1/platform")).toList())
-                .containsExactlyInAnyOrder(endpoint, "/v1/platform/capabilities/reconcile");
+                .containsExactlyInAnyOrder(endpoint, "/v1/platform/capabilities/reconcile", "/v1/platform/permissions",
+                        "/v1/platform/roles/{roleId}/permissions",
+                        "/v1/platform/roles/{roleId}/permissions/{permissionId}/associate",
+                        "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove");
         assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
         assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
 
@@ -618,7 +628,8 @@ class IdentityBootstrapIT {
                 + "WHERE rp.F_01=?", String.class, companyRole)).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
         assertThat(jdbc.queryForList("SELECT p.F_01 FROM T_10_01_14 rp JOIN T_10_01_09 p ON p.F_00=rp.F_02 "
                 + "WHERE rp.F_01=?", String.class, platformRole)).containsExactlyInAnyOrder(
-                        "platform-role.read", "platform-role.create", "platform-capability.reconcile");
+                        "platform-role.read", "platform-role.create", "platform-capability.reconcile",
+                        "platform-permission.read", "platform-role-permission.associate", "platform-role-permission.remove");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -634,7 +645,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v1");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v2");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -791,7 +802,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(21L); // twenty supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(24L); // twenty-three supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -825,6 +836,303 @@ class IdentityBootstrapIT {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_05 WHERE F_01='initialize'", Long.class)).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09 WHERE F_01='credential.initialize'", Long.class)).isZero();
         assertThat(count("T_10_01_22")).isEqualTo(eventCount);
+    }
+
+    @Test
+    void configuresRolePermissionsWithLiveAuthorityAndPreservesDelegation() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("COMPOSITION", "composition-admin",
+                "INSTALLER_AUTHORITY"), null, SETUP_SECRET), 204);
+        long companyId = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long adminId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='composition-admin'", Long.class);
+        long companyAdminRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        long platformAdminRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        String access = loginAccess("composition-admin");
+        String catalog = "/v1/platform/permissions";
+        String reason = "{\"reason\":\"synthetic role composition\"}";
+        long read = permissionId("user.read");
+        long catalogRead = permissionId("identity-catalog.read");
+        long roleRead = permissionId("role.read");
+        long permissionRead = permissionId("permission.read");
+        long platformRead = permissionId("platform-role.read");
+        long platformCatalogRead = permissionId("platform-permission.read");
+        long associate = permissionId("platform-role-permission.associate");
+        long remove = permissionId("platform-role-permission.remove");
+        long companyRole = createRuntimeRole("CONFIGURED_COMPANY", false, access);
+        long platformRole = createRuntimeRole("CONFIGURED_PLATFORM", true, access);
+        String bundle = "/v1/platform/roles/" + companyRole + "/permissions";
+        assertSafe(send(port, catalog, null, null), 401);
+        assertSafe(send(port, catalog, null, "invalid.jwt"), 401);
+        assertSafe(send(port, catalog + "?afterId=-1", null, access), 400);
+        assertSafe(send(port, catalog + "?afterId=bad", null, access), 400);
+        assertSafe(send(port, "/v1/platform/roles/0/permissions", null, access), 400);
+        assertSafe(send(port, "/v1/platform/roles/" + Long.MAX_VALUE + "/permissions", null, access), 403);
+        assertThat(send(port, bundle, null, access).body()).isEqualTo("[]");
+        assertThat(send(port, "/v1/platform/roles/" + platformRole + "/permissions", null, access).body()).isEqualTo("[]");
+        var initial = send(port, catalog, null, access);
+        assertSafe(initial, 200);
+        List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
+        assertThat(definitions).hasSize(23).allSatisfy(entry -> {
+            assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
+                    "platformPermission", "supported");
+            assertThat(entry.get("supported")).isEqualTo(true);
+            assertThat(entry.get("code")).isEqualTo(entry.get("resourceTypeCode") + "." + entry.get("actionCode"));
+            assertThat(entry.get("platformPermission")).isEqualTo(entry.get("code").toString().startsWith("platform-"));
+        });
+
+        // Synthetic unsupported and malformed rows remain visible but cannot be added.
+        long[] unsupported = new TransactionTemplate(transactions).execute(tx -> {
+            var action = new Action("synthetic-compose", "Synthetic compose");
+            entityManager.persist(action);
+            var resource = new ResourceType("synthetic-compose", "Synthetic compose");
+            entityManager.persist(resource);
+            var permission = new Permission("synthetic-compose.synthetic-compose", "Unsupported", action, resource);
+            entityManager.persist(permission);
+            var other = new ResourceType("malformed-compose", "Malformed compose");
+            entityManager.persist(other);
+            var malformed = new Permission("wrong.synthetic-compose", "Malformed", action, other);
+            entityManager.persist(malformed);
+            // Extra definitions exercise the real 100-row cursor boundary.
+            for (int i = 0; i < 101; i++) {
+                var pageResource = new ResourceType("synthetic-page-" + i, "Synthetic page");
+                entityManager.persist(pageResource);
+                entityManager.persist(new Permission(pageResource.getCode() + ".synthetic-compose", "Synthetic page", action, pageResource));
+            }
+            return new long[]{permission.getId(), malformed.getId()};
+        });
+        var page = send(port, catalog, null, access);
+        assertSafe(page, 200);
+        List<Number> ids = JsonPath.read(page.body(), "$[*].id");
+        assertThat(ids).hasSize(100);
+        assertThat(ids.stream().map(Number::longValue).toList()).isSorted();
+        List<Map<String, Object>> rows = JsonPath.read(page.body(), "$");
+        assertThat(rows.stream().filter(row -> ((Number)row.get("id")).longValue() == unsupported[0]
+                || ((Number)row.get("id")).longValue() == unsupported[1]).toList())
+                .hasSize(2).allSatisfy(row -> assertThat(row.get("supported")).isEqualTo(false));
+        var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
+        assertSafe(tail, 200);
+        List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
+        assertThat(tailIds).hasSize(26);
+        assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
+                .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
+        assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
+
+        long initialEvents = count("T_10_01_21");
+        assertSafe(send(port, changePath(companyRole, read, true), reason, null), 401);
+        assertSafe(send(port, changePath(companyRole, read, true), "{}", access), 400);
+        assertSafe(send(port, changePath(companyRole, read, true), null, access), 403);
+        assertSafe(send(port, changePath(companyRole, read, false), reason, access), 409);
+        assertSafe(send(port, changePath(companyRole, Long.MAX_VALUE, true), reason, access), 403);
+        assertSafe(send(port, changePath(companyRole, platformRead, true), reason, access), 409);
+        assertSafe(send(port, changePath(platformRole, read, true), reason, access), 409);
+        for (long id : unsupported) assertSafe(send(port, changePath(companyRole, id, true), reason, access), 409);
+        assertSafe(send(port, changePath(platformAdminRole, platformRead, false), reason, access), 409);
+        assertThat(count("T_10_01_21")).isEqualTo(initialEvents);
+
+        // One independent user can observe permission changes with the same login session.
+        long observer = createCompositionUser(adminId, companyId, "composition-observer");
+        long other = createCompositionUser(adminId, companyId, "composition-delegator");
+        Instant now = Instant.now();
+        addCompanyFixtureGrant(adminId, observer, companyRole, companyId, now.minusSeconds(5), null);
+        addCompanyFixtureGrant(adminId, other, companyAdminRole, companyId, now.minusSeconds(5), null);
+        String observerAccess = loginAccess("composition-observer");
+        String otherAccess = loginAccess("composition-delegator");
+        assertSafe(send(port, catalog, null, otherAccess), 403);
+        assertSafe(send(port, changePath(companyRole, read, true), reason, otherAccess), 403);
+        assertSafe(send(port, "/v1/me/permissions?companyId=" + companyId, null, observerAccess), 403);
+        long grantCount = count("T_10_01_15");
+        long platformGrantCount = count("T_10_01_20");
+        assertSafe(send(port, changePath(companyRole, read, true), reason, access), 204);
+        assertSafe(send(port, changePath(companyRole, read, true), reason, access), 409);
+        assertThat((List<String>) JsonPath.read(send(port, "/v1/me/permissions?companyId=" + companyId,
+                null, observerAccess).body(), "$.permissionCodes")).containsExactly("user.read");
+        assertThat((List<String>) JsonPath.read(send(port, bundle, null, access).body(), "$[*].code")).containsExactly("user.read");
+        assertSafe(send(port, changePath(platformRole, platformRead, true), reason, access), 204);
+        assertSafe(send(port, changePath(platformRole, platformRead, false), reason, access), 204);
+        assertThat(count("T_10_01_15")).isEqualTo(grantCount);
+        assertThat(count("T_10_01_20")).isEqualTo(platformGrantCount);
+        assertThat((List<String>) JsonPath.read(send(port, "/v1/me/permissions?companyId=" + companyId,
+                null, otherAccess).body(), "$.permissionCodes")).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
+
+        long beforeFailure = count("T_10_01_21");
+        jdbc.execute("CREATE TRIGGER hyflo_test_composition_failure BEFORE INSERT ON T_10_01_21 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'");
+        try {
+            assertSafe(send(port, changePath(companyRole, roleRead, true), reason, access), 503);
+            assertSafe(send(port, changePath(companyRole, read, false), reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_composition_failure");
+        }
+        assertThat(count("T_10_01_21")).isEqualTo(beforeFailure);
+        assertThat((List<String>) JsonPath.read(send(port, bundle, null, access).body(), "$[*].code")).containsExactly("user.read");
+        assertCompositionRace(changePath(companyRole, roleRead, true), reason, access);
+        assertCompositionRace(changePath(companyRole, roleRead, false), reason, access);
+        assertSafe(send(port, changePath(companyRole, read, false), reason, access), 204);
+        assertSafe(send(port, "/v1/me/permissions?companyId=" + companyId, null, observerAccess), 403);
+        // Removal is also available for an unsupported existing link, without deleting the definition.
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", companyRole, unsupported[1]);
+        assertSafe(send(port, changePath(companyRole, unsupported[1], false), reason, access), 204);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09 WHERE F_00=?", Long.class, unsupported[1])).isEqualTo(1L);
+
+        long ownRole = createRuntimeRole("FUTURE_OWN", false, access);
+        addCompanyFixtureGrant(adminId, adminId, ownRole, companyId, now.plusSeconds(3600), null);
+        assertSafe(send(port, changePath(ownRole, read, true), reason, access), 409);
+        long endedRole = createRuntimeRole("ENDED_ROLE", false, access);
+        addCompanyFixtureGrant(adminId, adminId, endedRole, companyId, now.minusSeconds(7200), now.minusSeconds(3600));
+        assertSafe(send(port, changePath(endedRole, read, true), reason, access), 204);
+        long revokedRole = createRuntimeRole("REVOKED_ROLE", false, access);
+        long revokedGrant = addCompanyFixtureGrant(adminId, adminId, revokedRole, companyId, now.minusSeconds(60), null);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var grant = entityManager.find(UserRoleGrant.class, revokedGrant);
+            grant.revoke(Instant.now(), entityManager.find(User.class, adminId));
+        });
+        assertSafe(send(port, changePath(revokedRole, read, true), reason, access), 204);
+        long groupedRole = createRuntimeRole("GROUPED_ROLE", false, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var group = new Group("SYNTHETIC_GROUP", "Synthetic group");
+            entityManager.persist(group);
+            entityManager.persist(new GroupRoleGrant(group, entityManager.find(Role.class, groupedRole),
+                    AuthorizationScope.global(companyId), "synthetic future group grant", now.plusSeconds(3600), null,
+                    entityManager.find(User.class, adminId)));
+        });
+        assertSafe(send(port, changePath(groupedRole, read, true), reason, access), 409);
+        long futurePlatform = createRuntimeRole("FUTURE_PLATFORM", true, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> entityManager.persist(
+                new PlatformRoleGrant(entityManager.find(User.class, adminId), entityManager.find(Role.class, futurePlatform),
+                        now.plusSeconds(3600), null, "synthetic future grant", UUID.randomUUID().toString(),
+                        entityManager.find(User.class, adminId))));
+        assertSafe(send(port, changePath(futurePlatform, platformRead, true), reason, access), 409);
+
+        long foreignCompany = new TransactionTemplate(transactions).execute(tx -> {
+            var companyType = entityManager.createQuery("select t from OrganizationUnitType t where t.code='COMPANY'",
+                    OrganizationUnitType.class).getSingleResult();
+            var active = entityManager.createQuery("select s from OrganizationUnitStatus s where s.code='ACTIVE'",
+                    OrganizationUnitStatus.class).getSingleResult();
+            var unit = new OrganizationUnit("FOREIGN_COMPOSITION", null, null, "Synthetic second company",
+                    companyType, null, LocalDate.now(ZoneOffset.UTC).minusDays(1), null, active);
+            entityManager.persist(unit);
+            return unit.getId();
+        });
+        long foreign = createCompositionUser(adminId, foreignCompany, "composition-foreign");
+        long foreignRole = createRuntimeRole("FOREIGN_CATALOG", false, access);
+        addCompanyFixtureGrant(adminId, foreign, foreignRole, companyId, now.plusSeconds(3600), null);
+        assertSafe(send(port, changePath(foreignRole, read, true), reason, access), 409);
+        assertSafe(send(port, changePath(foreignRole, catalogRead, true), reason, access), 204);
+        assertSafe(send(port, changePath(foreignRole, permissionRead, true), reason, access), 204);
+
+        // An actual company grant assignment races an incompatible role change.
+        long raceRole = createRuntimeRole("DELEGATION_RACE", false, access);
+        assertSafe(send(port, changePath(raceRole, catalogRead, true), reason, access), 204);
+        addCompanyFixtureGrant(adminId, other, raceRole, companyId, now.minusSeconds(5), now.plusSeconds(7200));
+        String assignPath = "/v1/identity/users/" + foreign + "/role-grants?companyId=" + companyId;
+        String assignBody = "{\"roleId\":" + raceRole + ",\"validTo\":\""
+                + now.plusSeconds(3600).truncatedTo(java.time.temporal.ChronoUnit.MICROS) + "\",\"reason\":\"synthetic race\"}";
+        var adding = client.sendAsync(request(port, changePath(raceRole, read, true), reason, access),
+                HttpResponse.BodyHandlers.ofString());
+        var assigning = client.sendAsync(request(port, assignPath, assignBody, otherAccess),
+                HttpResponse.BodyHandlers.ofString());
+        var changeResult = adding.get(60, TimeUnit.SECONDS);
+        var assignResult = assigning.get(60, TimeUnit.SECONDS);
+        if (changeResult.statusCode() == 204) assertSafe(assignResult, 403);
+        else {
+            assertSafe(changeResult, 409);
+            assertSafe(assignResult, 201);
+        }
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 g JOIN T_10_01_14 rp ON rp.F_01=g.F_09 "
+                + "WHERE g.F_08=? AND g.F_09=? AND rp.F_02=?", Long.class, foreign, raceRole, read)).isZero();
+
+        // Exact operation gates are evaluated live and independently.
+        for (long id : List.of(platformCatalogRead, platformRead, associate, remove)) {
+            jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", platformAdminRole, id);
+            try {
+                if (id == platformCatalogRead) {
+                    assertSafe(send(port, catalog, null, access), 403);
+                    assertSafe(send(port, bundle, null, access), 403);
+                } else if (id == platformRead) {
+                    assertSafe(send(port, bundle, null, access), 403);
+                    assertSafe(send(port, catalog, null, access), 200);
+                } else {
+                    assertSafe(send(port, changePath(companyRole, read, id == associate), reason, access), 403);
+                }
+            } finally {
+                jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", platformAdminRole, id);
+            }
+        }
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var events = entityManager.createQuery("select e from RoleDefinitionEvent e order by e.id",
+                    RoleDefinitionEvent.class).getResultList();
+            assertThat(events).isNotEmpty().allSatisfy(event -> {
+                assertThat(event.getPerformedBy().getId()).isEqualTo(adminId);
+                assertThat(event.getOccurredAt()).isNotNull();
+                assertThat(event.getCorrelationId()).matches("[0-9a-f-]{36}");
+                if ("CREATED".equals(event.getEventCode())) assertThat(event.getPermission()).isNull();
+                else {
+                    assertThat(event.getEventCode()).isIn("PERMISSION_ASSOCIATED", "PERMISSION_REMOVED");
+                    assertThat(event.getPermission().getId()).isPositive();
+                    assertThat(event.getReason()).isEqualTo("synthetic role composition");
+                    assertThat(event.getRoleCode()).isEqualTo(event.getRole().getCode());
+                }
+            });
+            assertThat(events.stream().filter(e -> e.getRole().getId() == companyRole && e.getPermission() != null
+                    && e.getPermission().getId() == read).map(RoleDefinitionEvent::getEventCode).toList())
+                    .containsExactly("PERMISSION_ASSOCIATED", "PERMISSION_REMOVED");
+        });
+        var openapi = send(port, "/api-docs", null, access);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        Map<String,Object> paths = JsonPath.read(openapi.body(), "$.paths");
+        assertThat(paths.get(catalog).toString()).contains("get=");
+        assertThat(paths.get("/v1/platform/roles/{roleId}/permissions").toString()).contains("get=");
+        for (String op : List.of("associate", "remove")) {
+            assertThat(paths.get("/v1/platform/roles/{roleId}/permissions/{permissionId}/" + op).toString()).contains("post=");
+        }
+        assertSafe(send(port, "/v1/auth/logout", "", access), 204);
+        assertSafe(send(port, catalog, null, access), 401);
+    }
+
+    private long createRuntimeRole(String code, boolean platform, String access) throws Exception {
+        var response = send(port, "/v1/platform/roles", roleBody(code, platform), access);
+        assertSafe(response, 201);
+        Number id = JsonPath.read(response.body(), "$.id");
+        return id.longValue();
+    }
+
+    private String changePath(long role, long permission, boolean associate) {
+        return "/v1/platform/roles/" + role + "/permissions/" + permission + (associate ? "/associate" : "/remove");
+    }
+
+    private void assertCompositionRace(String path, String reason, String access) throws Exception {
+        long events = count("T_10_01_21");
+        var a = client.sendAsync(request(port, path, reason, access), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, path, reason, access), HttpResponse.BodyHandlers.ofString());
+        assertThat(List.of(a.get(60, TimeUnit.SECONDS).statusCode(), b.get(60, TimeUnit.SECONDS).statusCode()))
+                .containsExactlyInAnyOrder(204, 409);
+        assertThat(count("T_10_01_21")).isEqualTo(events + 1);
+    }
+
+    private long createCompositionUser(long adminId, long companyId, String username) {
+        return new TransactionTemplate(transactions).execute(tx -> {
+            User admin = entityManager.find(User.class, adminId);
+            User user = new User(admin.getIdentityProvider(), username, username + "@example.invalid", null, companyId,
+                    entityManager.createQuery("select s from UserStatus s where s.code='PENDING'", UserStatus.class).getSingleResult(),
+                    admin.getUserType());
+            entityManager.persist(user);
+            var credential = new LocalCredential(user, passwordEncoder.encode(SYNTHETIC_PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            user.activate(credential, entityManager.createQuery("select s from UserStatus s where s.code='ACTIVE'",
+                    UserStatus.class).getSingleResult());
+            return user.getId();
+        });
+    }
+
+    private long addCompanyFixtureGrant(long actor, long recipient, long role, long company,
+            Instant from, Instant to) {
+        return new TransactionTemplate(transactions).execute(tx -> {
+            var grant = new UserRoleGrant(entityManager.find(User.class, recipient), entityManager.find(Role.class, role),
+                    AuthorizationScope.global(company), "synthetic fixture", from, to, entityManager.find(User.class, actor));
+            entityManager.persist(grant);
+            return grant.getId();
+        });
     }
 
     private void assertProtectedTarget(long companyId, long target, long companyRole, long grantId, String access) throws Exception {

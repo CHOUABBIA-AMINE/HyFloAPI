@@ -37,4 +37,9 @@ public interface PlatformRoleGrantRepository extends Repository<PlatformRoleGran
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("select g from PlatformRoleGrant g join fetch g.role join fetch g.user where g.user.id = :userId order by g.id")
     List<PlatformRoleGrant> findCandidatesForWrite(@Param("userId") long userId, org.springframework.data.domain.Pageable page);
+    @org.springframework.data.jpa.repository.Query("select count(g) from PlatformRoleGrant g where g.role.id = :roleId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now)")
+    long countNonEndedForRole(@org.springframework.data.repository.query.Param("roleId") long roleId,
+            @org.springframework.data.repository.query.Param("now") java.time.Instant now);
+
 }

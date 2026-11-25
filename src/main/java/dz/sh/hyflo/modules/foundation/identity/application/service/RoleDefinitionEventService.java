@@ -22,6 +22,7 @@ package dz.sh.hyflo.modules.foundation.identity.application.service;
 import java.time.Instant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RoleDefinitionEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RoleDefinitionEventRepository;
 import org.springframework.stereotype.Service;
@@ -39,5 +40,10 @@ public class RoleDefinitionEventService {
     @Transactional(propagation = Propagation.MANDATORY)
     public void record(Role role, User actor, Instant now, String correlationId, String reason) {
         events.save(new RoleDefinitionEvent(role, actor, now, correlationId, reason));
+    }
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void recordPermissionChange(Role role, Permission permission, User actor, Instant now,
+            String correlationId, String reason, boolean associated) {
+        events.save(RoleDefinitionEvent.permissionChanged(role, permission, actor, now, correlationId, reason, associated));
     }
 }

@@ -87,7 +87,8 @@ public class IdentityBootstrapService {
 
     private static final List<String> INITIAL_PLATFORM_PERMISSIONS = List.of(
             PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE,
-            PlatformAuthorizationService.CAPABILITY_RECONCILE);
+            PlatformAuthorizationService.CAPABILITY_RECONCILE, PlatformAuthorizationService.PERMISSION_READ,
+            PlatformAuthorizationService.PERMISSION_ASSOCIATE, PlatformAuthorizationService.PERMISSION_REMOVE);
 
     private final IdentityProviderRepository providers;
     private final UserStatusRepository statuses;

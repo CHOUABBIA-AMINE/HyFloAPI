@@ -166,9 +166,11 @@ class HyFloApiIT {
                         .toList();
                 if (entity.getSimpleName().equals("UserLifecycleEvent")
                         || entity.getSimpleName().equals("UserEmployeeAssociationEvent")
-                        || entity.getSimpleName().equals("RoleDefinitionEvent")
                         || entity.getSimpleName().equals("CapabilityReconciliationEvent")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("record");
+                } else if (entity.getSimpleName().equals("RoleDefinitionEvent")) {
+                    assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName)
+                            .containsExactlyInAnyOrder("record", "recordPermissionChange");
                 } else if (entity.getSimpleName().equals("PlatformRoleGrant")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("provision");
                 } else {
@@ -284,10 +286,11 @@ class HyFloApiIT {
         assertTableConstraints("T_10_01_20", "T_10_01_20_FK_01", "T_10_01_20_FK_02",
                 "T_10_01_20_FK_03", "T_10_01_20_FK_04");
         assertTableColumns("T_10_01_21", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07",
-                "F_08", "F_09");
+                "F_08", "F_09", "F_10");
         assertForeignKey("T_10_01_21", "F_08", "T_10_01_04", "T_10_01_21_FK_01", false);
         assertForeignKey("T_10_01_21", "F_09", "T_10_01_08", "T_10_01_21_FK_02", false);
-        assertTableConstraints("T_10_01_21", "T_10_01_21_FK_01", "T_10_01_21_FK_02");
+        assertForeignKey("T_10_01_21", "F_10", "T_10_01_09", "T_10_01_21_FK_03", true);
+        assertTableConstraints("T_10_01_21", "T_10_01_21_FK_01", "T_10_01_21_FK_02", "T_10_01_21_FK_03");
         assertTableColumns("T_10_01_22", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07",
                 "F_08", "F_09");
         assertForeignKey("T_10_01_22", "F_09", "T_10_01_08", "T_10_01_22_FK_01", false);

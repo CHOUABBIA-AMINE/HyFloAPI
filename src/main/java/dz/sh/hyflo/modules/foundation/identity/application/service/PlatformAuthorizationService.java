@@ -40,7 +40,12 @@ public class PlatformAuthorizationService {
     public static final String ROLE_READ = "platform-role.read";
     public static final String ROLE_CREATE = "platform-role.create";
     public static final String CAPABILITY_RECONCILE = "platform-capability.reconcile";
-    private static final Set<String> IMPLEMENTED = Set.of(ROLE_READ, ROLE_CREATE, CAPABILITY_RECONCILE);
+    public static final String PERMISSION_READ = "platform-permission.read";
+    public static final String PERMISSION_ASSOCIATE = "platform-role-permission.associate";
+    public static final String PERMISSION_REMOVE = "platform-role-permission.remove";
+    private static final Set<String> IMPLEMENTED = Set.of(ROLE_READ, ROLE_CREATE, CAPABILITY_RECONCILE,
+            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE);
+    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE);
     private static final int MAX_CANDIDATES = 1000;
 
     private final SessionAuthenticationService authentication;
@@ -80,7 +85,13 @@ public class PlatformAuthorizationService {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public User requireReconciliationWrite(CurrentIdentity principal) {
-        return requireWrite(principal, CAPABILITY_RECONCILE, true);
+        return requireCatalogWrite(principal, CAPABILITY_RECONCILE);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public User requireCatalogWrite(CurrentIdentity principal, String permission) {
+        if (permission == null || !CATALOG_WRITES.contains(permission)) throw denied();
+        return requireWrite(principal, permission, true);
     }
 
     private User requireWrite(CurrentIdentity principal, String permission, boolean exclusiveProvider) {

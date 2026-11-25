@@ -31,6 +31,10 @@ public interface PermissionRepository extends Repository<Permission, Long> {
 
     Permission save(Permission entity);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_READ)
+    @Query("select p from Permission p join fetch p.action join fetch p.resourceType where p.id = :id")
+    java.util.Optional<Permission> findForRoleChange(@Param("id") long id);
+
     List<Permission> findByCodeIgnoreCase(String code);
 
     List<Permission> findByActionIdAndResourceTypeId(Long actionId, Long resourceTypeId);

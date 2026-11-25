@@ -33,6 +33,11 @@ public interface RolePermissionRepository extends Repository<RolePermission, Lon
 
     RolePermission save(RolePermission entity);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    java.util.Optional<RolePermission> findByRoleIdAndPermissionId(long roleId, long permissionId);
+
+    void delete(RolePermission entity);
+
     @Query("select p from RolePermission rp join rp.permission p join fetch p.action join fetch p.resourceType "
             + "where rp.role.id = :roleId and p.id > :afterId order by p.id")
     List<Permission> findCatalogPageForRole(@Param("roleId") long roleId,

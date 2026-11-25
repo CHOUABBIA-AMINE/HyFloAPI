@@ -62,14 +62,34 @@ public class RoleDefinitionEvent {
     @JoinColumn(name = "F_09", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_01_21_FK_02"))
     private User performedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "F_10", referencedColumnName = "F_00", updatable = false, foreignKey = @ForeignKey(name = "T_10_01_21_FK_03"))
+    private Permission permission;
+
     public RoleDefinitionEvent(Role role, User performedBy, Instant occurredAt, String correlationId, String reason) {
+        this(role, performedBy, occurredAt, correlationId, reason, "CREATED", null);
+    }
+
+    public static RoleDefinitionEvent permissionChanged(Role role, Permission permission, User actor,
+            Instant now, String correlationId, String reason, boolean associated) {
+        return new RoleDefinitionEvent(role, actor, now, correlationId, reason,
+                associated ? "PERMISSION_ASSOCIATED" : "PERMISSION_REMOVED", Objects.requireNonNull(permission));
+    }
+
+    private RoleDefinitionEvent(Role role, User performedBy, Instant occurredAt, String correlationId,
+            String reason, String eventCode, Permission permission) {
         this.role = Objects.requireNonNull(role);
         this.performedBy = Objects.requireNonNull(performedBy);
         if (role.getId() == null || role.getId() <= 0 || performedBy.getId() == null || performedBy.getId() <= 0
                 || !role.isEnabled() || correlationId == null || correlationId.isBlank() || correlationId.length() > 36
                 || reason == null || reason.isBlank() || reason.length() > 255)
             throw new IllegalArgumentException("Invalid role creation evidence");
-        this.eventCode = "CREATED";
+        if (permission != null && (permission.getId() == null || permission.getId() <= 0))
+            throw new IllegalArgumentException("Persisted permission required");
+        if ("CREATED".equals(eventCode) != (permission == null))
+            throw new IllegalArgumentException("Invalid role evidence");
+        this.eventCode = eventCode;
+        this.permission = permission;
         this.occurredAt = Objects.requireNonNull(occurredAt);
         this.correlationId = correlationId;
         this.reason = reason;

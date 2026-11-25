@@ -51,4 +51,14 @@ public interface UserRoleGrantRepository extends Repository<UserRoleGrant, Long>
     java.util.Optional<UserRoleGrant> findSelectedForUpdate(@Param("grantId") long grantId,
             @Param("userId") long userId, @Param("companyId") long companyId);
 
+    @org.springframework.data.jpa.repository.Query("select count(g) from UserRoleGrant g where g.role.id = :roleId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now) and g.user.id = :userId")
+    long countNonEndedForUser(@org.springframework.data.repository.query.Param("roleId") long roleId,
+            @org.springframework.data.repository.query.Param("now") java.time.Instant now, @org.springframework.data.repository.query.Param("userId") long userId);
+
+    @org.springframework.data.jpa.repository.Query("select count(g) from UserRoleGrant g where g.role.id = :roleId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now) and g.user.owningOrganizationUnitId <> g.authorizationScope.organizationUnitId")
+    long countNonEndedForeign(@org.springframework.data.repository.query.Param("roleId") long roleId,
+            @org.springframework.data.repository.query.Param("now") java.time.Instant now);
+
 }

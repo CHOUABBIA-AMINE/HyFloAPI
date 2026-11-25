@@ -30,5 +30,11 @@ public interface RoleRepository extends Repository<Role, Long> {
 
     Role save(Role entity);
 
+    java.util.Optional<Role> findById(Long id);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select r from Role r where r.id = :id")
+    java.util.Optional<Role> findForUpdate(@org.springframework.data.repository.query.Param("id") long id);
+
     List<Role> findByIdGreaterThanOrderByIdAsc(long afterId, Pageable page);
 }
