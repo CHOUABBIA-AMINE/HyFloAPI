@@ -484,3 +484,52 @@ Acceptance:
 - Verify transaction scope, same-company query criteria and owner contract, no stale cache, database failure denies without returning partial catalog/entitlement data. Test data is synthetic and any intentionally inconsistent rows are isolated fixtures; no production data assumptions. No extra mandatory test skips, weakening existing gates, or deployment.
 
 Registered design choices for owner review: direct grants only in IDN-03 (inherited evaluation IDN-10), GLOBAL company-only effective read; own permissions and one actual protected catalog read; 403 indistinguishable denial; UTC date/snapshot semantics; unsupported target scopes deny. IDN-04 remains the proposed next package after IDN-03 acceptance (refresh rotation and session revocation). This registration does not execute IDN-03 or IDN-04.
+
+### IDN-03 acceptance — 2026-11-25
+
+Status: COMPLETED — implementation SHA 456a934a378cbee2e14b5299693f9e509a649051, [HyFloAPI Build #37 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45591762398) success. Verify job 139127488083: Surefire 17/17, Failsafe 13/13 (HyFloApiIT 10, IdentityAuthenticationIT 1, IdentityBootstrapIT 1, IdentityAuthorizationIT 1), zero failures/errors/skips. Mandatory test/JaCoCo/SBOM checks, verification artifact and JAR upload passed; optional security scan skipped. Accept the registered direct company-level read scope only; no resource coverage, inherited grants or protected writes. Prior entries preserved.
+
+## IDN-04 — Refresh rotation and own-session revocation
+
+Status: IN PROGRESS — selected by owner Next (IDN-004 denotes the existing IDN-04 candidate), 2026-11-25. Base 456a934a378cbee2e14b5299693f9e509a649051; Build #37 passed. Dependencies: accepted IDN-01/02/03. One task, no split; reuse existing LoginSession, RefreshToken, AuthenticationEvent and stateless access JWT. No new tables, columns, schema changes, migration, dependencies, external identity, admin session management, or production deployment.
+
+Registration commit: docs(identity): accept direct authorization and register session lifecycle
+
+Implementation commit: feat(identity): rotate refresh tokens and revoke own sessions
+
+Semantics and scope:
+- POST /hyflo/api/v1/auth/refresh with explicit JSON RefreshRequest {refreshToken}, no access token required (client must omit Authorization when access expired; existing filter behavior unchanged). Accept only canonical unpadded base64url encoding of 32 bytes, no raw value in logs/DTO toString, persist SHA-256 hex only. Apply existing bounded global and peer-IP authentication limiter budget (shared with login) before database lookup; do not retain token/digest as a limiter key. Preserve login username bucket semantics and existing safe 429 error code for compatibility. Unknown valid-shaped token is generic 401, invalid shape 400; no owner or session disclosure.
+- Rotation within one READ_COMMITTED write transaction: use scalar digest lookup for session ID and scalar session owner ID, then pessimistic User -> LoginSession -> RefreshToken locks in that order, check exact digest, owner/session consistency, live eligible LOCAL account and half-open session interval with server time sampled after locks. Never trust a caller actor/session/company ID. Consume old token, insert successor digest, issue signed access JWT with original session expiry (no sliding extension), append REFRESH_SUCCEEDED evidence and return existing TokenResponse only after transaction commits. Keep old consumed rows for replay detection; existing access JWTs remain valid until expiry or session revocation. No new session on rotation. Concurrent login uses the existing User lock; future account lifecycle tasks must follow the same lock ordering; no claim of global atomicity with unimplemented external account/provider changes.
+- Strict replay policy: when a consumed known token is presented for a currently active eligible session, revoke that entire session and append one REFRESH_REPLAY event in the same transaction, then return generic 401 as a normal rejected outcome (not an exception that rolls back revocation). Concurrent duplicate refresh yields at most one success; replay may immediately invalidate the successful response's session. Clients must serialize refresh; no grace window or idempotent token reissue. Inactive/expired/unknown requests create no new records, no replay event duplication. Any write/signing/evidence failure rolls back and returns safe 503; no partial credentials or success response.
+- POST /hyflo/api/v1/auth/logout with valid live bearer and no target selector. Require CurrentIdentity from authenticated context, recheck same owner and current eligible session under User -> LoginSession locks, revoke current session and append existing LOGOUT event atomically. Return 204/no-store; subsequent bearer and all session refresh tokens denied. An already revoked/expired session or invalid bearer returns 401; other sessions remain unaffected. No cross-user or all-session revocation.
+- Keep AuthenticationEvent existing physical schema and stable login codes; add technical REFRESH_SUCCEEDED and REFRESH_REPLAY event constants requiring attributable user; use server correlation IDs, no token data in evidence. Preserve existing DTOs, JWT claim structure, authorization rules, repository/service skeletons and deny-all remainder. No generic CRUD or new permissions. No CSRF change, cookies or server HTTP session. No assumption of distributed rate limiting or production TLS.
+- Update architecture/module documentation with the actual implemented boundary only, no claim of global write authorization.
+
+Exact implementation allowlist:
+
+Create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/request/RefreshRequest.java`
+
+Update:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/AuthenticationService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/controller/AuthenticationController.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/AuthenticationEvent.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/LoginSessionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/RefreshTokenRepository.java`
+- `src/main/java/dz/sh/hyflo/platform/security/LoginAttemptLimiter.java`
+- `src/main/java/dz/sh/hyflo/platform/security/IdentitySecurityConfiguration.java`
+- `src/test/java/dz/sh/hyflo/IdentityAuthenticationTest.java`
+- `src/test/java/dz/sh/hyflo/IdentityAuthenticationIT.java`
+- `docs/ARCHITECTURE.md`
+- `docs/MODULES.md`
+
+Delete: none.
+
+Acceptance:
+- Retain existing 17 unit and 13 real MySQL integration methods, extend existing IdentityAuthenticationTest and IdentityAuthenticationIT (same disposable MySQL 8.4 context; preserve existing checks). Unit: canonical token shape/redacted DTO, global/IP shared budget, existing username limit preserved, finite event codes. Actual HTTP: initial login -> rotate without bearer -> same user/session, distinct successor/digest, unchanged session expiry, original token consumed timestamp, one success event; access JWT bounded by session expiry, no plaintext/digest leakage beyond intended opaque response, no cookies/cache. Unknown/malformed/missing, invalid bearer, suspended/disabled user/provider, expired/revoked sessions denied; no unintended record changes. Verify runtime OpenAPI includes exactly the two admitted authentication additions and prior routes remain protected.
+- Real MySQL concurrent duplicate refresh (two simultaneous HTTP requests): one 200 and one 401, exactly one successor and one replay event, revoked parent; all old/new access and refresh credentials denied afterwards. Concurrent refresh/logout: serialized parent mutation, no active session/successful post-revocation refresh, no duplicate successor or logout event, previously issued access denied after commit. Independent session survives. Explicit rollback trigger on evidence insert: rotation preserves unconsumed old token and no successor, replay failure preserves session and no replay event, logout failure preserves live session, all return 503; retry after trigger removal succeeds or denies according to policy. Exercise own-session logout and no arbitrary user/session target; no new authorization surface.
+- Exact-SHA HyFloAPI Build mandatory with no skips/failures, real MySQL and retained test/SBOM/JAR evidence. Source inspection is not runtime proof. Optional security scan separate. No acceptance recorded before CI.
+- Next candidate after acceptance: IDN-05 (account-management ownership/authorization to be separately registered; do not execute here).
+
+Owner-review design choices: strict session revocation on replay including duplicate concurrent requests; fixed original session lifetime, existing access JWT validity until expiry/revocation, authenticated current-session logout only, shared login/refresh global and IP budget with existing error code. These are bounded implementation decisions, not previously explicit owner security policy or industrial acceptance.
