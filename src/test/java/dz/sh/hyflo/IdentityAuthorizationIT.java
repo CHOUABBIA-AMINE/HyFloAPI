@@ -545,6 +545,160 @@ class IdentityAuthorizationIT {
         assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users/{userId}/sessions/revoke");
         assertProblem(get(servicePath + "/sessions" + first, admin), 403, "ACCESS_DENIED");
         assertProblem(post(servicePath + "/sessions/" + aId + "/revoke" + first, reason, admin), 403, "ACCESS_DENIED");
+        exerciseDirectRoleDelegation(c, adminId, otherId, admin, other, fixture, serviceId, servicePath, fresh);
+    }
+
+    private void exerciseDirectRoleDelegation(Companies c, long adminId, long otherId, String admin, String other,
+            GrantFixture fixture, long serviceId, String servicePath, String delegate) throws Exception {
+        String root = "/v1/identity/users/";
+        String first = "?companyId=" + c.first();
+        String second = "?companyId=" + c.second();
+        String path = servicePath + "/role-grants";
+        String foreign = root + otherId + "/role-grants";
+        Instant baseTime = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        Instant end = baseTime.plusSeconds(1800);
+        String request = grantBody(fixture.adminRole(), end);
+        long bootstrapId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        long bootstrapGrant = jdbc.queryForObject("SELECT F_00 FROM T_10_01_15 WHERE F_08=? AND F_10=? AND F_06=?",
+                Long.class, adminId, bootstrapId, c.first());
+        assertProblem(get(path + first, null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get(path + first, other), 403, "ACCESS_DENIED");
+        assertProblem(get(path + second, admin), 403, "ACCESS_DENIED");
+        assertProblem(get(path, admin), 400, "INVALID_REQUEST");
+        assertProblem(post(path + first, request, other), 403, "ACCESS_DENIED");
+        assertProblem(post(path + second, request, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(root + adminId + "/role-grants" + first, request, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(root + bootstrapId + "/role-grants" + first, request, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(root + Long.MAX_VALUE + "/role-grants" + first, request, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(foreign + first, request, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(path + first, grantBody(Long.MAX_VALUE, end), admin), 403, "ACCESS_DENIED");
+        assertProblem(post(path + first, grantBody(fixture.adminRole(), baseTime.minusSeconds(1)), admin), 400, "INVALID_REQUEST");
+        assertProblem(post(path + first, "{\"roleId\":0,\"validTo\":\"" + end + "\",\"reason\":\"test\"}", admin),
+                400, "INVALID_REQUEST");
+        assertThat(get(path + first, admin).body()).isEqualTo("[]");
+        assertThat(get(root + Long.MAX_VALUE + "/role-grants" + first, admin).body()).isEqualTo("[]");
+        assertProblem(get(permissions(c.first()), delegate), 403, "ACCESS_DENIED");
+
+        // A known, finite non-administrative catalog role is a synthetic fixture, not a seed.
+        long[] source = new TransactionTemplate(transactions).execute(tx -> {
+            User actor = entityManager.find(User.class, adminId);
+            User recipient = entityManager.find(User.class, otherId);
+            Role ordinary = role("TEST_DELEGABLE_CATALOG", permission("role.read"));
+            var authority = grant(actor, ordinary, AuthorizationScope.global(c.first()),
+                    baseTime.minusSeconds(60), end, actor);
+            var expired = grant(recipient, ordinary, AuthorizationScope.global(c.first()),
+                    baseTime.minusSeconds(120), baseTime.minusSeconds(60), actor);
+            var future = grant(recipient, ordinary, AuthorizationScope.global(c.first()),
+                    end.plusSeconds(30), end.plusSeconds(60), actor);
+            entityManager.flush();
+            return new long[]{ordinary.getId(), authority.getId(), expired.getId(), future.getId()};
+        });
+        assertProblem(post(foreign + first, grantBody(source[0], end.plusSeconds(1)), admin), 403, "ACCESS_DENIED");
+        assertProblem(post(foreign + "/" + source[2] + "/revoke" + first, "", admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(post(foreign + "/" + source[3] + "/revoke" + first, "", admin).statusCode()).isEqualTo(204);
+
+        long assignPermission = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='user-role-grant.assign'", Long.class);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), assignPermission);
+        assertProblem(post(path + first, request, admin), 403, "ACCESS_DENIED");
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), assignPermission);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_grant_insert_failure BEFORE INSERT ON T_10_01_15 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic grant insert rollback'");
+        try {
+            assertProblem(post(path + first, request, admin), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, serviceId)).isZero();
+            assertProblem(get(permissions(c.first()), delegate), 403, "ACCESS_DENIED");
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_grant_insert_failure");
+        }
+
+        var a = client.sendAsync(postRequest(path + first, request, admin), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(postRequest(path + first, request, admin), HttpResponse.BodyHandlers.ofString());
+        var results = List.of(a.get(), b.get());
+        assertThat(results.stream().map(HttpResponse::statusCode).toList()).containsExactlyInAnyOrder(201, 409);
+        var assigned = results.stream().filter(response -> response.statusCode() == 201).findFirst().orElseThrow();
+        long grantId = ((Number) JsonPath.read(assigned.body(), "$.id")).longValue();
+        assertThat(((Number) JsonPath.read(assigned.body(), "$.grantedBy")).longValue()).isEqualTo(adminId);
+        assertThat(((Number) JsonPath.read(assigned.body(), "$.userId")).longValue()).isEqualTo(serviceId);
+        assertThat(((Number) JsonPath.read(assigned.body(), "$.companyId")).longValue()).isEqualTo(c.first());
+        assertThat((String) JsonPath.read(assigned.body(), "$.scopeType")).isEqualTo("GLOBAL");
+        assertThat((String) JsonPath.read(assigned.body(), "$.roleCode")).isEqualTo("IDENTITY_ADMIN");
+        assertThat((String) JsonPath.read(assigned.body(), "$.reason")).isEqualTo("synthetic delegation");
+        assertThat(assigned.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_15 WHERE F_00=?", Timestamp.class, grantId).toInstant()).isEqualTo(end);
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_15 WHERE F_00=?", Timestamp.class, grantId).toInstant())
+                .isAfterOrEqualTo(baseTime).isBefore(end);
+        assertCodes(get(permissions(c.first()), delegate), c.first(), EXPECTED);
+        assertProblem(post(path + "/" + grantId + "/revoke" + first, "", delegate), 403, "ACCESS_DENIED");
+        assertProblem(post(root + adminId + "/role-grants/" + bootstrapGrant + "/revoke" + first, "", delegate), 403, "ACCESS_DENIED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_00=? AND F_03 IS NULL", Long.class, bootstrapGrant)).isEqualTo(1L);
+
+        // The delegated administrator can act only within its own finite same-role interval.
+        var child = post("/v1/identity/users" + first,
+                "{\"username\":\"delegation-child\",\"email\":\"delegation-child@example.invalid\",\"userTypeCode\":\"HUMAN\",\"reason\":\"synthetic child\"}", admin);
+        assertThat(child.statusCode()).isEqualTo(201);
+        long childId = ((Number) JsonPath.read(child.body(), "$.id")).longValue();
+        String childPath = root + childId + "/role-grants";
+        assertProblem(post(childPath + first, grantBody(fixture.adminRole(), end.plusSeconds(1)), delegate), 403, "ACCESS_DENIED");
+        var childGrant = post(childPath + first, grantBody(fixture.adminRole(), end.minusSeconds(60)), delegate);
+        assertThat(childGrant.statusCode()).isEqualTo(201);
+        long childGrantId = ((Number) JsonPath.read(childGrant.body(), "$.id")).longValue();
+
+        // Foreign account grant permits only an explicitly classified catalog role.
+        var ordinary = post(foreign + first, grantBody(source[0], end), admin);
+        assertThat(ordinary.statusCode()).isEqualTo(201);
+        long ordinaryId = ((Number) JsonPath.read(ordinary.body(), "$.id")).longValue();
+        assertCodes(get(permissions(c.first()), other), c.first(), List.of("identity-catalog.read", "role.read"));
+        assertCodes(get(permissions(c.second()), other), c.second(), List.of("synthetic.observe", "user.read"));
+        var page = get(foreign + first, admin);
+        assertThat(page.statusCode()).isEqualTo(200);
+        List<Number> ids = JsonPath.read(page.body(), "$[*].id");
+        assertThat(ids.stream().map(Number::longValue).toList()).contains(ordinaryId, source[2], source[3]);
+        assertThat(page.body()).doesNotContain("username", "email", "password", "owningOrganizationUnitId");
+        assertThat(get(foreign + first + "&afterId=" + ordinaryId, admin).body()).isEqualTo("[]");
+        assertThat(post(foreign + "/" + ordinaryId + "/revoke" + first, "", admin).statusCode()).isEqualTo(204);
+        assertCodes(get(permissions(c.first()), other), c.first(), List.of("identity-catalog.read"));
+
+        String revocation = path + "/" + grantId + "/revoke";
+        assertProblem(post(revocation + second, "", admin), 403, "ACCESS_DENIED");
+        assertProblem(post(foreign + "/" + grantId + "/revoke" + first, "", admin), 403, "ACCESS_DENIED");
+        long revokePermission = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='user-role-grant.revoke'", Long.class);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), revokePermission);
+        assertProblem(post(revocation + first, "", admin), 403, "ACCESS_DENIED");
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), revokePermission);
+        String hash = storedHash(serviceId);
+        jdbc.execute("CREATE TRIGGER hyflo_test_grant_revoke_failure BEFORE UPDATE ON T_10_01_15 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic grant revoke rollback'");
+        try {
+            assertProblem(post(revocation + first, "", admin), 503, "IDENTITY_UNAVAILABLE");
+            assertCodes(get(permissions(c.first()), delegate), c.first(), EXPECTED);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_00=? AND F_03 IS NULL AND F_11 IS NULL",
+                    Long.class, grantId)).isEqualTo(1L);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_grant_revoke_failure");
+        }
+        var revoked = post(revocation + first, "", admin);
+        assertThat(revoked.statusCode()).isEqualTo(204);
+        assertThat(revoked.body()).isEmpty();
+        assertThat(revoked.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertProblem(get(permissions(c.first()), delegate), 403, "ACCESS_DENIED");
+        assertThat(get("/v1/me", delegate).statusCode()).isEqualTo(200);
+        assertThat(storedHash(serviceId)).isEqualTo(hash);
+        assertThat((String) JsonPath.read(get(servicePath + first, admin).body(), "$.userStatusCode")).isEqualTo("ACTIVE");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_00=? AND F_03 IS NOT NULL AND F_11=? AND F_10=? "
+                + "AND F_04='synthetic delegation'", Long.class, grantId, adminId, adminId)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_00=? AND F_03 IS NULL AND F_10=?",
+                Long.class, childGrantId, serviceId)).isEqualTo(1L);
+        assertProblem(post(revocation + first, "", admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(get(path + first, admin).body()).contains("revokedAt", "revokedBy");
+        assertThat(post(childPath + "/" + childGrantId + "/revoke" + first, "", admin).statusCode()).isEqualTo(204);
+        assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users/{userId}/role-grants",
+                "/v1/identity/users/{userId}/role-grants/{grantId}/revoke");
+        assertProblem(get("/v1/identity/roles" + first, admin), 403, "ACCESS_DENIED");
+    }
+
+    private static String grantBody(long roleId, Instant end) {
+        return "{\"roleId\":" + roleId + ",\"validTo\":\"" + end + "\",\"reason\":\"synthetic delegation\"}";
     }
 
     private HttpRequest postRequest(String path, String body, String access) {

@@ -60,13 +60,16 @@ public class IdentitySecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions",
                                 "/v1/identity/user-statuses", "/api-docs", "/api-docs/**",
                                 "/swagger-ui.html", "/swagger-ui/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/v1/identity/users", "/v1/identity/users/{userId}").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/v1/identity/users", "/v1/identity/users/{userId}",
+                                "/v1/identity/users/{userId}/role-grants").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/identity/users", "/v1/identity/users/{userId}/activate",
                                 "/v1/identity/users/{userId}/suspend", "/v1/identity/users/{userId}/reactivate",
                                 "/v1/identity/users/{userId}/disable",
                                 "/v1/identity/users/{userId}/credential/initialize",
                                 "/v1/identity/users/{userId}/credential/reset",
-                                "/v1/identity/users/{userId}/sessions/revoke").authenticated()
+                                "/v1/identity/users/{userId}/sessions/revoke",
+                                "/v1/identity/users/{userId}/role-grants",
+                                "/v1/identity/users/{userId}/role-grants/{grantId}/revoke").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new BearerAuthenticationFilter(tokens, sessions), AnonymousAuthenticationFilter.class)
                 .build();

@@ -112,6 +112,26 @@ public class UserRoleGrant {
                 && (revokedAt == null || instant.isBefore(revokedAt));
     }
 
+    /** One current grant must cover the entire finite delegation interval. */
+    public boolean coversInterval(Instant from, Instant to) {
+        Objects.requireNonNull(from, "Interval start is required");
+        Objects.requireNonNull(to, "Interval end is required");
+        return to.isAfter(from) && isActiveAt(from)
+                && (validTo == null || !to.isAfter(validTo))
+                && (revokedAt == null || !to.isAfter(revokedAt));
+    }
+
+    /** Half-open effective intervals; a cancelled future grant has no effective interval. */
+    public boolean overlapsInterval(Instant from, Instant to) {
+        Objects.requireNonNull(from, "Interval start is required");
+        Objects.requireNonNull(to, "Interval end is required");
+        if (!to.isAfter(from)) throw new IllegalArgumentException("Invalid interval");
+        Instant end = validTo;
+        if (revokedAt != null && (end == null || revokedAt.isBefore(end))) end = revokedAt;
+        if (end != null && !end.isAfter(validFrom)) return false;
+        return validFrom.isBefore(to) && (end == null || from.isBefore(end));
+    }
+
     public void revoke(Instant instant, User revokedBy) {
         Objects.requireNonNull(instant, "Revocation time is required");
         if (revokedBy == null || revokedBy.getId() == null || revokedBy.getId() <= 0) {

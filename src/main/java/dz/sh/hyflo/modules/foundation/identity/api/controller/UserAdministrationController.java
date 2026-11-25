@@ -24,6 +24,8 @@ import java.util.function.Function;
 
 import dz.sh.hyflo.modules.foundation.identity.api.mapper.UserAccountMapper;
 import dz.sh.hyflo.modules.foundation.identity.api.request.CreateUserRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.AssignUserRoleGrantRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.response.UserRoleGrantResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LocalCredentialRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.UserLifecycleRequest;
 import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
@@ -136,6 +138,38 @@ public class UserAdministrationController {
             accounts.revokeAccountSessions(principal, positive(company), positive(userId), request.reason(), correlation);
             return null;
         }, false);
+    }
+
+    @GetMapping("/{userId}/role-grants")
+    public ResponseEntity<?> listRoleGrants(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @RequestParam(name = "afterId", defaultValue = "0") String afterId) {
+        return execute(HttpStatus.OK, correlation -> accounts.listRoleGrants(principal, positive(company),
+                positive(userId), identifier(afterId)).stream().map(UserAdministrationController::grantResponse).toList(), false);
+    }
+
+    @PostMapping(path = "/{userId}/role-grants", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> assignRoleGrant(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @Valid @RequestBody AssignUserRoleGrantRequest request) {
+        return execute(HttpStatus.CREATED, correlation -> grantResponse(accounts.assignRoleGrant(principal,
+                positive(company), positive(userId), request.roleId(), request.validTo(), request.reason())), false);
+    }
+
+    @PostMapping("/{userId}/role-grants/{grantId}/revoke")
+    public ResponseEntity<?> revokeRoleGrant(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @PathVariable("grantId") String grantId) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.revokeRoleGrant(principal, positive(company), positive(userId), positive(grantId));
+            return null;
+        }, false);
+    }
+
+    private static UserRoleGrantResponse grantResponse(UserAdministrationService.Grant grant) {
+        return new UserRoleGrantResponse(grant.id(), grant.userId(), grant.roleId(), grant.roleCode(),
+                grant.companyId(), grant.scopeType(), grant.validFrom(), grant.validTo(), grant.revokedAt(),
+                grant.reason(), grant.grantedBy(), grant.revokedBy());
     }
 
     private ResponseEntity<?> transition(CurrentIdentity principal, String company, String userId, String operation,

@@ -38,4 +38,17 @@ public interface UserRoleGrantRepository extends Repository<UserRoleGrant, Long>
             + "where g.user.id = :userId and g.authorizationScope.organizationUnitId = :companyId")
     List<UserRoleGrant> findCompanyCandidatesForWrite(@Param("userId") long userId, @Param("companyId") long companyId);
 
+    @Query("select g from UserRoleGrant g join fetch g.role join fetch g.user "
+            + "where g.user.id = :userId and g.authorizationScope.organizationUnitId = :companyId "
+            + "and g.authorizationScope.scopeType = 'GLOBAL' and g.authorizationScope.scopeReferenceId is null "
+            + "and g.id > :afterId order by g.id")
+    List<UserRoleGrant> findGlobalPage(@Param("userId") long userId, @Param("companyId") long companyId,
+            @Param("afterId") long afterId, org.springframework.data.domain.Pageable page);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select g from UserRoleGrant g where g.id = :grantId and g.user.id = :userId "
+            + "and g.authorizationScope.organizationUnitId = :companyId")
+    java.util.Optional<UserRoleGrant> findSelectedForUpdate(@Param("grantId") long grantId,
+            @Param("userId") long userId, @Param("companyId") long companyId);
+
 }

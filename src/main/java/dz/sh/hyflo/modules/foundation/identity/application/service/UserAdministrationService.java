@@ -243,6 +243,117 @@ public class UserAdministrationService {
         events.record(UserLifecycleEvent.SESSIONS_REVOKED, now, correlation, reason, previous, target, actor);
     }
 
+    // Only explicitly classified catalog reads may be delegated to an account controlled by another company.
+    private static final Set<String> FOREIGN_DELEGABLE = Set.of("identity-catalog.read", "role.read", "permission.read");
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<Grant> listRoleGrants(CurrentIdentity principal, long companyId, long userId, long afterId) {
+        authorization.requireCompanyPermission(principal, companyId, "user-role-grant.read");
+        return grants.findGlobalPage(userId, companyId, afterId, PageRequest.of(0, 100)).stream()
+                .filter(grant -> globalCompany(grant, companyId) && grant.getUser().getId() == userId
+                        && !"hyflo-bootstrap".equals(grant.getUser().getUsername()))
+                .map(UserAdministrationService::grantProjection).toList();
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Grant assignRoleGrant(CurrentIdentity principal, long companyId, long userId, long roleId,
+            String validTo, String reason) {
+        String permission = "user-role-grant.assign";
+        User actor = lockAuthority(principal, companyId, permission);
+        User target = lockGrantTarget(actor, userId);
+        if (!IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
+                || !target.getIdentityProvider().isEnabled()) throw denied();
+        String targetStatus = target.getUserStatus().getCode();
+        if (!(UserStatus.PENDING_CODE.equals(targetStatus) || UserStatus.ACTIVE_CODE.equals(targetStatus)
+                || UserStatus.SUSPENDED_CODE.equals(targetStatus))) throw rejected();
+        Instant end = finiteExpiry(validTo);
+        if (reason == null || reason.isBlank() || reason.length() > 255 || roleId <= 0) {
+            throw new IllegalArgumentException("Invalid grant input");
+        }
+
+        // The actor's existing exact-role authority supplies the role; no unscoped catalog lookup.
+        var sourceGrants = grants.findCompanyCandidatesForWrite(actor.getId(), companyId);
+        var source = sourceGrants.stream()
+                .filter(g -> g.getUser().getId() == principal.userId())
+                .filter(g -> EffectiveAuthorizationService.matchesCompany(g, companyId, Instant.now()))
+                .filter(g -> g.getRole().getId() == roleId)
+                .findFirst().orElseThrow(UserAdministrationService::denied);
+        Role role = source.getRole();
+        var links = permissions.findForRolesForWrite(Set.of(roleId));
+        if (links.isEmpty() || links.stream().anyMatch(link -> link.getRole().getId() != roleId
+                || !EffectiveAuthorizationService.validPermission(link.getPermission()))) throw denied();
+        if (target.getOwningOrganizationUnitId() != companyId && links.stream()
+                .anyMatch(link -> !FOREIGN_DELEGABLE.contains(link.getPermission().getCode()))) throw denied();
+
+        // Every writer serializes on the recipient User before checking for interval overlap.
+        var targetGrants = grants.findCompanyCandidatesForWrite(userId, companyId);
+        actor = lockAuthority(principal, companyId, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (!end.isAfter(now)) throw new IllegalArgumentException("Grant expiry must be in the future");
+        long actorId = actor.getId();
+        if (!role.isEnabled() || sourceGrants.stream().noneMatch(g -> g.getUser().getId() == actorId
+                && g.getRole().getId() == roleId && EffectiveAuthorizationService.matchesCompany(g, companyId, now)
+                && g.coversInterval(now, end))) throw denied();
+        if (targetGrants.stream().anyMatch(g -> g.getUser().getId() == userId && g.getRole().getId() == roleId
+                && globalCompany(g, companyId) && g.overlapsInterval(now, end))) throw rejected();
+
+        return grantProjection(grants.save(new UserRoleGrant(target, role, AuthorizationScope.global(companyId),
+                reason, now, end, actor)));
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void revokeRoleGrant(CurrentIdentity principal, long companyId, long userId, long grantId) {
+        String permission = "user-role-grant.revoke";
+        User actor = lockAuthority(principal, companyId, permission);
+        lockGrantTarget(actor, userId);
+        UserRoleGrant grant = grants.findSelectedForUpdate(grantId, userId, companyId)
+                .orElseThrow(UserAdministrationService::denied);
+        if (grant.getUser().getId() != userId || !globalCompany(grant, companyId)
+                || "hyflo-bootstrap".equals(grant.getGrantedBy().getUsername())) throw denied();
+        actor = lockAuthority(principal, companyId, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (grant.getRevokedAt() != null || (grant.getValidTo() != null && !now.isBefore(grant.getValidTo()))) {
+            throw rejected();
+        }
+        grant.revoke(now, actor);
+    }
+
+    private User lockGrantTarget(User actor, long userId) {
+        if (actor.getId() == userId) throw denied();
+        return users.findForUpdate(userId).filter(user -> !"hyflo-bootstrap".equals(user.getUsername()))
+                .orElseThrow(UserAdministrationService::denied);
+    }
+
+    private static Instant finiteExpiry(String text) {
+        if (text == null || text.length() > 40) throw new IllegalArgumentException("Invalid grant expiry");
+        try {
+            Instant end = Instant.parse(text);
+            if (end.isAfter(Instant.parse("9999-12-31T23:59:59.999999Z"))
+                    || !end.equals(end.truncatedTo(ChronoUnit.MICROS))) {
+                throw new IllegalArgumentException("Invalid grant expiry");
+            }
+            return end;
+        } catch (java.time.DateTimeException invalid) {
+            throw new IllegalArgumentException("Invalid grant expiry");
+        }
+    }
+
+    private static boolean globalCompany(UserRoleGrant grant, long companyId) {
+        AuthorizationScope scope = grant.getAuthorizationScope();
+        return scope != null && AuthorizationScope.GLOBAL.equals(scope.getScopeType())
+                && scope.getOrganizationUnitId() == companyId && scope.getScopeReferenceId() == null;
+    }
+
+    private static Grant grantProjection(UserRoleGrant grant) {
+        return new Grant(grant.getId(), grant.getUser().getId(), grant.getRole().getId(), grant.getRole().getCode(),
+                grant.getAuthorizationScope().getOrganizationUnitId(), grant.getAuthorizationScope().getScopeType(),
+                grant.getValidFrom(), grant.getValidTo(), grant.getRevokedAt(), grant.getReason(),
+                grant.getGrantedBy().getId(), grant.getRevokedBy() == null ? null : grant.getRevokedBy().getId());
+    }
+
+    public record Grant(long id, long userId, long roleId, String roleCode, long companyId, String scopeType,
+            Instant validFrom, Instant validTo, Instant revokedAt, String reason, long grantedBy, Long revokedBy) {}
+
     private void revokeSessions(long userId, Instant now) {
         for (LoginSession session : sessions.findUnrevokedForUpdate(userId)) {
             session.revoke(now.isBefore(session.getStartedAt()) ? session.getStartedAt() : now);

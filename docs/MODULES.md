@@ -126,6 +126,8 @@ IDN-06 extends Identity-owned UserAdministrationService with company-owned crede
 
 IDN-07 extends Identity-owned UserAdministrationService with account-wide administrative live-session revocation for an owned account. The existing login-session.revoke capability is a company-scoped write, not a session discovery/read permission. It uses IDN-05 locked authority and User -> LoginSession serialization, and records SESSIONS_REVOKED in UserLifecycleEvent. No cross-module contract or schema changes; no secret, count, session listing or individual session selection. Subsequent eligible login remains possible.
 
+IDN-08 extends Identity's company-scoped direct role grant workflow with bounded GLOBAL grant consultation, finite same-role delegation and exact selected grant revocation. UserRoleGrant owns half-open interval coverage and overlap logic; actor and recipient User locks serialize assignment/revocation with existing authorization. Administrative roles may be delegated only to accounts owned by the selected company; foreign recipients are restricted to explicitly classified catalog-read roles. Bootstrap-issued grant is protected, no self-mutation, no cascading revoke or cross-company account lifecycle change. Existing grant actor/time evidence is preserved without new schema. Role/permission definitions and resource/group scope changes remain separate.
+
 A real contract is admitted per task with exact owner, consumer, inputs, result, authorization, scope and failure behavior. Never expose an unrestricted generic entity API. Owner module remains authoritative and validates mutations.
 
 ## 5. Source basis and intentional adaptations
