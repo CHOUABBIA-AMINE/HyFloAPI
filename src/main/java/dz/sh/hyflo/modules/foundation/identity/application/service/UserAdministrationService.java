@@ -211,6 +211,38 @@ public class UserAdministrationService {
                 now, correlation, reason, previous, target, actor);
     }
 
+    /** Administratively revoke every live session of an owned account, without changing its lifecycle. */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void revokeAccountSessions(CurrentIdentity principal, long companyId, long userId,
+            String reason, String correlation) {
+        String permission = "login-session.revoke";
+        User actor = lockAuthority(principal, companyId, permission);
+        if (actor.getId() == userId) throw denied();
+        User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        actor = lockAuthority(principal, companyId, permission);
+        if (target.getOwningOrganizationUnitId() != companyId || "hyflo-bootstrap".equals(target.getUsername())
+                || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
+                || !target.getIdentityProvider().isEnabled()) throw denied();
+        if (reason == null || reason.isBlank() || reason.length() > 255) {
+            throw new IllegalArgumentException("Invalid revocation reason");
+        }
+        String previous = target.getUserStatus().getCode();
+        if (!(UserStatus.PENDING_CODE.equals(previous) || UserStatus.ACTIVE_CODE.equals(previous)
+                || UserStatus.SUSPENDED_CODE.equals(previous) || UserStatus.DISABLED_CODE.equals(previous))) throw rejected();
+
+        // The owner row serializes login, refresh, logout and other session writers.
+        var candidates = sessions.findUnrevokedForUpdate(userId);
+        actor = lockAuthority(principal, companyId, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        var live = candidates.stream()
+                .filter(session -> session.getRevokedAt() == null && session.isActiveAt(now))
+                .toList();
+        if (live.isEmpty()) throw rejected();
+        live.forEach(session -> session.revoke(now));
+        actor = lockAuthority(principal, companyId, permission);
+        events.record(UserLifecycleEvent.SESSIONS_REVOKED, now, correlation, reason, previous, target, actor);
+    }
+
     private void revokeSessions(long userId, Instant now) {
         for (LoginSession session : sessions.findUnrevokedForUpdate(userId)) {
             session.revoke(now.isBefore(session.getStartedAt()) ? session.getStartedAt() : now);

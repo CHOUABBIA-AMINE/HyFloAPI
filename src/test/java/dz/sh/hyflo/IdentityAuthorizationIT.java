@@ -39,6 +39,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupMembership;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
@@ -74,7 +75,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 @ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "hyflo.identity.login-global-limit=200", "hyflo.identity.login-ip-limit=100",
+        "hyflo.identity.login-window-seconds=3600"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class IdentityAuthorizationIT {
 
@@ -288,11 +291,13 @@ class IdentityAuthorizationIT {
             var role = role("TEST_SECOND_DISABLE", permission("user.disable"));
             entityManager.persist(new RolePermission(role, permission("credential.initialize")));
             entityManager.persist(new RolePermission(role, permission("credential.reset")));
+            entityManager.persist(new RolePermission(role, permission("login-session.revoke")));
             return grant(actor, role, AuthorizationScope.global(c.second()), Instant.now().minusSeconds(5), null, actor).getId();
         });
         assertProblem(post(managedPath + "/disable" + second, reason, admin), 403, "ACCESS_DENIED");
         assertProblem(post(managedPath + "/credential/initialize" + second, credential, admin), 403, "ACCESS_DENIED");
         assertProblem(post(managedPath + "/credential/reset" + second, credential, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(servicePath + "/sessions/revoke" + second, reason, admin), 403, "ACCESS_DENIED");
         jdbc.update("UPDATE T_10_01_15 SET F_03=?,F_11=? WHERE F_00=?",
                 Timestamp.from(Instant.now().minusSeconds(1)), adminId, extraGrant);
         assertProblem(post(root + "/" + otherId + "/disable" + second, reason, admin), 403, "ACCESS_DENIED");
@@ -437,6 +442,109 @@ class IdentityAuthorizationIT {
         assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users", "/v1/identity/users/{userId}/activate",
                 "/v1/identity/users/{userId}/suspend", "/v1/identity/users/{userId}/reactivate", "/v1/identity/users/{userId}/disable");
         assertProblem(post(managedPath + "/reset" + first, reason, admin), 403, "ACCESS_DENIED");
+        exerciseAdministrativeSessionRevocation(c, adminId, otherId, admin, other, fixture, serviceId, servicePath);
+    }
+
+    private void exerciseAdministrativeSessionRevocation(Companies c, long adminId, long otherId,
+            String admin, String other, GrantFixture fixture, long serviceId, String servicePath) throws Exception {
+        String first = "?companyId=" + c.first();
+        String second = "?companyId=" + c.second();
+        String revoke = servicePath + "/sessions/revoke" + first;
+        String reason = "{\"reason\":\"synthetic security response\"}";
+        assertProblem(post(revoke, reason, null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post(revoke, reason, other), 403, "ACCESS_DENIED");
+        assertProblem(post(servicePath + "/sessions/revoke", reason, admin), 400, "INVALID_REQUEST");
+        assertProblem(post(revoke, "{\"reason\":\" \"}", admin), 400, "INVALID_REQUEST");
+        assertProblem(post(revoke, "{\"reason\":\"" + "x".repeat(256) + "\"}", admin), 400, "INVALID_REQUEST");
+        assertProblem(post("/v1/identity/users/" + adminId + "/sessions/revoke" + first, reason, admin), 403, "ACCESS_DENIED");
+        long bootstrapId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        assertProblem(post("/v1/identity/users/" + bootstrapId + "/sessions/revoke" + first, reason, admin), 403, "ACCESS_DENIED");
+        assertProblem(post("/v1/identity/users/" + Long.MAX_VALUE + "/sessions/revoke" + first, reason, admin), 403, "ACCESS_DENIED");
+        assertProblem(post("/v1/identity/users/" + otherId + "/sessions/revoke" + first, reason, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(servicePath + "/sessions/revoke" + second, reason, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(revoke, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(post(servicePath + "/activate" + first, reason, admin).statusCode()).isEqualTo(200);
+
+        var aTokens = loginTokens("managed-service", RESET_PASSWORD);
+        var bTokens = loginTokens("managed-service", RESET_PASSWORD);
+        String aAccess = JsonPath.read(aTokens, "$.accessToken");
+        String bAccess = JsonPath.read(bTokens, "$.accessToken");
+        String aRefresh = JsonPath.read(aTokens, "$.refreshToken");
+        String bRefresh = JsonPath.read(bTokens, "$.refreshToken");
+        long aId = tokens.verify(aAccess, Instant.now()).sessionId();
+        long bId = tokens.verify(bAccess, Instant.now()).sessionId();
+        assertThat(aId).isNotEqualTo(bId);
+        String originalHash = storedHash(serviceId);
+        long[] historical = new TransactionTemplate(transactions).execute(tx -> {
+            User target = entityManager.find(User.class, serviceId);
+            Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+            var expired = new LoginSession(target, now.minusSeconds(120), now.minusSeconds(60));
+            var revoked = new LoginSession(target, now.minusSeconds(120), now.plusSeconds(600));
+            revoked.revoke(now.minusSeconds(30));
+            var future = new LoginSession(target, now.plusSeconds(120), now.plusSeconds(600));
+            entityManager.persist(expired);
+            entityManager.persist(revoked);
+            entityManager.persist(future);
+            entityManager.flush();
+            return new long[]{expired.getId(), revoked.getId(), future.getId()};
+        });
+        Timestamp previousRevokedAt = jdbc.queryForObject("SELECT F_03 FROM T_10_01_11 WHERE F_00=?", Timestamp.class, historical[1]);
+        long permissionId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='login-session.revoke'", Long.class);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", fixture.adminRole(), permissionId);
+        assertProblem(post(revoke, reason, admin), 403, "ACCESS_DENIED");
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", fixture.adminRole(), permissionId);
+        assertThat(get("/v1/me", aAccess).statusCode()).isEqualTo(200);
+        assertThat(get("/v1/me", bAccess).statusCode()).isEqualTo(200);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_admin_revoke_failure BEFORE INSERT ON T_10_01_18 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic session rollback probe'");
+        try {
+            assertProblem(post(revoke, reason, admin), 503, "IDENTITY_UNAVAILABLE");
+            assertThat(get("/v1/me", aAccess).statusCode()).isEqualTo(200);
+            assertThat(get("/v1/me", bAccess).statusCode()).isEqualTo(200);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_00 IN (?,?) AND F_03 IS NULL",
+                    Long.class, aId, bId)).isEqualTo(2L);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_18 WHERE F_08=? AND F_01='SESSIONS_REVOKED'",
+                    Long.class, serviceId)).isZero();
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_admin_revoke_failure");
+        }
+
+        var a = client.sendAsync(postRequest(revoke, reason, admin), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(postRequest(revoke, reason, admin), HttpResponse.BodyHandlers.ofString());
+        var results = List.of(a.get(), b.get());
+        assertThat(results.stream().map(HttpResponse::statusCode).toList()).containsExactlyInAnyOrder(204, 409);
+        var success = results.stream().filter(response -> response.statusCode() == 204).findFirst().orElseThrow();
+        assertThat(success.body()).isEmpty();
+        assertThat(success.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        assertProblem(get("/v1/me", aAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/me", bAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post("/v1/auth/refresh", "{\"refreshToken\":\"" + aRefresh + "\"}", null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(post("/v1/auth/refresh", "{\"refreshToken\":\"" + bRefresh + "\"}", null), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_00 IN (?,?) AND F_03 IS NOT NULL",
+                Long.class, aId, bId)).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_00 IN (?,?) AND F_03 IS NULL",
+                Long.class, historical[0], historical[2])).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT F_03 FROM T_10_01_11 WHERE F_00=?", Timestamp.class, historical[1]))
+                .isEqualTo(previousRevokedAt);
+        assertProblem(post(revoke, reason, admin), 409, "ACCOUNT_OPERATION_REJECTED");
+        assertThat(storedHash(serviceId)).isEqualTo(originalHash);
+        assertThat((String) JsonPath.read(get(servicePath + first, admin).body(), "$.userStatusCode")).isEqualTo("ACTIVE");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=?", Long.class, serviceId)).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_18 WHERE F_08=? AND F_01='SESSIONS_REVOKED'",
+                Long.class, serviceId)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_18 WHERE F_08=? AND F_09=? AND F_07=? "
+                + "AND F_01='SESSIONS_REVOKED' AND F_04='synthetic security response' AND F_05='ACTIVE' "
+                + "AND F_06='ACTIVE' AND F_03 IS NOT NULL AND F_02 IS NOT NULL", Long.class,
+                serviceId, adminId, c.first())).isEqualTo(1L);
+        assertThat(get("/v1/me", other).statusCode()).isEqualTo(200);
+        assertThat(get("/v1/me", admin).statusCode()).isEqualTo(200);
+        String fresh = JsonPath.read(loginTokens("managed-service", RESET_PASSWORD), "$.accessToken");
+        assertThat(get("/v1/me", fresh).statusCode()).isEqualTo(200);
+        assertProblem(get("/v1/me", aAccess), 401, "AUTHENTICATION_REQUIRED");
+        assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users/{userId}/sessions/revoke");
+        assertProblem(get(servicePath + "/sessions" + first, admin), 403, "ACCESS_DENIED");
+        assertProblem(post(servicePath + "/sessions/" + aId + "/revoke" + first, reason, admin), 403, "ACCESS_DENIED");
     }
 
     private HttpRequest postRequest(String path, String body, String access) {

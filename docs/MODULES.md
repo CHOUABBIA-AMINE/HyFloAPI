@@ -124,6 +124,8 @@ IDN-05 admits Organization-owned OrganizationUnitScopeService.lockEligibleCompan
 
 IDN-06 extends Identity-owned UserAdministrationService with company-owned credential initialization and reset. It reuses IDN-05 locked authority, target owner and live actor/session checks, exact credential.initialize/credential.reset permissions and platform's existing IdentityPasswordEncoder. LocalCredential owns supported hash recognition and named replacement; Identity serializes password replacement and all-session revocation under the target User lock and appends UserLifecycleEvent with unchanged account status. No cross-module JPA models, new tables, credential read surface, self-service recovery, forced change, owner transfer or secret delivery.
 
+IDN-07 extends Identity-owned UserAdministrationService with account-wide administrative live-session revocation for an owned account. The existing login-session.revoke capability is a company-scoped write, not a session discovery/read permission. It uses IDN-05 locked authority and User -> LoginSession serialization, and records SESSIONS_REVOKED in UserLifecycleEvent. No cross-module contract or schema changes; no secret, count, session listing or individual session selection. Subsequent eligible login remains possible.
+
 A real contract is admitted per task with exact owner, consumer, inputs, result, authorization, scope and failure behavior. Never expose an unrestricted generic entity API. Owner module remains authoritative and validates mutations.
 
 ## 5. Source basis and intentional adaptations

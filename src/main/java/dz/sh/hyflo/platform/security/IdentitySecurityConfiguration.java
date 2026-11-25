@@ -65,7 +65,8 @@ public class IdentitySecurityConfiguration {
                                 "/v1/identity/users/{userId}/suspend", "/v1/identity/users/{userId}/reactivate",
                                 "/v1/identity/users/{userId}/disable",
                                 "/v1/identity/users/{userId}/credential/initialize",
-                                "/v1/identity/users/{userId}/credential/reset").authenticated()
+                                "/v1/identity/users/{userId}/credential/reset",
+                                "/v1/identity/users/{userId}/sessions/revoke").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new BearerAuthenticationFilter(tokens, sessions), AnonymousAuthenticationFilter.class)
                 .build();

@@ -42,6 +42,7 @@ public class UserLifecycleEvent {
     public static final String DISABLED = "DISABLED";
     public static final String CREDENTIAL_INITIALIZED = "CREDENTIAL_INITIALIZED";
     public static final String CREDENTIAL_RESET = "CREDENTIAL_RESET";
+    public static final String SESSIONS_REVOKED = "SESSIONS_REVOKED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -110,6 +111,10 @@ public class UserLifecycleEvent {
                     && UserStatus.PENDING_CODE.equals(resultingStatusCode);
             case CREDENTIAL_RESET -> (UserStatus.PENDING_CODE.equals(previousStatusCode)
                     || UserStatus.ACTIVE_CODE.equals(previousStatusCode) || UserStatus.SUSPENDED_CODE.equals(previousStatusCode))
+                    && previousStatusCode.equals(resultingStatusCode);
+            case SESSIONS_REVOKED -> (UserStatus.PENDING_CODE.equals(previousStatusCode)
+                    || UserStatus.ACTIVE_CODE.equals(previousStatusCode) || UserStatus.SUSPENDED_CODE.equals(previousStatusCode)
+                    || UserStatus.DISABLED_CODE.equals(previousStatusCode))
                     && previousStatusCode.equals(resultingStatusCode);
             default -> false;
         };

@@ -128,6 +128,16 @@ public class UserAdministrationController {
         }, false);
     }
 
+    @PostMapping(path = "/{userId}/sessions/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> revokeAccountSessions(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String company, @PathVariable("userId") String userId,
+            @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.revokeAccountSessions(principal, positive(company), positive(userId), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
     private ResponseEntity<?> transition(CurrentIdentity principal, String company, String userId, String operation,
             UserLifecycleRequest request) {
         return execute(HttpStatus.OK, correlation -> mapper.toResponse(accounts.transition(principal, positive(company),
