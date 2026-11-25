@@ -213,3 +213,60 @@ Update:
 Delete: none.
 
 Acceptance: 37 entity-specific Spring Data repository interfaces, one per Foundation entity, 17 Identity, 12 Organization, 7 Reference, 1 Infra, no repository for embeddable; existing three repositories unchanged; test resolves each managed Foundation entity's repository by Spring Data repository metadata, asserts module-local interface and Long ID binding and verifies the count, excludes SchemaProbe and embeddable; existing unit and real-MySQL integration tests pass with no skips or weakened gates. Exact-SHA HyFloAPI Build must pass before acceptance. No runtime CRUD or production authorization claim.
+
+### FDN-REPO-001 acceptance — 2026-11-25
+
+Status: COMPLETED — exact implementation SHA df4bc14e934f54bee952e9ff3af8610e28112c23, [HyFloAPI Build #28 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45566373412) success. Surefire 9 tests and Failsafe 9 integration tests against MySQL 8.4, zero failures/errors/skips in both. Spring Data runtime discovered 37 JPA repository interfaces; repository coverage test passed. Required build, test/SBOM evidence and artifact steps passed; optional security scan skipped. Acceptance is structural/development only; no generic CRUD or production authorization claim. Previous entries retained.
+
+## FDN-SVC-001 — Complete Foundation entity application service coverage
+
+Status: IN PROGRESS — owner requests the same structural completion for services, 2026-11-25. Baseline df4bc14e934f54bee952e9ff3af8610e28112c23, CI #28 success. Depends on accepted FDN-REPO-001 and FDN-SCOPE-001. Add one named concrete Spring @Service per existing Foundation entity lacking its own EntityNameService: 36 new classes, each in the owning module's application.service package, with only a private final same-module EntityNameRepository and explicit constructor injection. No methods or transaction annotations until a concrete use case is selected. Keep EmployeeAssignmentService, OrganizationUnitScopeService and AuthorizationScopeService byte-identical. OrganizationUnitService is the entity-specific skeleton, distinct from the existing type-validation contract OrganizationUnitScopeService. AuthorizationScope is an embeddable, not an entity; its existing service remains an internal scope operation. Result: 37 entity-specific services and two existing scope services (39 total), 37 existing repositories, unchanged 37 entities. No generic CRUD/base service, endpoint, new export/contract, additional permission, seed, migration or production behavior. This expressly selected structural task does not establish functional completeness.
+
+Registration commit: docs(foundation): accept repository coverage and register service coverage
+Implementation commit: feat(foundation): add missing entity application services
+
+Create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/ActionService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/AuthenticationEventService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/GroupService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/GroupMembershipService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/GroupRoleGrantService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/IdentityProviderService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/LocalCredentialService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/LoginSessionService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/PermissionService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/RefreshTokenService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/ResourceTypeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/RoleService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/RolePermissionService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/UserService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/UserRoleGrantService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/UserStatusService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/UserTypeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/AssignmentStatusService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/AssignmentTypeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/EmployeeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/EmployeeStatusService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/EmployeeTypeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/OrganizationUnitService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/OrganizationUnitStatusService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/OrganizationUnitTypeService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/PositionService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/PositionLevelService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/PositionStatusService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/CountryService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/DistrictService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/LanguageService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/LocalityService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/LocationService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/MeasurementUnitService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/StateService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/infra/application/service/FileService.java`
+
+Update:
+- `docs/ARCHITECTURE.md`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+
+Delete: none.
+
+Acceptance: 37 entity-specific service classes registered as unique Spring beans, all 36 skeletons have exactly one constructor taking their corresponding owner repository and no declared business methods, existing EmployeeAssignmentService and both scope services preserved and registered. Test in existing real-MySQL integration context using JPA metamodel and Spring bean lookup, verify 37 entity mappings and repository constructor types; preserve repository discovery and all prior assertions, no new dependencies or CI changes. Exact-SHA build must pass all unit and integration tests without failures, errors or skips; no business functionality or deployment claimed.
