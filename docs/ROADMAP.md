@@ -158,3 +158,58 @@ Corrective implementation: test(foundation): reuse organization status fixture i
 Exact corrective allowlist: update only `src/test/java/dz/sh/hyflo/HyFloApiIT.java`. Create/delete: none.
 
 Acceptance: mandatory exact-SHA CI passes all 9 unit and 8 MySQL integration tests with no errors/failures/skips, retains all existing grant/company validation and assignment tests, and verifies required evidence. No local runtime claim.
+
+### FDN-SCOPE-001 acceptance — 2026-11-25
+
+Status: COMPLETED — corrective SHA ccf1bbf80fd9c81a9084490b6ab868275fa46c88, [HyFloAPI Build #27 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45491729721) success. Surefire 9 tests, Failsafe 8 tests against MySQL 8.4, zero failures/errors/skips in both. Build and required evidence steps passed; optional security scan skipped. Company classification by OrganizationUnitType code COMPANY and organizationUnitId scope mapping accepted within the registered development scope. No claim of complete authorization, seed data or production readiness. Prior entries retained.
+
+## FDN-REPO-001 — Complete Foundation repository coverage
+
+Status: IN PROGRESS — owner explicitly requests repositories for all created models, at least an empty repository, 2026-11-25. Baseline ccf1bbf80fd9c81a9084490b6ab868275fa46c88, CI #27 success. Dependencies: accepted FDN-SCOPE-001, FDN-DATA-001 and ORG-DATA-001. Source inventory: 37 @Entity classes, all Long identifiers, and one @Embeddable AuthorizationScope. Existing EmployeeRepository, EmployeeAssignmentRepository and OrganizationUnitRepository retain byte-identical methods and mappings. Add 34 empty typed Spring Data Repository<Entity, Long> interfaces in the owning module's infrastructure.persistence.repository package, consistent with existing restricted repository convention. No JpaRepository/CrudRepository inheritance, generic mutation methods, extra queries, services, APIs, cross-module access, model changes, new tables, seed data or deployment. AuthorizationScope is embedded and has no standalone identity/table; no repository for it. This is explicitly selected structural work, not a functional workflow or blanket CRUD authorization. Repository bean discovery/type binding shall be verified in existing real-MySQL application context; no new dependencies or CI changes.
+
+Registration commit: docs(foundation): accept company scope and register repository coverage
+Implementation commit: feat(foundation): add missing entity repository interfaces
+
+Create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/ActionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/AuthenticationEventRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/GroupRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/GroupMembershipRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/GroupRoleGrantRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/IdentityProviderRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/LocalCredentialRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/LoginSessionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/PermissionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/RefreshTokenRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/ResourceTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/RoleRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/RolePermissionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserRoleGrantRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserStatusRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/AssignmentStatusRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/AssignmentTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/EmployeeStatusRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/EmployeeTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/OrganizationUnitStatusRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/OrganizationUnitTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/PositionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/PositionLevelRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/PositionStatusRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/CountryRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/DistrictRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/LanguageRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/LocalityRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/LocationRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/MeasurementUnitRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/StateRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/infra/infrastructure/persistence/repository/FileRepository.java`
+
+Update:
+- `docs/ARCHITECTURE.md`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+
+Delete: none.
+
+Acceptance: 37 entity-specific Spring Data repository interfaces, one per Foundation entity, 17 Identity, 12 Organization, 7 Reference, 1 Infra, no repository for embeddable; existing three repositories unchanged; test resolves each managed Foundation entity's repository by Spring Data repository metadata, asserts module-local interface and Long ID binding and verifies the count, excludes SchemaProbe and embeddable; existing unit and real-MySQL integration tests pass with no skips or weakened gates. Exact-SHA HyFloAPI Build must pass before acceptance. No runtime CRUD or production authorization claim.
