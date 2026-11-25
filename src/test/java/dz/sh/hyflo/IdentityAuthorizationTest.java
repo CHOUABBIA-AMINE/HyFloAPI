@@ -39,7 +39,9 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.PermissionRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RolePermissionRepository;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RoleRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.UserRoleGrantRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.UserStatusRepository;
 import dz.sh.hyflo.modules.foundation.organization.application.service.OrganizationUnitScopeService;
@@ -66,9 +68,13 @@ class IdentityAuthorizationTest {
     private final RolePermissionRepository links = mock(RolePermissionRepository.class);
     private final OrganizationUnitScopeService companies = mock(OrganizationUnitScopeService.class);
     private final UserStatusRepository statuses = mock(UserStatusRepository.class);
+    private final RoleRepository roles = mock(RoleRepository.class);
+    private final PermissionRepository permissions = mock(PermissionRepository.class);
+    private final RolePermissionRepository catalogLinks = mock(RolePermissionRepository.class);
     private final EffectiveAuthorizationService authorization =
             new EffectiveAuthorizationService(sessions, grants, links, companies);
-    private final IdentityCatalogService catalogs = new IdentityCatalogService(authorization, statuses);
+    private final IdentityCatalogService catalogs =
+            new IdentityCatalogService(authorization, statuses, roles, permissions, catalogLinks);
     private final AtomicReference<Instant> decisionTime = new AtomicReference<>();
     private final User user = mock(User.class);
     private final Role role = mock(Role.class);
@@ -142,6 +148,11 @@ class IdentityAuthorizationTest {
         when(links.findForRoles(Set.of(30L))).thenReturn(List.of(link("user.read", "user", "read")));
         assertThatThrownBy(() -> catalogs.userStatuses(principal, 1L)).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(companies, statuses);
+        assertThatThrownBy(() -> catalogs.roles(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> catalogs.permissions(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> catalogs.rolePermissions(principal, 1L, 30L, 0L))
+                .isInstanceOf(AccessDeniedException.class);
+        verifyNoInteractions(companies, roles, permissions, catalogLinks);
         when(links.findForRoles(Set.of(30L))).thenReturn(List.of(link("identity-catalog.read", "identity-catalog", "read")));
         when(companies.isEligibleCompanyUnit(eq(1L), any(LocalDate.class))).thenReturn(false);
         assertThatThrownBy(() -> catalogs.userStatuses(principal, 1L)).isInstanceOf(AccessDeniedException.class);
