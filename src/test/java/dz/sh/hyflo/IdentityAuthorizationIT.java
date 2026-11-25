@@ -155,6 +155,7 @@ class IdentityAuthorizationIT {
         assertProblem(get(catalog(companies.first()), other), 403, "ACCESS_DENIED");
 
         exerciseDefinitionCatalogs(companies, admin, other);
+        exerciseActionResourceCatalogs(companies, admin, other);
         var fixture = createGrantFixtures(companies, adminId, otherId);
         exerciseAccountAdministration(companies, adminId, otherId, admin, other, fixture);
         exerciseAccountSearch(companies, admin, other, fixture);
@@ -583,6 +584,98 @@ class IdentityAuthorizationIT {
         assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
         List<String> names = JsonPath.read(response.body(), "$[*].username");
         assertThat(names).containsExactly(expected);
+    }
+
+    private void exerciseActionResourceCatalogs(Companies c, String admin, String other) throws Exception {
+        String selector = "?companyId=" + c.first();
+        String actions = "/v1/identity/actions";
+        String resources = "/v1/identity/resource-types";
+        long role = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_01='IDENTITY_ADMIN'", Long.class);
+        long permission = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='permission.read'", Long.class);
+        for (String path : List.of(actions, resources)) {
+            assertProblem(get(path + selector, null), 401, "AUTHENTICATION_REQUIRED");
+            assertProblem(get(path + selector, other), 403, "ACCESS_DENIED");
+            assertProblem(get(path + "?companyId=" + c.second(), admin), 403, "ACCESS_DENIED");
+            assertProblem(get(path, admin), 400, "INVALID_REQUEST");
+            assertProblem(get(path + "?companyId=0", admin), 400, "INVALID_REQUEST");
+            for (String invalid : List.of("", "-1", "x", "9223372036854775808")) {
+                assertProblem(get(path + selector + "&afterId=" + invalid, admin), 400, "INVALID_REQUEST");
+            }
+            var response = get(path + selector, admin);
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+            List<Map<String, Object>> entries = JsonPath.read(response.body(), "$[*]");
+            assertThat(entries).allSatisfy(entry -> {
+                assertThat(entry).containsOnlyKeys("id", "code", "displayName");
+                assertThat((String) entry.get("displayName")).isNotBlank();
+            });
+            var expected = EXPECTED.stream().map(code -> path.equals(actions)
+                    ? code.substring(code.indexOf('.') + 1) : code.substring(0, code.indexOf('.'))).distinct().toList();
+            assertThat(entries.stream().map(entry -> (String) entry.get("code")).toList())
+                    .containsExactlyInAnyOrderElementsOf(expected);
+            assertProblem(post(path + selector, "{}", admin), 403, "ACCESS_DENIED");
+            for (String method : List.of("PUT", "PATCH", "DELETE")) {
+                var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/hyflo/api" + path + selector))
+                        .header("Authorization", "Bearer " + admin)
+                        .header("Content-Type", "application/json")
+                        .method(method, HttpRequest.BodyPublishers.ofString("{}")).build();
+                assertProblem(client.send(request, HttpResponse.BodyHandlers.ofString()), 403, "ACCESS_DENIED");
+            }
+        }
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", role, permission);
+        try {
+            for (String path : List.of(actions, resources)) {
+                assertProblem(get(path + selector, admin), 403, "ACCESS_DENIED");
+            }
+            assertThat(get("/v1/identity/roles" + selector, admin).statusCode()).isEqualTo(200);
+        } finally {
+            jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", role, permission);
+        }
+        // Unused definitions exercise metadata consultation, not executable capabilities.
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            for (int i = 0; i < 101; i++) {
+                entityManager.persist(new Action("test-page-" + i, "Synthetic action " + i));
+                entityManager.persist(new ResourceType("test-page-" + i, "Synthetic resource " + i));
+            }
+            entityManager.flush();
+        });
+        try {
+            for (String path : List.of(actions, resources)) {
+                var firstPage = get(path + selector, admin);
+                assertThat(firstPage.statusCode()).isEqualTo(200);
+                List<Number> firstIds = JsonPath.read(firstPage.body(), "$[*].id");
+                assertThat(firstIds).hasSize(100);
+                assertThat(firstIds.stream().map(Number::longValue).toList()).isSorted();
+                var secondPage = get(path + selector + "&afterId=" + firstIds.getLast(), admin);
+                assertThat(secondPage.statusCode()).isEqualTo(200);
+                List<Number> secondIds = JsonPath.read(secondPage.body(), "$[*].id");
+                assertThat(secondIds).hasSize(EXPECTED.stream().map(code -> path.equals(actions)
+                        ? code.substring(code.indexOf('.') + 1) : code.substring(0, code.indexOf('.')))
+                        .distinct().toList().size() + 1);
+                assertThat(secondIds.stream().map(Number::longValue).toList()).isSorted()
+                        .allSatisfy(id -> assertThat(id).isGreaterThan(firstIds.getLast().longValue()));
+                List<String> codes = JsonPath.read(secondPage.body(), "$[*].code");
+                assertThat(codes).contains("test-page-100");
+                assertThat(get(path + selector + "&afterId=" + secondIds.getLast(), admin).body()).isEqualTo("[]");
+            }
+            assertCodes(get(permissions(c.first()), admin), c.first(), EXPECTED);
+        } finally {
+            jdbc.update("DELETE FROM T_10_01_05 WHERE F_01 LIKE 'test-page-%'");
+            jdbc.update("DELETE FROM T_10_01_06 WHERE F_01 LIKE 'test-page-%'");
+        }
+        jdbc.execute("RENAME TABLE T_10_01_05 TO AUTHZ_TEST_ACTION");
+        try {
+            assertProblem(get(actions + selector, admin), 503, "IDENTITY_UNAVAILABLE");
+        } finally {
+            jdbc.execute("RENAME TABLE AUTHZ_TEST_ACTION TO T_10_01_05");
+        }
+        jdbc.execute("RENAME TABLE T_10_01_06 TO AUTHZ_TEST_RESOURCE");
+        try {
+            assertProblem(get(resources + selector, admin), 503, "IDENTITY_UNAVAILABLE");
+        } finally {
+            jdbc.execute("RENAME TABLE AUTHZ_TEST_RESOURCE TO T_10_01_06");
+        }
+        assertThat(get("/api-docs", admin).body()).contains(actions, resources);
     }
 
     private void exerciseDefinitionCatalogs(Companies c, String admin, String other) throws Exception {

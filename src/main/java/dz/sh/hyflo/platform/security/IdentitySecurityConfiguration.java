@@ -61,6 +61,7 @@ public class IdentitySecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions", "/v1/auth/sessions",
                                 "/v1/identity/user-statuses", "/v1/identity/roles",
                                 "/v1/identity/permissions", "/v1/identity/roles/{roleId}/permissions",
+                                "/v1/identity/actions", "/v1/identity/resource-types",
                                 "/api-docs", "/api-docs/**",
                                 "/swagger-ui.html", "/swagger-ui/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/v1/identity/users", "/v1/identity/users/{userId}",

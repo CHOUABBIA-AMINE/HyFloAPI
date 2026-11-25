@@ -39,6 +39,8 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.ActionRepository;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.ResourceTypeRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.PermissionRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RolePermissionRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RoleRepository;
@@ -71,10 +73,12 @@ class IdentityAuthorizationTest {
     private final RoleRepository roles = mock(RoleRepository.class);
     private final PermissionRepository permissions = mock(PermissionRepository.class);
     private final RolePermissionRepository catalogLinks = mock(RolePermissionRepository.class);
+    private final ActionRepository actions = mock(ActionRepository.class);
+    private final ResourceTypeRepository resourceTypes = mock(ResourceTypeRepository.class);
     private final EffectiveAuthorizationService authorization =
             new EffectiveAuthorizationService(sessions, grants, links, companies);
     private final IdentityCatalogService catalogs =
-            new IdentityCatalogService(authorization, statuses, roles, permissions, catalogLinks);
+            new IdentityCatalogService(authorization, statuses, roles, permissions, catalogLinks, actions, resourceTypes);
     private final AtomicReference<Instant> decisionTime = new AtomicReference<>();
     private final User user = mock(User.class);
     private final Role role = mock(Role.class);
@@ -152,7 +156,9 @@ class IdentityAuthorizationTest {
         assertThatThrownBy(() -> catalogs.permissions(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> catalogs.rolePermissions(principal, 1L, 30L, 0L))
                 .isInstanceOf(AccessDeniedException.class);
-        verifyNoInteractions(companies, roles, permissions, catalogLinks);
+        assertThatThrownBy(() -> catalogs.actions(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> catalogs.resourceTypes(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
+        verifyNoInteractions(companies, roles, permissions, catalogLinks, actions, resourceTypes);
         when(links.findForRoles(Set.of(30L))).thenReturn(List.of(link("identity-catalog.read", "identity-catalog", "read")));
         when(companies.isEligibleCompanyUnit(eq(1L), any(LocalDate.class))).thenReturn(false);
         assertThatThrownBy(() -> catalogs.userStatuses(principal, 1L)).isInstanceOf(AccessDeniedException.class);

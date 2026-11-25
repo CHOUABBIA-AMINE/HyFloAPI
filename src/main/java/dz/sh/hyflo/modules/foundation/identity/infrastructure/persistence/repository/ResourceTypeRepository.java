@@ -21,9 +21,13 @@ package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repos
 
 import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.domain.Pageable;
+import java.util.List;
 
 public interface ResourceTypeRepository extends Repository<ResourceType, Long> {
     long count();
 
     ResourceType save(ResourceType entity);
+
+    List<ResourceType> findByIdGreaterThanOrderByIdAsc(long afterId, Pageable page);
 }

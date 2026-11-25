@@ -23,6 +23,8 @@ import java.util.List;
 
 import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.ActionRepository;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.ResourceTypeRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.PermissionRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RolePermissionRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.RoleRepository;
@@ -42,14 +44,19 @@ public class IdentityCatalogService {
     private final RoleRepository roles;
     private final PermissionRepository permissions;
     private final RolePermissionRepository rolePermissions;
+    private final ActionRepository actions;
+    private final ResourceTypeRepository resourceTypes;
 
     public IdentityCatalogService(EffectiveAuthorizationService authorization, UserStatusRepository statuses,
-            RoleRepository roles, PermissionRepository permissions, RolePermissionRepository rolePermissions) {
+            RoleRepository roles, PermissionRepository permissions, RolePermissionRepository rolePermissions,
+            ActionRepository actions, ResourceTypeRepository resourceTypes) {
         this.authorization = authorization;
         this.statuses = statuses;
         this.roles = roles;
         this.permissions = permissions;
         this.rolePermissions = rolePermissions;
+        this.actions = actions;
+        this.resourceTypes = resourceTypes;
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -82,6 +89,24 @@ public class IdentityCatalogService {
         return rolePermissions.findCatalogPageForRole(roleId, afterId, PageRequest.of(0, CATALOG_PAGE_SIZE)).stream()
                 .map(IdentityCatalogService::permissionEntry).toList();
     }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<DefinitionEntry> actions(CurrentIdentity principal, long companyId, long afterId) {
+        if (afterId < 0) throw new IllegalArgumentException("Invalid catalog cursor");
+        authorization.requireCompanyPermission(principal, companyId, "permission.read");
+        return actions.findByIdGreaterThanOrderByIdAsc(afterId, PageRequest.of(0, CATALOG_PAGE_SIZE)).stream()
+                .map(action -> new DefinitionEntry(action.getId(), action.getCode(), action.getDisplayName())).toList();
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<DefinitionEntry> resourceTypes(CurrentIdentity principal, long companyId, long afterId) {
+        if (afterId < 0) throw new IllegalArgumentException("Invalid catalog cursor");
+        authorization.requireCompanyPermission(principal, companyId, "permission.read");
+        return resourceTypes.findByIdGreaterThanOrderByIdAsc(afterId, PageRequest.of(0, CATALOG_PAGE_SIZE)).stream()
+                .map(resource -> new DefinitionEntry(resource.getId(), resource.getCode(), resource.getDisplayName())).toList();
+    }
+
+    public record DefinitionEntry(long id, String code, String displayName) {}
 
     private static PermissionEntry permissionEntry(Permission permission) {
         return new PermissionEntry(permission.getId(), permission.getCode(), permission.getDisplayName(),

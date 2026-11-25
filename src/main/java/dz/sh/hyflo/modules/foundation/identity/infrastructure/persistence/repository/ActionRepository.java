@@ -21,9 +21,13 @@ package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repos
 
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.domain.Pageable;
+import java.util.List;
 
 public interface ActionRepository extends Repository<Action, Long> {
     long count();
 
     Action save(Action entity);
+
+    List<Action> findByIdGreaterThanOrderByIdAsc(long afterId, Pageable page);
 }

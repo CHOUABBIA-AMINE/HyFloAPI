@@ -77,6 +77,22 @@ public class AuthorizationController {
                 parseCursor(afterId)).stream().map(mapper::toRole).toList());
     }
 
+    @GetMapping("/identity/actions")
+    public ResponseEntity<?> actions(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String companyId,
+            @RequestParam(name = "afterId", required = false) String afterId) {
+        return readPage(companyId, afterId, null, () -> catalogs.actions(principal, parseCompany(companyId),
+                parseCursor(afterId)).stream().map(mapper::toDefinition).toList());
+    }
+
+    @GetMapping("/identity/resource-types")
+    public ResponseEntity<?> resourceTypes(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String companyId,
+            @RequestParam(name = "afterId", required = false) String afterId) {
+        return readPage(companyId, afterId, null, () -> catalogs.resourceTypes(principal, parseCompany(companyId),
+                parseCursor(afterId)).stream().map(mapper::toDefinition).toList());
+    }
+
     @GetMapping("/identity/permissions")
     public ResponseEntity<?> permissions(@AuthenticationPrincipal CurrentIdentity principal,
             @RequestParam(name = "companyId", required = false) String companyId,

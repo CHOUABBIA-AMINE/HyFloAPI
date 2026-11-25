@@ -20,6 +20,8 @@
 package dz.sh.hyflo.modules.foundation.identity.api.mapper;
 
 import dz.sh.hyflo.modules.foundation.identity.api.response.CompanyPermissionsResponse;
+import dz.sh.hyflo.modules.foundation.identity.api.response.DefinitionCatalogResponse;
+import dz.sh.hyflo.modules.foundation.identity.application.service.IdentityCatalogService.DefinitionEntry;
 import dz.sh.hyflo.modules.foundation.identity.api.response.PermissionCatalogResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.response.RoleCatalogResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.response.UserStatusResponse;
@@ -42,6 +44,10 @@ public class AuthorizationMapper {
 
     public RoleCatalogResponse toRole(RoleEntry entry) {
         return new RoleCatalogResponse(entry.id(), entry.code(), entry.displayName(), entry.enabled());
+    }
+
+    public DefinitionCatalogResponse toDefinition(DefinitionEntry entry) {
+        return new DefinitionCatalogResponse(entry.id(), entry.code(), entry.displayName());
     }
 
     public PermissionCatalogResponse toPermission(PermissionEntry entry) {
