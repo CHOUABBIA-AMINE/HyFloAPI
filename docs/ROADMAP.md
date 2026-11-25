@@ -715,3 +715,83 @@ Exact update:
 Delete: none.
 
 Acceptance: retain 19 unit and 13 real MySQL integration methods. Extend IdentityAuthorizationIT with actual HTTP list/assign/revoke, bounded cursor, missing/foreign/no grants empty with no profile, exact permissions, self/reserved/bootstrap protection, cross-company admin denial, allowed foreign catalog role with covering finite grant, reject unknown/nonheld/expired/overlong role authority, overlapping concurrent assignment one success/one conflict, existing actor attribution/interval/reason/role/scope persistence, selected company only, successful delegation to active same-company synthetic SERVICE account with same JWT effective permission gain and immediate loss upon revoke, no status/credential/session change, no cascading grant revocation, rollback from test-only insert/update trigger on T_10_01_15, wrong-company revoke denied, expired/revoked conflict, runtime OpenAPI and default deny. Existing tests preserved. Mandatory exact-SHA Build (Java 25/MySQL, retained test/JaCoCo/SBOM/JAR), no failures/errors/skips. Development only.
+
+
+## Identity pilot — recovered master package and elementary workflow inventory (2026-11-25)
+
+Owner-requested documentation consolidation. Source: supplied conversation **HyFloAPI — Identity Module: Workflow-Driven Development Pilot**, Parts II (sections 6–12) and V (section 19), originally based on [435f3ea5e48eb4bfabbbe7d1a718f231c27b8d9b](https://github.com/CHOUABBIA-AMINE/HyFloAPI/commit/435f3ea5e48eb4bfabbbe7d1a718f231c27b8d9b) and Build #30. The conversation contains exactly 12 proposed delivery packages and 42 elementary workflows, not 42 independently authorized implementation commits. Preserve original names, workflow IDs and priorities. The workflow-to-package allocation below is a documentation mapping inferred from the source deliverables (the conversation did not explicitly allocate each workflow); one primary design package per workflow, with cross-cutting dependencies noted. Original design package IDs and dependencies are historical labels, not replacement live task IDs or executable dependencies. No task selection, scope expansion, acceptance transition or renumbering is authorized by this inventory.
+
+Reconciliation snapshot: main `42b86a90718904e8e9d85f4abe12beaceebacd9f`, [Build #46](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45624258694) completed/success. IDN-01–07 have existing COMPLETED records; IDN-08 is registered IN PROGRESS, implemented and CI-passed at this snapshot, pending formal acceptance. IDN-09 is only a role/permission catalog consultation candidate. The earlier design's IDN-07 (role/permission administration) and IDN-09 (groups) conflict with live numbering; retain both original design labels and the live register unchanged. Original IDN-08's dependency on original IDN-07 is historical, not an assertion that role administration was completed. Future executable IDs and dependencies must be registered separately against the actual sequence. All prior roadmap entries are preserved.
+
+Documentation scope: update only `docs/ROADMAP.md`; create/delete none. Commit: `docs(identity): record pilot package and workflow inventory`. Acceptance: 12 distinct original packages, 42 distinct IDN-W01–42 rows with source names/priorities, each assigned once to a primary original package; explicit live ID reconciliation, append-only evidence and exact-SHA applicable CI startup. No runtime behavior change.
+
+### Original 12 delivery packages and reconciliation
+
+| Original design package | Original functional deliverable | Original main dependencies | Primary workflows | Count | Live register reconciliation (snapshot) |
+| --- | --- | --- | --- | ---: | --- |
+| IDN-01 | Identity initialization and trusted administrator bootstrap | Organization company contract | IDN-W01, IDN-W02 | 2 | IDN-01 accepted; initial seeds also support W20–W22/W24. |
+| IDN-02 | Local authentication and access-token enforcement | IDN-01 | IDN-W12, IDN-W13, IDN-W40 | 3 | IDN-02 accepted. |
+| IDN-03 | Effective permission and company-scoped authorization | IDN-01, IDN-02 | IDN-W36, IDN-W37, IDN-W39 | 3 | IDN-03 accepted for direct company scope; inherited and resource coverage remain open. |
+| IDN-04 | Refresh-token rotation and session revocation | IDN-02 | IDN-W14, IDN-W15, IDN-W16, IDN-W17 | 4 | IDN-04 accepted; IDN-07 accepted account-wide administrative revocation. Own-session listing and individual selection open. |
+| IDN-05 | Protected user registration, activation and lifecycle | IDN-03, IDN-04 | IDN-W03, IDN-W05, IDN-W08, IDN-W09, IDN-W10, IDN-W11 | 6 | IDN-05 accepted for company-owned account lifecycle; employee linkage open. |
+| IDN-06 | Password change and administrative reset | IDN-04, IDN-05 | IDN-W04, IDN-W18, IDN-W19 | 3 | IDN-06 accepted administrative initialization/reset; own-password change open. |
+| IDN-07 | Role and permission administration | IDN-03 | IDN-W20, IDN-W21, IDN-W22, IDN-W23, IDN-W24, IDN-W25, IDN-W26 | 7 | Original IDN-07 is not the registered IDN-07. Initial seeds in IDN-01; live IDN-09 catalog consultation candidate; remaining mutations unregistered. |
+| IDN-08 | Direct scoped role grant management | IDN-03, IDN-07 | IDN-W32, IDN-W34, IDN-W38 | 3 | Live IDN-08 implemented, Build #46 passed; formal acceptance pending. GLOBAL only. |
+| IDN-09 | Group and membership administration | IDN-08 | IDN-W27, IDN-W28, IDN-W29, IDN-W30, IDN-W31 | 5 | Original IDN-09 is not the live IDN-09 candidate; group work unregistered. |
+| IDN-10 | Group grants and inherited authorization | IDN-09 | IDN-W33, IDN-W35 | 2 | Unregistered; group ownership/authorization prerequisites remain. |
+| IDN-11 | Profile, account search and security history | Applicable preceding packages | IDN-W06, IDN-W07, IDN-W42 | 3 | Partial via IDN-02 own identity and IDN-05 account list/detail; remaining scope unregistered. |
+| IDN-12 | Integrated Identity acceptance and security hardening | IDN-01–11 | IDN-W41 | 1 | Unregistered; cross-cutting evidence required in every delivery, not deferred to final gate. |
+| **Total** | **12 packages** | | | **42** | |
+
+### All 42 elementary workflows
+
+P0 = essential security functionality; P1 = subsequent administration/usability. Coverage labels are documentation observations of the bounded registered scopes, not new task statuses. Accepted means only the indicated registered development scope, Partial means the original workflow is broader than accepted coverage, Open means no applicable completed executable workflow was established, and CI-passed/acceptance pending does not mean COMPLETED. No production or operational acceptance is implied.
+
+| Workflow ID | Original elementary workflow | Priority | Primary original design package | Live task / reference | Coverage at snapshot |
+| --- | --- | --- | --- | --- | --- |
+| IDN-W01 | Initialize identity reference catalogs | P0 | IDN-01 | IDN-01 | Accepted — approved initial catalogs |
+| IDN-W02 | Initialize the first authorized administrator | P0 | IDN-01 | IDN-01 | Accepted — trusted bootstrap handler; packaged execution not established |
+| IDN-W03 | Register a user account | P0 | IDN-05 | IDN-05 | Accepted — company-owned LOCAL/PENDING |
+| IDN-W04 | Initialize local credentials | P0 | IDN-06 | IDN-06 | Accepted — one-time initialization |
+| IDN-W05 | Activate a pending account | P0 | IDN-05 | IDN-05 | Accepted — explicit transition |
+| IDN-W06 | Consult and search user accounts | P1 | IDN-11 | IDN-05 | Partial — bounded owner list/detail; richer search not established |
+| IDN-W07 | Manage own account profile | P1 | IDN-11 | IDN-02 (read baseline) | Partial — own identity read only; profile management not registered |
+| IDN-W08 | Suspend an account | P0 | IDN-05 | IDN-05 | Accepted — owner-scoped |
+| IDN-W09 | Reactivate a suspended account | P1 | IDN-05 | IDN-05 | Accepted — owner-scoped |
+| IDN-W10 | Permanently disable an account | P0 | IDN-05 | IDN-05 | Accepted — owner-scoped |
+| IDN-W11 | Associate an account with an employee | P1 | IDN-05 | Unregistered | Open — Organization owner validation needed |
+| IDN-W12 | Authenticate a local user | P0 | IDN-02 | IDN-02 | Accepted — LOCAL |
+| IDN-W13 | Validate an access token | P0 | IDN-02 | IDN-02 | Accepted — live session/account check |
+| IDN-W14 | Renew access through refresh-token rotation | P0 | IDN-04 | IDN-04 | Accepted — replay protection |
+| IDN-W15 | Log out and revoke a session | P0 | IDN-04 | IDN-04 | Accepted — current session |
+| IDN-W16 | Consult own active sessions | P1 | IDN-04 | Unregistered | Open — own-session listing not admitted |
+| IDN-W17 | Revoke another active session | P1 | IDN-04 | IDN-07 | Partial — accepted administrative account-wide revocation; no individual session selection |
+| IDN-W18 | Change own password | P0 | IDN-06 | Unregistered | Open — IDN-06 excludes self |
+| IDN-W19 | Administratively reset a password | P1 | IDN-06 | IDN-06 | Accepted — company-owned reset |
+| IDN-W20 | Manage supported action definitions | P0 | IDN-07 | IDN-01 (initialization) | Partial — approved initial seeds only; ongoing registration not admitted |
+| IDN-W21 | Manage resource type definitions | P0 | IDN-07 | IDN-01 (initialization) | Partial — approved initial seeds only |
+| IDN-W22 | Define and consult permissions | P0 | IDN-07 | IDN-01; IDN-09 candidate | Partial — initial definitions; general catalog consultation and future definition changes open |
+| IDN-W23 | Create and rename roles | P1 | IDN-07 | Unregistered | Open — role creation/rename not admitted |
+| IDN-W24 | Associate permissions with roles | P0 | IDN-07 | IDN-01 (initialization) | Partial — bootstrap associations only; administrative changes open |
+| IDN-W25 | Remove permissions from roles | P1 | IDN-07 | Unregistered | Open |
+| IDN-W26 | Retire roles | P1 | IDN-07 | Unregistered | Open |
+| IDN-W27 | Create and rename groups | P1 | IDN-09 | Unregistered | Open |
+| IDN-W28 | Assign users to groups | P1 | IDN-09 | Unregistered | Open |
+| IDN-W29 | Revoke group membership | P1 | IDN-09 | Unregistered | Open |
+| IDN-W30 | Consult effective and historical memberships | P1 | IDN-09 | Unregistered | Open |
+| IDN-W31 | Retire groups | P1 | IDN-09 | Unregistered | Open |
+| IDN-W32 | Grant a scoped role to a user | P0 | IDN-08 | IDN-08 | CI-passed, acceptance pending — GLOBAL only; resource scope open |
+| IDN-W33 | Grant a scoped role to a group | P1 | IDN-10 | Unregistered | Open |
+| IDN-W34 | Revoke a direct user role grant | P0 | IDN-08 | IDN-08 | CI-passed, acceptance pending — GLOBAL only; bootstrap protection |
+| IDN-W35 | Revoke a group role grant | P1 | IDN-10 | Unregistered | Open |
+| IDN-W36 | Resolve effective permissions | P0 | IDN-03 | IDN-03; inherited follow-up unregistered | Partial — direct company GLOBAL accepted; inherited grants open |
+| IDN-W37 | Evaluate access to a protected resource | P0 | IDN-03 | IDN-03; IDN-05–08 | Partial — company Identity operations only; engineering resource coverage open |
+| IDN-W38 | Consult authorization grant history | P1 | IDN-08 | IDN-08; group follow-up unregistered | CI-passed, acceptance pending — direct GLOBAL history only |
+| IDN-W39 | Consult own effective access | P1 | IDN-03 | IDN-03 | Partial — direct company permission view; inherited/resource coverage open |
+| IDN-W40 | Record authentication success and failure | P0 | IDN-02 | IDN-02; IDN-04 | Accepted — registered authentication/session event scope |
+| IDN-W41 | Record security-sensitive administrative operations | P0 | IDN-12 | IDN-01; IDN-05–08; cross-cutting | Partial — bootstrap attribution, lifecycle evidence and direct grant metadata; future operations need own evidence |
+| IDN-W42 | Consult authorized security event history | P1 | IDN-11 | Unregistered | Open — no general history endpoint |
+
+**Inventory check:** 42 workflows (22 P0, 20 P1), grouped by the source's seven business areas: initialization 2; account management 9; authentication/session management 8; permissions/roles 7; groups 5; authorization 8; traceability 3. Each workflow appears once in the primary design allocation. W04 is allocated to original IDN-06 because the actual credential workflow is registered there; W17 is allocated to original session lifecycle IDN-04 but live IDN-07 covers only administrative account-wide revocation. W38 is allocated to original direct grant package with group history still open. W41 is tracked under the final integrated gate for inventory counting only: evidence remains mandatory in each individual package. IDN-W36/W37/W39 span later inherited and real resource authorization; never infer owner coverage from scope shape alone. Local-only authentication, deny-by-default, actor/temporal traceability, explicit company boundaries, no generic CRUD or arbitrary capability creation, and no industrial or production acceptance remain in force.
+
+This reference table does not register the missing executable envelopes or advance the next task. The preceding register remains authoritative for exact scope, dependencies, acceptance, messages and next selection.
