@@ -55,6 +55,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -96,6 +98,9 @@ class HyFloApiIT {
     JdbcTemplate jdbc;
 
     @Autowired
+    ApplicationContext applicationContext;
+
+    @Autowired
     EmployeeAssignmentService employeeAssignments;
 
     @Autowired
@@ -109,6 +114,28 @@ class HyFloApiIT {
 
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10)).build();
+
+    @Test
+    void registersOneRepositoryForEveryFoundationEntity() {
+        var repositories = new Repositories(applicationContext);
+        var entities = entityManager.getMetamodel().getEntities().stream()
+                .map(entity -> entity.getJavaType())
+                .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
+                .toList();
+        assertThat(entities).hasSize(37);
+        for (var entity : entities) {
+            var expectedInterface = entity.getPackageName().replace(".domain.model", ".infrastructure.persistence.repository")
+                    + "." + entity.getSimpleName() + "Repository";
+            var information = repositories.getRepositoryInformationFor(entity).orElseThrow();
+            assertThat(information.getDomainType()).isEqualTo(entity);
+            assertThat(information.getIdType()).isEqualTo(Long.class);
+            assertThat(information.getRepositoryInterface().getName()).isEqualTo(expectedInterface);
+            assertThat(repositories.getRepositoryFor(entity)).isPresent();
+            assertThat(applicationContext.getBeansOfType(information.getRepositoryInterface())).hasSize(1);
+        }
+        assertThat(repositories.getRepositoryFor(AuthorizationScope.class)).isEmpty();
+        assertThat(repositories.getRepositoryFor(SchemaProbe.class)).isEmpty();
+    }
 
     @Test
     @Transactional
