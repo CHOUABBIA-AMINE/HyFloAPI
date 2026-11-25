@@ -303,3 +303,47 @@ Recommended single owner decision for IDN-01:
 - Required acceptance: real disposable MySQL positive initialization/readback, secrets not exposed, technical actor cannot authenticate, exact company and explicit permission scope, missing/invalid company rejection, disabled-by-default invocation, invalid inputs and rollback, duplicate/repeated/concurrent initialization behavior, preservation of constraints and existing tests. Future functional service changes must preserve bean discovery and same-module repository ownership while replacing only superseded empty-skeleton assertions. Exact implementation paths, commit message and approved permission catalog must be registered after the decision and before edits.
 
 No source edits under this decision gate. The next executable package requires explicit approval of the bootstrap attribution exception and a completed registered implementation envelope; no subsequent task may be advanced automatically.
+
+### IDN-01 approved implementation — 2026-11-25
+
+Status: IN PROGRESS — owner explicitly approved the one-time disabled SERVICE attribution account proposal. Baseline 5923bbf58628cf8a7af5293ebb9ec357cd8c08ab; [Build #31](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45572722929) success. Depends on accepted Foundation baseline and a pre-provisioned eligible Organization company. This entry resolves the preceding decision gate without changing normal authenticated actor rules. No other task selected.
+
+Implementation contract:
+- Explicit sole argument `--identity-bootstrap` dispatches from HyFloApi to a non-web Spring context, invokes IdentityBootstrapCommand and closes the context; ordinary startup never invokes initialization. No HTTP or automatic runner. Read only external environment HYFLO_BOOTSTRAP_COMPANY_ID (positive Long), HYFLO_BOOTSTRAP_USERNAME, HYFLO_BOOTSTRAP_EMAIL, HYFLO_BOOTSTRAP_PASSWORD, HYFLO_BOOTSTRAP_OPERATOR (trusted operator reference, bounded safe characters). Reject missing/invalid inputs, reserved bootstrap identity and additional command arguments. Password minimum 15 characters, maximum 72 UTF-8 bytes for bcrypt, no blank secret; shared platform PasswordEncoder bean uses Spring delegating bcrypt encoding. No default or password in arguments/logs/result. Command failure returns nonzero through a sanitized exception. Development schema only, existing DB configuration/profile preserved.
+- Organization owner contract requireEligibleCompanyUnit(long, LocalDate) checks exact COMPANY code, active type, ACTIVE unit status and half-open date validity at UTC initialization date. Query the owner entity with fetched type/status and pessimistic read lock; no JPA entity returned to Identity. Keep original classification-only contract unchanged. No Organization seed or creation.
+- All initialization in one Identity application transaction via module-owned repositories with only explicit count/save operations; reject any existing independent root (IdentityProvider, UserStatus, UserType, Action, ResourceType, Role, Group), which also excludes dependent Identity rows via existing FKs. Insert the unique LOCAL provider row first, before other identity writes; its unique constraint and transactional insert serialize competing initialization attempts even with different company IDs. Losing attempts fail, no retry/upsert; any failure rolls back the whole initialization. Existing data or repeated invocation fails without mutation; manual out-of-band destructive DB changes not supported.
+- Create LOCAL, PENDING/ACTIVE/SUSPENDED/DISABLED, HUMAN/SERVICE. Create reserved username hyflo-bootstrap with reserved non-routable email hyflo-bootstrap@hyflo.invalid, SERVICE, DISABLED, no credential/session/grant. Create supplied HUMAN admin with no employee assumption, encoded credential and valid activation. Initial grant is GLOBAL (supplied company only), with reason containing IDN-01 and externally supplied trusted operator reference (not independent identity proof); grantedBy is the persisted disabled attribution account. No user schema changes or generic actor exception for other workflows.
+- Initial explicit capability manifest (resource.action codes, each distinct ResourceType/Action pair) chosen conservatively from the pilot: user.read, user.create, user.activate, user.suspend, user.reactivate, user.disable, credential.initialize, credential.reset, login-session.revoke, role.read, permission.read, user-role-grant.read, user-role-grant.assign, user-role-grant.revoke, identity-catalog.read. Seed only these 15 definitions, their distinct action/resource codes and one IDENTITY_ADMIN role with exactly these associations. Stable technical codes, English display labels and trilingual UserType names. These are reserved definitions for the approved Identity pilot, not implemented HTTP capabilities. No wildcard, global role/group mutations, engineering permissions, security history across companies or platform superuser. Later catalog additions require selected functional tasks and actual scope enforcement. 
+- No login/refresh/JWT endpoint, no runtime administrative authorization, no API DTO/controller, no new entity/table/column, no schema migration, no change to existing entity services/structural assertions. Existing temporary Spring Security baseline remains only for existing smoke tests; not an authorization bypass or usable bootstrap administrator login.
+
+Registration commit: docs(identity): approve and register trusted initialization
+Implementation commit: feat(identity): implement one-time company administrator bootstrap
+
+Create:
+- `src/main/java/dz/sh/hyflo/bootstrap/IdentityBootstrapCommand.java`
+- `src/main/java/dz/sh/hyflo/platform/security/PasswordEncodingConfiguration.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/IdentityBootstrapService.java`
+- `src/test/java/dz/sh/hyflo/IdentityBootstrapIT.java`
+
+Update:
+- `src/main/java/dz/sh/hyflo/HyFloApi.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/IdentityProviderRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserStatusRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/ActionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/ResourceTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/RoleRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/GroupRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/LocalCredentialRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/PermissionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/RolePermissionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/UserRoleGrantRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/infrastructure/persistence/repository/OrganizationUnitRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/organization/application/service/OrganizationUnitScopeService.java`
+- `docs/ARCHITECTURE.md`
+- `docs/MODULES.md`
+
+Delete: none.
+
+Acceptance: real isolated MySQL 8.4 integration test invokes the actual command handler in a non-web application context, asserts no automatic initialization and rejects missing opt-in, additional args, invalid input, missing/non-company/inactive/expired/future company, and retired type; forces late DB failure using test-only trigger and proves complete rollback; races two different administrator requests and requires exactly one successful initialization. Verify all exact catalog codes/role associations, admin active HUMAN, one encoded credential, disabled SERVICE attribution account without credential/session/grants, one GLOBAL grant with correct company, persisted actor and provenance. Prove re-invocation after revocation does not change credentials, create a new admin or restore privileges. Retain existing 9 unit/10 integration tests, repository discovery and service skeleton checks; new independent MySQL context, no skipped tests or CI gate changes. Verify exact-SHA build before acceptance. Packaged external command invocation/deployment is not performed in this task; real integration covers its handler and wiring.
