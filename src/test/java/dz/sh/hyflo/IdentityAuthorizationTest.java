@@ -106,10 +106,10 @@ class IdentityAuthorizationTest {
         when(grants.findCompanyCandidates(10L, 1L)).thenAnswer(invocation ->
                 List.of(grant(AuthorizationScope.global(1L), decisionTime.get(), null),
                         grant(AuthorizationScope.global(1L), decisionTime.get(), null)));
-        when(links.findForRoles(Set.of(30L))).thenReturn(List.of(
+        doReturn(List.of(
                 link("user.read", "user", "read"), link("identity-catalog.read", "identity-catalog", "read"),
                 link("user.read", "user", "read"), link("IDENTITY-CATALOG.read", "identity-catalog", "read"),
-                link("other.read", "user", "read"), link("user.*", "user", "*")));
+                link("other.read", "user", "read"), link("user.*", "user", "*"))).when(links).findForRoles(Set.of(30L));
         when(companies.isEligibleCompanyUnit(eq(1L), any(LocalDate.class))).thenReturn(true);
         assertThat(authorization.ownPermissions(principal, 1L).permissionCodes())
                 .containsExactly("identity-catalog.read", "user.read");
@@ -149,7 +149,7 @@ class IdentityAuthorizationTest {
     void gatesProtectedCatalogBeforeAnyDataReadAndFailsClosedOnOwnerOrRepositoryErrors() {
         when(grants.findCompanyCandidates(10L, 1L)).thenAnswer(invocation ->
                 List.of(grant(AuthorizationScope.global(1L), decisionTime.get(), null)));
-        when(links.findForRoles(Set.of(30L))).thenReturn(List.of(link("user.read", "user", "read")));
+        doReturn(List.of(link("user.read", "user", "read"))).when(links).findForRoles(Set.of(30L));
         assertThatThrownBy(() -> catalogs.userStatuses(principal, 1L)).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(companies, statuses);
         assertThatThrownBy(() -> catalogs.roles(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
@@ -159,7 +159,7 @@ class IdentityAuthorizationTest {
         assertThatThrownBy(() -> catalogs.actions(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> catalogs.resourceTypes(principal, 1L, 0L)).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(companies, roles, permissions, catalogLinks, actions, resourceTypes);
-        when(links.findForRoles(Set.of(30L))).thenReturn(List.of(link("identity-catalog.read", "identity-catalog", "read")));
+        doReturn(List.of(link("identity-catalog.read", "identity-catalog", "read"))).when(links).findForRoles(Set.of(30L));
         when(companies.isEligibleCompanyUnit(eq(1L), any(LocalDate.class))).thenReturn(false);
         assertThatThrownBy(() -> catalogs.userStatuses(principal, 1L)).isInstanceOf(AccessDeniedException.class);
         verifyNoInteractions(statuses);
@@ -193,7 +193,7 @@ class IdentityAuthorizationTest {
         when(injected.getRole()).thenReturn(role);
         when(injected.getPermission()).thenReturn(new Permission("platform-role.read", "Read",
                 new Action("read", "Read"), new ResourceType("platform-role", "Platform role")));
-        when(links.findForRoles(Set.of(30L))).thenReturn(List.of(injected, link("user.read", "user", "read")));
+        doReturn(List.of(injected, link("user.read", "user", "read"))).when(links).findForRoles(Set.of(30L));
         when(companies.isEligibleCompanyUnit(eq(1L), any(LocalDate.class))).thenReturn(true);
         assertThat(authorization.ownPermissions(principal, 1L).permissionCodes()).containsExactly("user.read");
         assertThatThrownBy(() -> authorization.requireCompanyPermission(principal, 1L, "platform-role.read"))
