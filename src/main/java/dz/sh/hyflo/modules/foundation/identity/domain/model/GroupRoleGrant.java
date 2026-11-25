@@ -92,6 +92,7 @@ public class GroupRoleGrant {
             Instant validFrom, Instant validTo, User grantedBy) {
         this.group = Objects.requireNonNull(group, "Group is required");
         this.role = Objects.requireNonNull(role, "Role is required");
+        if (role.isPlatformRole()) throw new IllegalArgumentException("Company grant requires company role");
         this.authorizationScope = Objects.requireNonNull(authorizationScope, "Scope is required");
         this.reason = reason;
         this.validFrom = Objects.requireNonNull(validFrom, "Validity start is required");

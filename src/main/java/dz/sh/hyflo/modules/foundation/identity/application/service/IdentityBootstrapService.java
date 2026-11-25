@@ -26,6 +26,7 @@ import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
@@ -96,6 +97,7 @@ public class IdentityBootstrapService {
     private final PermissionRepository permissions;
     private final RolePermissionRepository rolePermissions;
     private final UserRoleGrantRepository grants;
+    private final PlatformRoleGrantService platformGrants;
     private final OrganizationUnitScopeService organizationScopes;
     private final IdentityPasswordEncoder passwordEncoder;
     private final Validator validator;
@@ -113,6 +115,7 @@ public class IdentityBootstrapService {
             PermissionRepository permissions,
             RolePermissionRepository rolePermissions,
             UserRoleGrantRepository grants,
+            PlatformRoleGrantService platformGrants,
             OrganizationUnitScopeService organizationScopes,
             IdentityPasswordEncoder passwordEncoder,
             Validator validator) {
@@ -128,6 +131,7 @@ public class IdentityBootstrapService {
         this.permissions = permissions;
         this.rolePermissions = rolePermissions;
         this.grants = grants;
+        this.platformGrants = platformGrants;
         this.organizationScopes = organizationScopes;
         this.passwordEncoder = passwordEncoder;
         this.validator = validator;
@@ -136,6 +140,23 @@ public class IdentityBootstrapService {
     /** Internal installation operation; external callers enter through IdentitySetupService. */
     @Transactional
     public long initialize(long companyUnitId, String username, String email, String password, String operatorReference) {
+        // Retained for accepted synthetic company-only fixtures; not exposed by HTTP.
+        return initializeInternal(companyUnitId, username, email, password, operatorReference, null);
+    }
+
+    @Transactional
+    public long initializeWithPlatform(long companyUnitId, String username, String email, String password,
+            String operatorReference, String platformRoleCode, String platformRoleName) {
+        Role initialPlatformRole = new Role(
+                platformRoleCode == null ? "INITIAL_PLATFORM_ADMIN" : platformRoleCode,
+                platformRoleName == null ? "Initial platform administrator" : platformRoleName, true);
+        if (ADMIN_ROLE.equalsIgnoreCase(initialPlatformRole.getCode()))
+            throw new IllegalArgumentException("Initial role code conflicts with company role");
+        return initializeInternal(companyUnitId, username, email, password, operatorReference, initialPlatformRole);
+    }
+
+    private long initializeInternal(long companyUnitId, String username, String email, String password,
+            String operatorReference, Role initialPlatformRole) {
         if (companyUnitId <= 0) throw new IllegalArgumentException("Invalid company reference");
         String normalizedUsername = validateInput(username, email, password, operatorReference);
 
@@ -168,6 +189,18 @@ public class IdentityBootstrapService {
             rolePermissions.save(new RolePermission(role, permission));
         }
 
+        if (initialPlatformRole != null) {
+            initialPlatformRole = roles.save(initialPlatformRole);
+            ResourceType resource = resourceTypes.save(new ResourceType("platform-role", "Platform role"));
+            for (String code : List.of(PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE)) {
+                String actionCode = code.substring(code.indexOf('.') + 1);
+                Action action = actionByCode.computeIfAbsent(actionCode, key -> actions.save(new Action(key, label(key))));
+                Permission permission = permissions.save(new Permission(code, "Platform role / " + label(actionCode),
+                        action, resource));
+                rolePermissions.save(new RolePermission(initialPlatformRole, permission));
+            }
+        }
+
         User attribution = new User(provider, BOOTSTRAP_USERNAME, BOOTSTRAP_EMAIL, null, companyUnitId, pending, service);
         attribution.disable(disabled);
         attribution = users.save(attribution);
@@ -178,6 +211,10 @@ public class IdentityBootstrapService {
         // This attribution exception is confined to the one-time trusted initialization transaction.
         grants.save(new UserRoleGrant(administrator, role, AuthorizationScope.global(companyUnitId),
                 "IDN-01 trusted local initialization; operator=" + operatorReference, now, null, attribution));
+        if (initialPlatformRole != null) {
+            platformGrants.provision(administrator, initialPlatformRole, attribution, now,
+                    "IDN-PLATFORM-01 trusted initialization; operator=" + operatorReference, UUID.randomUUID().toString());
+        }
         return administrator.getId();
     }
 

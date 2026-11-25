@@ -31,7 +31,9 @@ public record IdentitySetupRequest(
         @Size(max = 120) String companyNameEn,
         @NotBlank @Size(max = 100) String username,
         @NotBlank @Email @Size(max = 100) String email,
-        @Schema(accessMode = Schema.AccessMode.WRITE_ONLY) @NotBlank @Size(max = 72) String password) {
+        @Schema(accessMode = Schema.AccessMode.WRITE_ONLY) @NotBlank @Size(max = 72) String password,
+        @Size(max = 64) String initialPlatformRoleCode,
+        @Size(max = 120) String initialPlatformRoleName) {
 
     @Override
     public String toString() {

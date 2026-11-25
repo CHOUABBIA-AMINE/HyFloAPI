@@ -71,7 +71,8 @@ public class IdentitySetupService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void initialize(String suppliedSecret, String companyCode, String nameAr, String nameFr,
-            String nameEn, String username, String email, String password) {
+            String nameEn, String username, String email, String password,
+            String initialPlatformRoleCode, String initialPlatformRoleName) {
         byte[] presented = decode(suppliedSecret);
         if (!enabled() || presented == null || !MessageDigest.isEqual(secret, presented)) {
             throw new AccessDeniedException("Installation authority required");
@@ -82,6 +83,7 @@ public class IdentitySetupService {
         bootstrap.validateInput(username, email, password, operator);
         long companyId = organization.createFirstCompany(companyCode, nameAr, nameFr, nameEn,
                 LocalDate.now(ZoneOffset.UTC));
-        bootstrap.initialize(companyId, username, email, password, operator);
+        bootstrap.initializeWithPlatform(companyId, username, email, password, operator,
+                initialPlatformRoleCode, initialPlatformRoleName);
     }
 }

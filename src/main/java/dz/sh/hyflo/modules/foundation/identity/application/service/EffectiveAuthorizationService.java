@@ -100,9 +100,9 @@ public class EffectiveAuthorizationService {
             return Set.of();
         }
         return rolePermissions.findForRoles(roleIds).stream()
-                .filter(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isEnabled())
+                .filter(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isEnabled() && !link.getRole().isPlatformRole())
                 .map(link -> link.getPermission())
-                .filter(EffectiveAuthorizationService::validPermission)
+                .filter(EffectiveAuthorizationService::validCompanyPermission)
                 .map(Permission::getCode)
                 .collect(Collectors.toCollection(TreeSet::new));
     }
@@ -111,7 +111,11 @@ public class EffectiveAuthorizationService {
         AuthorizationScope scope = grant.getAuthorizationScope();
         return scope != null && AuthorizationScope.GLOBAL.equals(scope.getScopeType())
                 && scope.getOrganizationUnitId() == companyId && scope.getScopeReferenceId() == null
-                && grant.isActiveAt(now) && grant.getRole().isEnabled();
+                && grant.isActiveAt(now) && grant.getRole().isEnabled() && !grant.getRole().isPlatformRole();
+    }
+
+    static boolean validCompanyPermission(Permission permission) {
+        return validPermission(permission) && !permission.isPlatformPermission();
     }
 
     static boolean validPermission(Permission permission) {

@@ -1,6 +1,12 @@
 package dz.sh.hyflo;
 
 import java.time.Instant;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 
 import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthorizationScope;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
@@ -100,6 +106,31 @@ class HyFloApiTest {
                 .isInstanceOf(IllegalArgumentException.class);
         var serviceAccount = new User(provider, "link-service", "link-service@example.invalid", null, 1L, pending, service);
         assertThatThrownBy(() -> serviceAccount.linkEmployee(1)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void roleNamesAreDataAndAuthorityBoundariesRejectCrossScopeLinks() {
+        var company = new Role("arbitrary", "Any label");
+        var platform = new Role("operator-chosen", "Any label", true);
+        var permission = new Permission("platform-role.read", "Read", new Action("read", "Read"),
+                new ResourceType("platform-role", "Platform role"));
+        var companyPermission = new Permission("role.read", "Read", new Action("read", "Read"),
+                new ResourceType("role", "Role"));
+        assertThat(company.isPlatformRole()).isFalse();
+        assertThat(platform.isPlatformRole()).isTrue();
+        assertThat(new RolePermission(platform, permission).getPermission()).isSameAs(permission);
+        assertThat(new RolePermission(company, companyPermission).getPermission()).isSameAs(companyPermission);
+        assertThatThrownBy(() -> new RolePermission(company, permission)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new RolePermission(platform, companyPermission)).isInstanceOf(IllegalArgumentException.class);
+        var malformed = new Permission("PLATFORM-role.read", "Malformed", new Action("read", "Read"),
+                new ResourceType("role", "Role"));
+        assertThat(malformed.isPlatformPermission()).isTrue();
+        assertThatThrownBy(() -> new RolePermission(company, malformed)).isInstanceOf(IllegalArgumentException.class);
+        var actor = new User(IdentityProvider.local(), "synthetic-admin", "admin@example.invalid", null, 1L,
+                new UserStatus(UserStatus.PENDING_CODE, "Pending"), new UserType(UserType.HUMAN_CODE, null, null, "Human"));
+        assertThatThrownBy(() -> new UserRoleGrant(actor, platform, AuthorizationScope.global(1),
+                "synthetic", Instant.now(), null, actor)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Role("bad code", "Role", true)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

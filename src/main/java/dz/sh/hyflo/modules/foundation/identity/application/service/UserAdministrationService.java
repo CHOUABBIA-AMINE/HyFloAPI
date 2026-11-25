@@ -50,6 +50,7 @@ public class UserAdministrationService {
     private final LoginSessionRepository sessions;
     private final IdentityProviderRepository providers;
     private final UserRoleGrantRepository grants;
+    private final PlatformRoleGrantRepository platformGrants;
     private final RolePermissionRepository permissions;
     private final OrganizationUnitScopeService companies;
     private final UserStatusRepository statuses;
@@ -65,12 +66,13 @@ public class UserAdministrationService {
             RolePermissionRepository permissions, OrganizationUnitScopeService companies, UserStatusRepository statuses,
             UserTypeRepository types, LocalCredentialRepository credentials, UserLifecycleEventService events,
             IdentityPasswordEncoder encoder, EmployeeAssignmentService employeeAssignments,
-            UserEmployeeAssociationEventService employeeEvents) {
+            UserEmployeeAssociationEventService employeeEvents, PlatformRoleGrantRepository platformGrants) {
         this.authorization = authorization;
         this.users = users;
         this.sessions = sessions;
         this.providers = providers;
         this.grants = grants;
+        this.platformGrants = platformGrants;
         this.permissions = permissions;
         this.companies = companies;
         this.statuses = statuses;
@@ -144,6 +146,7 @@ public class UserAdministrationService {
         User actor = lockAuthority(principal, companyId, permission);
         if (actor.getId() == userId) throw denied();
         User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        rejectPlatformManaged(target);
         requireEmployeeTarget(target, companyId);
         String status = target.getUserStatus().getCode();
         boolean linking = employeeId != null;
@@ -211,6 +214,7 @@ public class UserAdministrationService {
         User actor = lockAuthority(principal, companyId, permission);
         if (actor.getId() == userId) throw denied();
         User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        rejectPlatformManaged(target);
         actor = lockAuthority(principal, companyId, permission);
         if (target.getOwningOrganizationUnitId() != companyId || "hyflo-bootstrap".equals(target.getUsername())
                 || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())) throw denied();
@@ -266,6 +270,7 @@ public class UserAdministrationService {
         User actor = lockAuthority(principal, companyId, permission);
         if (actor.getId() == userId) throw denied();
         User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        rejectPlatformManaged(target);
         actor = lockAuthority(principal, companyId, permission);
         if (target.getOwningOrganizationUnitId() != companyId || "hyflo-bootstrap".equals(target.getUsername())
                 || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
@@ -309,6 +314,7 @@ public class UserAdministrationService {
         User actor = lockAuthority(principal, companyId, permission);
         if (actor.getId() == userId) throw denied();
         User target = users.findOwnedForUpdate(userId, companyId).orElseThrow(UserAdministrationService::denied);
+        rejectPlatformManaged(target);
         actor = lockAuthority(principal, companyId, permission);
         if (target.getOwningOrganizationUnitId() != companyId || "hyflo-bootstrap".equals(target.getUsername())
                 || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
@@ -371,7 +377,7 @@ public class UserAdministrationService {
         Role role = source.getRole();
         var links = permissions.findForRolesForWrite(Set.of(roleId));
         if (links.isEmpty() || links.stream().anyMatch(link -> link.getRole().getId() != roleId
-                || !EffectiveAuthorizationService.validPermission(link.getPermission()))) throw denied();
+                || !EffectiveAuthorizationService.validCompanyPermission(link.getPermission()))) throw denied();
         if (target.getOwningOrganizationUnitId() != companyId && links.stream()
                 .anyMatch(link -> !FOREIGN_DELEGABLE.contains(link.getPermission().getCode()))) throw denied();
 
@@ -410,8 +416,15 @@ public class UserAdministrationService {
 
     private User lockGrantTarget(User actor, long userId) {
         if (actor.getId() == userId) throw denied();
-        return users.findForUpdate(userId).filter(user -> !"hyflo-bootstrap".equals(user.getUsername()))
+        User target = users.findForUpdate(userId).filter(user -> !"hyflo-bootstrap".equals(user.getUsername()))
                 .orElseThrow(UserAdministrationService::denied);
+        rejectPlatformManaged(target);
+        return target;
+    }
+
+    /** Caller already holds the target User lock, including for historical platform authority. */
+    private void rejectPlatformManaged(User target) {
+        if (platformGrants.existsByUserId(target.getId())) throw denied();
     }
 
     private static Instant finiteExpiry(String text) {
@@ -431,7 +444,8 @@ public class UserAdministrationService {
     private static boolean globalCompany(UserRoleGrant grant, long companyId) {
         AuthorizationScope scope = grant.getAuthorizationScope();
         return scope != null && AuthorizationScope.GLOBAL.equals(scope.getScopeType())
-                && scope.getOrganizationUnitId() == companyId && scope.getScopeReferenceId() == null;
+                && scope.getOrganizationUnitId() == companyId && scope.getScopeReferenceId() == null
+                && !grant.getRole().isPlatformRole();
     }
 
     private static Grant grantProjection(UserRoleGrant grant) {
@@ -474,8 +488,8 @@ public class UserAdministrationService {
                 .map(g -> g.getRole().getId()).collect(Collectors.toSet());
         if (roleIds.isEmpty()) throw denied();
         var links = permissions.findForRolesForWrite(roleIds);
-        if (!links.stream().anyMatch(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isEnabled()
-                && EffectiveAuthorizationService.validPermission(link.getPermission())
+        if (!links.stream().anyMatch(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isEnabled() && !link.getRole().isPlatformRole()
+                && EffectiveAuthorizationService.validCompanyPermission(link.getPermission())
                 && requiredPermission.equals(link.getPermission().getCode()))) throw denied();
         if (!companies.lockEligibleCompanyForIdentityWrite(companyId, LocalDate.now(ZoneOffset.UTC))) throw denied();
         Instant finalTime = Instant.now();
@@ -484,8 +498,8 @@ public class UserAdministrationService {
                 .filter(g -> g.getUser().getId().equals(actor.getId()))
                 .filter(g -> EffectiveAuthorizationService.matchesCompany(g, companyId, finalTime))
                 .map(g -> g.getRole().getId()).collect(Collectors.toSet());
-        if (!links.stream().anyMatch(link -> activeRoles.contains(link.getRole().getId()) && link.getRole().isEnabled()
-                && EffectiveAuthorizationService.validPermission(link.getPermission())
+        if (!links.stream().anyMatch(link -> activeRoles.contains(link.getRole().getId()) && link.getRole().isEnabled() && !link.getRole().isPlatformRole()
+                && EffectiveAuthorizationService.validCompanyPermission(link.getPermission())
                 && requiredPermission.equals(link.getPermission().getCode()))
                 || !companies.lockEligibleCompanyForIdentityWrite(companyId, LocalDate.ofInstant(finalTime, ZoneOffset.UTC))) throw denied();
         return actor;

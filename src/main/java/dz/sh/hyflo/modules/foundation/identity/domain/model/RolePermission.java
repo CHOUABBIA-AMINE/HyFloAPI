@@ -61,5 +61,7 @@ public class RolePermission {
     public RolePermission(Role role, Permission permission) {
         this.role = Objects.requireNonNull(role, "Role is required");
         this.permission = Objects.requireNonNull(permission, "Permission is required");
+        if (role.isPlatformRole() != permission.isPlatformPermission())
+            throw new IllegalArgumentException("Role and permission authority differ");
     }
 }

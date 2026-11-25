@@ -1,0 +1,31 @@
+/**
+ *
+ * @Project     : HyFloAPI
+ * @Product     : HyFlo - Hydrocarbon Flow Management Platform
+ * @Author      : OpenAI Codex
+ * @Owner       : SONATRACH / TRC : Digitalization Initiative
+ *
+ * @Name        : CreatePlatformRoleRequest
+ * @CreatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-25-2026
+ *
+ * @Type        : Record
+ * @Layer       : Request
+ * @Module      : Foundation / Identity
+ * @Package     : dz.sh.hyflo.modules.foundation.identity.api.request
+ *
+ * @Description : CreatePlatformRoleRequest for scoped platform administration.
+ */
+
+package dz.sh.hyflo.modules.foundation.identity.api.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public record CreatePlatformRoleRequest(
+        @NotBlank @Pattern(regexp = "[A-Za-z0-9_-]{1,64}") String code,
+        @NotBlank @Size(max = 120) String displayName,
+        @NotNull Boolean platformRole,
+        @NotBlank @Size(max = 255) String reason) {}

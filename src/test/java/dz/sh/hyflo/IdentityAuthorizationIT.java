@@ -132,6 +132,11 @@ class IdentityAuthorizationIT {
         long otherId = createAccount(companies.second());
         String admin = login("authz-admin");
         String other = login("authz-user");
+        assertProblem(get("/v1/platform/roles", null), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/platform/roles", "invalid.jwt"), 401, "AUTHENTICATION_REQUIRED");
+        assertProblem(get("/v1/platform/roles", admin), 403, "ACCESS_DENIED");
+        assertProblem(post("/v1/platform/roles", "{\"code\":\"FORBIDDEN\",\"displayName\":\"Forbidden\","
+                + "\"platformRole\":true,\"reason\":\"synthetic\"}", admin), 403, "ACCESS_DENIED");
         assertProblem(get(permissions(companies.first()), null), 401, "AUTHENTICATION_REQUIRED");
         assertProblem(get(catalog(companies.first()), "invalid.jwt"), 401, "AUTHENTICATION_REQUIRED");
         for (String query : List.of("", "?companyId=0", "?companyId=-1", "?companyId=invalid",

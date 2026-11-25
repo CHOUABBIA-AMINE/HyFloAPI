@@ -40,6 +40,15 @@ import dz.sh.hyflo.modules.foundation.identity.application.service.IdentityBoots
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.PlatformRoleGrant;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.RoleDefinitionEvent;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthorizationScope;
+import java.util.UUID;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnitType;
@@ -292,8 +301,8 @@ class IdentityBootstrapIT {
         assertThat(available.body()).isEqualTo("{\"available\":true}");
         assertThat(available.headers().firstValue("Cache-Control")).contains("no-store");
 
-        String alpha = body("FIRST_ALPHA", "alpha-admin");
-        String beta = body("FIRST_BETA", "beta-admin");
+        String alpha = configuredBody("FIRST_ALPHA", "alpha-admin", "CHOSEN_ALPHA");
+        String beta = configuredBody("FIRST_BETA", "beta-admin", "CHOSEN_BETA");
         for (String secret : List.of("", "bad-base64", WRONG_SECRET)) {
             assertSafe(send(port, "/v1/setup/initialize", alpha, null, secret), 403);
         }
@@ -319,6 +328,21 @@ class IdentityBootstrapIT {
         assertEmptyOrganization();
         assertThat(status(port).body()).isEqualTo("{\"available\":true}");
 
+        assertSafe(send(port, "/v1/setup/initialize",
+                configuredBody("FIRST_ALPHA", "alpha-admin", "IDENTITY_ADMIN"), null, SETUP_SECRET), 400);
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        jdbc.execute("CREATE TRIGGER hyflo_test_platform_failure BEFORE INSERT ON T_10_01_20 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'");
+        try {
+            assertSafe(send(port, "/v1/setup/initialize", alpha, null, SETUP_SECRET), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_platform_failure");
+        }
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertThat(status(port).body()).isEqualTo("{\"available\":true}");
+
         var first = client.sendAsync(request(port, "/v1/setup/initialize", alpha, null, SETUP_SECRET),
                 HttpResponse.BodyHandlers.ofString());
         var second = client.sendAsync(request(port, "/v1/setup/initialize", beta, null, SETUP_SECRET),
@@ -339,7 +363,25 @@ class IdentityBootstrapIT {
         long companyId = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_02_11 WHERE F_08 IS NULL AND F_06 IS NULL", Long.class)).isEqualTo(1L);
         assertThat(codes("T_10_01_01")).containsExactly("LOCAL");
-        assertThat(codes("T_10_01_09")).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
+        assertThat(codes("T_10_01_09")).containsExactlyInAnyOrderElementsOf(
+                java.util.stream.Stream.concat(EXPECTED_PERMISSIONS.stream(),
+                        java.util.stream.Stream.of("platform-role.read", "platform-role.create")).toList());
+        assertThat(count("T_10_01_20")).isEqualTo(1L);
+        assertThat(count("T_10_01_21")).isZero();
+        assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
+                .containsExactly(a.statusCode() == 204 ? "CHOSEN_ALPHA" : "CHOSEN_BETA");
+        assertThat(jdbc.queryForList("SELECT F_02 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
+                .containsExactly("Installer chosen authority");
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var grant = entityManager.createQuery("select g from PlatformRoleGrant g", PlatformRoleGrant.class).getSingleResult();
+            assertThat(grant.getUser().getUsername()).isEqualTo(username);
+            assertThat(grant.getRole().isPlatformRole()).isTrue();
+            assertThat(grant.getGrantedBy().getUsername()).isEqualTo("hyflo-bootstrap");
+            assertThat(grant.getGrantedBy().getUserStatus().getCode()).isEqualTo("DISABLED");
+            assertThat(grant.getCorrelationId()).isNotBlank();
+            assertThat(grant.getReason()).contains("operator=http-test-operator");
+            assertThat(grant.getValidTo()).isNull();
+        });
         assertThat(count("T_10_01_08")).isEqualTo(2L);
         assertThat(count("T_10_01_10")).isEqualTo(1L);
         assertThat(count("T_10_01_15")).isEqualTo(1L);
@@ -367,7 +409,9 @@ class IdentityBootstrapIT {
         String access = JsonPath.read(authenticated.body(), "$.accessToken");
         var permissions = send(port, "/v1/me/permissions?companyId=" + companyId, null, access);
         assertThat(permissions.statusCode()).isEqualTo(200);
-        for (String permission : EXPECTED_PERMISSIONS) assertThat(permissions.body()).contains("\"" + permission + "\"");
+        List<String> companyPermissions = JsonPath.read(permissions.body(), "$.permissionCodes");
+        assertThat(companyPermissions).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
+        assertThat(send(port, "/v1/platform/roles", null, access).statusCode()).isEqualTo(200);
         var openapi = send(port, "/api-docs", null, access);
         assertThat(openapi.statusCode()).isEqualTo(200);
         Map<String, Object> paths = JsonPath.read(openapi.body(), "$.paths");
@@ -386,11 +430,208 @@ class IdentityBootstrapIT {
             int secondPort = restarted.getEnvironment().getRequiredProperty("local.server.port", Integer.class);
             assertThat(status(secondPort).body()).isEqualTo("{\"available\":false}");
             assertSafe(send(secondPort, "/v1/setup/initialize", beta, null, WRONG_SECRET), 409);
-            assertThat(send(secondPort, "/v1/auth/login", login, null).statusCode()).isEqualTo(200);
+            var restartedLogin = send(secondPort, "/v1/auth/login", login, null);
+            assertThat(restartedLogin.statusCode()).isEqualTo(200);
+            String restartedAccess = JsonPath.read(restartedLogin.body(), "$.accessToken");
+            assertThat(send(secondPort, "/v1/platform/roles", null, restartedAccess).statusCode()).isEqualTo(200);
         }
         assertThat(count("T_10_02_11")).isEqualTo(1L);
         assertThat(count("T_10_01_08")).isEqualTo(2L);
         assertThat(count("T_10_01_15")).isEqualTo(1L);
+    }
+
+    @Test
+    void createsRuntimeRoleDefinitionsAndEnforcesIndependentLiveAuthority() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize", body("RUNTIME_COMPANY", "runtime-admin"), null, SETUP_SECRET), 204);
+        long companyId = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long administratorId = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='runtime-admin'", Long.class);
+        long companyRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        long platformRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_04 WHERE F_00=?", String.class, platformRole))
+                .isEqualTo("INITIAL_PLATFORM_ADMIN");
+        long initialGrant = jdbc.queryForObject("SELECT F_00 FROM T_10_01_15", Long.class);
+        String access = loginAccess("runtime-admin");
+        String endpoint = "/v1/platform/roles";
+        assertSafe(send(port, endpoint, null, null), 401);
+        assertSafe(send(port, endpoint, null, "invalid.jwt"), 401);
+        assertSafe(send(port, endpoint + "?afterId=-1", null, access), 400);
+        assertSafe(send(port, endpoint, "{\"code\":\"MISSING_SCOPE\",\"displayName\":\"Role\",\"reason\":\"test\"}", access), 400);
+        assertSafe(send(port, endpoint, roleBody("bad code", true), access), 400);
+
+        var first = send(port, endpoint, roleBody("USER_DEFINED_PLATFORM", true), access);
+        var second = send(port, endpoint, roleBody("USER_DEFINED_COMPANY", false), access);
+        assertSafe(first, 201);
+        assertSafe(second, 201);
+        Number firstRoleId = JsonPath.read(first.body(), "$.id");
+        Number secondRoleId = JsonPath.read(second.body(), "$.id");
+        assertThat((Boolean) JsonPath.read(first.body(), "$.platformRole")).isTrue();
+        assertThat((Boolean) JsonPath.read(second.body(), "$.platformRole")).isFalse();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_14 WHERE F_01 IN (?,?)",
+                Long.class, firstRoleId.longValue(), secondRoleId.longValue())).isZero();
+        assertThat(count("T_10_01_15")).isEqualTo(1L);
+        assertThat(count("T_10_01_20")).isEqualTo(1L);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var evidence = entityManager.createQuery("select e from RoleDefinitionEvent e order by e.id",
+                    RoleDefinitionEvent.class).getResultList();
+            assertThat(evidence).hasSize(2);
+            assertThat(evidence.getFirst().getRoleCode()).isEqualTo("USER_DEFINED_PLATFORM");
+            assertThat(evidence.getFirst().getEventCode()).isEqualTo("CREATED");
+            assertThat(evidence.getFirst().getPerformedBy().getId()).isEqualTo(administratorId);
+            assertThat(evidence.getFirst().getReason()).isEqualTo("synthetic runtime role");
+            assertThat(evidence.getFirst().getCorrelationId()).isNotBlank();
+            assertThat(evidence.getFirst().getOccurredAt()).isNotNull();
+            assertThat(evidence.getFirst().isPlatformRole()).isTrue();
+            assertThat(evidence.getLast().isPlatformRole()).isFalse();
+        });
+        assertSafe(send(port, endpoint, roleBody("USER_DEFINED_PLATFORM", false), access), 409);
+        assertThat(count("T_10_01_21")).isEqualTo(2L);
+        jdbc.execute("CREATE TRIGGER hyflo_test_role_event_failure BEFORE INSERT ON T_10_01_21 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'");
+        try {
+            assertSafe(send(port, endpoint, roleBody("ROLLBACK_ROLE", true), access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_role_event_failure");
+        }
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_04 WHERE F_01='ROLLBACK_ROLE'", Long.class)).isZero();
+        assertThat(count("T_10_01_21")).isEqualTo(2L);
+        var raceA = client.sendAsync(request(port, endpoint, roleBody("RACE_ROLE", false), access),
+                HttpResponse.BodyHandlers.ofString());
+        var raceB = client.sendAsync(request(port, endpoint, roleBody("RACE_ROLE", true), access),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(List.of(raceA.get(60, TimeUnit.SECONDS).statusCode(), raceB.get(60, TimeUnit.SECONDS).statusCode()))
+                .containsExactlyInAnyOrder(201, 409);
+        assertThat(count("T_10_01_21")).isEqualTo(3L);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            for (int i = 0; i < 101; i++) entityManager.persist(new Role("PAGE_ROLE_" + i, "Synthetic page " + i));
+        });
+        var page = send(port, endpoint, null, access);
+        assertSafe(page, 200);
+        List<Number> ids = JsonPath.read(page.body(), "$[*].id");
+        assertThat(ids).hasSize(100);
+        assertThat(ids.stream().map(Number::longValue).toList()).isSorted();
+        var next = send(port, endpoint + "?afterId=" + ids.getLast(), null, access);
+        assertSafe(next, 200);
+        List<Number> remaining = JsonPath.read(next.body(), "$[*].id");
+        assertThat(remaining).isNotEmpty();
+        assertThat(remaining.stream().map(Number::longValue).toList()).isSorted()
+                .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
+        assertThat(send(port, endpoint + "?afterId=" + remaining.getLast(), null, access).body()).isEqualTo("[]");
+        var openapi = send(port, "/api-docs", null, access);
+        Map<String, Object> paths = JsonPath.read(openapi.body(), "$.paths");
+        assertThat(paths.keySet().stream().filter(p -> p.startsWith("/v1/platform")).toList()).containsExactly(endpoint);
+        assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
+        assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
+
+        long companyOnlyId = new TransactionTemplate(transactions).execute(tx -> {
+            User admin = entityManager.find(User.class, administratorId);
+            var pending = entityManager.createQuery("select s from UserStatus s where s.code='PENDING'", UserStatus.class).getSingleResult();
+            var active = entityManager.createQuery("select s from UserStatus s where s.code='ACTIVE'", UserStatus.class).getSingleResult();
+            User companyOnly = new User(admin.getIdentityProvider(), "company-only", "company-only@example.invalid",
+                    null, companyId, pending, admin.getUserType());
+            entityManager.persist(companyOnly);
+            LocalCredential credential = new LocalCredential(companyOnly, passwordEncoder.encode(SYNTHETIC_PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            companyOnly.activate(credential, active);
+            entityManager.persist(new UserRoleGrant(companyOnly, entityManager.find(Role.class, companyRole),
+                    AuthorizationScope.global(companyId), "synthetic fixture", Instant.now().minusSeconds(1), null, admin));
+            return companyOnly.getId();
+        });
+        String companyAccess = loginAccess("company-only");
+        assertSafe(send(port, endpoint, null, companyAccess), 403);
+        assertSafe(send(port, endpoint, roleBody("COMPANY_FORBIDDEN", false), companyAccess), 403);
+        long readPermission = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='platform-role.read'", Long.class);
+        long createPermission = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01='platform-role.create'", Long.class);
+        // Synthetic corruption: the database link alone cannot confer authority.
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", companyRole, readPermission);
+        try {
+            var own = send(port, "/v1/me/permissions?companyId=" + companyId, null, companyAccess);
+            List<String> ownCodes = JsonPath.read(own.body(), "$.permissionCodes");
+            assertThat(ownCodes).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
+            assertSafe(send(port, endpoint, null, companyAccess), 403);
+        } finally {
+            jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", companyRole, readPermission);
+        }
+        long companyOnlyGrant = jdbc.queryForObject("SELECT F_00 FROM T_10_01_15 WHERE F_08=?", Long.class, companyOnlyId);
+        jdbc.update("UPDATE T_10_01_15 SET F_09=? WHERE F_00=?", platformRole, companyOnlyGrant);
+        try {
+            assertSafe(send(port, "/v1/me/permissions?companyId=" + companyId, null, companyAccess), 403);
+            assertSafe(send(port, endpoint, null, companyAccess), 403);
+        } finally {
+            jdbc.update("UPDATE T_10_01_15 SET F_09=? WHERE F_00=?", companyRole, companyOnlyGrant);
+        }
+
+        // All company mutation paths deny a platform-managed target before changing it.
+        assertProtectedTarget(companyId, administratorId, companyRole, initialGrant, companyAccess);
+        String storedHash = jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, administratorId);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", platformRole, createPermission);
+        assertSafe(send(port, endpoint, roleBody("DENIED_CREATE", true), access), 403);
+        assertSafe(send(port, endpoint, null, access), 200);
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", platformRole, createPermission);
+        jdbc.update("UPDATE T_10_01_04 SET F_03=FALSE WHERE F_00=?", platformRole);
+        assertSafe(send(port, endpoint, null, access), 403);
+        jdbc.update("UPDATE T_10_01_04 SET F_03=TRUE WHERE F_00=?", platformRole);
+        jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", platformRole, readPermission);
+        assertSafe(send(port, endpoint, null, access), 403);
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", platformRole, readPermission);
+
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var grant = entityManager.find(UserRoleGrant.class, initialGrant);
+            grant.revoke(Instant.now(), grant.getUser()); // synthetic: isolate the platform-only authority
+        });
+        assertSafe(send(port, "/v1/me/permissions?companyId=" + companyId, null, access), 403);
+        assertSafe(send(port, endpoint, null, access), 200);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var grant = entityManager.createQuery("select g from PlatformRoleGrant g", PlatformRoleGrant.class).getSingleResult();
+            grant.revoke(Instant.now(), grant.getUser(), "synthetic revocation", UUID.randomUUID().toString());
+        });
+        assertSafe(send(port, endpoint, null, access), 403);
+        assertSafe(send(port, endpoint, roleBody("REVOKED_FORBIDDEN", true), access), 403);
+        assertProtectedTarget(companyId, administratorId, companyRole, initialGrant, companyAccess);
+        assertThat(jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, administratorId))
+                .isEqualTo(storedHash);
+        assertThat(count("T_10_01_18")).isZero();
+        assertThat(count("T_10_01_19")).isZero();
+        assertThat(count("T_10_01_21")).isEqualTo(3L);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_20 WHERE F_03 IS NOT NULL AND F_06 IS NOT NULL "
+                + "AND F_07 IS NOT NULL AND F_11 IS NOT NULL", Long.class)).isEqualTo(1L);
+    }
+
+    private void assertProtectedTarget(long companyId, long target, long companyRole, long grantId, String access) throws Exception {
+        String base = "/v1/identity/users/" + target;
+        String selector = "?companyId=" + companyId;
+        String reason = "{\"reason\":\"synthetic boundary probe\"}";
+        for (String operation : List.of("/activate", "/suspend", "/reactivate", "/disable", "/sessions/revoke", "/employee/unlink")) {
+            assertSafe(send(port, base + operation + selector, reason, access), 403);
+        }
+        for (String operation : List.of("/credential/initialize", "/credential/reset")) {
+            assertSafe(send(port, base + operation + selector,
+                    "{\"password\":\"Synthetic-replacement-2026!\",\"reason\":\"synthetic boundary probe\"}", access), 403);
+        }
+        assertSafe(send(port, base + "/employee/link" + selector, "{\"employeeId\":1,\"reason\":\"synthetic\"}", access), 403);
+        assertSafe(send(port, base + "/role-grants" + selector, "{\"roleId\":" + companyRole
+                + ",\"validTo\":\"" + Instant.now().plusSeconds(3600).truncatedTo(java.time.temporal.ChronoUnit.MICROS)
+                + "\",\"reason\":\"synthetic\"}", access), 403);
+        assertSafe(send(port, base + "/role-grants/" + grantId + "/revoke" + selector, "", access), 403);
+    }
+
+    private String loginAccess(String username) throws Exception {
+        var response = send(port, "/v1/auth/login", "{\"username\":\"" + username + "\",\"password\":\""
+                + SYNTHETIC_PASSWORD + "\"}", null);
+        assertThat(response.statusCode()).isEqualTo(200);
+        return JsonPath.read(response.body(), "$.accessToken");
+    }
+
+    private String roleBody(String code, boolean platform) {
+        return "{\"code\":\"" + code + "\",\"displayName\":\"Runtime chosen role\",\"platformRole\":" + platform
+                + ",\"reason\":\"synthetic runtime role\"}";
+    }
+
+    private String configuredBody(String company, String username, String roleCode) {
+        String base = body(company, username);
+        return base.substring(0, base.length() - 1) + ",\"initialPlatformRoleCode\":\"" + roleCode
+                + "\",\"initialPlatformRoleName\":\"Installer chosen authority\"}";
     }
 
     private String body(String code, String username) {
@@ -461,7 +702,7 @@ class IdentityBootstrapIT {
     }
 
     private void assertEmptyIdentity() {
-        for (int index = 1; index <= 19; index++) {
+        for (int index = 1; index <= 21; index++) {
             assertThat(count(String.format("T_10_01_%02d", index))).as("Identity table %02d is empty", index).isZero();
         }
     }

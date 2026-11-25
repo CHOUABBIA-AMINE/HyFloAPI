@@ -84,7 +84,8 @@ public class IdentitySetupController {
         if (headers.hasMoreElements()) return problem(HttpStatus.FORBIDDEN);
         try {
             setup.initialize(secret, request.companyCode(), request.companyNameAr(), request.companyNameFr(),
-                    request.companyNameEn(), request.username(), request.email(), request.password());
+                    request.companyNameEn(), request.username(), request.email(), request.password(),
+                    request.initialPlatformRoleCode(), request.initialPlatformRoleName());
             return ResponseEntity.noContent().header("Cache-Control", "no-store").build();
         } catch (AccessDeniedException denied) {
             return problem(HttpStatus.FORBIDDEN);

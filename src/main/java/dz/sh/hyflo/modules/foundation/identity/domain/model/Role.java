@@ -60,14 +60,25 @@ public class Role {
     @Column(name = "F_03", nullable = false)
     private boolean enabled;
 
+    @Column(name = "F_04", nullable = false, updatable = false)
+    private boolean platformRole;
+
     @Version
     @Column(name = "A_01", nullable = false)
     private Long version;
 
     public Role(String code, String displayName) {
+        this(code, displayName, false);
+    }
+
+    public Role(String code, String displayName, boolean platformRole) {
+        if (code == null || !code.matches("[A-Za-z0-9_-]{1,64}") || displayName == null
+                || displayName.isBlank() || displayName.length() > 120)
+            throw new IllegalArgumentException("Invalid role definition");
         this.code = code;
         this.displayName = displayName;
         this.enabled = true;
+        this.platformRole = platformRole;
     }
 
     public void rename(String displayName) {

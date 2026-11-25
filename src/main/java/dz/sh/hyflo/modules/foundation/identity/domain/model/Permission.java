@@ -77,4 +77,12 @@ public class Permission {
         this.action = Objects.requireNonNull(action, "Action is required");
         this.resourceType = Objects.requireNonNull(resourceType, "Resource type is required");
     }
+    /** Reserve the namespace even when the stored pair or case is malformed. */
+    public boolean isPlatformPermission() {
+        return reserved(code) || (resourceType != null && reserved(resourceType.getCode()));
+    }
+
+    private static boolean reserved(String value) {
+        return value != null && value.regionMatches(true, 0, "platform-", 0, "platform-".length());
+    }
 }

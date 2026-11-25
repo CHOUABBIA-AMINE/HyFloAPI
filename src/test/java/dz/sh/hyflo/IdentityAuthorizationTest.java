@@ -185,6 +185,21 @@ class IdentityAuthorizationTest {
         verifyNoInteractions(grants, links, companies, statuses);
     }
 
+    @Test
+    void excludesInjectedPlatformPermissionsFromCompanyAuthority() {
+        when(grants.findCompanyCandidates(10L, 1L)).thenAnswer(invocation ->
+                List.of(grant(AuthorizationScope.global(1L), decisionTime.get(), null)));
+        RolePermission injected = mock(RolePermission.class);
+        when(injected.getRole()).thenReturn(role);
+        when(injected.getPermission()).thenReturn(new Permission("platform-role.read", "Read",
+                new Action("read", "Read"), new ResourceType("platform-role", "Platform role")));
+        when(links.findForRoles(Set.of(30L))).thenReturn(List.of(injected, link("user.read", "user", "read")));
+        when(companies.isEligibleCompanyUnit(eq(1L), any(LocalDate.class))).thenReturn(true);
+        assertThat(authorization.ownPermissions(principal, 1L).permissionCodes()).containsExactly("user.read");
+        assertThatThrownBy(() -> authorization.requireCompanyPermission(principal, 1L, "platform-role.read"))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
     private UserRoleGrant grant(AuthorizationScope scope, Instant from, Instant to) {
         return new UserRoleGrant(user, role, scope, "synthetic", from, to, user);
     }
