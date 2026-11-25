@@ -23,4 +23,6 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent;
 import org.springframework.data.repository.Repository;
 
 public interface AuthenticationEventRepository extends Repository<AuthenticationEvent, Long> {
+
+    AuthenticationEvent save(AuthenticationEvent entity);
 }

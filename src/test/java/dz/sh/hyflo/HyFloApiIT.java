@@ -721,9 +721,9 @@ class HyFloApiIT {
     void openApiRequiresLocalAuthentication() throws Exception {
         assertThat(get("/api-docs", null).statusCode()).isEqualTo(401);
         assertThat(get("/api-docs", "hyflo-test:wrong-password").statusCode()).isEqualTo(401);
-        var authenticated = get("/api-docs", "hyflo-test:synthetic-test-password");
-        assertThat(authenticated.statusCode()).isEqualTo(200);
-        assertThat(authenticated.body()).contains("\"openapi\"");
+        // The removed in-memory account is no longer an alternate authentication path.
+        // Positive persistent bearer access is verified in IdentityAuthenticationIT.
+        assertThat(get("/api-docs", "hyflo-test:synthetic-test-password").statusCode()).isEqualTo(401);
     }
 
     private HttpResponse<String> get(String path, String credentials) throws Exception {

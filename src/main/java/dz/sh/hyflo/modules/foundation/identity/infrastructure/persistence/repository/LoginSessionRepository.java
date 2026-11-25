@@ -19,8 +19,14 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.Optional;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
 import org.springframework.data.repository.Repository;
 
 public interface LoginSessionRepository extends Repository<LoginSession, Long> {
+
+    LoginSession save(LoginSession entity);
+
+    Optional<LoginSession> findById(Long id);
 }

@@ -23,4 +23,6 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.RefreshToken;
 import org.springframework.data.repository.Repository;
 
 public interface RefreshTokenRepository extends Repository<RefreshToken, Long> {
+
+    RefreshToken save(RefreshToken entity);
 }

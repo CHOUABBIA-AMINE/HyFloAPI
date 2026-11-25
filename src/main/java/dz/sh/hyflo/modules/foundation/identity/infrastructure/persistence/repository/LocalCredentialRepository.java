@@ -19,10 +19,14 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.Optional;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import org.springframework.data.repository.Repository;
 
 public interface LocalCredentialRepository extends Repository<LocalCredential, Long> {
 
     LocalCredential save(LocalCredential entity);
+
+    Optional<LocalCredential> findByUser_Id(long userId);
 }

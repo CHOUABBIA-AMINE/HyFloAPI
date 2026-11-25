@@ -19,6 +19,8 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.Optional;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import org.springframework.data.repository.Repository;
 
@@ -26,4 +28,6 @@ public interface IdentityProviderRepository extends Repository<IdentityProvider,
     long count();
 
     IdentityProvider save(IdentityProvider entity);
+
+    Optional<IdentityProvider> findByCode(String code);
 }

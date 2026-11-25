@@ -19,10 +19,20 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.Optional;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.Repository;
 
 public interface UserRepository extends Repository<User, Long> {
 
     User save(User entity);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.identityProvider.id = :providerId and u.username = :username")
+    Optional<User> findForAuthentication(@Param("providerId") long providerId, @Param("username") String username);
 }
