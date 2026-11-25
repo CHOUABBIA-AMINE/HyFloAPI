@@ -886,3 +886,35 @@ Implementation commit: feat(identity): change own password and revoke sessions
 - `docs/MODULES.md`
 - Delete: none. Roadmap registration separately updates only docs/ROADMAP.md; no domain schema, dependency, seed, new permission or workflow configuration changes.
 - Acceptance: retain 19 unit / 13 real MySQL integration methods; extend IdentityAuthenticationIT existing scenario with actual HTTP anonymous/invalid/weak/over-byte/wrong/same rejection, safe response and evidence, ordinary account without administrative grant, rollback on forced event insertion failure (hash/time/sessions unchanged), concurrent duplicate change exactly one 204/one 401, persisted supported changed hash and attributable event, all old access/refresh denied, unrelated account remains authenticated, old password rejected/new login succeeds, current status/grants unchanged, runtime OpenAPI. Verify new DTO redaction and event attribution in existing unit test. All prior coverage retained; mandatory exact-SHA Java 25/MySQL Build and artifacts, zero failures/errors/skips. Next candidate W16/W17 own-session consultation and selective revocation; not selected.
+
+
+### IDN-10 acceptance — 2026-11-25
+
+Status: COMPLETED — implementation SHA a8eda1dd4c14bbc2335b461136df95ec7c80dcdf, [Build #50 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45632791290), verify job 139270178078 success. Logs: Surefire 19/19, Failsafe 13/13 real MySQL integration methods, zero failures/errors/skips; required test/JaCoCo/SBOM evidence and verified JAR uploads passed. Optional security scan skipped. W18 accepted for current-password verified LOCAL self-service, atomic all-session revocation and security evidence. Original IDN-06 W04/W18/W19 covered within their registered development scopes. Preserve historical inventory and all prior acceptance evidence; no production readiness claim.
+
+## IDN-11 — Own-session consultation and selective revocation (IDN-W16/W17)
+
+Status: IN PROGRESS — owner Next, 2026-11-25; baseline a8eda1dd4c14bbc2335b461136df95ec7c80dcdf, Build #50 success. Next sequential live ID, not the original design IDN-11 profile/search/history package. Original IDN-04 residual W16 and W17; W41 evidence incremental. Dependencies: accepted IDN-02, IDN-04, IDN-07 and IDN-10. One coherent task.
+
+Registration commit: docs(identity): accept password change and register own sessions
+Implementation commit: feat(identity): consult and selectively revoke own sessions
+
+- GET /v1/auth/sessions?afterId=0 returns only the authenticated account's currently active unrevoked sessions, ascending ID, max 100, no totals, ID cursor default 0, no caller account/company selector. Explicit DTO sessionId, startedAt, expiresAt, current; no refresh secrets/digests, IP/device inference, credentials or unrelated account data. Reuse exact SecurityContext principal, current-session ownership/eligibility and temporal revalidation within same read-only REPEATABLE_READ transaction before listing. Snapshot semantics, not promise of live state after response. Invalid cursor 400, invalid current identity 401, failure 503, no-store.
+- POST /v1/auth/sessions/{sessionId}/revoke, no required body, authenticated self-service only, no admin permission or target-account selector. READ_COMMITTED, User lock then current session lock, validate identity before own-account-scoped target lock, recheck live current and target at microsecond decision, revoke exactly another active unrevoked owned session. Current session target, foreign/missing/expired/future/revoked target uniformly 403; invalid ID 400; stale current identity 401; success 204 no-store; failure 503. Use existing LoginSession.revoke; same User lock serializes login/refresh/logout/password change/admin reset/revoke; concurrent duplicate target at most one success. Do not change credentials/status/grants or other sessions. Target's access and refresh denied on subsequent requests; current logout remains existing endpoint.
+- Precise W41 evidence: extend existing AuthenticationEvent T_10_01_12 with nullable immutable same-module LoginSession association named loginSession, F_06, named FK T_10_01_12_FK_03 referencing T_10_01_11.F_00, no cascade. Existing constructors/events remain compatible with null; SESSION_REVOKED requires target session owned by same user and revokedAt equal to event occurredAt, domain-enforced, all other event codes keep null. Actor user/provider, target session, server time and correlation recorded atomically with revocation. No current/actor session reference or general audit history. This is a fresh disposable development schema addition, not migration, no new table or seed. Preserve existing physical identifiers; update schema inventory and MySQL column/FK assertions. Owner-review design choice: explicit target association rather than ambiguous account-only evidence; retain current session and deny selecting it, use logout for current session.
+- Exact create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/response/OwnSessionResponse.java`
+- Exact update:
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/domain/model/AuthenticationEvent.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/application/service/AuthenticationService.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/controller/AuthenticationController.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/api/mapper/AuthenticationMapper.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/identity/infrastructure/persistence/repository/LoginSessionRepository.java`
+- `src/main/java/dz/sh/hyflo/platform/security/IdentitySecurityConfiguration.java`
+- `src/test/java/dz/sh/hyflo/IdentityAuthenticationIT.java`
+- `src/test/java/dz/sh/hyflo/IdentityAuthenticationTest.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+- `docs/ARCHITECTURE.md`
+- `docs/MODULES.md`
+- Delete none. Roadmap registration separately updates only docs/ROADMAP.md. No dependencies, new permission or workflow config.
+- Acceptance: retain 19 unit / 13 real MySQL integration methods. Extend IdentityAuthenticationIT actual HTTP scenario: anonymous and invalid inputs, own active list with current marker and safe exact fields, exclude foreign/expired/future/revoked sessions, 100-row cursor ceiling/order, uniform target rejection including current, event-insert rollback, concurrent duplicate revoke one 204 and one 403, persisted actor/target/time/correlation, target old access/refresh denial, unaffected current and unrelated sessions, runtime OpenAPI and default deny. Extend existing unit event invariant test and HyFloApiIT physical schema/FK proof. Existing acceptance unchanged. Mandatory exact-SHA Build and evidence, zero failures/errors/skips; W16/W17 only accepted after gate. Next candidate W06 company account search; not selected.
