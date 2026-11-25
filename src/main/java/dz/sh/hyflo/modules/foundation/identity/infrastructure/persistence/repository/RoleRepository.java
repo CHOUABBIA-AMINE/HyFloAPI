@@ -19,11 +19,16 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.List;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.Repository;
 
 public interface RoleRepository extends Repository<Role, Long> {
     long count();
 
     Role save(Role entity);
+
+    List<Role> findByIdGreaterThanOrderByIdAsc(long afterId, Pageable page);
 }

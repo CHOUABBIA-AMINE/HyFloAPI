@@ -19,10 +19,19 @@
 
 package dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository;
 
+import java.util.List;
+
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.Repository;
 
 public interface PermissionRepository extends Repository<Permission, Long> {
 
     Permission save(Permission entity);
+
+    @Query("select p from Permission p join fetch p.action join fetch p.resourceType "
+            + "where p.id > :afterId order by p.id")
+    List<Permission> findCatalogPage(@Param("afterId") long afterId, Pageable page);
 }

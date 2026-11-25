@@ -58,7 +58,9 @@ public class IdentitySecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/logout").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions",
-                                "/v1/identity/user-statuses", "/api-docs", "/api-docs/**",
+                                "/v1/identity/user-statuses", "/v1/identity/roles",
+                                "/v1/identity/permissions", "/v1/identity/roles/{roleId}/permissions",
+                                "/api-docs", "/api-docs/**",
                                 "/swagger-ui.html", "/swagger-ui/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/v1/identity/users", "/v1/identity/users/{userId}",
                                 "/v1/identity/users/{userId}/role-grants").authenticated()

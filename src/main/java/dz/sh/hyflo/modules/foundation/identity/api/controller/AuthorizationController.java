@@ -14,7 +14,7 @@
  * @Module      : Modules / Foundation / Identity
  * @Package     : dz.sh.hyflo.modules.foundation.identity.api.controller
  *
- * @Description : Exposes own company permissions and a permission-protected status catalog.
+ * @Description : Exposes own company permissions and permission-protected shared Identity catalogs.
  */
 
 package dz.sh.hyflo.modules.foundation.identity.api.controller;
@@ -35,6 +35,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,6 +67,53 @@ public class AuthorizationController {
             @RequestParam(name = "companyId", required = false) String companyId) {
         return read(companyId, () -> catalogs.userStatuses(principal, parseCompany(companyId)).stream()
                 .map(mapper::toStatus).toList());
+    }
+
+    @GetMapping("/identity/roles")
+    public ResponseEntity<?> roles(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String companyId,
+            @RequestParam(name = "afterId", required = false) String afterId) {
+        return readPage(companyId, afterId, null, () -> catalogs.roles(principal, parseCompany(companyId),
+                parseCursor(afterId)).stream().map(mapper::toRole).toList());
+    }
+
+    @GetMapping("/identity/permissions")
+    public ResponseEntity<?> permissions(@AuthenticationPrincipal CurrentIdentity principal,
+            @RequestParam(name = "companyId", required = false) String companyId,
+            @RequestParam(name = "afterId", required = false) String afterId) {
+        return readPage(companyId, afterId, null, () -> catalogs.permissions(principal, parseCompany(companyId),
+                parseCursor(afterId)).stream().map(mapper::toPermission).toList());
+    }
+
+    @GetMapping("/identity/roles/{roleId}/permissions")
+    public ResponseEntity<?> rolePermissions(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("roleId") String roleId,
+            @RequestParam(name = "companyId", required = false) String companyId,
+            @RequestParam(name = "afterId", required = false) String afterId) {
+        return readPage(companyId, afterId, roleId, () -> catalogs.rolePermissions(principal, parseCompany(companyId),
+                parseCompany(roleId), parseCursor(afterId)).stream().map(mapper::toPermission).toList());
+    }
+
+    private ResponseEntity<?> readPage(String companyId, String afterId, String roleId, Supplier<?> operation) {
+        try {
+            parseCursor(afterId);
+            if (roleId != null) {
+                parseCompany(roleId);
+            }
+        } catch (IllegalArgumentException invalid) {
+            return problem(HttpStatus.BAD_REQUEST);
+        }
+        return read(companyId, operation);
+    }
+
+    private static long parseCursor(String value) {
+        if (value == null) {
+            return 0;
+        }
+        if (!value.matches("[0-9]{1,19}")) {
+            throw new IllegalArgumentException("Invalid catalog cursor");
+        }
+        return Long.parseLong(value);
     }
 
     private ResponseEntity<?> read(String selector, Supplier<?> operation) {

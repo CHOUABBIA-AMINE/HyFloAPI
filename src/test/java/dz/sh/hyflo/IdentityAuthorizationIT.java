@@ -142,8 +142,16 @@ class IdentityAuthorizationIT {
         String denial = detail(get(catalog(companies.first()), other));
         assertProblem(get(catalog(companies.first()), other), 403, "ACCESS_DENIED");
 
+        exerciseDefinitionCatalogs(companies, admin, other);
         var fixture = createGrantFixtures(companies, adminId, otherId);
         exerciseAccountAdministration(companies, adminId, otherId, admin, other, fixture);
+        var malformedCatalog = get("/v1/identity/permissions?companyId=" + companies.first(), admin);
+        assertThat(malformedCatalog.statusCode()).isEqualTo(200);
+        List<Map<String, Object>> definitions = JsonPath.read(malformedCatalog.body(), "$[*]");
+        assertThat(definitions).anySatisfy(definition -> {
+            assertThat(definition.get("code")).isEqualTo("SYNTHETIC.inspect");
+            assertThat(definition.get("validDefinition")).isEqualTo(false);
+        });
         assertCodes(get(permissions(companies.first()), admin), companies.first(), EXPECTED);
         assertCodes(get(permissions(companies.second()), admin), companies.second(), List.of("synthetic.observe", "user.read"));
         assertProblem(get(catalog(companies.second()), admin), 403, "ACCESS_DENIED");
@@ -176,6 +184,8 @@ class IdentityAuthorizationIT {
         try {
             assertProblem(get(permissions(companies.first()), admin), 503, "IDENTITY_UNAVAILABLE");
             assertProblem(get(catalog(companies.first()), admin), 503, "IDENTITY_UNAVAILABLE");
+            assertProblem(get("/v1/identity/roles?companyId=" + companies.first(), admin), 503, "IDENTITY_UNAVAILABLE");
+            assertProblem(get("/v1/identity/permissions?companyId=" + companies.first(), admin), 503, "IDENTITY_UNAVAILABLE");
         } finally {
             jdbc.execute("RENAME TABLE AUTHZ_TEST_ROLE_PERMISSION TO T_10_01_14");
         }
@@ -221,6 +231,89 @@ class IdentityAuthorizationIT {
         assertProblem(get(permissions(companies.second()), other), 401, "AUTHENTICATION_REQUIRED");
     }
 
+
+    private void exerciseDefinitionCatalogs(Companies c, String admin, String other) throws Exception {
+        String first = "?companyId=" + c.first();
+        String rolesPath = "/v1/identity/roles";
+        String permissionsPath = "/v1/identity/permissions";
+        long adminRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_01='IDENTITY_ADMIN'", Long.class);
+        String bundlePath = rolesPath + "/" + adminRole + "/permissions";
+        for (String path : List.of(rolesPath, permissionsPath, bundlePath)) {
+            assertProblem(get(path + first, null), 401, "AUTHENTICATION_REQUIRED");
+            assertProblem(get(path + first, other), 403, "ACCESS_DENIED");
+            assertProblem(get(path + "?companyId=" + c.second(), admin), 403, "ACCESS_DENIED");
+            assertProblem(get(path, admin), 400, "INVALID_REQUEST");
+            for (String cursor : List.of("-1", "x", "9223372036854775808")) {
+                assertProblem(get(path + first + "&afterId=" + cursor, admin), 400, "INVALID_REQUEST");
+            }
+            assertThat(get(path + first + "&afterId=" + Long.MAX_VALUE, admin).body()).isEqualTo("[]");
+        }
+        assertProblem(get(rolesPath + "/0/permissions" + first, admin), 400, "INVALID_REQUEST");
+        assertThat(get(rolesPath + "/" + Long.MAX_VALUE + "/permissions" + first, admin).body()).isEqualTo("[]");
+        var roleResponse = get(rolesPath + first, admin);
+        assertThat(roleResponse.statusCode()).isEqualTo(200);
+        List<Map<String, Object>> roleEntries = JsonPath.read(roleResponse.body(), "$[*]");
+        assertThat(roleEntries).hasSize(1);
+        assertThat(roleEntries.getFirst()).containsOnlyKeys("id", "code", "displayName", "enabled");
+        assertThat(roleEntries.getFirst().get("code")).isEqualTo("IDENTITY_ADMIN");
+        assertThat(roleEntries.getFirst().get("enabled")).isEqualTo(true);
+        assertThat(roleResponse.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+        for (String path : List.of(permissionsPath, bundlePath)) {
+            var response = get(path + first, admin);
+            assertThat(response.statusCode()).isEqualTo(200);
+            List<Map<String, Object>> entries = JsonPath.read(response.body(), "$[*]");
+            assertThat(entries).hasSize(EXPECTED.size()).allSatisfy(entry -> {
+                assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode",
+                        "resourceTypeCode", "validDefinition");
+                assertThat(entry.get("validDefinition")).isEqualTo(true);
+                assertThat(entry.get("code")).isEqualTo(entry.get("resourceTypeCode") + "." + entry.get("actionCode"));
+            });
+            assertThat(entries.stream().map(entry -> (String) entry.get("code")).toList())
+                    .containsExactlyInAnyOrderElementsOf(EXPECTED);
+            List<Number> ids = JsonPath.read(response.body(), "$[*].id");
+            assertThat(ids.stream().map(Number::longValue).toList()).isSorted();
+            assertThat(response.headers().firstValue("Cache-Control").orElse("")).contains("no-store");
+            List<Number> later = JsonPath.read(get(path + first + "&afterId=" + ids.getFirst(), admin).body(), "$[*].id");
+            assertThat(later).containsExactlyElementsOf(ids.subList(1, ids.size()));
+        }
+        // Remove one exact permission at a time; the same JWT must not bypass either gate.
+        for (String code : List.of("role.read", "permission.read")) {
+            long id = jdbc.queryForObject("SELECT F_00 FROM T_10_01_09 WHERE F_01=?", Long.class, code);
+            jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", adminRole, id);
+            try {
+                assertProblem(get((code.equals("role.read") ? rolesPath : permissionsPath) + first, admin),
+                        403, "ACCESS_DENIED");
+                assertThat(get((code.equals("role.read") ? permissionsPath : rolesPath) + first, admin).statusCode())
+                        .isEqualTo(200);
+                assertProblem(get(bundlePath + first, admin), 403, "ACCESS_DENIED");
+            } finally {
+                jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", adminRole, id);
+            }
+        }
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            for (int i = 0; i < 101; i++) {
+                Role definition = new Role("TEST_CATALOG_PAGE_" + i, "Synthetic catalog page " + i);
+                if (i == 0) definition.retire();
+                entityManager.persist(definition);
+            }
+            entityManager.flush();
+        });
+        var firstPage = get(rolesPath + first, admin);
+        assertThat(firstPage.statusCode()).isEqualTo(200);
+        List<Number> firstIds = JsonPath.read(firstPage.body(), "$[*].id");
+        assertThat(firstIds).hasSize(100);
+        assertThat(firstIds.stream().map(Number::longValue).toList()).isSorted();
+        List<Boolean> enabled = JsonPath.read(firstPage.body(), "$[*].enabled");
+        assertThat(enabled).contains(false);
+        var secondPage = get(rolesPath + first + "&afterId=" + firstIds.getLast(), admin);
+        assertThat(secondPage.statusCode()).isEqualTo(200);
+        List<Number> secondIds = JsonPath.read(secondPage.body(), "$[*].id");
+        assertThat(secondIds).hasSize(2).allSatisfy(id ->
+                assertThat(id.longValue()).isGreaterThan(firstIds.getLast().longValue()));
+        assertThat(get("/api-docs", admin).body()).contains(rolesPath, permissionsPath,
+                "/v1/identity/roles/{roleId}/permissions");
+        assertProblem(post(permissionsPath + first, "{}", admin), 403, "ACCESS_DENIED");
+    }
 
     private void exerciseAccountAdministration(Companies c, long adminId, long otherId, String admin, String other,
             GrantFixture fixture) throws Exception {
@@ -649,6 +742,10 @@ class IdentityAuthorizationIT {
         assertThat(ordinary.statusCode()).isEqualTo(201);
         long ordinaryId = ((Number) JsonPath.read(ordinary.body(), "$.id")).longValue();
         assertCodes(get(permissions(c.first()), other), c.first(), List.of("identity-catalog.read", "role.read"));
+        assertThat(get("/v1/identity/roles" + first, other).statusCode()).isEqualTo(200);
+        assertProblem(get("/v1/identity/permissions" + first, other), 403, "ACCESS_DENIED");
+        assertProblem(get("/v1/identity/roles/" + fixture.adminRole() + "/permissions" + first, other),
+                403, "ACCESS_DENIED");
         assertCodes(get(permissions(c.second()), other), c.second(), List.of("synthetic.observe", "user.read"));
         var page = get(foreign + first, admin);
         assertThat(page.statusCode()).isEqualTo(200);
@@ -694,7 +791,9 @@ class IdentityAuthorizationIT {
         assertThat(post(childPath + "/" + childGrantId + "/revoke" + first, "", admin).statusCode()).isEqualTo(204);
         assertThat(get("/api-docs", admin).body()).contains("/v1/identity/users/{userId}/role-grants",
                 "/v1/identity/users/{userId}/role-grants/{grantId}/revoke");
-        assertProblem(get("/v1/identity/roles" + first, admin), 403, "ACCESS_DENIED");
+        assertThat(get("/v1/identity/roles" + first, admin).statusCode()).isEqualTo(200);
+        assertProblem(get("/v1/identity/roles" + first, other), 403, "ACCESS_DENIED");
+        assertProblem(post("/v1/identity/roles" + first, "{}", admin), 403, "ACCESS_DENIED");
     }
 
     private static String grantBody(long roleId, Instant end) {
