@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import dz.sh.hyflo.bootstrap.IdentityBootstrapCommand;
+import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.organization.domain.model.OrganizationUnit;
@@ -41,10 +42,12 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -60,6 +63,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Testcontainers
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class IdentityBootstrapIT {
 
     private static final String[] COMMAND = {IdentityBootstrapCommand.FLAG};
@@ -100,7 +104,10 @@ class IdentityBootstrapIT {
     IdentityBootstrapCommand command;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    IdentityPasswordEncoder passwordEncoder;
+
+    @Autowired
+    ApplicationContext applicationContext;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -113,6 +120,7 @@ class IdentityBootstrapIT {
 
     @Test
     void initializesExactlyOnceWithCompanyScopeAndAtomicRollback() throws Exception {
+        assertThat(applicationContext.getBeansOfType(PasswordEncoder.class)).isEmpty();
         assertEmptyIdentity();
         Fixture fixture = createOrganizationFixture();
         Map<String, String> alpha = configuration(fixture.companyId(), "alpha-admin", "operator-alpha");

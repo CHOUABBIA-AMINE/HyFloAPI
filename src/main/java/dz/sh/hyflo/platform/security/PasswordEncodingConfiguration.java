@@ -14,7 +14,7 @@
  * @Module      : Platform / Security
  * @Package     : dz.sh.hyflo.platform.security
  *
- * @Description : Provides the shared password encoder for local Identity credentials.
+ * @Description : Provides explicit persistent Identity credential encoding without changing temporary HTTP authentication.
  */
 
 package dz.sh.hyflo.platform.security;
@@ -28,7 +28,25 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class PasswordEncodingConfiguration {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    public IdentityPasswordEncoder identityPasswordEncoder() {
+        return new IdentityPasswordEncoder();
+    }
+
+    /**
+     * Deliberately not a Spring Security PasswordEncoder bean: the temporary
+     * in-memory HTTP authentication must retain its existing configuration.
+     * The persistent Identity workflow explicitly selects this encoder.
+     */
+    public static final class IdentityPasswordEncoder {
+
+        private final PasswordEncoder delegate = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+        public String encode(CharSequence rawPassword) {
+            return delegate.encode(rawPassword);
+        }
+
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            return delegate.matches(rawPassword, encodedPassword);
+        }
     }
 }

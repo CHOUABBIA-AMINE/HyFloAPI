@@ -54,7 +54,7 @@ import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.reposi
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.UserTypeRepository;
 import dz.sh.hyflo.modules.foundation.organization.application.service.OrganizationUnitScopeService;
 import jakarta.validation.Validator;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,7 +95,7 @@ public class IdentityBootstrapService {
     private final RolePermissionRepository rolePermissions;
     private final UserRoleGrantRepository grants;
     private final OrganizationUnitScopeService organizationScopes;
-    private final PasswordEncoder passwordEncoder;
+    private final IdentityPasswordEncoder passwordEncoder;
     private final Validator validator;
 
     public IdentityBootstrapService(
@@ -112,7 +112,7 @@ public class IdentityBootstrapService {
             RolePermissionRepository rolePermissions,
             UserRoleGrantRepository grants,
             OrganizationUnitScopeService organizationScopes,
-            PasswordEncoder passwordEncoder,
+            IdentityPasswordEncoder passwordEncoder,
             Validator validator) {
         this.providers = providers;
         this.statuses = statuses;
