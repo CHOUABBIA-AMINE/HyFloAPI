@@ -1952,7 +1952,10 @@ class IdentityBootstrapIT {
             var resource = new ResourceType("inherit-probe", "Synthetic inheritance probe");
             entityManager.persist(resource);
             var unsupported = new Permission("inherit-probe.inherit-probe", "Unsupported", action, resource);
-            var malformed = new Permission("wrong-inherit.inherit-probe", "Malformed", action, resource);
+            // Each permission must retain a distinct persisted action/resource pair (UK_02).
+            var malformedResource = new ResourceType("malformed-inherit-probe", "Synthetic malformed inheritance probe");
+            entityManager.persist(malformedResource);
+            var malformed = new Permission("wrong-inherit.inherit-probe", "Malformed", action, malformedResource);
             entityManager.persist(unsupported);
             entityManager.persist(malformed);
             var inheritedRole = entityManager.find(Role.class, role);
