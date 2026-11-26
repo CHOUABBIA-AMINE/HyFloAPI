@@ -383,7 +383,8 @@ class IdentityBootstrapIT {
                         "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
                         "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke",
                         "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke",
-                        "platform-security-history.read")).toList());
+                        "platform-security-history.read", "platform-user.suspend", "platform-user.reactivate",
+                        "platform-user.disable", "platform-credential.reset", "platform-login-session.revoke")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -651,7 +652,8 @@ class IdentityBootstrapIT {
                         "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
                         "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke",
                         "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke",
-                        "platform-security-history.read");
+                        "platform-security-history.read", "platform-user.suspend", "platform-user.reactivate",
+                        "platform-user.disable", "platform-credential.reset", "platform-login-session.revoke");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -667,7 +669,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v7");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v8");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -824,7 +826,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(41L); // forty supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(46L); // forty-five supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -895,7 +897,7 @@ class IdentityBootstrapIT {
         var initial = send(port, catalog, null, access);
         assertSafe(initial, 200);
         List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
-        assertThat(definitions).hasSize(40).allSatisfy(entry -> {
+        assertThat(definitions).hasSize(45).allSatisfy(entry -> {
             assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
                     "platformPermission", "supported");
             assertThat(entry.get("supported")).isEqualTo(true);
@@ -935,7 +937,7 @@ class IdentityBootstrapIT {
         var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
         assertSafe(tail, 200);
         List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
-        assertThat(tailIds).hasSize(43);
+        assertThat(tailIds).hasSize(48);
         assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
                 .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
         assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
@@ -1764,6 +1766,205 @@ class IdentityBootstrapIT {
             assertThat(((Map<?,?>)apiPaths.get(path)).keySet().stream().map(Object::toString).toList()).containsExactly("post");
         assertSafe(send(port, "/v1/auth/logout", "", survivorAccess), 204);
         assertSafe(send(port, roles + "/" + endedRole + "/retire", reason, survivorAccess), 401);
+    }
+
+
+    @Test
+    void managesProtectedPlatformAccountsWithContinuityAndBoundedReset() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFECYCLE_COMPANY", "life-admin",
+                "LIFE_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='life-admin'", Long.class);
+        long reserved = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        long initial = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        long companyRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        String access = loginAccess("life-admin");
+        String reason = "{\"reason\":\"synthetic protected lifecycle\"}";
+        String replacement = "Synthetic-replacement-2026!";
+        String reset = "{\"password\":\"" + replacement + "\",\"reason\":\"synthetic protected lifecycle\"}";
+        long second = createCompositionUser(admin, company, "life-second");
+        long partial = createCompositionUser(admin, company, "life-partial");
+        long ordinary = createCompositionUser(admin, company, "life-ordinary");
+        long finite = createCompositionUser(admin, company, "life-finite");
+        long historical = createCompositionUser(admin, company, "life-history");
+        long limited = createRuntimeRole("LIFE_LIMITED", true, access);
+        long onlySuspend = createRuntimeRole("LIFE_SUSPEND", true, access);
+        long resetOnly = createRuntimeRole("LIFE_RESET", true, access);
+        long futureRole = createRuntimeRole("LIFE_FUTURE", true, access);
+        assertSafe(send(port, changePath(limited, permissionId("platform-role.read"), true), reason, access), 204);
+        assertSafe(send(port, changePath(onlySuspend, permissionId("platform-user.suspend"), true), reason, access), 204);
+        assertSafe(send(port, changePath(resetOnly, permissionId("platform-credential.reset"), true), reason, access), 204);
+        assertSafe(send(port, changePath(futureRole, permissionId("platform-role.create"), true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(partial), platformGrantBody(onlySuspend), access), 201);
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        platformFixtureGrant(admin, finite, onlySuspend, now.minusSeconds(60), now.plusSeconds(3600));
+        platformFixtureGrant(admin, historical, limited, now.minusSeconds(7200), now.minusSeconds(3600));
+        String partialAccess = loginAccess("life-partial");
+        String ordinaryAccess = loginAccess("life-ordinary");
+        String finiteAccess = loginAccess("life-finite");
+        String adminPath = protectedPath(admin);
+        String secondPath = protectedPath(second);
+        String historyPath = protectedPath(historical);
+        assertSafe(send(port, adminPath + "/suspend", reason, partialAccess), 409);
+        assertSafe(send(port, adminPath + "/suspend", reason, finiteAccess), 403);
+        assertSafe(send(port, adminPath + "/suspend", reason, ordinaryAccess), 403);
+        assertSafe(send(port, adminPath + "/suspend", reason, access), 403);
+        assertSafe(send(port, protectedPath(reserved) + "/suspend", reason, access), 403);
+        assertSafe(send(port, protectedPath(ordinary) + "/suspend", reason, access), 403);
+        assertSafe(send(port, protectedPath(Long.MAX_VALUE) + "/suspend", reason, ordinaryAccess), 403);
+        assertSafe(send(port, protectedPath(Long.MAX_VALUE) + "/suspend", reason, access), 403);
+        for (String op : List.of("/suspend", "/reactivate", "/disable", "/credential/reset", "/sessions/revoke")) {
+            String body = op.equals("/credential/reset") ? reset : reason;
+            assertSafe(send(port, historyPath + op, body, null), 401);
+            assertSafe(send(port, historyPath + op, body, "invalid.jwt"), 401);
+            assertSafe(send(port, historyPath + op, body, ordinaryAccess), 403);
+            assertSafe(send(port, historyPath + op, "{}", access), 400);
+            assertSafe(send(port, historyPath + op, null, access), 403);
+        }
+        assertSafe(send(port, historyPath + "/reactivate", reason, partialAccess), 403);
+        assertSafe(send(port, historyPath + "/disable", reason, partialAccess), 403);
+        assertSafe(send(port, historyPath + "/credential/reset", reset, partialAccess), 403);
+        assertSafe(send(port, historyPath + "/sessions/revoke", reason, partialAccess), 403);
+        assertSafe(send(port, "/v1/identity/users/" + historical + "/suspend?companyId=" + company, reason, access), 403);
+        assertSafe(send(port, historyPath + "/reactivate", reason, access), 409);
+
+        // A second complete administrator can administer a peer but cannot reset a uniquely privileged company account.
+        assertSafe(send(port, platformGrantPath(second), platformGrantBody(initial), access), 201);
+        String secondAccess = loginAccess("life-second");
+        assertSafe(send(port, adminPath + "/credential/reset", reset, secondAccess), 403);
+        long future = platformFixtureGrant(admin, second, futureRole, now.plusSeconds(3600), null);
+        assertSafe(send(port, secondPath + "/credential/reset", reset, access), 403);
+        assertSafe(send(port, platformGrantPath(second) + "/" + future + "/revoke", reason, access), 204);
+        // Company grant coverage is exact role and scope, not just a platform administrator label.
+        addCompanyFixtureGrant(admin, second, companyRole, company, now.minusSeconds(60), null);
+        long foreign = addCompanyFixtureGrant(admin, second, companyRole, company + 99999, now.plusSeconds(3600), null);
+        assertSafe(send(port, secondPath + "/credential/reset", reset, access), 403);
+        jdbc.update("UPDATE T_10_01_15 SET F_03=?,F_11=? WHERE F_00=?", java.sql.Timestamp.from(Instant.now()), admin, foreign);
+        long resourceGrant = new TransactionTemplate(transactions).execute(tx -> {
+            var grant = new UserRoleGrant(entityManager.find(User.class, second), entityManager.find(Role.class, companyRole),
+                    AuthorizationScope.pipeline(company, 1L), "synthetic resource grant", now.plusSeconds(3600),
+                    null, entityManager.find(User.class, admin));
+            entityManager.persist(grant);
+            return grant.getId();
+        });
+        assertSafe(send(port, secondPath + "/credential/reset", reset, access), 403);
+        jdbc.update("UPDATE T_10_01_15 SET F_03=?,F_11=? WHERE F_00=?", java.sql.Timestamp.from(Instant.now()), admin, resourceGrant);
+        long resetActor = createCompositionUser(admin, company, "life-resetter");
+        assertSafe(send(port, platformGrantPath(resetActor), platformGrantBody(resetOnly), access), 201);
+        assertSafe(send(port, secondPath + "/credential/reset", reset, loginAccess("life-resetter")), 403);
+        assertSafe(send(port, secondPath + "/credential/reset",
+                "{\"password\":\"short\",\"reason\":\"synthetic\"}", access), 400);
+        assertSafe(send(port, secondPath + "/credential/reset",
+                "{\"password\":\"" + SYNTHETIC_PASSWORD + "\",\"reason\":\"synthetic\"}", access), 409);
+        assertSafe(send(port, secondPath + "/credential/reset",
+                "{\"password\":\"" + replacement + "\",\"reason\":\"" + replacement + "\"}", access), 400);
+
+        var grantRows = jdbc.queryForList("SELECT * FROM T_10_01_20 ORDER BY F_00");
+        var companyRows = jdbc.queryForList("SELECT * FROM T_10_01_15 ORDER BY F_00");
+        var roleRows = jdbc.queryForList("SELECT * FROM T_10_01_14 ORDER BY F_00");
+        long initialEvents = count("T_10_01_18");
+        var credential = jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", second);
+        var oldSessions = jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=? ORDER BY F_00", second);
+        for (String table : List.of("T_10_01_10", "T_10_01_11", "T_10_01_18")) {
+            jdbc.execute("CREATE TRIGGER hyflo_test_platform_lifecycle_failure BEFORE "
+                    + (table.equals("T_10_01_18") ? "INSERT" : "UPDATE") + " ON " + table
+                    + " FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+            try {
+                assertSafe(send(port, secondPath + "/credential/reset", reset, access), 503);
+            } finally {
+                jdbc.execute("DROP TRIGGER hyflo_test_platform_lifecycle_failure");
+            }
+            assertThat(jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", second)).isEqualTo(credential);
+            assertThat(jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=? ORDER BY F_00", second)).isEqualTo(oldSessions);
+            assertThat(count("T_10_01_18")).isEqualTo(initialEvents);
+            assertSafe(send(port, "/v1/me", null, secondAccess), 200);
+        }
+        var oldLogin = send(port, "/v1/auth/login", "{\"username\":\"life-second\",\"password\":\"" + SYNTHETIC_PASSWORD + "\"}", null);
+        assertThat(oldLogin.statusCode()).isEqualTo(200);
+        String refresh = JsonPath.read(oldLogin.body(), "$.refreshToken");
+        var resetResult = send(port, secondPath + "/credential/reset", reset, access);
+        assertSafe(resetResult, 204);
+        assertThat(resetResult.body()).doesNotContain(replacement);
+        assertSafe(send(port, "/v1/me", null, secondAccess), 401);
+        assertSafe(send(port, "/v1/auth/refresh", "{\"refreshToken\":\"" + refresh + "\"}", null), 401);
+        assertSafe(send(port, "/v1/auth/login", "{\"username\":\"life-second\",\"password\":\"" + SYNTHETIC_PASSWORD + "\"}", null), 401);
+        var newLogin = send(port, "/v1/auth/login", "{\"username\":\"life-second\",\"password\":\"" + replacement + "\"}", null);
+        assertThat(newLogin.statusCode()).isEqualTo(200);
+        String newAccess = JsonPath.read(newLogin.body(), "$.accessToken");
+        assertThat(passwordEncoder.matches(replacement, jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, second))).isTrue();
+        assertSafe(send(port, "/v1/platform/roles", null, newAccess), 200);
+        assertSafe(send(port, secondPath + "/sessions/revoke", reason, access), 204);
+        assertSafe(send(port, "/v1/me", null, newAccess), 401);
+        assertSafe(send(port, secondPath + "/sessions/revoke", reason, access), 409);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_platform_lifecycle_failure BEFORE UPDATE ON T_10_01_08 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, secondPath + "/suspend", reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_platform_lifecycle_failure");
+        }
+        assertThat(count("T_10_01_18")).isEqualTo(initialEvents + 2);
+        var suspended = send(port, secondPath + "/suspend", reason, access);
+        assertSafe(suspended, 200);
+        assertThat((String)JsonPath.read(suspended.body(), "$.userStatusCode")).isEqualTo("SUSPENDED");
+        assertSafe(send(port, secondPath + "/suspend", reason, access), 409);
+        assertSafe(send(port, adminPath + "/suspend", reason, partialAccess), 409);
+        assertSafe(send(port, "/v1/auth/login", "{\"username\":\"life-second\",\"password\":\"" + replacement + "\"}", null), 401);
+        String supportedHash = jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, second);
+        jdbc.update("UPDATE T_10_01_10 SET F_01='unsupported-synthetic-hash' WHERE F_03=?", second);
+        assertSafe(send(port, secondPath + "/reactivate", reason, access), 409);
+        jdbc.update("UPDATE T_10_01_10 SET F_01=? WHERE F_03=?", supportedHash, second);
+        var reactivated = send(port, secondPath + "/reactivate", reason, access);
+        assertSafe(reactivated, 200);
+        assertThat((String)JsonPath.read(reactivated.body(), "$.userStatusCode")).isEqualTo("ACTIVE");
+        assertSafe(send(port, "/v1/me", null, newAccess), 401);
+        assertSafe(send(port, historyPath + "/disable", reason, access), 200);
+        assertSafe(send(port, historyPath + "/reactivate", reason, access), 409);
+        assertSafe(send(port, historyPath + "/credential/reset", reset, access), 409);
+
+        // Competing suspensions by a partial operator cannot remove both complete administrators.
+        var a = client.sendAsync(request(port, adminPath + "/suspend", reason, partialAccess), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, secondPath + "/suspend", reason, partialAccess), HttpResponse.BodyHandlers.ofString());
+        assertThat(List.of(a.get(60, TimeUnit.SECONDS).statusCode(), b.get(60, TimeUnit.SECONDS).statusCode()))
+                .containsExactlyInAnyOrder(200, 409);
+        String survivorAccess;
+        if ("ACTIVE".equals(jdbc.queryForObject("SELECT s.F_01 FROM T_10_01_08 u JOIN T_10_01_02 s ON s.F_00=u.F_07 WHERE u.F_00=?", String.class, admin))) {
+            survivorAccess = access;
+        } else {
+            var survivorLogin = send(port, "/v1/auth/login", "{\"username\":\"life-second\",\"password\":\"" + replacement + "\"}", null);
+            assertThat(survivorLogin.statusCode()).isEqualTo(200);
+            survivorAccess = JsonPath.read(survivorLogin.body(), "$.accessToken");
+        }
+        assertSafe(send(port, "/v1/platform/roles", null, survivorAccess), 200);
+        assertThat(jdbc.queryForList("SELECT * FROM T_10_01_20 ORDER BY F_00")).isEqualTo(grantRows);
+        assertThat(jdbc.queryForList("SELECT * FROM T_10_01_15 ORDER BY F_00")).isEqualTo(companyRows);
+        assertThat(jdbc.queryForList("SELECT * FROM T_10_01_14 ORDER BY F_00")).isEqualTo(roleRows);
+        assertThat(count("T_10_01_18")).isEqualTo(initialEvents + 6);
+        var history = send(port, "/v1/identity/security-history/account-lifecycle?companyId=" + company, null, survivorAccess);
+        assertSafe(history, 200);
+        assertThat(history.body()).contains("CREDENTIAL_RESET", "SESSIONS_REVOKED", "SUSPENDED", "REACTIVATED", "DISABLED")
+                .doesNotContain(replacement, "passwordHash");
+        assertThat(jdbc.queryForList("SELECT F_09 FROM T_10_01_18 WHERE F_01='CREDENTIAL_RESET'", Long.class)).containsExactly(admin);
+        assertThat(jdbc.queryForList("SELECT F_04 FROM T_10_01_18", String.class)).containsOnly("synthetic protected lifecycle");
+        Map<String,Object> paths = JsonPath.read(send(port, "/api-docs", null, survivorAccess).body(), "$.paths");
+        for (String op : List.of("/suspend", "/reactivate", "/disable", "/credential/reset", "/sessions/revoke")) {
+            var path = (Map<?,?>) paths.get("/v1/identity/users/{userId}/platform-account" + op);
+            assertThat(path.keySet().stream().map(Object::toString).toList()).containsExactly("post");
+            assertThat(path.toString()).contains(op.equals("/credential/reset") ? "LocalCredentialRequest" : "UserLifecycleRequest")
+                    .doesNotContain("companyId");
+            var operation = (Map<?,?>)path.get("post");
+            var responses = (Map<?,?>)operation.get("responses");
+            if (op.equals("/credential/reset") || op.equals("/sessions/revoke")) {
+                assertThat(responses.get("204")).isNotNull();
+            } else {
+                assertThat(responses.get("200").toString()).contains("UserAccountResponse");
+            }
+        }
+    }
+
+    private static String protectedPath(long userId) {
+        return "/v1/identity/users/" + userId + "/platform-account";
     }
 
     private static String platformGrantPath(long user) {

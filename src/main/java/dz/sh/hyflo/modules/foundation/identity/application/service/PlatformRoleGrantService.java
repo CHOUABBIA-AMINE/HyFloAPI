@@ -7,7 +7,7 @@
  *
  * @Name        : PlatformRoleGrantService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -119,7 +119,11 @@ public class PlatformRoleGrantService {
 
     // Called only under the existing exclusive LOCAL provider gate.
     boolean hasDurableAdministrator(Instant now, Long excludedGrantId, Long roleId, Long permissionId) {
-        return grants.findDurableCandidateUsers(now).stream().anyMatch(id ->
+        return hasDurableAdministrator(now, excludedGrantId, roleId, permissionId, null);
+    }
+
+    boolean hasDurableAdministrator(Instant now, Long excludedGrantId, Long roleId, Long permissionId, Long excludedUserId) {
+        return grants.findDurableCandidateUsers(now).stream().filter(id -> !java.util.Objects.equals(id, excludedUserId)).anyMatch(id ->
                 hasSupportedCredential(id)
                 && authorization.durablePermissions(id, now, excludedGrantId, roleId, permissionId)
                         .containsAll(PlatformAuthorizationService.implementedPermissions()));

@@ -30,6 +30,11 @@ public interface UserRoleGrantRepository extends Repository<UserRoleGrant, Long>
 
     UserRoleGrant save(UserRoleGrant entity);
 
+    @Query("select g from UserRoleGrant g join fetch g.role where g.user.id = :userId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now) order by g.id")
+    List<UserRoleGrant> findNonEndedForAccount(@Param("userId") long userId, @Param("now") java.time.Instant now,
+            org.springframework.data.domain.Pageable page);
+
     @Query("select g from UserRoleGrant g join fetch g.role join fetch g.user "
             + "where g.user.id = :userId and g.authorizationScope.organizationUnitId = :companyId")
     List<UserRoleGrant> findCompanyCandidates(@Param("userId") long userId, @Param("companyId") long companyId);

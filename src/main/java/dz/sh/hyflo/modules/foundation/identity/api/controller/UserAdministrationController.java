@@ -37,6 +37,10 @@ import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthen
 import dz.sh.hyflo.modules.foundation.identity.application.service.UserAdministrationService;
 import dz.sh.hyflo.modules.foundation.identity.application.service.UserAdministrationService.AccountOperationRejected;
 import dz.sh.hyflo.platform.exception.AuthenticationProblems;
+import dz.sh.hyflo.modules.foundation.identity.api.response.UserAccountResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -230,6 +234,50 @@ public class UserAdministrationController {
             @Valid @RequestBody UserLifecycleRequest request) {
         return execute(HttpStatus.NO_CONTENT, correlation -> {
             platformGrants.revoke(principal, positive(userId), positive(grantId), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UserAccountResponse.class)))
+    @PostMapping(path = "/{userId}/platform-account/suspend", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> suspendPlatformAccount(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.OK, correlation -> mapper.toResponse(accounts.transitionPlatformAccount(principal,
+                positive(userId), "suspend", request.reason(), correlation)), false);
+    }
+
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UserAccountResponse.class)))
+    @PostMapping(path = "/{userId}/platform-account/reactivate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> reactivatePlatformAccount(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.OK, correlation -> mapper.toResponse(accounts.transitionPlatformAccount(principal,
+                positive(userId), "reactivate", request.reason(), correlation)), false);
+    }
+
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = UserAccountResponse.class)))
+    @PostMapping(path = "/{userId}/platform-account/disable", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> disablePlatformAccount(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.OK, correlation -> mapper.toResponse(accounts.transitionPlatformAccount(principal,
+                positive(userId), "disable", request.reason(), correlation)), false);
+    }
+
+    @ApiResponse(responseCode = "204", description = "Operation completed", content = @Content)
+    @PostMapping(path = "/{userId}/platform-account/credential/reset", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> resetPlatformCredential(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @Valid @RequestBody LocalCredentialRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.resetPlatformCredential(principal, positive(userId), request.password(), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
+    @ApiResponse(responseCode = "204", description = "Operation completed", content = @Content)
+    @PostMapping(path = "/{userId}/platform-account/sessions/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> revokePlatformAccountSessions(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            accounts.revokePlatformAccountSessions(principal, positive(userId), request.reason(), correlation);
             return null;
         }, false);
     }

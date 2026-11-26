@@ -96,6 +96,11 @@ public class IdentitySecurityConfiguration {
                                 "/v1/identity/users/{userId}/role-grants/{grantId}/revoke",
                                 "/v1/identity/users/{userId}/platform-role-grants",
                                 "/v1/identity/users/{userId}/platform-role-grants/{grantId}/revoke",
+                                "/v1/identity/users/{userId}/platform-account/suspend",
+                                "/v1/identity/users/{userId}/platform-account/reactivate",
+                                "/v1/identity/users/{userId}/platform-account/disable",
+                                "/v1/identity/users/{userId}/platform-account/credential/reset",
+                                "/v1/identity/users/{userId}/platform-account/sessions/revoke",
                                 "/v1/identity/users/{userId}/employee/link", "/v1/identity/users/{userId}/employee/unlink").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new BearerAuthenticationFilter(tokens, sessions), AnonymousAuthenticationFilter.class)

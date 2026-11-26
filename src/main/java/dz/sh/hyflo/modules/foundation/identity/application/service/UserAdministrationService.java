@@ -7,7 +7,7 @@
  *
  * @Name        : UserAdministrationService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -51,6 +51,8 @@ public class UserAdministrationService {
     private final IdentityProviderRepository providers;
     private final UserRoleGrantRepository grants;
     private final PlatformRoleGrantRepository platformGrants;
+    private final PlatformAuthorizationService platformAuthorization;
+    private final PlatformRoleGrantService platformGrantService;
     private final RolePermissionRepository permissions;
     private final OrganizationUnitScopeService companies;
     private final UserStatusRepository statuses;
@@ -66,13 +68,16 @@ public class UserAdministrationService {
             RolePermissionRepository permissions, OrganizationUnitScopeService companies, UserStatusRepository statuses,
             UserTypeRepository types, LocalCredentialRepository credentials, UserLifecycleEventService events,
             IdentityPasswordEncoder encoder, EmployeeAssignmentService employeeAssignments,
-            UserEmployeeAssociationEventService employeeEvents, PlatformRoleGrantRepository platformGrants) {
+            UserEmployeeAssociationEventService employeeEvents, PlatformRoleGrantRepository platformGrants,
+            PlatformAuthorizationService platformAuthorization, PlatformRoleGrantService platformGrantService) {
         this.authorization = authorization;
         this.users = users;
         this.sessions = sessions;
         this.providers = providers;
         this.grants = grants;
         this.platformGrants = platformGrants;
+        this.platformAuthorization = platformAuthorization;
+        this.platformGrantService = platformGrantService;
         this.permissions = permissions;
         this.companies = companies;
         this.statuses = statuses;
@@ -337,6 +342,171 @@ public class UserAdministrationService {
         live.forEach(session -> session.revoke(now));
         actor = lockAuthority(principal, companyId, permission);
         events.record(UserLifecycleEvent.SESSIONS_REVOKED, now, correlation, reason, previous, target, actor);
+    }
+
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Account transitionPlatformAccount(CurrentIdentity principal, long userId, String operation,
+            String reason, String correlation) {
+        String permission = switch (operation) {
+            case "suspend" -> PlatformAuthorizationService.ACCOUNT_SUSPEND;
+            case "reactivate" -> PlatformAuthorizationService.ACCOUNT_REACTIVATE;
+            case "disable" -> PlatformAuthorizationService.ACCOUNT_DISABLE;
+            default -> throw new IllegalArgumentException("Unknown operation");
+        };
+        User actor = lockPlatformAuthority(principal, permission);
+        User target = lockProtectedAccount(actor, userId);
+        validatePlatformReason(reason);
+        String previous = target.getUserStatus().getCode();
+        boolean active = UserStatus.ACTIVE_CODE.equals(previous);
+        boolean suspended = UserStatus.SUSPENDED_CODE.equals(previous);
+        if (operation.equals("suspend") && !active || operation.equals("reactivate") && !suspended
+                || operation.equals("disable") && !(active || suspended)) throw rejected();
+        LocalCredential credential = operation.equals("reactivate")
+                ? credentials.findByUser_Id(userId).filter(c -> LocalCredential.supportsPasswordHash(c.getPasswordHash()))
+                        .orElseThrow(UserAdministrationService::rejected) : null;
+        var next = status(switch (operation) {
+            case "suspend" -> UserStatus.SUSPENDED_CODE;
+            case "reactivate" -> UserStatus.ACTIVE_CODE;
+            default -> UserStatus.DISABLED_CODE;
+        });
+        List<LoginSession> revocations = operation.equals("reactivate") ? List.of() : sessions.findUnrevokedForUpdate(userId);
+        actor = lockPlatformAuthority(principal, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        requirePlatformContinuity(now, operation.equals("reactivate") ? null : userId);
+        String event = switch (operation) {
+            case "suspend" -> { target.suspend(next); yield UserLifecycleEvent.SUSPENDED; }
+            case "reactivate" -> { target.activate(credential, next); yield UserLifecycleEvent.REACTIVATED; }
+            default -> { target.disable(next); yield UserLifecycleEvent.DISABLED; }
+        };
+        revokeLockedSessions(revocations, now);
+        actor = lockPlatformAuthority(principal, permission);
+        events.record(event, now, correlation, reason, previous, target, actor);
+        return account(target);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void resetPlatformCredential(CurrentIdentity principal, long userId, String password,
+            String reason, String correlation) {
+        String permission = PlatformAuthorizationService.ACCOUNT_RESET;
+        User actor = lockPlatformAuthority(principal, permission);
+        User target = lockProtectedAccount(actor, userId);
+        validatePlatformReason(reason);
+        if (password == null || password.isBlank() || password.codePointCount(0, password.length()) < 15
+                || password.getBytes(StandardCharsets.UTF_8).length > 72 || reason.contains(password))
+            throw new IllegalArgumentException("Invalid credential input");
+        String previous = target.getUserStatus().getCode();
+        if (!(UserStatus.ACTIVE_CODE.equals(previous) || UserStatus.SUSPENDED_CODE.equals(previous))) throw rejected();
+        LocalCredential credential = credentials.findByUser_Id(userId).orElseThrow(UserAdministrationService::rejected);
+        requireResetCoverage(actor, target, Instant.now());
+        if (LocalCredential.supportsPasswordHash(credential.getPasswordHash())
+                && encoder.matches(password, credential.getPasswordHash())) throw rejected();
+        String encoded = encoder.encode(password);
+        if (!LocalCredential.supportsPasswordHash(encoded)) throw new IllegalStateException("Unsupported encoded credential");
+        var revocations = sessions.findUnrevokedForUpdate(userId);
+        actor = lockPlatformAuthority(principal, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        requireResetCoverage(actor, target, now);
+        requirePlatformContinuity(now, userId);
+        actor = lockPlatformAuthority(principal, permission);
+        Instant finalTime = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (!LocalDate.ofInstant(now, ZoneOffset.UTC).equals(LocalDate.ofInstant(finalTime, ZoneOffset.UTC))) throw denied();
+        now = finalTime;
+        credential.replacePasswordHash(encoded, now);
+        revokeLockedSessions(revocations, now);
+        actor = lockPlatformAuthority(principal, permission);
+        events.record(UserLifecycleEvent.CREDENTIAL_RESET, now, correlation, reason, previous, target, actor);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void revokePlatformAccountSessions(CurrentIdentity principal, long userId, String reason, String correlation) {
+        String permission = PlatformAuthorizationService.ACCOUNT_SESSIONS_REVOKE;
+        User actor = lockPlatformAuthority(principal, permission);
+        User target = lockProtectedAccount(actor, userId);
+        validatePlatformReason(reason);
+        String previous = target.getUserStatus().getCode();
+        if (!Set.of(UserStatus.ACTIVE_CODE, UserStatus.SUSPENDED_CODE, UserStatus.DISABLED_CODE,
+                UserStatus.PENDING_CODE).contains(previous)) throw rejected();
+        var candidates = sessions.findUnrevokedForUpdate(userId);
+        actor = lockPlatformAuthority(principal, permission);
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        requirePlatformContinuity(now, null);
+        var live = candidates.stream().filter(session -> session.isActiveAt(now) && session.getRevokedAt() == null).toList();
+        if (live.isEmpty()) throw rejected();
+        revokeLockedSessions(live, now);
+        actor = lockPlatformAuthority(principal, permission);
+        events.record(UserLifecycleEvent.SESSIONS_REVOKED, now, correlation, reason, previous, target, actor);
+    }
+
+    private User lockPlatformAuthority(CurrentIdentity principal, String permission) {
+        User actor = platformAuthorization.requireCatalogWrite(principal, permission);
+        if (!platformGrantService.hasSupportedCredential(actor.getId())
+                || !platformAuthorization.durablePermissions(actor.getId(), Instant.now(), null).contains(permission)) throw denied();
+        return actor;
+    }
+
+    private User lockProtectedAccount(User actor, long userId) {
+        if (actor.getId() == userId) throw denied();
+        User target = users.findForUpdate(userId).orElseThrow(UserAdministrationService::denied);
+        if ("hyflo-bootstrap".equals(target.getUsername()) || !target.getUserType().hasCode(UserType.HUMAN_CODE)
+                || !IdentityProvider.LOCAL_CODE.equals(target.getIdentityProvider().getCode())
+                || !target.getIdentityProvider().isEnabled() || !platformGrants.existsByUserId(userId)) throw denied();
+        return target;
+    }
+
+    private static void validatePlatformReason(String reason) {
+        if (reason == null || reason.isBlank() || reason.length() > 255) throw new IllegalArgumentException("Invalid reason");
+    }
+
+    private void requirePlatformContinuity(Instant now, Long excludedUser) {
+        if (!platformGrantService.hasDurableAdministrator(now, null, null, null, excludedUser)) throw rejected();
+    }
+
+    private static void revokeLockedSessions(List<LoginSession> candidates, Instant now) {
+        for (LoginSession session : candidates) session.revoke(now.isBefore(session.getStartedAt()) ? session.getStartedAt() : now);
+    }
+
+    private void requireResetCoverage(User actor, User target, Instant now) {
+        var actorPlatform = platformGrants.findCandidates(actor.getId(), PageRequest.of(0, 1001));
+        var targetPlatform = platformGrants.findCandidates(target.getId(), PageRequest.of(0, 1001));
+        if (actorPlatform.size() > 1000 || targetPlatform.size() > 1000) throw denied();
+        for (var grant : targetPlatform) {
+            if (grant.getValidTo() != null && !grant.getValidTo().isAfter(now)
+                    || grant.getRevokedAt() != null && !grant.getRevokedAt().isAfter(now)) continue;
+            Role role = grant.getRole();
+            if (!role.isPlatformRole()) throw denied();
+            if (!role.isEnabled()) continue;
+            requireSupportedBundle(role, true);
+            if (actorPlatform.stream().noneMatch(g -> g.getRole().getId().equals(role.getId())
+                    && g.getValidTo() == null && g.getRevokedAt() == null && g.isActiveAt(now)
+                    && g.getRole().isEnabled() && g.getRole().isPlatformRole())) throw denied();
+        }
+        var targetCompany = grants.findNonEndedForAccount(target.getId(), now, PageRequest.of(0, 1001));
+        if (targetCompany.size() > 1000) throw denied();
+        for (var grant : targetCompany) {
+            Role role = grant.getRole();
+            var scope = grant.getAuthorizationScope();
+            if (scope == null || role.isPlatformRole() || !role.isEnabled()
+                    || !AuthorizationScope.GLOBAL.equals(scope.getScopeType()) || scope.getScopeReferenceId() != null
+                    || actor.getOwningOrganizationUnitId() != scope.getOrganizationUnitId()
+                    || target.getOwningOrganizationUnitId() != scope.getOrganizationUnitId()) throw denied();
+            long companyId = scope.getOrganizationUnitId();
+            if (!companies.lockEligibleCompanyForIdentityWrite(companyId, LocalDate.ofInstant(now, ZoneOffset.UTC))) throw denied();
+            requireSupportedBundle(role, false);
+            var actorCompany = grants.findCompanyCandidatesForWrite(actor.getId(), companyId);
+            if (actorCompany.stream().noneMatch(g -> g.getRole().getId().equals(role.getId())
+                    && g.getValidTo() == null && g.getRevokedAt() == null
+                    && EffectiveAuthorizationService.matchesCompany(g, companyId, now))) throw denied();
+        }
+    }
+
+    private void requireSupportedBundle(Role role, boolean platform) {
+        var bundle = permissions.findForRoles(Set.of(role.getId()));
+        if (bundle.isEmpty() || bundle.stream().anyMatch(link ->
+                !link.getRole().getId().equals(role.getId())
+                || link.getPermission().isPlatformPermission() != platform
+                || !EffectiveAuthorizationService.validPermission(link.getPermission())
+                || !CapabilityManifest.supports(link.getPermission()))) throw denied();
     }
 
     // Only explicitly classified catalog reads may be delegated to an account controlled by another company.
