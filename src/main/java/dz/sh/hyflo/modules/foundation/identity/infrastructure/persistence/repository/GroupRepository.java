@@ -24,4 +24,11 @@ import org.springframework.data.repository.Repository;
 
 public interface GroupRepository extends Repository<Group, Long> {
     long count();
+    Group save(Group group);
+    java.util.Optional<Group> findById(long id);
+    java.util.List<Group> findByIdGreaterThanOrderByIdAsc(long afterId, org.springframework.data.domain.Pageable page);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select g from Group g where g.id = :id")
+    java.util.Optional<Group> findForUpdate(@org.springframework.data.repository.query.Param("id") long id);
 }

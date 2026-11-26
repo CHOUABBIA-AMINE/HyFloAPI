@@ -7,7 +7,7 @@
  *
  * @Name        : Group
  * @CreatedOn   : 11-24-2026
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -65,16 +65,27 @@ public class Group {
     private Long version;
 
     public Group(String code, String displayName) {
+        if (code == null || !code.matches("[A-Za-z0-9_-]{1,64}"))
+            throw new IllegalArgumentException("Invalid group code");
+        validateLabel(displayName);
         this.code = code;
         this.displayName = displayName;
         this.enabled = true;
     }
 
     public void rename(String displayName) {
+        validateLabel(displayName);
+        if (!enabled || this.displayName.equals(displayName)) throw new IllegalStateException("Group operation rejected");
         this.displayName = displayName;
     }
 
     public void retire() {
+        if (!enabled) throw new IllegalStateException("Group operation rejected");
         enabled = false;
+    }
+
+    private static void validateLabel(String label) {
+        if (label == null || label.isBlank() || label.length() > 120)
+            throw new IllegalArgumentException("Invalid group label");
     }
 }

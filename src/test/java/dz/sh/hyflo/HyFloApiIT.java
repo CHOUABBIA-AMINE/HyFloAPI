@@ -125,7 +125,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(42);
+        assertThat(entities).hasSize(43);
         for (var entity : entities) {
             var expectedInterface = entity.getPackageName().replace(".domain.model", ".infrastructure.persistence.repository")
                     + "." + entity.getSimpleName() + "Repository";
@@ -147,7 +147,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(42);
+        assertThat(entities).hasSize(43);
         for (var entity : entities) {
             var expectedService = entity.getPackageName().replace(".domain.model", ".application.service")
                     + "." + entity.getSimpleName() + "Service";
@@ -159,6 +159,10 @@ class HyFloApiIT {
                 if (entity.getSimpleName().equals("PlatformRoleGrant")) {
                     assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(6)
                             .contains(repositoryType);
+                } else if (entity.getSimpleName().equals("Group")) {
+                    assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(3).contains(repositoryType);
+                } else if (entity.getSimpleName().equals("GroupMembership")) {
+                    assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(6).contains(repositoryType);
                 } else {
                     assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).containsExactly(repositoryType);
                 }
@@ -171,7 +175,8 @@ class HyFloApiIT {
                         .toList();
                 if (entity.getSimpleName().equals("UserLifecycleEvent")
                         || entity.getSimpleName().equals("UserEmployeeAssociationEvent")
-                        || entity.getSimpleName().equals("CapabilityReconciliationEvent")) {
+                        || entity.getSimpleName().equals("CapabilityReconciliationEvent")
+                        || entity.getSimpleName().equals("GroupDefinitionEvent")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("record");
                 } else if (entity.getSimpleName().equals("RoleDefinitionEvent")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName)
@@ -179,6 +184,12 @@ class HyFloApiIT {
                 } else if (entity.getSimpleName().equals("PlatformRoleGrant")) {
                     assertThat(declaredBusinessMethods.stream().filter(method -> java.lang.reflect.Modifier.isPublic(method.getModifiers())).toList())
                             .extracting(java.lang.reflect.Method::getName).containsExactlyInAnyOrder("provision", "list", "assign", "revoke");
+                } else if (entity.getSimpleName().equals("Group")) {
+                    assertThat(declaredBusinessMethods.stream().filter(method -> java.lang.reflect.Modifier.isPublic(method.getModifiers())).toList())
+                            .extracting(java.lang.reflect.Method::getName).containsExactlyInAnyOrder("list", "read", "create", "rename", "retire");
+                } else if (entity.getSimpleName().equals("GroupMembership")) {
+                    assertThat(declaredBusinessMethods.stream().filter(method -> java.lang.reflect.Modifier.isPublic(method.getModifiers())).toList())
+                            .extracting(java.lang.reflect.Method::getName).containsExactlyInAnyOrder("list", "assign", "revoke");
                 } else {
                     assertThat(declaredBusinessMethods)
                             .as("Declared business methods of %s", serviceType.getName()).isEmpty();
@@ -301,6 +312,10 @@ class HyFloApiIT {
                 "F_08", "F_09");
         assertForeignKey("T_10_01_22", "F_09", "T_10_01_08", "T_10_01_22_FK_01", false);
         assertTableConstraints("T_10_01_22", "T_10_01_22_FK_01");
+        assertTableColumns("T_10_01_23", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
+        assertForeignKey("T_10_01_23", "F_08", "T_10_01_03", "T_10_01_23_FK_01", false);
+        assertForeignKey("T_10_01_23", "F_09", "T_10_01_08", "T_10_01_23_FK_02", false);
+        assertTableConstraints("T_10_01_23", "T_10_01_23_FK_01", "T_10_01_23_FK_02");
         assertTableColumns("T_10_01_19", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07", "F_08", "F_09");
         assertForeignKey("T_10_01_19", "F_08", "T_10_01_08", "T_10_01_19_FK_01", false);
         assertForeignKey("T_10_01_19", "F_09", "T_10_01_08", "T_10_01_19_FK_02", false);

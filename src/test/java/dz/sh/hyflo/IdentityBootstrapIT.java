@@ -48,6 +48,8 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Action;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.ResourceType;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Group;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupMembership;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupDefinitionEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.GroupRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
@@ -376,7 +378,9 @@ class IdentityBootstrapIT {
                                 "platform-capability.reconcile", "platform-permission.read",
                                 "platform-role-permission.associate", "platform-role-permission.remove",
                                 "platform-role.rename", "platform-role.retire",
-                        "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke")).toList());
+                        "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke",
+                        "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
+                        "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -536,7 +540,10 @@ class IdentityBootstrapIT {
                         "/v1/platform/roles/{roleId}/permissions",
                         "/v1/platform/roles/{roleId}/permissions/{permissionId}/associate",
                         "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove",
-                        "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire");
+                        "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire",
+                        "/v1/platform/groups", "/v1/platform/groups/{groupId}", "/v1/platform/groups/{groupId}/rename",
+                        "/v1/platform/groups/{groupId}/retire", "/v1/platform/groups/{groupId}/memberships",
+                        "/v1/platform/groups/{groupId}/memberships/{membershipId}/revoke");
         assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
         assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
 
@@ -634,7 +641,9 @@ class IdentityBootstrapIT {
                         "platform-role.read", "platform-role.create", "platform-capability.reconcile",
                         "platform-permission.read", "platform-role-permission.associate", "platform-role-permission.remove",
                         "platform-role.rename", "platform-role.retire",
-                        "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke");
+                        "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke",
+                        "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
+                        "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -650,7 +659,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v4");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v5");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -807,7 +816,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(29L); // twenty-eight supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(36L); // thirty-five supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -878,7 +887,7 @@ class IdentityBootstrapIT {
         var initial = send(port, catalog, null, access);
         assertSafe(initial, 200);
         List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
-        assertThat(definitions).hasSize(28).allSatisfy(entry -> {
+        assertThat(definitions).hasSize(35).allSatisfy(entry -> {
             assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
                     "platformPermission", "supported");
             assertThat(entry.get("supported")).isEqualTo(true);
@@ -918,7 +927,7 @@ class IdentityBootstrapIT {
         var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
         assertSafe(tail, 200);
         List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
-        assertThat(tailIds).hasSize(31);
+        assertThat(tailIds).hasSize(38);
         assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
                 .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
         assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
@@ -1504,6 +1513,230 @@ class IdentityBootstrapIT {
         });
     }
 
+
+    @Test
+    void managesGroupsAndMembershipsThroughHttp() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("GROUP_COMPANY", "group-admin",
+                "GROUP_AUTHORITY"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='group-admin'", Long.class);
+        long reserved = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        long companyRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        String access = loginAccess("group-admin");
+        long member = createCompositionUser(admin, company, "group-member");
+        long other = createCompositionUser(admin, company, "group-other");
+        long viewer = createCompositionUser(admin, company, "group-viewer");
+        long protectedUser = createCompositionUser(admin, company, "group-protected");
+        long pending = createCompositionUser(admin, company, "group-pending");
+        long fresh = createCompositionUser(admin, company, "group-fresh");
+        String memberAccess = loginAccess("group-member");
+        String viewerAccess = loginAccess("group-viewer");
+        Instant now = Instant.now();
+        addCompanyFixtureGrant(admin, member, companyRole, company, now.minusSeconds(10), null);
+        String permissions = "/v1/me/permissions?companyId=" + company;
+        var beforePermissions = send(port, permissions, null, memberAccess);
+        assertSafe(beforePermissions, 200);
+        String base = "/v1/platform/groups";
+        String reason = "{\"reason\":\"synthetic group change\"}";
+        String create = groupBody("OPERATORS");
+        String rename = "{\"displayName\":\"Configured name\",\"reason\":\"synthetic group change\"}";
+        String assign = memberBody(member);
+        assertSafe(send(port, base, null, null), 401);
+        assertSafe(send(port, base, create, "invalid.jwt"), 401);
+        assertSafe(send(port, base, null, memberAccess), 403);
+        assertSafe(send(port, base, create, memberAccess), 403);
+        assertSafe(send(port, base + "?afterId=-1", null, access), 400);
+        assertSafe(send(port, base, "{}", access), 400);
+        assertSafe(send(port, base + "/0", null, access), 400);
+        assertSafe(send(port, base + "/" + Long.MAX_VALUE, null, access), 403);
+        assertSafe(send(port, base + "/unregistered", create, access), 403);
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_event_failure BEFORE INSERT ON T_10_01_23 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, base, create, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_event_failure");
+        }
+        assertThat(count("T_10_01_03")).isZero();
+        assertThat(count("T_10_01_23")).isZero();
+        long group = createGroup("OPERATORS", access);
+        long second = createGroup("MAINTENANCE", access);
+        String selected = base + "/" + group;
+        String members = selected + "/memberships";
+        assertSafe(send(port, base, create, access), 409);
+        var listed = send(port, base, null, access);
+        assertSafe(listed, 200);
+        assertThat((List<Number>) JsonPath.read(listed.body(), "$[*].id")).hasSize(2);
+        assertThat((List<Number>) JsonPath.read(send(port, base + "?afterId=" + group, null, access).body(), "$[*].id"))
+                .extracting(Number::longValue).containsExactly(second);
+        assertSafe(send(port, selected, null, access), 200);
+        assertSafe(send(port, selected + "/rename", rename, memberAccess), 403);
+        assertSafe(send(port, selected + "/retire", reason, memberAccess), 403);
+        assertSafe(send(port, members, null, memberAccess), 403);
+        assertSafe(send(port, members, assign, memberAccess), 403);
+        assertSafe(send(port, members + "/1/revoke", "", memberAccess), 403);
+
+        // One group-read capability confers no membership or mutation authority.
+        long viewRole = createRuntimeRole("GROUP_READ_ONLY", true, access);
+        assertSafe(send(port, changePath(viewRole, permissionId("platform-group.read"), true), reason, access), 204);
+        var viewGrant = send(port, platformGrantPath(viewer), platformGrantBody(viewRole), access);
+        assertSafe(viewGrant, 201);
+        long viewGrantId = ((Number) JsonPath.read(viewGrant.body(), "$.id")).longValue();
+        assertSafe(send(port, base, null, viewerAccess), 200);
+        assertSafe(send(port, selected + "/rename", rename, viewerAccess), 403);
+        assertSafe(send(port, members, null, viewerAccess), 403);
+        assertSafe(send(port, members, assign, viewerAccess), 403);
+        assertSafe(send(port, platformGrantPath(viewer) + "/" + viewGrantId + "/revoke", reason, access), 204);
+        assertSafe(send(port, base, null, viewerAccess), 403);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_rename_failure BEFORE INSERT ON T_10_01_23 "
+                + "FOR EACH ROW BEGIN IF NEW.F_01='RENAMED' THEN SIGNAL SQLSTATE '45000' "
+                + "SET MESSAGE_TEXT='synthetic rollback probe'; END IF; END");
+        try {
+            assertSafe(send(port, selected + "/rename", rename, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_rename_failure");
+        }
+        assertThat(count("T_10_01_23")).isEqualTo(2);
+        assertThat((String) JsonPath.read(send(port, selected, null, access).body(), "$.displayName")).isEqualTo("Configured group");
+        assertSafe(send(port, selected + "/rename", rename, access), 200);
+        assertSafe(send(port, selected + "/rename", rename, access), 409);
+        assertThat((String) JsonPath.read(send(port, selected, null, access).body(), "$.code")).isEqualTo("OPERATORS");
+
+        assertSafe(send(port, members, "{}", access), 400);
+        assertSafe(send(port, members, memberBody(Long.MAX_VALUE), access), 403);
+        assertSafe(send(port, members, memberBody(admin), access), 403);
+        assertSafe(send(port, members, memberBody(reserved), access), 403);
+        assertSafe(send(port, members, memberBody(viewer), access), 403); // historical platform authority
+        assertSafe(send(port, platformGrantPath(protectedUser), platformGrantBody(viewRole), access), 201);
+        assertSafe(send(port, members, memberBody(protectedUser), access), 403);
+        jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='PENDING') WHERE F_00=?", pending);
+        assertSafe(send(port, members, memberBody(pending), access), 409);
+
+        long future = groupMembershipFixture(admin, other, group, now.plusSeconds(3600), null);
+        assertSafe(send(port, members, memberBody(other), access), 409);
+        assertSafe(send(port, members + "/" + future + "/revoke", "", access), 204);
+        long ended = groupMembershipFixture(admin, other, group, now.minusSeconds(7200), now.minusSeconds(3600));
+        assertSafe(send(port, members + "/" + ended + "/revoke", "", access), 409);
+        assertSafe(send(port, members, memberBody(other), access), 201);
+        long historyBefore = count("T_10_01_13");
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_member_insert BEFORE INSERT ON T_10_01_13 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, members, assign, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_member_insert");
+        }
+        assertThat(count("T_10_01_13")).isEqualTo(historyBefore);
+        var a = client.sendAsync(request(port, members, assign, access), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, members, assign, access), HttpResponse.BodyHandlers.ofString());
+        var ar = a.get(60, TimeUnit.SECONDS);
+        var br = b.get(60, TimeUnit.SECONDS);
+        assertThat(List.of(ar.statusCode(), br.statusCode())).containsExactlyInAnyOrder(201, 409);
+        var winner = ar.statusCode() == 201 ? ar : br;
+        long membership = ((Number) JsonPath.read(winner.body(), "$.id")).longValue();
+        assertThat((Boolean) JsonPath.read(winner.body(), "$.active")).isTrue();
+        assertThat(((Number) JsonPath.read(winner.body(), "$.grantedBy")).longValue()).isEqualTo(admin);
+        assertSafe(send(port, members, assign, access), 409);
+        assertThat(send(port, permissions, null, memberAccess).body()).isEqualTo(beforePermissions.body());
+        assertSafe(send(port, base + "/" + second + "/memberships/" + membership + "/revoke", "", access), 403);
+        var history = send(port, members, null, access);
+        assertSafe(history, 200);
+        assertThat((List<Number>) JsonPath.read(history.body(), "$[*].id")).hasSize(4);
+        assertThat((List<Number>) JsonPath.read(send(port, members + "?afterId=" + membership, null, access).body(), "$[*].id")).isEmpty();
+
+        // A persisted future group grant is not inherited in this slice and blocks new membership.
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> entityManager.persist(new GroupRoleGrant(
+                entityManager.find(Group.class, group), entityManager.find(Role.class, companyRole),
+                AuthorizationScope.global(company), "synthetic future grant", now.plusSeconds(3600), null,
+                entityManager.find(User.class, admin))));
+        assertSafe(send(port, members, memberBody(fresh), access), 409);
+        assertThat(send(port, permissions, null, memberAccess).body()).isEqualTo(beforePermissions.body());
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_retire_failure BEFORE INSERT ON T_10_01_23 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, selected + "/retire", reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_retire_failure");
+        }
+        assertThat((Boolean) JsonPath.read(send(port, selected, null, access).body(), "$.enabled")).isTrue();
+        long membershipCount = count("T_10_01_13");
+        long grantCount = count("T_10_01_16");
+        assertSafe(send(port, selected + "/retire", reason, access), 200);
+        assertSafe(send(port, selected + "/retire", reason, access), 409);
+        assertSafe(send(port, selected + "/rename", rename, access), 409);
+        assertSafe(send(port, members, memberBody(fresh), access), 409);
+        assertThat(count("T_10_01_13")).isEqualTo(membershipCount);
+        assertThat(count("T_10_01_16")).isEqualTo(grantCount);
+        assertThat((List<Boolean>) JsonPath.read(send(port, members, null, access).body(), "$[*].active")).containsOnly(false);
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_member_update BEFORE UPDATE ON T_10_01_13 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, members + "/" + membership + "/revoke", "", access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_member_update");
+        }
+        assertThat(jdbc.queryForObject("SELECT F_03 IS NULL FROM T_10_01_13 WHERE F_00=?", Boolean.class, membership)).isTrue();
+        assertSafe(send(port, members + "/" + membership + "/revoke", "", access), 204);
+        assertSafe(send(port, members + "/" + membership + "/revoke", "", access), 409);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var m = entityManager.find(GroupMembership.class, membership);
+            assertThat(m.getGrantedBy().getId()).isEqualTo(admin);
+            assertThat(m.getRevokedBy().getId()).isEqualTo(admin);
+            assertThat(m.isActiveAt(m.getRevokedAt())).isFalse();
+            var events = entityManager.createQuery("select e from GroupDefinitionEvent e where e.group.id=:id order by e.id",
+                    GroupDefinitionEvent.class).setParameter("id", group).getResultList();
+            assertThat(events).extracting(GroupDefinitionEvent::getEventCode).containsExactly("CREATED", "RENAMED_FROM", "RENAMED", "RETIRED");
+            assertThat(events).extracting(GroupDefinitionEvent::getDisplayName).containsExactly("Configured group", "Configured group", "Configured name", "Configured name");
+            assertThat(events).allSatisfy(e -> {
+                assertThat(e.getPerformedBy().getId()).isEqualTo(admin);
+                assertThat(e.getGroupCode()).isEqualTo("OPERATORS");
+                assertThat(e.getCorrelationId()).isNotBlank();
+                assertThat(e.getOccurredAt()).isNotNull();
+            });
+            assertThat(events.get(1).getCorrelationId()).isEqualTo(events.get(2).getCorrelationId());
+            assertThat(events.get(1).getOccurredAt()).isEqualTo(events.get(2).getOccurredAt());
+            assertThat(events.getLast().isEnabled()).isFalse();
+        });
+
+        String secondPath = base + "/" + second;
+        var retirement = client.sendAsync(request(port, secondPath + "/retire", reason, access), HttpResponse.BodyHandlers.ofString());
+        var assignment = client.sendAsync(request(port, secondPath + "/memberships", assign, access), HttpResponse.BodyHandlers.ofString());
+        assertThat(retirement.get(60, TimeUnit.SECONDS).statusCode()).isEqualTo(200);
+        assertThat(assignment.get(60, TimeUnit.SECONDS).statusCode()).isIn(201, 409);
+        assertSafe(send(port, secondPath + "/memberships", memberBody(other), access), 409);
+        Map<String,Object> paths = JsonPath.read(send(port, "/api-docs", null, access).body(), "$.paths");
+        assertThat(paths.get(base).toString()).contains("get=", "post=");
+        assertThat(paths.get(base + "/{groupId}/memberships").toString()).contains("get=", "post=");
+        assertSafe(send(port, "/v1/auth/logout", "", access), 204);
+        assertSafe(send(port, base, null, access), 401);
+    }
+
+    private String groupBody(String code) {
+        return "{\"code\":\"" + code + "\",\"displayName\":\"Configured group\",\"reason\":\"synthetic group creation\"}";
+    }
+
+    private long createGroup(String code, String access) throws Exception {
+        var response = send(port, "/v1/platform/groups", groupBody(code), access);
+        assertSafe(response, 201);
+        return ((Number) JsonPath.read(response.body(), "$.id")).longValue();
+    }
+
+    private static String memberBody(long user) {
+        return "{\"userId\":" + user + "}";
+    }
+
+    private long groupMembershipFixture(long actor, long user, long group, Instant from, Instant to) {
+        return new TransactionTemplate(transactions).execute(tx -> {
+            var membership = new GroupMembership(entityManager.find(User.class, user), entityManager.find(Group.class, group),
+                    from, to, entityManager.find(User.class, actor));
+            entityManager.persist(membership);
+            return membership.getId();
+        });
+    }
+
     private long createRuntimeRole(String code, boolean platform, String access) throws Exception {
         var response = send(port, "/v1/platform/roles", roleBody(code, platform), access);
         assertSafe(response, 201);
@@ -1653,7 +1886,7 @@ class IdentityBootstrapIT {
     }
 
     private void assertEmptyIdentity() {
-        for (int index = 1; index <= 22; index++) {
+        for (int index = 1; index <= 23; index++) {
             assertThat(count(String.format("T_10_01_%02d", index))).as("Identity table %02d is empty", index).isZero();
         }
     }

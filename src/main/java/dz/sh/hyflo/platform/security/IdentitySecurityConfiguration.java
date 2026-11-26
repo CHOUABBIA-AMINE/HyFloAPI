@@ -57,11 +57,14 @@ public class IdentitySecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh", "/v1/setup/initialize").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/setup/status").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/platform/roles", "/v1/platform/permissions",
-                                "/v1/platform/roles/{roleId}/permissions").authenticated()
+                                "/v1/platform/roles/{roleId}/permissions", "/v1/platform/groups", "/v1/platform/groups/{groupId}",
+                                "/v1/platform/groups/{groupId}/memberships").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/platform/roles", "/v1/platform/capabilities/reconcile",
                                 "/v1/platform/roles/{roleId}/permissions/{permissionId}/associate",
                                 "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove",
-                                "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire").authenticated()
+                                "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire",
+                                "/v1/platform/groups", "/v1/platform/groups/{groupId}/rename", "/v1/platform/groups/{groupId}/retire",
+                                "/v1/platform/groups/{groupId}/memberships", "/v1/platform/groups/{groupId}/memberships/{membershipId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change",
                                 "/v1/auth/sessions/{sessionId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()

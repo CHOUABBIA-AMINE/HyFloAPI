@@ -28,4 +28,8 @@ public interface GroupRoleGrantRepository extends Repository<GroupRoleGrant, Lon
     long countNonEndedForRole(@org.springframework.data.repository.query.Param("roleId") long roleId,
             @org.springframework.data.repository.query.Param("now") java.time.Instant now);
 
+    @org.springframework.data.jpa.repository.Query("select count(g) from GroupRoleGrant g where g.group.id = :groupId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now)")
+    long countNonEndedForGroup(@org.springframework.data.repository.query.Param("groupId") long groupId,
+            @org.springframework.data.repository.query.Param("now") java.time.Instant now);
 }

@@ -29,7 +29,7 @@ import java.util.Objects;
 
 /** Reviewed executable capabilities, not customer role configuration. */
 public final class CapabilityManifest {
-    public static final String ID = "hyflo-identity-capabilities-v4";
+    public static final String ID = "hyflo-identity-capabilities-v5";
     private static final List<Entry> ENTRIES = List.of(
             entry("user.read"), entry("user-employee.read"), entry("user-employee.associate"),
             entry("user.create"), entry("user.activate"), entry("user.suspend"), entry("user.reactivate"),
@@ -41,7 +41,14 @@ public final class CapabilityManifest {
             entry(PlatformAuthorizationService.PERMISSION_READ), entry(PlatformAuthorizationService.PERMISSION_ASSOCIATE),
             entry(PlatformAuthorizationService.PERMISSION_REMOVE), entry(PlatformAuthorizationService.ROLE_RENAME),
             entry(PlatformAuthorizationService.ROLE_RETIRE), entry(PlatformAuthorizationService.GRANT_READ),
-            entry(PlatformAuthorizationService.GRANT_ASSIGN), entry(PlatformAuthorizationService.GRANT_REVOKE))
+            entry(PlatformAuthorizationService.GRANT_ASSIGN), entry(PlatformAuthorizationService.GRANT_REVOKE),
+            entry(PlatformAuthorizationService.GROUP_READ),
+            entry(PlatformAuthorizationService.GROUP_CREATE),
+            entry(PlatformAuthorizationService.GROUP_RENAME),
+            entry(PlatformAuthorizationService.GROUP_RETIRE),
+            entry(PlatformAuthorizationService.MEMBERSHIP_READ),
+            entry(PlatformAuthorizationService.MEMBERSHIP_ASSIGN),
+            entry(PlatformAuthorizationService.MEMBERSHIP_REVOKE))
             .stream().sorted(Comparator.comparing(Entry::permissionCode)).toList();
     private static final String DIGEST = calculateDigest();
 

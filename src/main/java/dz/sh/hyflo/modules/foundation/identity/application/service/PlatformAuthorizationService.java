@@ -48,9 +48,18 @@ public class PlatformAuthorizationService {
     public static final String GRANT_READ = "platform-user-role-grant.read";
     public static final String GRANT_ASSIGN = "platform-user-role-grant.assign";
     public static final String GRANT_REVOKE = "platform-user-role-grant.revoke";
+    public static final String GROUP_READ = "platform-group.read";
+    public static final String GROUP_CREATE = "platform-group.create";
+    public static final String GROUP_RENAME = "platform-group.rename";
+    public static final String GROUP_RETIRE = "platform-group.retire";
+    public static final String MEMBERSHIP_READ = "platform-group-membership.read";
+    public static final String MEMBERSHIP_ASSIGN = "platform-group-membership.assign";
+    public static final String MEMBERSHIP_REVOKE = "platform-group-membership.revoke";
     private static final Set<String> IMPLEMENTED = Set.of(ROLE_READ, ROLE_CREATE, CAPABILITY_RECONCILE,
-            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE, GRANT_READ, GRANT_ASSIGN, GRANT_REVOKE);
-    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE, GRANT_ASSIGN, GRANT_REVOKE);
+            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE, GRANT_READ, GRANT_ASSIGN, GRANT_REVOKE,
+            GROUP_READ, GROUP_CREATE, GROUP_RENAME, GROUP_RETIRE, MEMBERSHIP_READ, MEMBERSHIP_ASSIGN, MEMBERSHIP_REVOKE);
+    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE, GRANT_ASSIGN, GRANT_REVOKE,
+            GROUP_CREATE, GROUP_RENAME, GROUP_RETIRE, MEMBERSHIP_ASSIGN, MEMBERSHIP_REVOKE);
     private static final int MAX_CANDIDATES = 1000;
 
     private final SessionAuthenticationService authentication;
