@@ -932,12 +932,12 @@ class IdentityBootstrapIT {
 
         // One independent user can observe permission changes with the same login session.
         long observer = createCompositionUser(adminId, companyId, "composition-observer");
-        long other = createCompositionUser(adminId, companyId, "composition-delegator");
+        long other = createCompositionUser(adminId, companyId, "compose-delegator");
         Instant now = Instant.now();
         addCompanyFixtureGrant(adminId, observer, companyRole, companyId, now.minusSeconds(5), null);
         addCompanyFixtureGrant(adminId, other, companyAdminRole, companyId, now.minusSeconds(5), null);
         String observerAccess = loginAccess("composition-observer");
-        String otherAccess = loginAccess("composition-delegator");
+        String otherAccess = loginAccess("compose-delegator");
         assertSafe(send(port, catalog, null, otherAccess), 403);
         assertSafe(send(port, changePath(companyRole, read, true), reason, otherAccess), 403);
         assertSafe(send(port, "/v1/me/permissions?companyId=" + companyId, null, observerAccess), 403);
