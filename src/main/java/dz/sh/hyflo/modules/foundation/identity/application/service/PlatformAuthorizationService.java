@@ -45,9 +45,12 @@ public class PlatformAuthorizationService {
     public static final String PERMISSION_REMOVE = "platform-role-permission.remove";
     public static final String ROLE_RENAME = "platform-role.rename";
     public static final String ROLE_RETIRE = "platform-role.retire";
+    public static final String GRANT_READ = "platform-user-role-grant.read";
+    public static final String GRANT_ASSIGN = "platform-user-role-grant.assign";
+    public static final String GRANT_REVOKE = "platform-user-role-grant.revoke";
     private static final Set<String> IMPLEMENTED = Set.of(ROLE_READ, ROLE_CREATE, CAPABILITY_RECONCILE,
-            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE);
-    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE);
+            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE, GRANT_READ, GRANT_ASSIGN, GRANT_REVOKE);
+    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE, GRANT_ASSIGN, GRANT_REVOKE);
     private static final int MAX_CANDIDATES = 1000;
 
     private final SessionAuthenticationService authentication;
@@ -117,6 +120,27 @@ public class PlatformAuthorizationService {
         if (!hasPermission(lockedLinks, activeRoles(candidates, principal, now), permission)) throw denied();
         return actor;
     }
+
+    // Callers retain the exclusive LOCAL provider lock for this prospective authority calculation.
+    Set<String> durablePermissions(long userId, Instant now, Long excludedGrantId) {
+        var candidates = grants.findCandidates(userId, PageRequest.of(0, MAX_CANDIDATES + 1));
+        if (candidates.size() > MAX_CANDIDATES) return Set.of();
+        Set<Long> roleIds = candidates.stream()
+                .filter(g -> !java.util.Objects.equals(g.getId(), excludedGrantId))
+                .filter(g -> g.getUser().getId() == userId && g.getUser().getUserType().hasCode(UserType.HUMAN_CODE)
+                        && SessionAuthenticationService.eligible(g.getUser()))
+                .filter(g -> g.getValidTo() == null && g.getRevokedAt() == null && g.isActiveAt(now)
+                        && g.getRole().isPlatformRole() && g.getRole().isEnabled())
+                .map(g -> g.getRole().getId()).collect(Collectors.toSet());
+        if (roleIds.isEmpty()) return Set.of();
+        return links.findForRoles(roleIds).stream()
+                .filter(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isPlatformRole()
+                        && link.getRole().isEnabled() && EffectiveAuthorizationService.validPermission(link.getPermission())
+                        && link.getPermission().isPlatformPermission() && IMPLEMENTED.contains(link.getPermission().getCode()))
+                .map(link -> link.getPermission().getCode()).collect(Collectors.toSet());
+    }
+
+    static Set<String> implementedPermissions() { return IMPLEMENTED; }
 
     private static void requirePrincipal(CurrentIdentity principal) {
         var security = SecurityContextHolder.getContext().getAuthentication();

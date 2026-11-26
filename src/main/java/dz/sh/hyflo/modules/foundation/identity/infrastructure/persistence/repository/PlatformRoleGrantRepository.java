@@ -42,4 +42,24 @@ public interface PlatformRoleGrantRepository extends Repository<PlatformRoleGran
     long countNonEndedForRole(@org.springframework.data.repository.query.Param("roleId") long roleId,
             @org.springframework.data.repository.query.Param("now") java.time.Instant now);
 
+    @Query("select case when count(u) > 0 then true else false end from User u where u.id = :userId and u.username <> 'hyflo-bootstrap'")
+    boolean existsEligibleUser(@Param("userId") long userId);
+
+    long countByUserId(long userId);
+
+    @Query("select g from PlatformRoleGrant g join fetch g.role where g.user.id = :userId and g.id > :afterId order by g.id")
+    List<PlatformRoleGrant> findHistory(@Param("userId") long userId, @Param("afterId") long afterId,
+            org.springframework.data.domain.Pageable page);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select g from PlatformRoleGrant g where g.id = :grantId and g.user.id = :userId")
+    java.util.Optional<PlatformRoleGrant> findSelectedForUpdate(@Param("grantId") long grantId, @Param("userId") long userId);
+
+    @Query("select count(g) from PlatformRoleGrant g where g.user.id = :userId and g.role.id = :roleId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now)")
+    long countNonEndedForUserRole(@Param("userId") long userId, @Param("roleId") long roleId, @Param("now") java.time.Instant now);
+
+    @Query("select distinct g.user.id from PlatformRoleGrant g where g.validTo is null and g.revokedAt is null "
+            + "and g.validFrom <= :now and g.role.enabled = true and g.role.platformRole = true")
+    List<Long> findDurableCandidateUsers(@Param("now") java.time.Instant now);
 }

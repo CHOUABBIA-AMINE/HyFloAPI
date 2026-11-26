@@ -89,7 +89,8 @@ public class IdentityBootstrapService {
             PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE,
             PlatformAuthorizationService.CAPABILITY_RECONCILE, PlatformAuthorizationService.PERMISSION_READ,
             PlatformAuthorizationService.PERMISSION_ASSOCIATE, PlatformAuthorizationService.PERMISSION_REMOVE,
-            PlatformAuthorizationService.ROLE_RENAME, PlatformAuthorizationService.ROLE_RETIRE);
+            PlatformAuthorizationService.ROLE_RENAME, PlatformAuthorizationService.ROLE_RETIRE,
+            PlatformAuthorizationService.GRANT_READ, PlatformAuthorizationService.GRANT_ASSIGN, PlatformAuthorizationService.GRANT_REVOKE);
 
     private final IdentityProviderRepository providers;
     private final UserStatusRepository statuses;

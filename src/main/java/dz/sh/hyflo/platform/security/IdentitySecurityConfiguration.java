@@ -72,7 +72,8 @@ public class IdentitySecurityConfiguration {
                                 "/api-docs", "/api-docs/**",
                                 "/swagger-ui.html", "/swagger-ui/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/v1/identity/users", "/v1/identity/users/{userId}",
-                                "/v1/identity/users/{userId}/role-grants", "/v1/identity/users/{userId}/employee").authenticated()
+                                "/v1/identity/users/{userId}/role-grants", "/v1/identity/users/{userId}/employee",
+                                "/v1/identity/users/{userId}/platform-role-grants").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/identity/users", "/v1/identity/users/{userId}/activate",
                                 "/v1/identity/users/{userId}/suspend", "/v1/identity/users/{userId}/reactivate",
                                 "/v1/identity/users/{userId}/disable",
@@ -81,6 +82,8 @@ public class IdentitySecurityConfiguration {
                                 "/v1/identity/users/{userId}/sessions/revoke",
                                 "/v1/identity/users/{userId}/role-grants",
                                 "/v1/identity/users/{userId}/role-grants/{grantId}/revoke",
+                                "/v1/identity/users/{userId}/platform-role-grants",
+                                "/v1/identity/users/{userId}/platform-role-grants/{grantId}/revoke",
                                 "/v1/identity/users/{userId}/employee/link", "/v1/identity/users/{userId}/employee/unlink").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new BearerAuthenticationFilter(tokens, sessions), AnonymousAuthenticationFilter.class)

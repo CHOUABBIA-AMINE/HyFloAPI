@@ -375,7 +375,8 @@ class IdentityBootstrapIT {
                         java.util.stream.Stream.of("platform-role.read", "platform-role.create",
                                 "platform-capability.reconcile", "platform-permission.read",
                                 "platform-role-permission.associate", "platform-role-permission.remove",
-                                "platform-role.rename", "platform-role.retire")).toList());
+                                "platform-role.rename", "platform-role.retire",
+                        "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -632,7 +633,8 @@ class IdentityBootstrapIT {
                 + "WHERE rp.F_01=?", String.class, platformRole)).containsExactlyInAnyOrder(
                         "platform-role.read", "platform-role.create", "platform-capability.reconcile",
                         "platform-permission.read", "platform-role-permission.associate", "platform-role-permission.remove",
-                        "platform-role.rename", "platform-role.retire");
+                        "platform-role.rename", "platform-role.retire",
+                        "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -648,7 +650,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v3");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v4");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -805,7 +807,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(26L); // twenty-five supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(29L); // twenty-eight supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -876,7 +878,7 @@ class IdentityBootstrapIT {
         var initial = send(port, catalog, null, access);
         assertSafe(initial, 200);
         List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
-        assertThat(definitions).hasSize(25).allSatisfy(entry -> {
+        assertThat(definitions).hasSize(28).allSatisfy(entry -> {
             assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
                     "platformPermission", "supported");
             assertThat(entry.get("supported")).isEqualTo(true);
@@ -916,7 +918,7 @@ class IdentityBootstrapIT {
         var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
         assertSafe(tail, 200);
         List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
-        assertThat(tailIds).hasSize(28);
+        assertThat(tailIds).hasSize(31);
         assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
                 .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
         assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
@@ -1309,6 +1311,197 @@ class IdentityBootstrapIT {
         assertSafe(send(port, "/v1/auth/logout", "", access), 204);
         assertSafe(send(port, root + futurePlatform + "/retire", retire, access), 401);
         assertSafe(send(port, root + futurePlatform + "/rename", rename, access), 401);
+    }
+
+
+    @Test
+    void managesPlatformRolesInUserManagementWithContinuity() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("GRANT_COMPANY", "grant-admin",
+                "CONFIGURED_ADMIN"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='grant-admin'", Long.class);
+        long reserved = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        long fullRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        long companyRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        long initialGrant = jdbc.queryForObject("SELECT F_00 FROM T_10_01_20 WHERE F_08=?", Long.class, admin);
+        String access = loginAccess("grant-admin");
+        long second = createCompositionUser(admin, company, "grant-second");
+        long viewer = createCompositionUser(admin, company, "grant-viewer");
+        long capped = createCompositionUser(admin, company, "grant-capped");
+        long noCredential = createCompositionUser(admin, company, "grant-ineligible");
+        String secondAccess = loginAccess("grant-second");
+        String viewerAccess = loginAccess("grant-viewer");
+        String root = platformGrantPath(second);
+        String own = platformGrantPath(admin);
+        String reason = "{\"reason\":\"synthetic revoke\"}";
+        long limited = createRuntimeRole("GRANT_VIEWER", true, access);
+        long empty = createRuntimeRole("GRANT_EMPTY", true, access);
+        long retired = createRuntimeRole("GRANT_RETIRED", true, access);
+        assertSafe(send(port, "/v1/platform/roles/" + retired + "/retire", reason, access), 200);
+        assertSafe(send(port, changePath(limited, permissionId("platform-role.read"), true), reason, access), 204);
+        assertSafe(send(port, changePath(limited, permissionId("platform-user-role-grant.read"), true), reason, access), 204);
+        String full = platformGrantBody(fullRole);
+        String limitedBody = platformGrantBody(limited);
+        assertSafe(send(port, root, null, null), 401);
+        assertSafe(send(port, root, full, "invalid.jwt"), 401);
+        assertSafe(send(port, root, null, secondAccess), 403);
+        assertSafe(send(port, root, full, secondAccess), 403);
+        assertSafe(send(port, own + "/" + initialGrant + "/revoke", reason, secondAccess), 403);
+        assertSafe(send(port, root, "{}", access), 400);
+        assertSafe(send(port, root + "?afterId=-1", null, access), 400);
+        assertSafe(send(port, platformGrantPath(Long.MAX_VALUE), null, access), 403);
+        assertSafe(send(port, platformGrantPath(reserved), null, access), 403);
+        assertSafe(send(port, own, full, access), 403);
+        assertSafe(send(port, root, platformGrantBody(companyRole), access), 409);
+        assertSafe(send(port, root, platformGrantBody(empty), access), 409);
+        assertSafe(send(port, root, platformGrantBody(retired), access), 409);
+        jdbc.update("DELETE FROM T_10_01_10 WHERE F_03=?", noCredential);
+        assertSafe(send(port, platformGrantPath(noCredential), full, access), 409);
+        assertSafe(send(port, own + "/" + initialGrant + "/revoke", reason, access), 409);
+
+        // Finite and future grants do not establish durable continuity.
+        Instant now = Instant.now();
+        long finite = platformFixtureGrant(admin, second, fullRole, now.minusSeconds(10), now.plusSeconds(3600));
+        long future = platformFixtureGrant(admin, viewer, fullRole, now.plusSeconds(3600), null);
+        assertSafe(send(port, platformGrantPath(capped), limitedBody, secondAccess), 403);
+        long ineligible = platformFixtureGrant(admin, noCredential, fullRole, now.minusSeconds(10), null);
+        assertSafe(send(port, own + "/" + initialGrant + "/revoke", reason, access), 409);
+        assertSafe(send(port, platformGrantPath(noCredential) + "/" + ineligible + "/revoke", reason, access), 204);
+        long ended = platformFixtureGrant(admin, viewer, fullRole, now.minusSeconds(3600), now.minusSeconds(60));
+        assertSafe(send(port, own + "/" + initialGrant + "/revoke", reason, access), 409);
+        assertSafe(send(port, root, full, access), 409);
+        assertSafe(send(port, platformGrantPath(viewer), full, access), 409);
+        assertSafe(send(port, platformGrantPath(viewer) + "/" + ended + "/revoke", reason, access), 409);
+        assertSafe(send(port, root + "/" + future + "/revoke", reason, access), 403);
+        assertSafe(send(port, platformGrantPath(viewer) + "/" + future + "/revoke", reason, access), 204);
+        assertSafe(send(port, root + "/" + finite + "/revoke", reason, access), 204);
+
+        // Candidate history counts include ended grants; never create an unusable 1001st candidate.
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            User target = entityManager.find(User.class, capped);
+            User actor = entityManager.find(User.class, admin);
+            Role role = entityManager.find(Role.class, limited);
+            for (int i = 0; i < 1000; i++) {
+                entityManager.persist(new PlatformRoleGrant(target, role, now.minusSeconds(7200), now.minusSeconds(3600),
+                        "synthetic expired", java.util.UUID.randomUUID().toString(), actor));
+            }
+        });
+        assertSafe(send(port, platformGrantPath(capped), limitedBody, access), 409);
+        // A synthetic over-cap administrator must not count as durable continuity.
+        long overCap = platformFixtureGrant(admin, capped, fullRole, now.minusSeconds(10), null);
+        assertSafe(send(port, own + "/" + initialGrant + "/revoke", reason, access), 409);
+        assertSafe(send(port, platformGrantPath(capped) + "/" + overCap + "/revoke", reason, access), 204);
+
+        // Unsupported persisted links cannot be propagated through role delegation.
+        long malformed = createRuntimeRole("GRANT_UNSUPPORTED", true, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var action = new Action("synthetic-grant", "Synthetic grant");
+            var resource = new ResourceType("platform-synthetic-grant", "Synthetic grant");
+            entityManager.persist(action);
+            entityManager.persist(resource);
+            var permission = new Permission("platform-synthetic-grant.synthetic-grant", "Synthetic unsupported", action, resource);
+            entityManager.persist(permission);
+            entityManager.persist(new RolePermission(entityManager.find(Role.class, malformed), permission));
+        });
+        assertSafe(send(port, root, platformGrantBody(malformed), access), 409);
+
+        assertSafe(send(port, "/v1/platform/roles", null, viewerAccess), 403);
+        long before = count("T_10_01_20");
+        jdbc.execute("CREATE TRIGGER hyflo_test_grant_insert_failure BEFORE INSERT ON T_10_01_20 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, platformGrantPath(viewer), limitedBody, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_grant_insert_failure");
+        }
+        assertThat(count("T_10_01_20")).isEqualTo(before);
+        var a = client.sendAsync(request(port, platformGrantPath(viewer), limitedBody, access), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, platformGrantPath(viewer), limitedBody, access), HttpResponse.BodyHandlers.ofString());
+        var ar = a.get(60, TimeUnit.SECONDS);
+        var br = b.get(60, TimeUnit.SECONDS);
+        assertThat(List.of(ar.statusCode(), br.statusCode())).containsExactlyInAnyOrder(201, 409);
+        var created = ar.statusCode() == 201 ? ar : br;
+        Number grantNumber = JsonPath.read(created.body(), "$.id");
+        long grant = grantNumber.longValue();
+        assertThat(count("T_10_01_20")).isEqualTo(before + 1);
+        assertSafe(send(port, "/v1/platform/roles", null, viewerAccess), 200);
+        var history = send(port, platformGrantPath(viewer), null, viewerAccess);
+        assertSafe(history, 200);
+        assertThat((List<Number>) JsonPath.read(history.body(), "$[*].id")).hasSize(3);
+        assertSafe(send(port, root, limitedBody, viewerAccess), 403);
+        assertSafe(send(port, platformGrantPath(viewer) + "/" + grant + "/revoke", reason, viewerAccess), 403);
+        assertSafe(send(port, changePath(limited, permissionId("platform-role.read"), false), reason, access), 409);
+        jdbc.execute("CREATE TRIGGER hyflo_test_grant_update_failure BEFORE UPDATE ON T_10_01_20 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, platformGrantPath(viewer) + "/" + grant + "/revoke", reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_grant_update_failure");
+        }
+        assertSafe(send(port, "/v1/platform/roles", null, viewerAccess), 200);
+        assertSafe(send(port, platformGrantPath(viewer) + "/" + grant + "/revoke", reason, access), 204);
+        assertSafe(send(port, platformGrantPath(viewer) + "/" + grant + "/revoke", reason, access), 409);
+        assertSafe(send(port, "/v1/platform/roles", null, viewerAccess), 403);
+        assertSafe(send(port, platformGrantPath(viewer), null, viewerAccess), 403);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            PlatformRoleGrant persisted = entityManager.find(PlatformRoleGrant.class, grant);
+            assertThat(persisted.getGrantedBy().getId()).isEqualTo(admin);
+            assertThat(persisted.getRevokedBy().getId()).isEqualTo(admin);
+            assertThat(persisted.getReason()).isEqualTo("synthetic assignment");
+            assertThat(persisted.getRevocationReason()).isEqualTo("synthetic revoke");
+            assertThat(persisted.getCorrelationId()).isNotBlank().isNotEqualTo(persisted.getRevocationCorrelationId());
+            assertThat(persisted.getRevokedAt()).isAfterOrEqualTo(persisted.getValidFrom());
+        });
+        assertSafe(send(port, "/v1/identity/users/" + viewer + "/suspend?companyId=" + company, reason, access), 403);
+
+        // The second administrator can use the token issued before promotion.
+        var promoted = send(port, root, full, access);
+        assertSafe(promoted, 201);
+        Number promotedNumber = JsonPath.read(promoted.body(), "$.id");
+        long promotedId = promotedNumber.longValue();
+        assertSafe(send(port, "/v1/platform/roles", null, secondAccess), 200);
+        var firstRevoke = client.sendAsync(request(port, own + "/" + initialGrant + "/revoke", reason, access),
+                HttpResponse.BodyHandlers.ofString());
+        var secondRevoke = client.sendAsync(request(port, root + "/" + promotedId + "/revoke", reason, access),
+                HttpResponse.BodyHandlers.ofString());
+        List<Integer> results = List.of(firstRevoke.get(60, TimeUnit.SECONDS).statusCode(),
+                secondRevoke.get(60, TimeUnit.SECONDS).statusCode());
+        assertThat(results.stream().filter(status -> status == 204).count()).isEqualTo(1);
+        assertThat(results).allMatch(status -> status == 204 || status == 403 || status == 409 || status == 503);
+        boolean firstRetained = jdbc.queryForObject("SELECT F_03 IS NULL FROM T_10_01_20 WHERE F_00=?", Boolean.class, initialGrant);
+        if (firstRetained) {
+            // Re-promote the second, then intentionally transfer continuity.
+            assertSafe(send(port, root, full, access), 201);
+            assertSafe(send(port, own + "/" + initialGrant + "/revoke", reason, access), 204);
+        }
+        assertSafe(send(port, "/v1/platform/roles", null, access), 403);
+        assertSafe(send(port, "/v1/platform/roles", null, secondAccess), 200);
+        var openapi = send(port, "/api-docs", null, secondAccess);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        Map<String,Object> paths = JsonPath.read(openapi.body(), "$.paths");
+        assertThat(paths.get("/v1/identity/users/{userId}/platform-role-grants").toString()).contains("get=", "post=");
+        assertThat(paths.get("/v1/identity/users/{userId}/platform-role-grants/{grantId}/revoke").toString()).contains("post=");
+        assertSafe(send(port, "/v1/auth/logout", "", secondAccess), 204);
+        assertSafe(send(port, root, null, secondAccess), 401);
+    }
+
+    private static String platformGrantPath(long user) {
+        return "/v1/identity/users/" + user + "/platform-role-grants";
+    }
+
+    private static String platformGrantBody(long role) {
+        return "{\"roleId\":" + role + ",\"reason\":\"synthetic assignment\"}";
+    }
+
+    private long platformFixtureGrant(long actor, long user, long role, Instant from, Instant to) {
+        return new TransactionTemplate(transactions).execute(tx -> {
+            var grant = new PlatformRoleGrant(entityManager.find(User.class, user), entityManager.find(Role.class, role),
+                    from, to, "synthetic fixture", java.util.UUID.randomUUID().toString(), entityManager.find(User.class, actor));
+            entityManager.persist(grant);
+            return grant.getId();
+        });
     }
 
     private long createRuntimeRole(String code, boolean platform, String access) throws Exception {

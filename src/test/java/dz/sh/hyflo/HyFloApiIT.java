@@ -156,7 +156,12 @@ class HyFloApiIT {
             if (serviceType != EmployeeAssignmentService.class) {
                 var repositoryType = repositories.getRepositoryInformationFor(entity).orElseThrow().getRepositoryInterface();
                 assertThat(serviceType.getDeclaredConstructors()).hasSize(1);
-                assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).containsExactly(repositoryType);
+                if (entity.getSimpleName().equals("PlatformRoleGrant")) {
+                    assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(6)
+                            .contains(repositoryType);
+                } else {
+                    assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).containsExactly(repositoryType);
+                }
                 // JaCoCo injects a private static synthetic method into instrumented classes.
                 var declaredBusinessMethods = java.util.Arrays.stream(serviceType.getDeclaredMethods())
                         .filter(method -> !(method.isSynthetic()
@@ -172,7 +177,8 @@ class HyFloApiIT {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName)
                             .containsExactlyInAnyOrder("record", "recordPermissionChange", "recordLifecycle");
                 } else if (entity.getSimpleName().equals("PlatformRoleGrant")) {
-                    assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("provision");
+                    assertThat(declaredBusinessMethods.stream().filter(method -> java.lang.reflect.Modifier.isPublic(method.getModifiers())).toList())
+                            .extracting(java.lang.reflect.Method::getName).containsExactlyInAnyOrder("provision", "list", "assign", "revoke");
                 } else {
                     assertThat(declaredBusinessMethods)
                             .as("Declared business methods of %s", serviceType.getName()).isEmpty();

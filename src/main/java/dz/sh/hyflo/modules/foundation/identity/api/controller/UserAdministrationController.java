@@ -7,7 +7,7 @@
  *
  * @Name        : UserAdministrationController
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Controller
@@ -27,6 +27,9 @@ import dz.sh.hyflo.modules.foundation.identity.api.request.CreateUserRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LinkEmployeeRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.response.UserEmployeeAssociationResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.request.AssignUserRoleGrantRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.AssignPlatformRoleGrantRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.response.PlatformRoleGrantResponse;
+import dz.sh.hyflo.modules.foundation.identity.application.service.PlatformRoleGrantService;
 import dz.sh.hyflo.modules.foundation.identity.api.response.UserRoleGrantResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LocalCredentialRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.UserLifecycleRequest;
@@ -56,9 +59,13 @@ public class UserAdministrationController {
     private final UserAdministrationService accounts;
     private final UserAccountMapper mapper;
 
-    public UserAdministrationController(UserAdministrationService accounts, UserAccountMapper mapper) {
+    private final PlatformRoleGrantService platformGrants;
+
+    public UserAdministrationController(UserAdministrationService accounts, UserAccountMapper mapper,
+            PlatformRoleGrantService platformGrants) {
         this.accounts = accounts;
         this.mapper = mapper;
+        this.platformGrants = platformGrants;
     }
 
     @GetMapping
@@ -203,6 +210,36 @@ public class UserAdministrationController {
         }, false);
     }
 
+    @GetMapping("/{userId}/platform-role-grants")
+    public ResponseEntity<?> listPlatformRoleGrants(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @RequestParam(name = "afterId", defaultValue = "0") String afterId) {
+        return execute(HttpStatus.OK, correlation -> platformGrants.list(principal, positive(userId),
+                identifier(afterId)).stream().map(UserAdministrationController::platformGrantResponse).toList(), false);
+    }
+
+    @PostMapping(path = "/{userId}/platform-role-grants", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> assignPlatformRoleGrant(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @Valid @RequestBody AssignPlatformRoleGrantRequest request) {
+        return execute(HttpStatus.CREATED, correlation -> platformGrantResponse(platformGrants.assign(principal,
+                positive(userId), request.roleId(), request.reason(), correlation)), false);
+    }
+
+    @PostMapping(path = "/{userId}/platform-role-grants/{grantId}/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> revokePlatformRoleGrant(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("userId") String userId, @PathVariable("grantId") String grantId,
+            @Valid @RequestBody UserLifecycleRequest request) {
+        return execute(HttpStatus.NO_CONTENT, correlation -> {
+            platformGrants.revoke(principal, positive(userId), positive(grantId), request.reason(), correlation);
+            return null;
+        }, false);
+    }
+
+    private static PlatformRoleGrantResponse platformGrantResponse(PlatformRoleGrantService.Grant grant) {
+        return new PlatformRoleGrantResponse(grant.id(), grant.userId(), grant.roleId(), grant.roleCode(),
+                grant.validFrom(), grant.validTo(), grant.revokedAt(), grant.reason(), grant.correlationId(),
+                grant.grantedBy(), grant.revocationReason(), grant.revocationCorrelationId(), grant.revokedBy());
+    }
+
     private static UserRoleGrantResponse grantResponse(UserAdministrationService.Grant grant) {
         return new UserRoleGrantResponse(grant.id(), grant.userId(), grant.roleId(), grant.roleCode(),
                 grant.companyId(), grant.scopeType(), grant.validFrom(), grant.validTo(), grant.revokedAt(),
@@ -228,7 +265,7 @@ public class UserAdministrationController {
             return problem(HttpStatus.UNAUTHORIZED, correlation);
         } catch (AccessDeniedException forbidden) {
             return problem(HttpStatus.FORBIDDEN, correlation);
-        } catch (AccountOperationRejected rejected) {
+        } catch (AccountOperationRejected | PlatformRoleGrantService.GrantRejected rejected) {
             return problem(HttpStatus.CONFLICT, correlation);
         } catch (DataIntegrityViolationException failure) {
             // Only a unique-key registration conflict is a domain rejection; evidence and other DB failures are unavailable.
