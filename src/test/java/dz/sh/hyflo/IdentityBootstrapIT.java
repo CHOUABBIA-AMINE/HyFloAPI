@@ -1963,6 +1963,347 @@ class IdentityBootstrapIT {
         }
     }
 
+
+    @Test
+    void protectedLifecycleRejectsInvalidContinuityCandidatesAndBoundedReset() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFE_GUARD_COMPANY", "guard-admin",
+                "GUARD_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='guard-admin'", Long.class);
+        long full = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        String access = loginAccess("guard-admin");
+        String reason = "{\"reason\":\"synthetic continuity probe\"}";
+        String reset = "{\"password\":\"Synthetic-guard-replacement!\",\"reason\":\"synthetic continuity probe\"}";
+        long operator = createCompositionUser(admin, company, "guard-operator");
+        long partialRole = createRuntimeRole("GUARD_PARTIAL", true, access);
+        for (String code : List.of("platform-user.suspend", "platform-user.disable", "platform-credential.reset")) {
+            assertSafe(send(port, changePath(partialRole, permissionId(code), true), reason, access), 204);
+        }
+        assertSafe(send(port, platformGrantPath(operator), platformGrantBody(partialRole), access), 201);
+        String operatorAccess = loginAccess("guard-operator");
+        long partialComplement = createCompositionUser(admin, company, "guard-complement");
+        long complementRole = createRuntimeRole("GUARD_COMPLEMENT", true, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            Role destination = entityManager.find(Role.class, complementRole);
+            for (RolePermission link : entityManager.createQuery("select p from RolePermission p where p.role.id=:id",
+                    RolePermission.class).setParameter("id", full).getResultList()) {
+                if (!List.of("platform-user.suspend", "platform-user.disable", "platform-credential.reset")
+                        .contains(link.getPermission().getCode())) {
+                    entityManager.persist(new RolePermission(destination, link.getPermission()));
+                }
+            }
+        });
+        Instant now = Instant.now();
+        platformFixtureGrant(admin, partialComplement, complementRole, now.minusSeconds(60), null);
+        long finite = createCompositionUser(admin, company, "guard-finite");
+        platformFixtureGrant(admin, finite, full, now.minusSeconds(60), now.plusSeconds(3600));
+        long future = createCompositionUser(admin, company, "guard-future");
+        platformFixtureGrant(admin, future, full, now.plusSeconds(3600), null);
+        long disabled = createCompositionUser(admin, company, "guard-disabled");
+        platformFixtureGrant(admin, disabled, full, now.minusSeconds(60), null);
+        jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='DISABLED') WHERE F_00=?", disabled);
+        long revoked = createCompositionUser(admin, company, "guard-revoked");
+        long revokedGrant = platformFixtureGrant(admin, revoked, full, now.minusSeconds(60), null);
+        assertSafe(send(port, platformGrantPath(revoked) + "/" + revokedGrant + "/revoke", reason, access), 204);
+        long unsupported = createCompositionUser(admin, company, "guard-unsupported");
+        platformFixtureGrant(admin, unsupported, full, now.minusSeconds(60), null);
+        jdbc.update("UPDATE T_10_01_10 SET F_01='unsupported-synthetic-hash' WHERE F_03=?", unsupported);
+        long capped = createCompositionUser(admin, company, "guard-capped");
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            User target = entityManager.find(User.class, capped);
+            User actor = entityManager.find(User.class, admin);
+            Role role = entityManager.find(Role.class, full);
+            for (int i = 0; i < 1000; i++) {
+                entityManager.persist(new PlatformRoleGrant(target, role, now.minusSeconds(7200),
+                        now.minusSeconds(3600), "synthetic ended grant", UUID.randomUUID().toString(), actor));
+            }
+        });
+        platformFixtureGrant(admin, capped, full, now.minusSeconds(60), null);
+        long events = count("T_10_01_18");
+        var initialStatus = jdbc.queryForMap("SELECT * FROM T_10_01_08 WHERE F_00=?", admin);
+        var initialCredential = jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", admin);
+        assertSafe(send(port, protectedPath(admin) + "/suspend", reason, operatorAccess), 409);
+        assertSafe(send(port, protectedPath(admin) + "/disable", reason, operatorAccess), 409);
+        assertSafe(send(port, protectedPath(admin) + "/credential/reset", reset, operatorAccess), 403);
+        assertThat(jdbc.queryForMap("SELECT * FROM T_10_01_08 WHERE F_00=?", admin)).isEqualTo(initialStatus);
+        assertThat(jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", admin)).isEqualTo(initialCredential);
+        assertSafe(send(port, "/v1/platform/roles", null, access), 200);
+
+        long malformed = createCompositionUser(admin, company, "guard-malformed");
+        long malformedRole = createRuntimeRole("GUARD_MALFORMED", true, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var action = new Action("synthetic-guard", "Synthetic guard");
+            var resource = new ResourceType("platform-synthetic-guard", "Synthetic guard");
+            entityManager.persist(action);
+            entityManager.persist(resource);
+            var permission = new Permission("platform-synthetic-guard.synthetic-guard", "Synthetic unsupported", action, resource);
+            entityManager.persist(permission);
+            entityManager.persist(new RolePermission(entityManager.find(Role.class, malformedRole), permission));
+        });
+        platformFixtureGrant(admin, malformed, malformedRole, now.minusSeconds(60), null);
+        for (long target : List.of(capped, malformed)) {
+            var credential = jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", target);
+            String targetAccess = loginAccess(target == capped ? "guard-capped" : "guard-malformed");
+            var sessions = jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=? ORDER BY F_00", target);
+            assertSafe(send(port, protectedPath(target) + "/credential/reset", reset, access), 403);
+            assertThat(jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", target)).isEqualTo(credential);
+            assertThat(jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=? ORDER BY F_00", target)).isEqualTo(sessions);
+            assertSafe(send(port, "/v1/me", null, targetAccess), 200);
+        }
+        assertThat(count("T_10_01_18")).isEqualTo(events);
+        // The invalid alternatives above cannot substitute for this genuine second administrator.
+        long second = createCompositionUser(admin, company, "guard-second");
+        assertSafe(send(port, platformGrantPath(second), platformGrantBody(full), access), 201);
+        assertSafe(send(port, protectedPath(admin) + "/suspend", reason, operatorAccess), 200);
+        assertSafe(send(port, "/v1/platform/roles", null, loginAccess("guard-second")), 200);
+        assertSafe(send(port, "/v1/me", null, access), 401);
+    }
+
+    @Test
+    void protectedLifecyclePermitsIndependentOperatorsAndRejectsStaleBearer() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFE_OP_COMPANY", "life-op-admin",
+                "LIFE_OP_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='life-op-admin'", Long.class);
+        String access = loginAccess("life-op-admin");
+        String reason = "{\"reason\":\"synthetic independent operation\"}";
+        long target = createCompositionUser(admin, company, "life-op-target");
+        long targetRole = createRuntimeRole("LIFE_OP_TARGET", true, access);
+        assertSafe(send(port, changePath(targetRole, permissionId("platform-role.read"), true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(target), platformGrantBody(targetRole), access), 201);
+        var tokens = applicationContext.getBean(dz.sh.hyflo.platform.security.JwtTokenService.class);
+        long events = count("T_10_01_18");
+        List<String> operations = List.of("/suspend", "/reactivate", "/credential/reset", "/sessions/revoke", "/disable");
+        List<String> permissions = List.of("platform-user.suspend", "platform-user.reactivate",
+                "platform-credential.reset", "platform-login-session.revoke", "platform-user.disable");
+        List<String> expectedEvents = List.of("SUSPENDED", "REACTIVATED", "CREDENTIAL_RESET", "SESSIONS_REVOKED", "DISABLED");
+        List<String> previous = List.of("ACTIVE", "SUSPENDED", "ACTIVE", "ACTIVE", "ACTIVE");
+        List<String> resulting = List.of("SUSPENDED", "ACTIVE", "ACTIVE", "ACTIVE", "DISABLED");
+        String replacement = "Synthetic-independent-replacement!";
+        String reset = "{\"password\":\"" + replacement + "\",\"reason\":\"synthetic independent operation\"}";
+        String targetAccess = loginAccess("life-op-target");
+        for (int i = 0; i < operations.size(); i++) {
+            String operation = operations.get(i);
+            long operator = createCompositionUser(admin, company, "life-op-" + i);
+            long role = createRuntimeRole("LIFE_OP_" + i, true, access);
+            assertSafe(send(port, changePath(role, permissionId(permissions.get(i)), true), reason, access), 204);
+            assertSafe(send(port, platformGrantPath(operator), platformGrantBody(role), access), 201);
+            if (i == 2) assertSafe(send(port, platformGrantPath(operator), platformGrantBody(targetRole), access), 201);
+            String operatorAccess = loginAccess("life-op-" + i);
+            var identity = tokens.verify(operatorAccess, Instant.now());
+            Instant expiredAt = Instant.now().minusSeconds(30);
+            String expired = tokens.issue(operator, identity.sessionId(), expiredAt.minusSeconds(30), expiredAt).value();
+            String path = protectedPath(target);
+            String body = i == 2 ? reset : reason;
+            assertSafe(send(port, path + operation, body, expired), 401);
+            String unrelated = i == 0 ? "/reactivate" : "/suspend";
+            assertSafe(send(port, path + unrelated, reason, operatorAccess), 403);
+            if (i == 2) {
+                assertSafe(send(port, path + operation, reset, loginAccess("life-op-admin")), 403);
+                assertSafe(send(port, path + operation, "{\"password\":\"" + replacement
+                        + "\",\"reason\":\"" + replacement + "\"}", operatorAccess), 400);
+            }
+            assertSafe(send(port, path + operation, body, operatorAccess), i == 2 || i == 3 ? 204 : 200);
+            var row = jdbc.queryForMap("SELECT F_01,F_02,F_03,F_04,F_05,F_06,F_07,F_08,F_09 "
+                    + "FROM T_10_01_18 WHERE F_08=? ORDER BY F_00 DESC LIMIT 1", target);
+            assertThat(row.get("F_01")).isEqualTo(expectedEvents.get(i));
+            assertThat(row.get("F_02")).isNotNull();
+            assertThat(row.get("F_03").toString()).isNotBlank();
+            assertThat(row.get("F_04")).isEqualTo("synthetic independent operation");
+            assertThat(row.get("F_05")).isEqualTo(previous.get(i));
+            assertThat(row.get("F_06")).isEqualTo(resulting.get(i));
+            assertThat(((Number)row.get("F_07")).longValue()).isEqualTo(company);
+            assertThat(((Number)row.get("F_08")).longValue()).isEqualTo(target);
+            assertThat(((Number)row.get("F_09")).longValue()).isEqualTo(operator);
+            assertThat(count("T_10_01_18")).isEqualTo(events + i + 1);
+            assertSafe(send(port, "/v1/auth/logout", "", operatorAccess), 204);
+            assertSafe(send(port, path + operation, body, operatorAccess), 401);
+            if (i == 0 || i == 2 || i == 3 || i == 4) assertSafe(send(port, "/v1/me", null, targetAccess), 401);
+            if (i == 1) targetAccess = loginAccess("life-op-target");
+            if (i == 2 || i == 3) {
+                var login = send(port, "/v1/auth/login", "{\"username\":\"life-op-target\",\"password\":\"" + replacement + "\"}", null);
+                assertThat(login.statusCode()).isEqualTo(200);
+                targetAccess = JsonPath.read(login.body(), "$.accessToken");
+            }
+        }
+        assertThat(jdbc.queryForList("SELECT F_03 FROM T_10_01_18 WHERE F_08=?", String.class, target))
+                .doesNotHaveDuplicates().hasSize(5);
+    }
+
+    @Test
+    void protectedSuspensionSerializesWithPlatformGrantRevocation() throws Exception {
+        assertMixedProtectedContinuityRace(false);
+    }
+
+    @Test
+    void protectedSuspensionSerializesWithPlatformRoleRetirement() throws Exception {
+        assertMixedProtectedContinuityRace(true);
+    }
+
+    private void assertMixedProtectedContinuityRace(boolean retire) throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFE_RACE_COMPANY", "life-race-admin",
+                "LIFE_RACE_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='life-race-admin'", Long.class);
+        long initial = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        String access = loginAccess("life-race-admin");
+        String reason = "{\"reason\":\"synthetic mixed continuity race\"}";
+        long second = createCompositionUser(admin, company, "life-race-second");
+        long independent = createRuntimeRole("LIFE_RACE_INDEPENDENT", true, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            Role destination = entityManager.find(Role.class, independent);
+            for (RolePermission link : entityManager.createQuery("select p from RolePermission p where p.role.id=:id",
+                    RolePermission.class).setParameter("id", initial).getResultList()) {
+                entityManager.persist(new RolePermission(destination, link.getPermission()));
+            }
+        });
+        var assigned = send(port, platformGrantPath(second), platformGrantBody(independent), access);
+        assertSafe(assigned, 201);
+        Number grant = JsonPath.read(assigned.body(), "$.id");
+        String secondAccess = loginAccess("life-race-second");
+        long operator = createCompositionUser(admin, company, "life-race-operator");
+        long limited = createRuntimeRole("LIFE_RACE_OPERATOR", true, access);
+        for (String code : List.of("platform-user.suspend", "platform-user-role-grant.revoke", "platform-role.retire")) {
+            assertSafe(send(port, changePath(limited, permissionId(code), true), reason, access), 204);
+        }
+        assertSafe(send(port, platformGrantPath(operator), platformGrantBody(limited), access), 201);
+        String operatorAccess = loginAccess("life-race-operator");
+        long events = count("T_10_01_18");
+        String other = retire ? "/v1/platform/roles/" + independent + "/retire"
+                : platformGrantPath(second) + "/" + grant.longValue() + "/revoke";
+        var suspend = client.sendAsync(request(port, protectedPath(admin) + "/suspend", reason, operatorAccess),
+                HttpResponse.BodyHandlers.ofString());
+        var mutation = client.sendAsync(request(port, other, reason, operatorAccess), HttpResponse.BodyHandlers.ofString());
+        var a = suspend.get(60, TimeUnit.SECONDS);
+        var b = mutation.get(60, TimeUnit.SECONDS);
+        int otherSuccess = retire ? 200 : 204;
+        if (a.statusCode() == 200) {
+            assertSafe(b, 409);
+            assertSafe(send(port, "/v1/me", null, access), 401);
+            assertSafe(send(port, "/v1/platform/roles", null, secondAccess), 200);
+            assertThat(count("T_10_01_18")).isEqualTo(events + 1);
+        } else {
+            assertSafe(a, 409);
+            assertSafe(b, otherSuccess);
+            assertSafe(send(port, "/v1/platform/roles", null, access), 200);
+            assertSafe(send(port, "/v1/platform/roles", null, secondAccess), 403);
+            assertThat(count("T_10_01_18")).isEqualTo(events);
+        }
+    }
+
+    @Test
+    void protectedResetSerializesWithOldPasswordLoginAndRefresh() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFE_SESSION_COMPANY", "life-session-admin",
+                "LIFE_SESSION_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='life-session-admin'", Long.class);
+        String access = loginAccess("life-session-admin");
+        long target = createCompositionUser(admin, company, "life-session-target");
+        long role = createRuntimeRole("LIFE_SESSION_SHARED", true, access);
+        String reason = "{\"reason\":\"synthetic session race\"}";
+        assertSafe(send(port, changePath(role, permissionId("platform-role.read"), true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(admin), platformGrantBody(role), access), 403);
+        // Setup administrator may not assign a role to self through HTTP; create exact shared-role fixtures.
+        platformFixtureGrant(admin, admin, role, Instant.now().minusSeconds(60), null);
+        assertSafe(send(port, platformGrantPath(target), platformGrantBody(role), access), 201);
+        String oldBody = "{\"username\":\"life-session-target\",\"password\":\"" + SYNTHETIC_PASSWORD + "\"}";
+        var login = send(port, "/v1/auth/login", oldBody, null);
+        assertSafe(login, 200);
+        String oldAccess = JsonPath.read(login.body(), "$.accessToken");
+        String oldRefresh = JsonPath.read(login.body(), "$.refreshToken");
+        String replacement = "Synthetic-race-replacement!";
+        String reset = "{\"password\":\"" + replacement + "\",\"reason\":\"synthetic session race\"}";
+        long events = count("T_10_01_18");
+        var a = client.sendAsync(request(port, "/v1/auth/login", oldBody, null), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, "/v1/auth/refresh", "{\"refreshToken\":\"" + oldRefresh + "\"}", null),
+                HttpResponse.BodyHandlers.ofString());
+        var c = client.sendAsync(request(port, protectedPath(target) + "/credential/reset", reset, access),
+                HttpResponse.BodyHandlers.ofString());
+        var loginRace = a.get(60, TimeUnit.SECONDS);
+        var refreshRace = b.get(60, TimeUnit.SECONDS);
+        var resetRace = c.get(60, TimeUnit.SECONDS);
+        // On a deadlock/lock-timeout safe rollback, retry only the failed reset after both competitors finish.
+        if (resetRace.statusCode() == 503) {
+            assertThat(count("T_10_01_18")).isEqualTo(events);
+            assertSafe(send(port, protectedPath(target) + "/credential/reset", reset, access), 204);
+        } else assertSafe(resetRace, 204);
+        for (var response : List.of(loginRace, refreshRace)) {
+            assertThat(response.statusCode()).isIn(200, 401, 503);
+            if (response.statusCode() == 200) {
+                String issuedAccess = JsonPath.read(response.body(), "$.accessToken");
+                String issuedRefresh = JsonPath.read(response.body(), "$.refreshToken");
+                assertSafe(send(port, "/v1/me", null, issuedAccess), 401);
+                assertSafe(send(port, "/v1/auth/refresh", "{\"refreshToken\":\"" + issuedRefresh + "\"}", null), 401);
+            }
+        }
+        assertSafe(send(port, "/v1/me", null, oldAccess), 401);
+        assertSafe(send(port, "/v1/auth/refresh", "{\"refreshToken\":\"" + oldRefresh + "\"}", null), 401);
+        assertSafe(send(port, "/v1/auth/login", oldBody, null), 401);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NULL", Long.class, target))
+                .isZero();
+        assertThat(count("T_10_01_18")).isEqualTo(events + 1);
+        assertSafe(send(port, "/v1/auth/login", "{\"username\":\"life-session-target\",\"password\":\"" + replacement + "\"}", null), 200);
+    }
+
+    @Test
+    void protectedLifecycleRechecksSessionExpiryAfterBlockingTargetLock() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFE_LOCK_COMPANY", "life-lock-admin",
+                "LIFE_LOCK_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='life-lock-admin'", Long.class);
+        String access = loginAccess("life-lock-admin");
+        long target = createCompositionUser(admin, company, "life-lock-target");
+        long role = createRuntimeRole("LIFE_LOCK_TARGET", true, access);
+        String reason = "{\"reason\":\"synthetic locked expiry\"}";
+        assertSafe(send(port, changePath(role, permissionId("platform-role.read"), true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(target), platformGrantBody(role), access), 201);
+        String targetAccess = loginAccess("life-lock-target");
+        var tokens = applicationContext.getBean(dz.sh.hyflo.platform.security.JwtTokenService.class);
+        long sid = tokens.verify(access, Instant.now()).sessionId();
+        var datasource = applicationContext.getBean(javax.sql.DataSource.class);
+        long events = count("T_10_01_18");
+        var original = jdbc.queryForMap("SELECT * FROM T_10_01_08 WHERE F_00=?", target);
+        var sessions = jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=? ORDER BY F_00", target);
+        Instant expiry = Instant.now().plusSeconds(8);
+        jdbc.update("UPDATE T_10_01_11 SET F_02=? WHERE F_00=?", java.sql.Timestamp.from(expiry), sid);
+        java.util.concurrent.CompletableFuture<HttpResponse<String>> operation;
+        try (var lock = datasource.getConnection()) {
+            lock.setAutoCommit(false);
+            try (var statement = lock.prepareStatement("SELECT F_00 FROM T_10_01_08 WHERE F_00=? FOR UPDATE")) {
+                statement.setLong(1, target);
+                try (var rows = statement.executeQuery()) { assertThat(rows.next()).isTrue(); }
+            }
+            operation = client.sendAsync(request(port, protectedPath(target) + "/suspend", reason, access),
+                    HttpResponse.BodyHandlers.ofString());
+            try {
+                // Observe the actor-session row actually locked by the HTTP transaction before expiry.
+                boolean observed = false;
+                while (Instant.now().isBefore(expiry.minusMillis(500)) && !operation.isDone()) {
+                    try (var probe = datasource.getConnection()) {
+                        probe.setAutoCommit(false);
+                        try (var statement = probe.prepareStatement("SELECT F_00 FROM T_10_01_11 WHERE F_00=? FOR UPDATE NOWAIT")) {
+                            statement.setLong(1, sid);
+                            try (var rows = statement.executeQuery()) { assertThat(rows.next()).isTrue(); }
+                        } catch (java.sql.SQLException failure) {
+                            if (failure.getErrorCode() != 3572) throw failure;
+                            observed = true;
+                        } finally { probe.rollback(); }
+                    }
+                    if (observed) break;
+                    Thread.sleep(25);
+                }
+                assertThat(observed).as("HTTP operation acquired the actor session lock before expiry").isTrue();
+                assertThat(operation.isDone()).isFalse();
+                while (Instant.now().isBefore(expiry.plusMillis(150))) Thread.sleep(25);
+            } finally { lock.rollback(); }
+        }
+        assertSafe(operation.get(60, TimeUnit.SECONDS), 401);
+        assertThat(jdbc.queryForMap("SELECT * FROM T_10_01_08 WHERE F_00=?", target)).isEqualTo(original);
+        assertThat(jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=? ORDER BY F_00", target)).isEqualTo(sessions);
+        assertThat(count("T_10_01_18")).isEqualTo(events);
+        assertSafe(send(port, "/v1/me", null, targetAccess), 200);
+    }
+
     private static String protectedPath(long userId) {
         return "/v1/identity/users/" + userId + "/platform-account";
     }
