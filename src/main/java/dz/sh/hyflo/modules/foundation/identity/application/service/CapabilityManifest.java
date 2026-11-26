@@ -29,14 +29,14 @@ import java.util.Objects;
 
 /** Reviewed executable capabilities, not customer role configuration. */
 public final class CapabilityManifest {
-    public static final String ID = "hyflo-identity-capabilities-v6";
+    public static final String ID = "hyflo-identity-capabilities-v7";
     private static final List<Entry> ENTRIES = List.of(
             entry("user.read"), entry("user-employee.read"), entry("user-employee.associate"),
             entry("user.create"), entry("user.activate"), entry("user.suspend"), entry("user.reactivate"),
             entry("user.disable"), entry("credential.initialize"), entry("credential.reset"),
             entry("login-session.revoke"), entry("role.read"), entry("permission.read"),
             entry("user-role-grant.read"), entry("user-role-grant.assign"), entry("user-role-grant.revoke"),
-            entry("identity-catalog.read"), entry(PlatformAuthorizationService.ROLE_READ),
+            entry("identity-catalog.read"), entry(SecurityHistoryService.COMPANY_READ), entry(PlatformAuthorizationService.SECURITY_HISTORY_READ), entry(PlatformAuthorizationService.ROLE_READ),
             entry(PlatformAuthorizationService.ROLE_CREATE), entry(PlatformAuthorizationService.CAPABILITY_RECONCILE),
             entry(PlatformAuthorizationService.PERMISSION_READ), entry(PlatformAuthorizationService.PERMISSION_ASSOCIATE),
             entry(PlatformAuthorizationService.PERMISSION_REMOVE), entry(PlatformAuthorizationService.ROLE_RENAME),

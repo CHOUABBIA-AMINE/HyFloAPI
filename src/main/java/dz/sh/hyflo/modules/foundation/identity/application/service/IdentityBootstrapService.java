@@ -83,7 +83,7 @@ public class IdentityBootstrapService {
             "user-role-grant.read",
             "user-role-grant.assign",
             "user-role-grant.revoke",
-            "identity-catalog.read");
+            "identity-catalog.read", SecurityHistoryService.COMPANY_READ);
 
     private static final List<String> INITIAL_PLATFORM_PERMISSIONS = List.of(
             PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE,
@@ -98,7 +98,7 @@ public class IdentityBootstrapService {
             PlatformAuthorizationService.MEMBERSHIP_READ,
             PlatformAuthorizationService.MEMBERSHIP_ASSIGN,
             PlatformAuthorizationService.MEMBERSHIP_REVOKE,
-            PlatformAuthorizationService.GROUP_GRANT_READ, PlatformAuthorizationService.GROUP_GRANT_ASSIGN, PlatformAuthorizationService.GROUP_GRANT_REVOKE);
+            PlatformAuthorizationService.GROUP_GRANT_READ, PlatformAuthorizationService.GROUP_GRANT_ASSIGN, PlatformAuthorizationService.GROUP_GRANT_REVOKE, PlatformAuthorizationService.SECURITY_HISTORY_READ);
 
     private final IdentityProviderRepository providers;
     private final UserStatusRepository statuses;

@@ -56,6 +56,14 @@ public class IdentitySecurityConfiguration {
                 .authorizeHttpRequests(access -> access
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh", "/v1/setup/initialize").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/setup/status").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/v1/identity/security-history/authentication",
+                                "/v1/identity/security-history/account-lifecycle",
+                                "/v1/identity/security-history/employee-associations",
+                                "/v1/platform/security-history/role-definitions",
+                                "/v1/platform/security-history/group-definitions",
+                                "/v1/platform/security-history/capability-reconciliations",
+                                "/v1/platform/security-history/unattributed-authentication").authenticated()
                         .requestMatchers(HttpMethod.GET, "/v1/platform/roles", "/v1/platform/permissions",
                                 "/v1/platform/roles/{roleId}/permissions", "/v1/platform/groups", "/v1/platform/groups/{groupId}",
                                 "/v1/platform/groups/{groupId}/memberships", "/v1/platform/groups/{groupId}/role-grants").authenticated()

@@ -116,7 +116,8 @@ class IdentityBootstrapIT {
             "user-role-grant.read",
             "user-role-grant.assign",
             "user-role-grant.revoke",
-            "identity-catalog.read");
+            "identity-catalog.read",
+            "security-history.read");
 
     @SuppressWarnings("resource")
     @Container
@@ -381,7 +382,8 @@ class IdentityBootstrapIT {
                         "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke",
                         "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
                         "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke",
-                        "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke")).toList());
+                        "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke",
+                        "platform-security-history.read")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -545,7 +547,9 @@ class IdentityBootstrapIT {
                         "/v1/platform/groups", "/v1/platform/groups/{groupId}", "/v1/platform/groups/{groupId}/rename",
                         "/v1/platform/groups/{groupId}/retire", "/v1/platform/groups/{groupId}/memberships",
                         "/v1/platform/groups/{groupId}/memberships/{membershipId}/revoke",
-                        "/v1/platform/groups/{groupId}/role-grants", "/v1/platform/groups/{groupId}/role-grants/{grantId}/revoke");
+                        "/v1/platform/groups/{groupId}/role-grants", "/v1/platform/groups/{groupId}/role-grants/{grantId}/revoke",
+                        "/v1/platform/security-history/role-definitions", "/v1/platform/security-history/group-definitions",
+                        "/v1/platform/security-history/capability-reconciliations", "/v1/platform/security-history/unattributed-authentication");
         assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
         assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
 
@@ -646,7 +650,8 @@ class IdentityBootstrapIT {
                         "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke",
                         "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
                         "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke",
-                        "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke");
+                        "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke",
+                        "platform-security-history.read");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -662,7 +667,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v6");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v7");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -819,7 +824,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(39L); // thirty-eight supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(41L); // forty supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -890,7 +895,7 @@ class IdentityBootstrapIT {
         var initial = send(port, catalog, null, access);
         assertSafe(initial, 200);
         List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
-        assertThat(definitions).hasSize(38).allSatisfy(entry -> {
+        assertThat(definitions).hasSize(40).allSatisfy(entry -> {
             assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
                     "platformPermission", "supported");
             assertThat(entry.get("supported")).isEqualTo(true);
@@ -930,7 +935,7 @@ class IdentityBootstrapIT {
         var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
         assertSafe(tail, 200);
         List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
-        assertThat(tailIds).hasSize(41);
+        assertThat(tailIds).hasSize(43);
         assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
                 .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
         assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
@@ -2210,6 +2215,307 @@ class IdentityBootstrapIT {
         Instant now = Instant.now();
         for (int n = 0; n < 10; n++) limiter.retryAfter("synthetic-test-peer", "profile-admin", now);
         assertSafe(send(port, emailPath, profileEmailBody("limited@example.invalid", SYNTHETIC_PASSWORD), adminAccess), 429);
+    }
+
+
+    @Test
+    void consultsAuthorizedSecurityHistoryWithoutDisclosingOtherScopes() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("HISTORY_COMPANY", "history-admin",
+                "HISTORY_ADMIN"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='history-admin'", Long.class);
+        long reserved = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        String access = loginAccess("history-admin");
+        long reader = createCompositionUser(admin, company, "history-reader");
+        long inherited = createCompositionUser(admin, company, "history-inherited");
+        long platformReader = createCompositionUser(admin, company, "history-platform");
+        long observer = createCompositionUser(admin, company, "history-observer");
+        long target = createCompositionUser(admin, company, "history-target");
+        long[] companies = new TransactionTemplate(transactions).execute(tx -> {
+            var type = entityManager.createQuery("select t from OrganizationUnitType t where t.code='COMPANY'",
+                    OrganizationUnitType.class).getSingleResult();
+            var active = entityManager.createQuery("select s from OrganizationUnitStatus s where s.code='ACTIVE'",
+                    OrganizationUnitStatus.class).getSingleResult();
+            var foreign = new OrganizationUnit("HISTORY_FOREIGN", null, null, "Synthetic foreign company",
+                    type, null, LocalDate.now(ZoneOffset.UTC).minusDays(2), null, active);
+            var expired = new OrganizationUnit("HISTORY_EXPIRED", null, null, "Synthetic expired company",
+                    type, null, LocalDate.now(ZoneOffset.UTC).minusDays(3), LocalDate.now(ZoneOffset.UTC).minusDays(1), active);
+            entityManager.persist(foreign);
+            entityManager.persist(expired);
+            return new long[]{foreign.getId(), expired.getId()};
+        });
+        long foreign = createCompositionUser(admin, companies[0], "history-foreign");
+        long service = new TransactionTemplate(transactions).execute(tx -> {
+            User owner = entityManager.find(User.class, admin);
+            User user = new User(owner.getIdentityProvider(), "history-service", "history-service@example.invalid",
+                    null, company, entityManager.createQuery("select s from UserStatus s where s.code='PENDING'", UserStatus.class).getSingleResult(),
+                    entityManager.createQuery("select t from UserType t where t.code='SERVICE'", UserType.class).getSingleResult());
+            entityManager.persist(user);
+            var credential = new LocalCredential(user, passwordEncoder.encode(SYNTHETIC_PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            user.activate(credential, entityManager.createQuery("select s from UserStatus s where s.code='ACTIVE'", UserStatus.class).getSingleResult());
+            return user.getId();
+        });
+        String readerAccess = loginAccess("history-reader");
+        String inheritedAccess = loginAccess("history-inherited");
+        String platformAccess = loginAccess("history-platform");
+        String observerAccess = loginAccess("history-observer");
+        String foreignAccess = loginAccess("history-foreign");
+        String serviceAccess = loginAccess("history-service");
+        String selector = "?companyId=" + company;
+        String companyBase = "/v1/identity/security-history/";
+        String platformBase = "/v1/platform/security-history/";
+        String auth = companyBase + "authentication";
+        String reason = "{\"reason\":\"private synthetic history reason\"}";
+        String rename = "{\"displayName\":\"Historical new name\",\"reason\":\"private synthetic history reason\"}";
+        long historyRole = createRuntimeRole("HISTORY_READER", false, access);
+        long catalogRole = createRuntimeRole("HISTORY_CATALOG", false, access);
+        long platformRole = createRuntimeRole("HISTORY_PLATFORM_READER", true, access);
+        long limitedRole = createRuntimeRole("HISTORY_PLATFORM_LIMITED", true, access);
+        assertSafe(send(port, changePath(historyRole, permissionId("security-history.read"), true), reason, access), 204);
+        assertSafe(send(port, changePath(catalogRole, permissionId("identity-catalog.read"), true), reason, access), 204);
+        assertSafe(send(port, changePath(platformRole, permissionId("platform-security-history.read"), true), reason, access), 204);
+        assertSafe(send(port, changePath(limitedRole, permissionId("platform-role.read"), true), reason, access), 204);
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        Instant end = now.plusSeconds(3600);
+        addCompanyFixtureGrant(admin, admin, historyRole, company, now.minusSeconds(5), now.plusSeconds(7200));
+        addCompanyFixtureGrant(admin, observer, catalogRole, company, now.minusSeconds(5), end);
+        addCompanyFixtureGrant(admin, foreign, historyRole, companies[0], now.minusSeconds(5), end);
+        addCompanyFixtureGrant(admin, admin, historyRole, companies[1], now.minusSeconds(5), end);
+        assertSafe(send(port, auth + selector, null, readerAccess), 403);
+        long direct = addCompanyFixtureGrant(admin, reader, historyRole, company, now.minusSeconds(5), end);
+        assertSafe(send(port, auth + selector, null, readerAccess), 200);
+        assertSafe(send(port, auth + selector, null, inheritedAccess), 403);
+        long group = createGroup("HISTORY_GROUP", access);
+        String groupPath = "/v1/platform/groups/" + group;
+        var membership = send(port, groupPath + "/memberships", memberBody(inherited), access);
+        assertSafe(membership, 201);
+        long membershipId = ((Number) JsonPath.read(membership.body(), "$.id")).longValue();
+        var grant = send(port, groupPath + "/role-grants" + selector, groupGrantBody(historyRole, end), access);
+        assertSafe(grant, 201);
+        assertSafe(send(port, auth + selector, null, inheritedAccess), 200);
+        var platformGrant = send(port, platformGrantPath(platformReader), platformGrantBody(platformRole), access);
+        assertSafe(platformGrant, 201);
+        long platformGrantId = ((Number) JsonPath.read(platformGrant.body(), "$.id")).longValue();
+        assertSafe(send(port, platformGrantPath(observer), platformGrantBody(limitedRole), access), 201);
+
+        // Generate real evidence through existing workflows and interleave scoped synthetic records.
+        assertSafe(send(port, "/v1/identity/users/" + target + "/suspend" + selector, reason, access), 200);
+        assertSafe(send(port, "/v1/identity/users/" + target + "/disable" + selector, reason, access), 200);
+        long firstSession = jdbc.queryForObject("SELECT MAX(F_00) FROM T_10_01_11 WHERE F_04=?", Long.class, reader);
+        String readerCurrent = loginAccess("history-reader");
+        assertSafe(send(port, "/v1/auth/sessions/" + firstSession + "/revoke", "", readerCurrent), 204);
+        assertSafe(send(port, auth + selector, null, readerAccess), 401);
+        assertSafe(send(port, "/v1/auth/login", "{\"username\":\"unknown-history\",\"password\":\"wrong-password\"}", null), 401);
+        long renamedRole = createRuntimeRole("HISTORY_RENAMED", false, access);
+        String rolePath = "/v1/platform/roles/" + renamedRole;
+        assertSafe(send(port, rolePath + "/rename", rename, access), 200);
+        assertSafe(send(port, rolePath + "/retire", reason, access), 200);
+        assertSafe(send(port, groupPath + "/rename", rename, access), 200);
+        var reconcile = send(port, "/v1/platform/capabilities/reconcile", reason, access);
+        assertSafe(reconcile, 200);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            User actor = entityManager.find(User.class, admin);
+            User own = entityManager.find(User.class, reader);
+            User other = entityManager.find(User.class, foreign);
+            User bootstrap = entityManager.find(User.class, reserved);
+            var provider = actor.getIdentityProvider();
+            for (int i = 0; i < 105; i++) {
+                entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
+                        "LOGIN_FAILED", now, UUID.randomUUID().toString(), provider, own));
+                entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
+                        "LOGIN_FAILED", now, UUID.randomUUID().toString(), provider, other));
+            }
+            entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
+                    "LOGIN_FAILED", now, UUID.randomUUID().toString(), provider, bootstrap));
+            own.linkEmployee(9001L);
+            entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.UserEmployeeAssociationEvent(
+                    "LINKED", now, UUID.randomUUID().toString(), "private synthetic history reason", null, own, actor));
+            own.unlinkEmployee();
+            entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.UserEmployeeAssociationEvent(
+                    "UNLINKED", now, UUID.randomUUID().toString(), "private synthetic history reason", 9001L, own, actor));
+            other.linkEmployee(9002L);
+            entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.UserEmployeeAssociationEvent(
+                    "LINKED", now, UUID.randomUUID().toString(), "private synthetic history reason", null, other, actor));
+            other.unlinkEmployee();
+            other.suspend(entityManager.createQuery("select s from UserStatus s where s.code='SUSPENDED'", UserStatus.class).getSingleResult());
+            entityManager.persist(new dz.sh.hyflo.modules.foundation.identity.domain.model.UserLifecycleEvent(
+                    "SUSPENDED", now, UUID.randomUUID().toString(), "private synthetic history reason", "ACTIVE", other, actor));
+            entityManager.persist(new CapabilityReconciliationEvent(actor, now, UUID.randomUUID().toString(),
+                    "private synthetic history reason", "historical-manifest", "a".repeat(64),
+                    List.of("read"), List.of("historical-resource"), List.of("historical-resource.read")));
+        });
+        String[] companyRoutes = {"authentication", "account-lifecycle", "employee-associations"};
+        String[] platformRoutes = {"role-definitions", "group-definitions", "capability-reconciliations", "unattributed-authentication"};
+        List<String> tables = List.of("T_10_01_08","T_10_01_10","T_10_01_11","T_10_01_12","T_10_01_13",
+                "T_10_01_14","T_10_01_15","T_10_01_16","T_10_01_18","T_10_01_19","T_10_01_20","T_10_01_21","T_10_01_22","T_10_01_23");
+        Map<String,List<Map<String,Object>>> before = new HashMap<>();
+        for (String table : tables) before.put(table, jdbc.queryForList("SELECT * FROM " + table + " ORDER BY F_00"));
+        for (String route : companyRoutes) {
+            String path = companyBase + route;
+            assertSafe(send(port, path + selector, null, null), 401);
+            assertSafe(send(port, path + selector, null, "invalid.jwt"), 401);
+            assertSafe(send(port, path + selector, null, observerAccess), 403);
+            assertSafe(send(port, path + selector, null, platformAccess), 403);
+            assertSafe(send(port, path + selector, null, serviceAccess), 403);
+            assertSafe(send(port, path + selector, null, foreignAccess), 401);
+            assertSafe(send(port, path + "?companyId=" + companies[0], null, readerCurrent), 403);
+            assertSafe(send(port, path + "?companyId=" + Long.MAX_VALUE, null, readerCurrent), 403);
+            assertSafe(send(port, path + "?companyId=" + companies[1], null, access), 403);
+            for (String invalid : List.of("", "?companyId=0", selector + "&companyId=" + company,
+                    selector + "&afterId=-1", selector + "&afterId=99999999999999999999",
+                    selector + "&afterId=1&afterId=2", selector + "&userId=" + foreign))
+                assertSafe(send(port, path + invalid, null, readerCurrent), 400);
+            assertSafe(send(port, path + selector, "{}", readerCurrent), 403);
+            assertSafe(send(port, path + selector, null, inheritedAccess), 200);
+        }
+        for (String route : platformRoutes) {
+            String path = platformBase + route;
+            assertSafe(send(port, path, null, readerCurrent), 403);
+            assertSafe(send(port, path, null, observerAccess), 403);
+            assertSafe(send(port, path, null, serviceAccess), 403);
+            assertSafe(send(port, path + selector, null, platformAccess), 400);
+            assertSafe(send(port, path + "?afterId=-1", null, platformAccess), 400);
+            assertSafe(send(port, path + "?afterId=1&afterId=2", null, platformAccess), 400);
+            assertSafe(send(port, path, "{}", platformAccess), 403);
+            assertSafe(send(port, path, null, platformAccess), 200);
+        }
+        var getWithBody = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/hyflo/api" + auth + selector))
+                .header("Authorization", "Bearer " + readerCurrent).header("Content-Type", "application/json")
+                .method("GET", HttpRequest.BodyPublishers.ofString("{}")).build();
+        assertSafe(client.send(getWithBody, HttpResponse.BodyHandlers.ofString()), 400);
+        assertSafe(send(port, companyBase + "unregistered" + selector, null, access), 403);
+        assertSafe(send(port, platformBase + "unregistered", null, access), 403);
+        var first = send(port, auth + selector, null, readerCurrent);
+        assertSafe(first, 200);
+        List<Map<String,Object>> firstRows = JsonPath.read(first.body(), "$");
+        assertThat(firstRows).hasSize(100).allSatisfy(row -> assertThat(row.keySet()).containsExactlyInAnyOrder(
+                "id", "occurredAt", "correlationId", "eventCode", "userId", "identityProviderCode", "loginSessionId"));
+        List<Long> ids = new java.util.ArrayList<>();
+        firstRows.forEach(row -> ids.add(((Number) row.get("id")).longValue()));
+        var tail = send(port, auth + selector + "&afterId=" + ids.getLast(), null, readerCurrent);
+        assertSafe(tail, 200);
+        List<Map<String,Object>> tailRows = JsonPath.read(tail.body(), "$");
+        assertThat(tailRows).isNotEmpty();
+        tailRows.forEach(row -> ids.add(((Number) row.get("id")).longValue()));
+        assertThat(ids).isSorted().doesNotHaveDuplicates().containsExactlyElementsOf(jdbc.queryForList(
+                "SELECT e.F_00 FROM T_10_01_12 e JOIN T_10_01_08 u ON e.F_05=u.F_00 WHERE u.F_05=? AND u.F_01<>'hyflo-bootstrap' ORDER BY e.F_00",
+                Long.class, company));
+        assertThat(send(port, auth + selector + "&afterId=" + ids.getLast(), null, readerCurrent).body()).isEqualTo("[]");
+        assertThat(firstRows.stream().filter(row -> "SESSION_REVOKED".equals(row.get("eventCode"))).toList())
+                .singleElement().satisfies(row -> assertThat(((Number)row.get("loginSessionId")).longValue()).isEqualTo(firstSession));
+        var lifecycle = send(port, companyBase + "account-lifecycle" + selector, null, readerCurrent);
+        assertSafe(lifecycle, 200);
+        List<Map<String,Object>> life = JsonPath.read(lifecycle.body(), "$");
+        assertThat(life).hasSize(2).allSatisfy(row -> {
+            assertThat(row.keySet()).containsExactlyInAnyOrder("id","occurredAt","correlationId","eventCode","companyId","userId",
+                    "performedByUserId","previousStatusCode","resultingStatusCode");
+            assertThat(((Number)row.get("userId")).longValue()).isEqualTo(target);
+            assertThat(((Number)row.get("performedByUserId")).longValue()).isEqualTo(admin);
+            assertThat(((Number)row.get("companyId")).longValue()).isEqualTo(company);
+        });
+        assertThat(life.stream().map(row -> row.get("previousStatusCode")).toList()).containsExactly("ACTIVE","SUSPENDED");
+        assertThat(life.stream().map(row -> row.get("resultingStatusCode")).toList()).containsExactly("SUSPENDED","DISABLED");
+        var associations = send(port, companyBase + "employee-associations" + selector, null, readerCurrent);
+        assertSafe(associations, 200);
+        List<Map<String,Object>> links = JsonPath.read(associations.body(), "$");
+        assertThat(links).hasSize(2).allSatisfy(row -> assertThat(row.keySet()).containsExactlyInAnyOrder(
+                "id","occurredAt","correlationId","eventCode","companyId","userId","performedByUserId","previousEmployeeId","resultingEmployeeId"));
+        assertThat(links.getFirst().get("previousEmployeeId")).isNull();
+        assertThat(((Number)links.getFirst().get("resultingEmployeeId")).longValue()).isEqualTo(9001L);
+        assertThat(((Number)links.getLast().get("previousEmployeeId")).longValue()).isEqualTo(9001L);
+        assertThat(links.getLast().get("resultingEmployeeId")).isNull();
+        var roles = send(port, platformBase + "role-definitions", null, platformAccess);
+        assertSafe(roles, 200);
+        List<Map<String,Object>> roleRows = JsonPath.read(roles.body(), "$");
+        assertThat(roleRows).allSatisfy(row -> assertThat(row.keySet()).containsExactlyInAnyOrder(
+                "id","occurredAt","correlationId","eventCode","roleId","roleCode","displayName","platformRole","performedByUserId","permissionId"));
+        var renamed = roleRows.stream().filter(row -> ((Number)row.get("roleId")).longValue() == renamedRole).toList();
+        assertThat(renamed.stream().map(row -> row.get("eventCode")).toList()).containsExactly("CREATED","RENAMED_FROM","RENAMED","RETIRED");
+        assertThat(renamed.get(1).get("correlationId")).isEqualTo(renamed.get(2).get("correlationId"));
+        assertThat(renamed.get(1).get("occurredAt")).isEqualTo(renamed.get(2).get("occurredAt"));
+        assertThat(renamed.get(2).get("displayName")).isEqualTo("Historical new name");
+        assertThat(roleRows.stream().anyMatch(row -> Boolean.TRUE.equals(row.get("platformRole")))).isTrue();
+        var groups = send(port, platformBase + "group-definitions", null, platformAccess);
+        assertSafe(groups, 200);
+        List<Map<String,Object>> groupRows = JsonPath.read(groups.body(), "$");
+        assertThat(groupRows).hasSize(3).allSatisfy(row -> assertThat(row.keySet()).containsExactlyInAnyOrder(
+                "id","occurredAt","correlationId","eventCode","groupId","groupCode","displayName","enabled","performedByUserId"));
+        assertThat(groupRows.get(1).get("correlationId")).isEqualTo(groupRows.get(2).get("correlationId"));
+        var capabilities = send(port, platformBase + "capability-reconciliations", null, platformAccess);
+        assertSafe(capabilities, 200);
+        List<Map<String,Object>> capRows = JsonPath.read(capabilities.body(), "$");
+        assertThat(capRows).hasSize(2).allSatisfy(row -> assertThat(row.keySet()).containsExactlyInAnyOrder(
+                "id","occurredAt","correlationId","performedByUserId","manifestId","manifestDigest","insertedActionCodes",
+                "insertedResourceTypeCodes","insertedPermissionCodes"));
+        assertThat(capRows.getFirst().get("manifestDigest")).isEqualTo((String)JsonPath.read(reconcile.body(), "$.manifestDigest"));
+        assertThat(capRows.getLast().get("insertedPermissionCodes")).isEqualTo(List.of("historical-resource.read"));
+        assertThat(capRows.getLast().get("manifestId")).isEqualTo("historical-manifest");
+        var unattributed = send(port, platformBase + "unattributed-authentication", null, platformAccess);
+        assertSafe(unattributed, 200);
+        List<Map<String,Object>> unknown = JsonPath.read(unattributed.body(), "$");
+        assertThat(unknown).isNotEmpty().allSatisfy(row -> {
+            assertThat(row.keySet()).containsExactlyInAnyOrder("id","occurredAt","correlationId","eventCode","identityProviderCode");
+            assertThat(row.get("eventCode")).isEqualTo("LOGIN_FAILED");
+        });
+        assertThat(unknown.stream().map(row -> ((Number)row.get("id")).longValue()).toList()).containsExactlyElementsOf(
+                jdbc.queryForList("SELECT F_00 FROM T_10_01_12 WHERE F_05 IS NULL AND F_01='LOGIN_FAILED' ORDER BY F_00", Long.class));
+        for (var response : List.of(first,tail,lifecycle,associations,roles,groups,capabilities,unattributed))
+            assertThat(response.body()).doesNotContain("private synthetic history reason","unknown-history","history-reader@example.invalid",
+                    "history-foreign@example.invalid","passwordHash","refreshToken","\"reason\"");
+        for (String table : tables) assertThat(jdbc.queryForList("SELECT * FROM " + table + " ORDER BY F_00")).as(table)
+                .usingRecursiveComparison().isEqualTo(before.get(table));
+
+        // Permission loss without JWT refresh and retained group retirement history.
+        assertSafe(send(port, groupPath + "/memberships/" + membershipId + "/revoke", "", access), 204);
+        assertSafe(send(port, auth + selector, null, inheritedAccess), 403);
+        assertSafe(send(port, groupPath + "/retire", reason, access), 200);
+        assertThat((List<String>)JsonPath.read(send(port, platformBase + "group-definitions", null, platformAccess).body(), "$[*].eventCode"))
+                .contains("RETIRED");
+        assertSafe(send(port, platformGrantPath(platformReader) + "/" + platformGrantId + "/revoke", reason, access), 204);
+        assertSafe(send(port, platformBase + "role-definitions", null, platformAccess), 403);
+        assertSafe(send(port, "/v1/identity/users/" + reader + "/role-grants/" + direct + "/revoke" + selector, "", access), 204);
+        assertSafe(send(port, auth + selector, null, readerCurrent), 403);
+
+        // A corrupted persisted snapshot must not produce a partial success or disclose its contents.
+        long capId = ((Number)capRows.getLast().get("id")).longValue();
+        jdbc.update("UPDATE T_10_01_22 SET F_08=? WHERE F_00=?", "invalid snapshot secret", capId);
+        try {
+            var bad = send(port, platformBase + "capability-reconciliations", null, access);
+            assertSafe(bad, 503);
+            assertThat(bad.body()).doesNotContain("invalid snapshot secret");
+        } finally {
+            jdbc.update("UPDATE T_10_01_22 SET F_08=? WHERE F_00=?", "historical-resource.read", capId);
+        }
+        var openapi = send(port, "/api-docs", null, access);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        Map<String,Object> apiPaths = JsonPath.read(openapi.body(), "$.paths");
+        Map<String,Object> schemas = JsonPath.read(openapi.body(), "$.components.schemas");
+        String[] names = {"Authentication","AccountLifecycle","EmployeeAssociation","RoleDefinition","GroupDefinition",
+                "CapabilityReconciliation","UnattributedAuthentication"};
+        List<String> allPaths = new java.util.ArrayList<>();
+        for (String route : companyRoutes) allPaths.add(companyBase + route);
+        for (String route : platformRoutes) allPaths.add(platformBase + route);
+        List<List<String>> fields = List.of(
+                List.of("id","occurredAt","correlationId","eventCode","userId","identityProviderCode","loginSessionId"),
+                List.of("id","occurredAt","correlationId","eventCode","companyId","userId","performedByUserId","previousStatusCode","resultingStatusCode"),
+                List.of("id","occurredAt","correlationId","eventCode","companyId","userId","performedByUserId","previousEmployeeId","resultingEmployeeId"),
+                List.of("id","occurredAt","correlationId","eventCode","roleId","roleCode","displayName","platformRole","performedByUserId","permissionId"),
+                List.of("id","occurredAt","correlationId","eventCode","groupId","groupCode","displayName","enabled","performedByUserId"),
+                List.of("id","occurredAt","correlationId","performedByUserId","manifestId","manifestDigest","insertedActionCodes","insertedResourceTypeCodes","insertedPermissionCodes"),
+                List.of("id","occurredAt","correlationId","eventCode","identityProviderCode"));
+        for (int i = 0; i < allPaths.size(); i++) {
+            var path = (Map<?,?>)apiPaths.get(allPaths.get(i));
+            assertThat(path.keySet().stream().map(Object::toString).toList()).containsExactly("get");
+            var operation = (Map<?,?>)path.get("get");
+            var parameters = (List<?>)operation.get("parameters");
+            assertThat(parameters.stream().map(value -> ((Map<?,?>)value).get("name").toString()).toList())
+                    .containsExactlyInAnyOrderElementsOf(i < 3 ? List.of("companyId","afterId") : List.of("afterId"));
+            var responseSchema = (Map<?,?>)schemas.get("SecurityHistory" + names[i]);
+            assertThat(((Map<?,?>)responseSchema.get("properties")).keySet().stream().map(Object::toString).toList())
+                    .containsExactlyInAnyOrderElementsOf(fields.get(i));
+            assertThat(operation.get("responses").toString()).contains("SecurityHistory" + names[i]);
+        }
     }
 
     private String profileEmailBody(String email, String password) {

@@ -96,7 +96,7 @@ class IdentityAuthorizationIT {
     private static final String SUSPENDED_PASSWORD = "Synthetic-suspended-password!";
     private static final String RESET_PASSWORD = "Synthetic-replacement-password!";
     private static final List<String> EXPECTED = List.of("credential.initialize", "credential.reset",
-            "identity-catalog.read", "login-session.revoke", "permission.read", "role.read",
+            "identity-catalog.read", "login-session.revoke", "permission.read", "role.read", "security-history.read",
             "user-employee.associate", "user-employee.read", "user-role-grant.assign", "user-role-grant.read", "user-role-grant.revoke", "user.activate",
             "user.create", "user.disable", "user.reactivate", "user.read", "user.suspend");
 
