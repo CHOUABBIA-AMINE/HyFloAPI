@@ -1262,7 +1262,22 @@ class IdentityBootstrapIT {
         });
         addCompanyFixtureGrant(bootstrapActor, observer, futureBootstrap, company, now.plusSeconds(3600), null);
         addCompanyFixtureGrant(bootstrapActor, observer, endedBootstrap, company, now.minusSeconds(7200), now.minusSeconds(3600));
+        // IDN-23 permits safe retirement, but never expansion of a future-granted platform role.
+        assertSafe(send(port, changePath(futurePlatform, permissionId("platform-role.read"), true), retire, access), 409);
+        var futureGrantHistory = jdbc.queryForList("SELECT * FROM T_10_01_20 WHERE F_09=?", futurePlatform);
+        assertThat(futureGrantHistory).hasSize(1);
+        long futureRetirementEvents = count("T_10_01_21");
+        long futureRetirementLinks = count("T_10_01_14");
+        var futureRetired = send(port, root + futurePlatform + "/retire", retire, access);
+        assertSafe(futureRetired, 200);
+        assertThat((Boolean) JsonPath.read(futureRetired.body(), "$.enabled")).isFalse();
+        assertThat(jdbc.queryForObject("SELECT F_03 FROM T_10_01_04 WHERE F_00=?", Boolean.class, futurePlatform)).isFalse();
+        assertThat(jdbc.queryForList("SELECT * FROM T_10_01_20 WHERE F_09=?", futurePlatform)).isEqualTo(futureGrantHistory);
+        assertThat(count("T_10_01_14")).isEqualTo(futureRetirementLinks);
+        assertThat(count("T_10_01_21")).isEqualTo(futureRetirementEvents + 1);
         assertSafe(send(port, root + futurePlatform + "/retire", retire, access), 409);
+        assertThat(count("T_10_01_21")).isEqualTo(futureRetirementEvents + 1);
+        assertSafe(send(port, "/v1/platform/roles", null, access), 200);
         assertSafe(send(port, root + endedPlatform + "/retire", retire, access), 200);
         assertSafe(send(port, root + futureBootstrap + "/retire", retire, access), 409);
         assertSafe(send(port, root + endedBootstrap + "/retire", retire, access), 200);
