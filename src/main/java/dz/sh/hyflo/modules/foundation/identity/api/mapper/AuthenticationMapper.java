@@ -7,7 +7,7 @@
  *
  * @Name        : AuthenticationMapper
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Mapper
@@ -20,6 +20,8 @@
 package dz.sh.hyflo.modules.foundation.identity.api.mapper;
 
 import dz.sh.hyflo.modules.foundation.identity.api.response.CurrentIdentityResponse;
+import dz.sh.hyflo.modules.foundation.identity.api.response.OwnProfileResponse;
+import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService.OwnProfile;
 import dz.sh.hyflo.modules.foundation.identity.api.response.OwnSessionResponse;
 import dz.sh.hyflo.modules.foundation.identity.api.response.TokenResponse;
 import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService.LoginResult;
@@ -33,6 +35,11 @@ public class AuthenticationMapper {
     public TokenResponse toTokenResponse(LoginResult result) {
         return new TokenResponse(result.accessToken(), "Bearer", result.accessExpiresAt(),
                 result.refreshToken(), result.sessionExpiresAt());
+    }
+
+    public OwnProfileResponse toOwnProfileResponse(OwnProfile profile) {
+        return new OwnProfileResponse(profile.userId(), profile.username(), profile.email(),
+                profile.companyId(), profile.userTypeCode(), profile.userStatusCode());
     }
 
     public OwnSessionResponse toOwnSessionResponse(OwnSession session) {

@@ -7,7 +7,7 @@
  *
  * @Name        : IdentityAuthenticationTest
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Test
@@ -158,10 +158,16 @@ class IdentityAuthenticationTest {
             assertThat(validator.validate(new RefreshRequest(null))).isNotEmpty();
         }
         assertThat(new RefreshRequest(secret).toString()).doesNotContain(secret);
+        assertThat(AuthenticationService.validOwnEmailInput("Mixed@example.invalid", "password")).isTrue();
+        assertThat(AuthenticationService.validOwnEmailInput("HYFLO-BOOTSTRAP@hyflo.invalid", "password")).isFalse();
+        assertThat(AuthenticationService.validOwnEmailInput(" a@example.invalid", "password")).isFalse();
+        assertThat(AuthenticationService.validOwnEmailInput("a@example.invalid", "é".repeat(37))).isFalse();
+        assertThat(new dz.sh.hyflo.modules.foundation.identity.api.request.ChangeOwnEmailRequest(
+                "private@example.invalid", "secret").toString()).doesNotContain("private@example.invalid", "secret");
         var provider = dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider.local();
         var user = org.mockito.Mockito.mock(dz.sh.hyflo.modules.foundation.identity.domain.model.User.class);
         for (String event : new String[]{"REFRESH_SUCCEEDED", "REFRESH_REPLAY", "LOGOUT",
-                "PASSWORD_CHANGED", "PASSWORD_CHANGE_FAILED"}) {
+                "PASSWORD_CHANGED", "PASSWORD_CHANGE_FAILED", "PROFILE_EMAIL_CHANGED", "PROFILE_EMAIL_FAILED"}) {
             assertThat(new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(
                     event, NOW, "synthetic-correlation", provider, user).getEventCode()).isEqualTo(event);
             assertThatThrownBy(() -> new dz.sh.hyflo.modules.foundation.identity.domain.model.AuthenticationEvent(

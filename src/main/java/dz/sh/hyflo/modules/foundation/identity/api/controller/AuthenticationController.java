@@ -7,7 +7,7 @@
  *
  * @Name        : AuthenticationController
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Controller
@@ -24,6 +24,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 import dz.sh.hyflo.modules.foundation.identity.api.mapper.AuthenticationMapper;
+import dz.sh.hyflo.modules.foundation.identity.api.request.ChangeOwnEmailRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.response.OwnProfileResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.http.ProblemDetail;
 import dz.sh.hyflo.modules.foundation.identity.api.request.ChangePasswordRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.LoginRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.request.RefreshRequest;
@@ -194,6 +200,55 @@ public class AuthenticationController {
         return Long.parseLong(value);
     }
 
+    @GetMapping("/me/profile")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OwnProfileResponse.class)))
+    public ResponseEntity<?> ownProfile(@AuthenticationPrincipal CurrentIdentity identity, HttpServletRequest httpRequest) {
+        String correlation = UUID.randomUUID().toString();
+        if (!httpRequest.getParameterMap().isEmpty()) return problem(HttpStatus.BAD_REQUEST, correlation, 0);
+        try {
+            return ResponseEntity.ok().header("Cache-Control", "no-store")
+                    .body(mapper.toOwnProfileResponse(authentication.ownProfile(identity)));
+        } catch (AuthenticationException unauthenticated) {
+            return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+        } catch (RuntimeException unavailable) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    @PostMapping(path = "/me/profile/email", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = OwnProfileResponse.class)))
+    public ResponseEntity<?> changeOwnEmail(@AuthenticationPrincipal CurrentIdentity identity,
+            @Valid @RequestBody ChangeOwnEmailRequest request, HttpServletRequest httpRequest) {
+        String correlation = UUID.randomUUID().toString();
+        if (identity == null) return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+        if (!httpRequest.getParameterMap().isEmpty()
+                || !AuthenticationService.validOwnEmailInput(request.email(), request.currentPassword())) {
+            return problem(HttpStatus.BAD_REQUEST, correlation, 0);
+        }
+        long retry = limiter.retryAfter(httpRequest.getRemoteAddr(), identity.username(), Instant.now());
+        if (retry > 0) return problem(HttpStatus.TOO_MANY_REQUESTS, correlation, retry);
+        try {
+            var result = authentication.changeOwnEmail(identity, request.email(), request.currentPassword(), correlation);
+            if (result.isEmpty()) return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+            return ResponseEntity.ok().header("Cache-Control", "no-store")
+                    .body(mapper.toOwnProfileResponse(result.orElseThrow()));
+        } catch (AuthenticationException unauthenticated) {
+            return problem(HttpStatus.UNAUTHORIZED, correlation, 0);
+        } catch (AccessDeniedException denied) {
+            return problem(HttpStatus.FORBIDDEN, correlation, 0);
+        } catch (RuntimeException failure) {
+            return problem(emailCollision(failure) ? HttpStatus.CONFLICT : HttpStatus.SERVICE_UNAVAILABLE, correlation, 0);
+        }
+    }
+
+    private static boolean emailCollision(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+            if (cause instanceof java.sql.SQLException sql && sql.getErrorCode() == 1062
+                    && sql.getMessage() != null && sql.getMessage().contains("T_10_01_08_UK_02")) return true;
+        }
+        return false;
+    }
+
     @GetMapping("/me")
     public ResponseEntity<CurrentIdentityResponse> me(@AuthenticationPrincipal CurrentIdentity identity) {
         return ResponseEntity.ok().header("Cache-Control", "no-store").body(mapper.toCurrentIdentityResponse(identity));
@@ -212,6 +267,12 @@ public class AuthenticationController {
         }
         if (retry > 0) {
             response.header("Retry-After", Long.toString(retry));
+        }
+        if (status == HttpStatus.CONFLICT) {
+            ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, "Account operation rejected");
+            problem.setProperty("code", "ACCOUNT_OPERATION_REJECTED");
+            problem.setProperty("correlationId", correlation);
+            return response.body(problem);
         }
         return response.body(AuthenticationProblems.problem(status, correlation));
     }

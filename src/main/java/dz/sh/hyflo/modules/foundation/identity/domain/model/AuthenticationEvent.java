@@ -7,7 +7,7 @@
  *
  * @Name        : AuthenticationEvent
  * @CreatedOn   : 11-24-2026
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -51,6 +51,8 @@ public class AuthenticationEvent {
     public static final String REFRESH_REPLAY = "REFRESH_REPLAY";
     public static final String PASSWORD_CHANGED = "PASSWORD_CHANGED";
     public static final String PASSWORD_CHANGE_FAILED = "PASSWORD_CHANGE_FAILED";
+    public static final String PROFILE_EMAIL_CHANGED = "PROFILE_EMAIL_CHANGED";
+    public static final String PROFILE_EMAIL_FAILED = "PROFILE_EMAIL_FAILED";
     public static final String SESSION_REVOKED = "SESSION_REVOKED";
 
     @Id
@@ -91,7 +93,8 @@ public class AuthenticationEvent {
         if (!LOGIN_SUCCEEDED.equals(eventCode) && !LOGIN_FAILED.equals(eventCode) && !LOGOUT.equals(eventCode)
                 && !REFRESH_SUCCEEDED.equals(eventCode) && !REFRESH_REPLAY.equals(eventCode)
                 && !PASSWORD_CHANGED.equals(eventCode) && !PASSWORD_CHANGE_FAILED.equals(eventCode)
-                && !SESSION_REVOKED.equals(eventCode)) {
+                && !SESSION_REVOKED.equals(eventCode) && !PROFILE_EMAIL_CHANGED.equals(eventCode)
+                && !PROFILE_EMAIL_FAILED.equals(eventCode)) {
             throw new IllegalArgumentException("Unsupported authentication event");
         }
         if (user == null && !LOGIN_FAILED.equals(eventCode)) {

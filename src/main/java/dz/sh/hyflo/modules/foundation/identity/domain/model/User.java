@@ -7,7 +7,7 @@
  *
  * @Name        : User
  * @CreatedOn   : 06-26-2025
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -123,6 +123,24 @@ public class User {
             throw new IllegalStateException("Employee association rejected");
         }
         employeeId = null;
+    }
+
+    public static boolean validContactEmail(String email) {
+        return email != null && !email.isBlank() && email.length() <= 100
+                && !"hyflo-bootstrap@hyflo.invalid".equalsIgnoreCase(email)
+                && email.codePoints().noneMatch(c -> Character.isWhitespace(c) || Character.isSpaceChar(c)
+                        || Character.isISOControl(c))
+                && email.matches("[^@]+@[^@]+");
+    }
+
+    public void changeEmail(String email) {
+        if (!validContactEmail(email)) throw new IllegalArgumentException("Invalid contact email");
+        if (!userType.hasCode(UserType.HUMAN_CODE) || !userStatus.hasCode(UserStatus.ACTIVE_CODE)
+                || "hyflo-bootstrap".equals(username) || !identityProvider.isEnabled()
+                || !IdentityProvider.LOCAL_CODE.equals(identityProvider.getCode())) {
+            throw new IllegalStateException("Contact email change rejected");
+        }
+        this.email = email;
     }
 
     public void changeProfilePicture(Long fileId) {

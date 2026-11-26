@@ -7,7 +7,7 @@
  *
  * @Name        : AuthenticationService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -33,6 +33,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.IdentityProvider;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LocalCredential;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.LoginSession;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RefreshToken;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.User;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.AuthenticationEventRepository;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.IdentityProviderRepository;
@@ -281,6 +282,77 @@ public class AuthenticationService {
         target.revoke(now);
         events.save(new AuthenticationEvent(AuthenticationEvent.SESSION_REVOKED, now, correlationId,
                 user.getIdentityProvider(), user, target));
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public OwnProfile ownProfile(SessionAuthenticationService.CurrentIdentity principal) {
+        requireOwnPrincipal(principal);
+        LoginSession current = sessions.findById(principal.sessionId()).orElseThrow(
+                () -> new InsufficientAuthenticationException("Authentication required"));
+        User user = current.getUser();
+        if (!user.getId().equals(principal.userId())
+                || !ownsLiveSession(principal, user, current, clock.instant().truncatedTo(ChronoUnit.MICROS))) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+        return profile(user);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Optional<OwnProfile> changeOwnEmail(SessionAuthenticationService.CurrentIdentity principal,
+            String email, String currentPassword, String correlationId) {
+        requireOwnPrincipal(principal);
+        if (!validOwnEmailInput(email, currentPassword)) throw new IllegalArgumentException("Invalid profile input");
+        User user = users.findForUpdate(principal.userId()).orElseThrow(
+                () -> new InsufficientAuthenticationException("Authentication required"));
+        LoginSession current = sessions.findForUpdate(principal.sessionId()).orElse(null);
+        IdentityProvider provider = providers.findByCodeForWrite(IdentityProvider.LOCAL_CODE).orElseThrow(
+                () -> new InsufficientAuthenticationException("Authentication required"));
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        if (!provider.isEnabled() || !provider.getId().equals(user.getIdentityProvider().getId())
+                || !ownsLiveSession(principal, user, current, now)) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+        if (!user.getUserType().hasCode(UserType.HUMAN_CODE)) throw new AccessDeniedException("Access denied");
+        LocalCredential credential = credentials.findByUser_Id(user.getId()).orElse(null);
+        boolean verified = false;
+        if (credential != null && user.getId().equals(credential.getUser().getId())
+                && LocalCredential.supportsPasswordHash(credential.getPasswordHash())) {
+            try {
+                verified = encoder.matches(currentPassword, credential.getPasswordHash());
+            } catch (IllegalArgumentException invalidHash) {
+                verified = false;
+            }
+        }
+        now = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        if (!ownsLiveSession(principal, user, current, now)
+                || !provider.isEnabled() || !user.getUserType().hasCode(UserType.HUMAN_CODE)) {
+            throw new InsufficientAuthenticationException("Authentication required");
+        }
+        if (!verified) {
+            events.save(new AuthenticationEvent(AuthenticationEvent.PROFILE_EMAIL_FAILED, now, correlationId,
+                    provider, user));
+            return Optional.empty();
+        }
+        if (!email.equals(user.getEmail())) {
+            user.changeEmail(email);
+            events.save(new AuthenticationEvent(AuthenticationEvent.PROFILE_EMAIL_CHANGED, now, correlationId,
+                    provider, user));
+        }
+        return Optional.of(profile(user));
+    }
+
+    public static boolean validOwnEmailInput(String email, String currentPassword) {
+        return User.validContactEmail(email) && validPasswordInput(currentPassword);
+    }
+
+    private static OwnProfile profile(User user) {
+        return new OwnProfile(user.getId(), user.getUsername(), user.getEmail(), user.getOwningOrganizationUnitId(),
+                user.getUserType().getCode(), user.getUserStatus().getCode());
+    }
+
+    public record OwnProfile(long userId, String username, String email, long companyId,
+            String userTypeCode, String userStatusCode) {
+        @Override public String toString() { return "OwnProfile[redacted]"; }
     }
 
     private static void requireOwnPrincipal(SessionAuthenticationService.CurrentIdentity principal) {

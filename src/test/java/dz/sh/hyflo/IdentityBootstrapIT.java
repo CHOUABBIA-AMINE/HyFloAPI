@@ -2058,6 +2058,168 @@ class IdentityBootstrapIT {
         assertThat(paths.get("/v1/platform/groups/{groupId}/role-grants/{grantId}/revoke").toString()).contains("post=");
     }
 
+    @Test
+    void consultsOwnProfileAndChangesOnlyContactEmailWithLiveEvidence() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("PROFILE_COMPANY", "profile-admin",
+                "PROFILE_AUTHORITY"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='profile-admin'", Long.class);
+        long member = createCompositionUser(admin, company, "profile-member");
+        long second = createCompositionUser(admin, company, "profile-second");
+        long foreignCompany = new TransactionTemplate(transactions).execute(tx -> {
+            var type = entityManager.createQuery("select t from OrganizationUnitType t where t.code='COMPANY'",
+                    OrganizationUnitType.class).getSingleResult();
+            var active = entityManager.createQuery("select s from OrganizationUnitStatus s where s.code='ACTIVE'",
+                    OrganizationUnitStatus.class).getSingleResult();
+            var unit = new OrganizationUnit("PROFILE_FOREIGN", null, null, "Synthetic foreign company",
+                    type, null, LocalDate.now(ZoneOffset.UTC).minusDays(1), null, active);
+            entityManager.persist(unit);
+            return unit.getId();
+        });
+        long foreign = createCompositionUser(admin, foreignCompany, "profile-foreign");
+        long service = new TransactionTemplate(transactions).execute(tx -> {
+            User owner = entityManager.find(User.class, admin);
+            User user = new User(owner.getIdentityProvider(), "profile-service", "service@example.invalid", null, company,
+                    entityManager.createQuery("select s from UserStatus s where s.code='PENDING'", UserStatus.class).getSingleResult(),
+                    entityManager.createQuery("select t from UserType t where t.code='SERVICE'", UserType.class).getSingleResult());
+            entityManager.persist(user);
+            var credential = new LocalCredential(user, passwordEncoder.encode(SYNTHETIC_PASSWORD), Instant.now());
+            entityManager.persist(credential);
+            user.activate(credential, entityManager.createQuery("select s from UserStatus s where s.code='ACTIVE'",
+                    UserStatus.class).getSingleResult());
+            return user.getId();
+        });
+        String access = loginAccess("profile-member");
+        String secondAccess = loginAccess("profile-second");
+        String foreignAccess = loginAccess("profile-foreign");
+        String adminAccess = loginAccess("profile-admin");
+        String serviceAccess = loginAccess("profile-service");
+        String path = "/v1/me/profile", emailPath = path + "/email";
+        assertSafe(send(port, path, null, null), 401);
+        assertSafe(send(port, emailPath, profileEmailBody("new@example.invalid", SYNTHETIC_PASSWORD), "invalid.jwt"), 401);
+        assertSafe(send(port, path + "?userId=" + foreign, null, access), 400);
+        assertSafe(send(port, emailPath + "?companyId=" + foreignCompany,
+                profileEmailBody("new@example.invalid", SYNTHETIC_PASSWORD), access), 400);
+        var read = send(port, path, null, access);
+        assertSafe(read, 200);
+        Map<String, Object> projection = JsonPath.read(read.body(), "$");
+        assertThat(projection.keySet()).containsExactlyInAnyOrder("userId", "username", "email", "companyId",
+                "userTypeCode", "userStatusCode");
+        assertThat(((Number) projection.get("userId")).longValue()).isEqualTo(member);
+        assertThat(((Number) projection.get("companyId")).longValue()).isEqualTo(company);
+        assertThat(projection.get("username")).isEqualTo("profile-member");
+        assertThat(projection.get("email")).isEqualTo("profile-member@example.invalid");
+        assertThat(projection.get("userTypeCode")).isEqualTo("HUMAN");
+        assertThat(projection.get("userStatusCode")).isEqualTo("ACTIVE");
+        assertSafe(send(port, path, null, adminAccess), 200);
+        var serviceProfile = send(port, path, null, serviceAccess);
+        assertSafe(serviceProfile, 200);
+        assertThat((String) JsonPath.read(serviceProfile.body(), "$.userTypeCode")).isEqualTo("SERVICE");
+        assertThat(((Number) JsonPath.read(serviceProfile.body(), "$.userId")).longValue()).isEqualTo(service);
+        assertSafe(send(port, emailPath, profileEmailBody("new@example.invalid", SYNTHETIC_PASSWORD), serviceAccess), 403);
+        for (String malformed : List.of("{}", "{\"email\":\"x@example.invalid\",\"currentPassword\":\"x\",\"userId\":" + foreign + "}",
+                "{\"email\":\"x@example.invalid\",\"currentPassword\":\"x\",\"profilePictureFileId\":1}",
+                profileEmailBody("not-an-email", SYNTHETIC_PASSWORD),
+                profileEmailBody("HYFLO-BOOTSTRAP@hyflo.invalid", SYNTHETIC_PASSWORD),
+                profileEmailBody(" bad@example.invalid", SYNTHETIC_PASSWORD),
+                profileEmailBody("a".repeat(101) + "@example.invalid", SYNTHETIC_PASSWORD),
+                profileEmailBody("x@example.invalid", "é".repeat(37)))) {
+            assertSafe(send(port, emailPath, malformed, access), 400);
+        }
+        var before = jdbc.queryForMap("SELECT F_01,F_03,F_04,F_05,F_06,F_07,F_08 FROM T_10_01_08 WHERE F_00=?", member);
+        var credentialBefore = jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", member);
+        var sessionsBefore = jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=?", member);
+        long grants = count("T_10_01_15");
+        long changed = profileEventCount("PROFILE_EMAIL_CHANGED");
+        long failed = profileEventCount("PROFILE_EMAIL_FAILED");
+        assertSafe(send(port, emailPath, profileEmailBody("Wrong@example.invalid", "wrong-password"), access), 401);
+        assertThat(profileEventCount("PROFILE_EMAIL_FAILED")).isEqualTo(failed + 1);
+        assertThat(jdbc.queryForObject("SELECT F_05 FROM T_10_01_12 WHERE F_01='PROFILE_EMAIL_FAILED'", Long.class)).isEqualTo(member);
+        var updated = send(port, emailPath, profileEmailBody("New.Contact@example.invalid", SYNTHETIC_PASSWORD), access);
+        assertSafe(updated, 200);
+        assertThat((String) JsonPath.read(updated.body(), "$.email")).isEqualTo("New.Contact@example.invalid");
+        assertThat((String) JsonPath.read(send(port, path, null, access).body(), "$.email")).isEqualTo("New.Contact@example.invalid");
+        assertThat(profileEventCount("PROFILE_EMAIL_CHANGED")).isEqualTo(changed + 1);
+        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_08 WHERE F_00=?", String.class, member)).isEqualTo("New.Contact@example.invalid");
+        assertThat(jdbc.queryForObject("SELECT F_03 FROM T_10_01_12 WHERE F_01='PROFILE_EMAIL_CHANGED'", String.class))
+                .matches("[0-9a-f-]{36}");
+        assertThat(jdbc.queryForObject("SELECT F_05 FROM T_10_01_12 WHERE F_01='PROFILE_EMAIL_CHANGED'", Long.class)).isEqualTo(member);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_12 WHERE F_01 LIKE 'PROFILE_EMAIL_%' AND F_06 IS NOT NULL", Long.class)).isZero();
+        assertSafe(send(port, emailPath, profileEmailBody("New.Contact@example.invalid", SYNTHETIC_PASSWORD), access), 200);
+        var conflict = send(port, emailPath, profileEmailBody("profile-foreign@example.invalid", SYNTHETIC_PASSWORD), access);
+        assertSafe(conflict, 409);
+        assertThat(conflict.body()).contains("ACCOUNT_OPERATION_REJECTED").doesNotContain("profile-foreign@example.invalid");
+        assertThat(profileEventCount("PROFILE_EMAIL_CHANGED")).isEqualTo(changed + 1);
+        assertThat(jdbc.queryForMap("SELECT F_01,F_03,F_04,F_05,F_06,F_07,F_08 FROM T_10_01_08 WHERE F_00=?", member)).isEqualTo(before);
+        assertThat(jdbc.queryForMap("SELECT * FROM T_10_01_10 WHERE F_03=?", member)).isEqualTo(credentialBefore);
+        assertThat(jdbc.queryForList("SELECT * FROM T_10_01_11 WHERE F_04=?", member)).isEqualTo(sessionsBefore);
+        assertThat(count("T_10_01_15")).isEqualTo(grants);
+
+        for (String trigger : List.of("BEFORE UPDATE ON T_10_01_08", "BEFORE INSERT ON T_10_01_12")) {
+            jdbc.execute("CREATE TRIGGER hyflo_test_profile_failure " + trigger
+                    + " FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'");
+            try {
+                assertSafe(send(port, emailPath, profileEmailBody("rollback@example.invalid", SYNTHETIC_PASSWORD), access), 503);
+                assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_08 WHERE F_00=?", String.class, member)).isEqualTo("New.Contact@example.invalid");
+                assertThat(profileEventCount("PROFILE_EMAIL_CHANGED")).isEqualTo(changed + 1);
+            } finally {
+                jdbc.execute("DROP TRIGGER hyflo_test_profile_failure");
+            }
+        }
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var ready = new CountDownLatch(2);
+            var start = new CountDownLatch(1);
+            var one = executor.submit(() -> {
+                ready.countDown(); start.await();
+                return send(port, emailPath, profileEmailBody("race@example.invalid", SYNTHETIC_PASSWORD), secondAccess);
+            });
+            var two = executor.submit(() -> {
+                ready.countDown(); start.await();
+                return send(port, emailPath, profileEmailBody("race@example.invalid", SYNTHETIC_PASSWORD), foreignAccess);
+            });
+            assertThat(ready.await(10, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            assertThat(List.of(one.get(60, TimeUnit.SECONDS).statusCode(), two.get(60, TimeUnit.SECONDS).statusCode()))
+                    .containsExactlyInAnyOrder(200, 409);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_08 WHERE F_02='race@example.invalid'", Long.class)).isEqualTo(1L);
+            assertThat(profileEventCount("PROFILE_EMAIL_CHANGED")).isEqualTo(changed + 2);
+            var first = executor.submit(() -> send(port, emailPath, profileEmailBody("same-one@example.invalid", SYNTHETIC_PASSWORD), secondAccess));
+            var last = executor.submit(() -> send(port, emailPath, profileEmailBody("same-two@example.invalid", SYNTHETIC_PASSWORD), secondAccess));
+            assertSafe(first.get(60, TimeUnit.SECONDS), 200);
+            assertSafe(last.get(60, TimeUnit.SECONDS), 200);
+            assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_08 WHERE F_00=?", String.class, second))
+                    .isIn("same-one@example.invalid", "same-two@example.invalid");
+            assertThat(profileEventCount("PROFILE_EMAIL_CHANGED")).isEqualTo(changed + 4);
+        }
+        assertSafe(send(port, emailPath, profileEmailBody("Admin.Contact@example.invalid", SYNTHETIC_PASSWORD), adminAccess), 200);
+        assertSafe(send(port, "/v1/auth/logout", "", access), 204);
+        assertSafe(send(port, path, null, access), 401);
+        assertSafe(send(port, emailPath, profileEmailBody("denied@example.invalid", SYNTHETIC_PASSWORD), access), 401);
+        new TransactionTemplate(transactions).executeWithoutResult(tx ->
+                entityManager.find(User.class, foreign).suspend(entityManager.createQuery(
+                        "select s from UserStatus s where s.code='SUSPENDED'", UserStatus.class).getSingleResult()));
+        assertSafe(send(port, path, null, foreignAccess), 401);
+        var api = send(port, "/api-docs", null, adminAccess);
+        assertThat(api.statusCode()).isEqualTo(200);
+        Map<String, Object> apiPaths = JsonPath.read(api.body(), "$.paths");
+        assertThat(((Map<?, ?>) apiPaths.get(path)).keySet().stream().map(Object::toString).toList()).containsExactly("get");
+        assertThat(((Map<?, ?>) apiPaths.get(emailPath)).keySet().stream().map(Object::toString).toList()).containsExactly("post");
+        assertSafe(send(port, path, "{}", adminAccess), 403);
+        assertSafe(send(port, emailPath, null, adminAccess), 403);
+        var limiter = applicationContext.getBean(dz.sh.hyflo.platform.security.LoginAttemptLimiter.class);
+        Instant now = Instant.now();
+        for (int n = 0; n < 10; n++) limiter.retryAfter("synthetic-test-peer", "profile-admin", now);
+        assertSafe(send(port, emailPath, profileEmailBody("limited@example.invalid", SYNTHETIC_PASSWORD), adminAccess), 429);
+    }
+
+    private String profileEmailBody(String email, String password) {
+        return "{\"email\":\"" + email + "\",\"currentPassword\":\"" + password + "\"}";
+    }
+
+    private long profileEventCount(String code) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_12 WHERE F_01=?", Long.class, code);
+    }
+
     private String groupGrantBody(long role, Instant end) {
         return "{\"roleId\":" + role + ",\"validTo\":\"" + end + "\",\"reason\":\"synthetic group grant\"}";
     }

@@ -67,9 +67,9 @@ public class IdentitySecurityConfiguration {
                                 "/v1/platform/groups/{groupId}/memberships", "/v1/platform/groups/{groupId}/memberships/{membershipId}/revoke",
                                 "/v1/platform/groups/{groupId}/role-grants", "/v1/platform/groups/{groupId}/role-grants/{grantId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change",
-                                "/v1/auth/sessions/{sessionId}/revoke").authenticated()
+                                "/v1/auth/sessions/{sessionId}/revoke", "/v1/me/profile/email").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/permissions", "/v1/auth/sessions",
+                        .requestMatchers(HttpMethod.GET, "/v1/me", "/v1/me/profile", "/v1/me/permissions", "/v1/auth/sessions",
                                 "/v1/identity/user-statuses", "/v1/identity/roles",
                                 "/v1/identity/permissions", "/v1/identity/roles/{roleId}/permissions",
                                 "/v1/identity/actions", "/v1/identity/resource-types",
