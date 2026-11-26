@@ -1901,3 +1901,121 @@ Column numbers in the table denote `F_NN` unless shown in full as `A_01`, the op
 - No new fields, tables or schema-only implementation envelope are supported by the selected Foundation workflows. Cross-owner existence/eligibility, protected appointment controls, file content integrity and richer security audit evidence need their corresponding owner contracts. Register the exact files and acceptance when an owner selects a concrete workflow. For any new relation, state requiredness, whether and where a physical FK is supported, lifecycle/deletion policy and positive and negative persistence scenarios. Preserve existing classifications, immutable evidence, accepted Identity outcomes, owner exclusions and historical numeric identifiers.
 - Current allocations are `T_10_00_01`, `T_10_01_01–23`, `T_10_02_01–12` and `T_10_03_01–07`. The static inventory found 43 unique current table codes, consecutive business columns within each table and no collision with identifiers in the inspected legacy branch's Java tree. No allocation or renumbering is proposed. `A_01` is technical concurrency data and is shown only to reconcile the mapping.
 - `HyFloApiIT` has a MySQL metamodel/repository check for all 43 entities, assignment transfer and overlap cases, geography/point/unit/file metadata readback, scoped-grant evidence and a dedicated scalar employee FK verifier. `HyFloApiTest` checks model rejection cases. Identity-focused ITs cover accepted flows and the IDN-26 regression. Existing source settings use default schema validation and disposable test `create-drop`; dev update is separate. No Flyway migration or runtime OpenAPI change is in this scope. Source inventory and static checks do not independently establish every physical constraint at runtime. Local environment provides Java 21 and lacks Docker. Hosted HyFloAPI Build on the assessment SHA remains the mandatory acceptance gate.
+
+### DM-C1 assessment acceptance — 2026-11-26
+
+Status: COMPLETED for the assessment scope. Exact assessment SHA `17f6a36512d86cd506083a7f43f6924c7626d1f4`, [HyFloAPI Build #100 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45840248497), completed/success. Verify job `139979693459` passed Java 25, Maven clean verify, required test/JaCoCo/SBOM evidence and verified JAR upload. Optional dependency scan skipped. This accepts the delivered assessment. The owner subsequently named the proposed Reference entity `MeasurementDomain`; its schema change has no registered implementation envelope and is independent of C2.
+
+## DM-C2 — Initial Coordination data model
+
+Status: PLANNED — owner selected entity implementation following the five-module abstract design. This commit registers the single implementation envelope. Implement on owner Next after the exact-SHA registration build passes. Dependencies: DM-C1 assessment acceptance and unchanged existing Foundation contracts. Registration baseline `17f6a36512d86cd506083a7f43f6924c7626d1f4`, parent `efd83b92382c53838ba355229e20c952c6cfc809`, tree `90abd823b039f20f736d188bfaec26e98d672891`. Primary references: current HyFloAPI module ownership and historical HyFloAPI `HyFLoAPI-Model` at `ed68fdb1399c6e78c24909032d1cea58c8d941f8` (Parameter, Audited, WorkflowInstance/State/TargetType, Notification/NotificationType). Complement: HidraAPI main at `d72fc3a7e0b1b3c288e01b731b4bf0032f160410`, matching Configuration, Audit, Workflow, Notification and Integration persistence models. Current HyFloAPI C2 consists of package declarations. The following is the proposed schema allocation, to record in ARCHITECTURE.md as implemented only with the implementation.
+
+Registration commit: `docs(coordination): register initial coordination data model`. Registration scope: update `docs/ROADMAP.md` only, no creates or deletes.
+
+Implementation commit: `feat(coordination): add initial coordination data model`.
+
+### Logical fields and physical table allocation
+
+Every entity has an identity-generated Long PK `F_00`. Within each row, map fields in the shown order starting at `F_01`, with `?` denoting optional. Use explicit named unique constraints and restrictive same-module to-one FKs to `F_00` in their listed order, following AGENTS.md. Cross-module IDs remain positive scalars and do not establish a physical FK or public owner contract. Business instants use `Instant`. Suffix mutable FeatureFlag, WorkflowInstance, WorkflowTask, NotificationMessage and IntegrationRejectedRecord with optimistic-lock version `A_01`. Business catalogs are owner-persisted rows. Lifecycle facts such as definition publication and task completion are represented by timestamps. Technical primitive formats, transport channels, directions and processing outcomes can use validated technical codes. No Java business enums.
+
+| Table | Entity | F_01 onward in order | Unique business key |
+|---|---|---|---|
+| T_20_01_01 | Parameter | code, owningModule, valueType, description?, active | owningModule + code |
+| T_20_01_02 | ParameterValue | revisionNumber, value, effectiveFrom, effectiveTo?, changeReason, changedByActorId, parameter | parameter + revisionNumber; parameter + effectiveFrom |
+| T_20_01_03 | FeatureFlag | code, owningModule, description?, enabled, changedAt, changedByActorId | owningModule + code |
+| T_20_02_01 | AuditEvent | sourceModule, actionCode, actorNameSnapshot?, targetModule, targetType, targetId, outcome, occurredAt, correlationId, actorId? | — |
+| T_20_02_02 | AuditFieldChange | fieldPath, beforeValue?, afterValue?, masked, auditEvent | auditEvent + fieldPath |
+| T_20_02_03 | AuditAccessRecord | accessType, purpose, resourceReference, accessedAt, correlationId, actorId, auditEvent? | — |
+| T_20_03_01 | WorkflowTargetType | code, owningModule, nameAr?, nameFr?, nameEn?, active | owningModule + code |
+| T_20_03_02 | WorkflowDecisionType | code, nameAr?, nameFr?, nameEn?, active | code |
+| T_20_03_03 | WorkflowDefinition | code, revisionNumber, publishedAt?, retiredAt?, workflowTargetType | code + revisionNumber |
+| T_20_03_04 | WorkflowState | code, nameAr?, nameFr?, nameEn?, initial, terminal, workflowDefinition | workflowDefinition + code |
+| T_20_03_05 | WorkflowTransition | code, reasonRequired, workflowDefinition, workflowDecisionType, fromWorkflowState, toWorkflowState | workflowDefinition + code; fromWorkflowState + workflowDecisionType |
+| T_20_03_06 | WorkflowInstance | targetRevisionReference, startedAt, completedAt?, targetId, initiatedByActorId, workflowDefinition, workflowState | — |
+| T_20_03_07 | WorkflowTask | dueAt?, completedAt?, assignedActorId?, assignedRoleId?, workflowInstance, workflowState | — |
+| T_20_03_08 | WorkflowStateHistory | sequence, actorNameSnapshot, reason?, decidedAt, correlationId, decidedByActorId, workflowInstance, workflowTransition, workflowTask? | workflowInstance + sequence |
+| T_20_04_01 | NotificationType | code, nameAr?, nameFr?, nameEn?, priority, active | code |
+| T_20_04_02 | NotificationTemplate | code, revisionNumber, locale, subject, body | code + revisionNumber + locale |
+| T_20_04_03 | NotificationRequest | sourceModule, sourceEventId, targetReference?, requestedAt, notificationType | — |
+| T_20_04_04 | NotificationMessage | channelCode, renderedSubject, renderedBody, readAt?, recipientUserId, notificationRequest, notificationTemplate? | notificationRequest + recipientUserId + channelCode |
+| T_20_04_05 | NotificationDeliveryAttempt | attemptNumber, attemptedAt, outcome, failureCode?, notificationMessage | notificationMessage + attemptNumber |
+| T_20_05_01 | ExternalSystem | code, nameAr?, nameFr?, nameEn?, enabled, ownerOrganizationUnitId | code |
+| T_20_05_02 | IntegrationJobRun | operationCode, direction, startedAt, completedAt?, outcome?, triggeredByActorId?, externalSystem | — |
+| T_20_05_03 | IntegrationExchangeMessage | direction, externalMessageId?, payloadReference?, payloadHash?, exchangedAt, correlationId, externalSystem, integrationJobRun? | externalSystem + direction + externalMessageId when present |
+| T_20_05_04 | IntegrationRejectedRecord | recordReference, targetModule, failureStage, reasonCode, rejectedAt, resolvedAt?, integrationExchangeMessage | — |
+
+Allocation checked against current main and the historical Model, Stable, NoAI and pre-reset main `a425a748f8e2dbfafcd0ff9b0387a499084e59b1` Java/SQL trees. No existing T_20_01 through T_20_05 allocation was found. Workflow's from/to fields qualify the common target type by role. New entity constructors require stable bounded codes and enforce optionality, positive foreign IDs and revision/sequence numbers, chronological bounds, at least one label per localized catalog row, and same-owner graph consistency. Apply storage and Bean Validation bounds to persisted text and identifiers. Avoid write-capable generic repository surfaces. Defined relationships are restrictive and use no cascading entity removal.
+
+### Invariants and scope boundaries
+
+- **Configuration.** Parameter definition sets the supported scalar format (text, integer, decimal or boolean). Validate each stored value against its definition and disallow invalid dates. Store effective revisions immutably apart from controlled window closure. A future write use case must serialize per-parameter history changes and reject overlapping windows, including simultaneous writes. Until then no public value lookup or mutation is exposed. Feature flags represent a current business switch. Secrets, override hierarchy, dynamic expressions and engineering-input substitution are outside this package.
+- **Audit.** Store attributed action, target and time, bounded outcome evidence, and separately attributed protected-access evidence. An explicitly system-originated event may omit actorId. When masked, persist no raw before/after values. Keep evidence insert-oriented, with immutable fields after creation and no deletion or merge surface. Sanitization policy, general Audit wiring and export approval/support require their own selected owner uses.
+- **Workflow.** Each instance pins a published, eligible definition revision and the exact owner target revision reference, with its current state belonging to that definition. Record every applied decision with actor, decision time, sequence and the exact transition. Transitions cannot connect states from distinct revisions, and history task context must belong to that instance and source state. Task assignments require at least one eligible assignee indication at model level (actor ID or role ID). No task permission resolution, workflow execution service or final owner mutation is in scope. Publication-time graph completeness/hard eligibility checks and transactional application of a decision and history must be proved when the Workflow use case is selected. Definition and transition data admitted for an instance must preserve interpretation of historical decisions. Keep correction history through the appropriate owner workflow.
+- **Notification.** Store request provenance, recipient/channel-specific rendered messages and distinct delivery attempts. Template revisions are pinned when used. Reading timestamps and attempted delivery are independent. Store technical results with bounded failure codes. No transport, acknowledgment of alarm or workflow, scheduling, dispatch, recipient authority resolution or delivery success is implied.
+- **Integration.** Messages identify an external system and may reference a run for the same system and direction. A rejected record points to the original message and failed item and can retain resolution time. Store only controlled opaque references/digests for payload evidence, with no credentials or inline payload body. No connectors, jobs executing on startup, import admission, retry orchestration or live OT connectivity.
+
+### Exact implementation allowlist
+
+Create the entity and typed `Repository<Entity, Long>` for every row, plus the two test classes listed below. The repositories provide type binding only.
+
+- `src/main/java/dz/sh/hyflo/modules/coordination/configuration/domain/model/Parameter.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/configuration/infrastructure/persistence/repository/ParameterRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/configuration/domain/model/ParameterValue.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/configuration/infrastructure/persistence/repository/ParameterValueRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/configuration/domain/model/FeatureFlag.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/configuration/infrastructure/persistence/repository/FeatureFlagRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/audit/domain/model/AuditEvent.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/audit/infrastructure/persistence/repository/AuditEventRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/audit/domain/model/AuditFieldChange.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/audit/infrastructure/persistence/repository/AuditFieldChangeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/audit/domain/model/AuditAccessRecord.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/audit/infrastructure/persistence/repository/AuditAccessRecordRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowTargetType.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowTargetTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowDecisionType.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowDecisionTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowDefinition.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowDefinitionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowState.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowStateRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowTransition.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowTransitionRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowInstance.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowInstanceRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowTask.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowTaskRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/domain/model/WorkflowStateHistory.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/workflow/infrastructure/persistence/repository/WorkflowStateHistoryRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/domain/model/NotificationType.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/infrastructure/persistence/repository/NotificationTypeRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/domain/model/NotificationTemplate.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/infrastructure/persistence/repository/NotificationTemplateRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/domain/model/NotificationRequest.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/infrastructure/persistence/repository/NotificationRequestRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/domain/model/NotificationMessage.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/infrastructure/persistence/repository/NotificationMessageRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/domain/model/NotificationDeliveryAttempt.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/notification/infrastructure/persistence/repository/NotificationDeliveryAttemptRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/domain/model/ExternalSystem.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/infrastructure/persistence/repository/ExternalSystemRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/domain/model/IntegrationJobRun.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/infrastructure/persistence/repository/IntegrationJobRunRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/domain/model/IntegrationExchangeMessage.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/infrastructure/persistence/repository/IntegrationExchangeMessageRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/domain/model/IntegrationRejectedRecord.java`
+- `src/main/java/dz/sh/hyflo/modules/coordination/integration/infrastructure/persistence/repository/IntegrationRejectedRecordRepository.java`
+- `src/test/java/dz/sh/hyflo/CoordinationModelTest.java`
+- `src/test/java/dz/sh/hyflo/CoordinationPersistenceIT.java`
+
+Update:
+- `docs/ARCHITECTURE.md` — record actual table, field, key and owner inventory.
+- `docs/ROADMAP.md` — append implementation evidence and exact-SHA acceptance state.
+
+Delete: none. Total: 48 creates, 2 updates, 0 deletes.
+
+### Implementation acceptance
+
+- Focused model tests cover scalar typing and validity ordering, masked audit evidence, exact workflow revision and task/transition membership, actor attribution and reason requirements, and integration message/run ownership checks. Enforce the registered constraints on normal construction paths.
+- Disposable MySQL 8.4 integration test verifies the JPA metamodel and Spring Data discovery for all 23 new entities, exact named physical columns/keys and FK targets, and one synthetic round-trip in each of the five modules. Exercise database rejection of a representative duplicate and dangling same-module FK, with isolated transactions for the rejected writes. Demonstrate frozen workflow links and separate read/delivery fields through round-trip. Keep current Foundation and Identity tests intact.
+- Mandatory exact-SHA HyFloAPI Build with Java 25, full Surefire and real MySQL Failsafe, zero failures/errors/skips, retained verification evidence and JAR. This is the persistence layer only. The owner workflow packages must establish authorization, transactional concurrency, owner reference resolution and REST behavior when they are selected.
+- Stop after the registration build is created or starts. Next executes the single DM-C2 implementation after registration acceptance. DM-C3 stays unselected.
