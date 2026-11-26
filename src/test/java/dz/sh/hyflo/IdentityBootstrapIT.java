@@ -7,7 +7,7 @@
  *
  * @Name        : IdentityBootstrapIT
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Test
@@ -1876,6 +1876,37 @@ class IdentityBootstrapIT {
         assertSafe(send(port, revoke, "", access), 409);
         assertSafe(send(port, protectedRead, null, memberAccess), 403);
         assertThat(count("T_10_01_16")).isEqualTo(before + 1);
+
+        // Isolate membership validity: the role grant is active, but the member has no active
+        // membership or direct grant. Test both HTTP reads and mutations with the same JWT.
+        long temporalGroup = createGroup("INHERITED_TEMPORAL", access);
+        String temporalBase = "/v1/platform/groups/" + temporalGroup;
+        var temporalGrant = send(port, temporalBase + "/role-grants" + selector, requestBody, access);
+        assertSafe(temporalGrant, 201);
+        long temporalGrantId = ((Number) JsonPath.read(temporalGrant.body(), "$.id")).longValue();
+        assertSafe(send(port, protectedRead, null, secondAccess), 403);
+        long expiredMembership = groupMembershipFixture(admin, second, temporalGroup,
+                now.minusSeconds(7200), now.minusSeconds(3600));
+        assertSafe(send(port, protectedRead, null, secondAccess), 403);
+        assertSafe(send(port, suspend, reason, secondAccess), 403);
+        long futureMembership = groupMembershipFixture(admin, second, temporalGroup,
+                now.plusSeconds(3600), now.plusSeconds(7200));
+        assertSafe(send(port, protectedRead, null, secondAccess), 403);
+        assertSafe(send(port, suspend, reason, secondAccess), 403);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var expired = entityManager.find(GroupMembership.class, expiredMembership);
+            var future = entityManager.find(GroupMembership.class, futureMembership);
+            var activeGrant = entityManager.find(GroupRoleGrant.class, temporalGrantId);
+            assertThat(activeGrant.isActiveAt(Instant.now())).isTrue();
+            assertThat(expired.isActiveAt(expired.getValidFrom())).isTrue();
+            assertThat(expired.isActiveAt(expired.getValidTo())).isFalse();
+            assertThat(future.isActiveAt(future.getValidFrom().minusNanos(1))).isFalse();
+            assertThat(future.isActiveAt(future.getValidFrom())).isTrue();
+            assertThat(activeGrant.isActiveAt(activeGrant.getValidFrom())).isTrue();
+            assertThat(activeGrant.isActiveAt(activeGrant.getValidTo())).isFalse();
+        });
+        assertSafe(send(port, temporalBase + "/role-grants/" + temporalGrantId + "/revoke" + selector, "", access), 204);
+
         // Stored inactive and resource-scoped grants must not confer company authority.
         groupMembershipFixture(admin, member, otherGroup, now.minusSeconds(10), null);
         new TransactionTemplate(transactions).executeWithoutResult(tx -> {
@@ -1913,6 +1944,59 @@ class IdentityBootstrapIT {
         assertSafe(send(port, "/v1/platform/roles", null, memberAccess), 403);
         assertSafe(send(port, changePath(role, permissionId("platform-role.read"), false), reason, access), 204);
 
+        // Unsupported but structurally valid and malformed company permissions must not
+        // leak through inheritance. Preserve the valid links and remove only the test probes.
+        long[] invalidLinks = new TransactionTemplate(transactions).execute(tx -> {
+            var action = new Action("inherit-probe", "Synthetic inheritance probe");
+            entityManager.persist(action);
+            var resource = new ResourceType("inherit-probe", "Synthetic inheritance probe");
+            entityManager.persist(resource);
+            var unsupported = new Permission("inherit-probe.inherit-probe", "Unsupported", action, resource);
+            var malformed = new Permission("wrong-inherit.inherit-probe", "Malformed", action, resource);
+            entityManager.persist(unsupported);
+            entityManager.persist(malformed);
+            var inheritedRole = entityManager.find(Role.class, role);
+            entityManager.persist(new RolePermission(inheritedRole, unsupported));
+            entityManager.persist(new RolePermission(inheritedRole, malformed));
+            return new long[]{unsupported.getId(), malformed.getId()};
+        });
+        try {
+            var resolved = send(port, permissions, null, memberAccess);
+            assertSafe(resolved, 200);
+            assertThat((List<String>) JsonPath.read(resolved.body(), "$.permissionCodes"))
+                    .containsExactly("user-role-grant.assign", "user.read", "user.suspend");
+            assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        } finally {
+            for (long permission : invalidLinks) {
+                assertThat(jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", role, permission))
+                        .isEqualTo(1);
+            }
+        }
+
+        // No cached inherited authority survives account, company or session ineligibility.
+        jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='DISABLED') WHERE F_00=?", member);
+        try {
+            assertSafe(send(port, protectedRead, null, memberAccess), 401);
+            assertSafe(send(port, suspend, reason, memberAccess), 401);
+        } finally {
+            jdbc.update("UPDATE T_10_01_08 SET F_07=(SELECT F_00 FROM T_10_01_02 WHERE F_01='ACTIVE') WHERE F_00=?", member);
+        }
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        jdbc.update("UPDATE T_10_02_01 SET F_08=FALSE WHERE F_01='COMPANY'");
+        try {
+            assertSafe(send(port, permissions, null, memberAccess), 403);
+            assertSafe(send(port, protectedRead, null, memberAccess), 403);
+            assertSafe(send(port, suspend, reason, memberAccess), 403);
+        } finally {
+            jdbc.update("UPDATE T_10_02_01 SET F_08=TRUE WHERE F_01='COMPANY'");
+        }
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        assertSafe(send(port, "/v1/auth/logout", "", memberAccess), 204);
+        assertSafe(send(port, protectedRead, null, memberAccess), 401);
+        assertSafe(send(port, suspend, reason, memberAccess), 401);
+        memberAccess = loginAccess("inherit-member");
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+
         long raceGroup = createGroup("INHERITED_RACE", access);
         String raceBase = "/v1/platform/groups/" + raceGroup;
         var grantRace = client.sendAsync(request(port, raceBase + "/role-grants" + selector, requestBody, access),
@@ -1933,12 +2017,29 @@ class IdentityBootstrapIT {
         assertSafe(writeGrant, 201);
         long writeGrantId = ((Number) JsonPath.read(writeGrant.body(), "$.id")).longValue();
         assertSafe(send(port, "/v1/identity/users/" + target + "/reactivate" + selector, reason, access), 200);
+        long priorSuspensions = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM T_10_01_18 WHERE F_01='SUSPENDED' AND F_08=? AND F_09=?", Long.class, target, second);
         var mutation = client.sendAsync(request(port, suspend, reason, secondAccess), HttpResponse.BodyHandlers.ofString());
         var removal = client.sendAsync(request(port, writeBase + "/role-grants/" + writeGrantId + "/revoke" + selector,
                 "", access), HttpResponse.BodyHandlers.ofString());
         assertThat(removal.get(60, TimeUnit.SECONDS).statusCode()).isEqualTo(204);
-        assertThat(mutation.get(60, TimeUnit.SECONDS).statusCode()).isIn(200, 403, 503);
+        int mutationStatus = mutation.get(60, TimeUnit.SECONDS).statusCode();
+        assertThat(mutationStatus).isIn(200, 403, 503);
         assertSafe(send(port, suspend, reason, secondAccess), 403);
+        // A successful ordered write must persist its state and exactly one actor-attributed
+        // event. A denied or rolled-back write must persist neither.
+        var persistedTarget = send(port, protectedRead, null, access);
+        assertSafe(persistedTarget, 200);
+        assertThat((String) JsonPath.read(persistedTarget.body(), "$.userStatusCode"))
+                .isEqualTo(mutationStatus == 200 ? "SUSPENDED" : "ACTIVE");
+        assertThat(jdbc.queryForObject(
+                "SELECT COUNT(*) FROM T_10_01_18 WHERE F_01='SUSPENDED' AND F_08=? AND F_09=?", Long.class, target, second))
+                .isEqualTo(priorSuspensions + (mutationStatus == 200 ? 1L : 0L));
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var removed = entityManager.find(GroupRoleGrant.class, writeGrantId);
+            assertThat(removed.getRevokedAt()).isNotNull();
+            assertThat(removed.getRevokedBy().getId()).isEqualTo(admin);
+        });
         assertSafe(send(port, writeBase + "/role-grants" + selector, requestBody, access), 201);
         assertSafe(send(port, protectedRead, null, secondAccess), 200);
         // Promotion invalidates inherited company authority without deleting membership.
