@@ -2250,12 +2250,12 @@ class IdentityBootstrapIT {
 
     @Test
     void loginReadsCurrentCredentialAfterEarlierProviderRead() throws Exception {
-        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LOGIN_ISOLATION_COMPANY", "login-isolation-admin",
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LOGIN_ISOLATION_COMPANY", "iso-admin",
                 "LOGIN_ISOLATION_INITIAL"), null, SETUP_SECRET), 204);
         long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
-        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='login-isolation-admin'", Long.class);
-        String access = loginAccess("login-isolation-admin");
-        String username = "login-isolation-target";
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='iso-admin'", Long.class);
+        String access = loginAccess("iso-admin");
+        String username = "iso-target";
         long target = createCompositionUser(admin, company, username);
         long role = createRuntimeRole("LOGIN_ISOLATION_SHARED", true, access);
         assertSafe(send(port, changePath(role, permissionId("platform-role.read"), true),
