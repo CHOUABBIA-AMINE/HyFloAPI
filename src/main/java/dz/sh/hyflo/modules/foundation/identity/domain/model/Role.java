@@ -7,7 +7,7 @@
  *
  * @Name        : Role
  * @CreatedOn   : 11-24-2026
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -82,10 +82,15 @@ public class Role {
     }
 
     public void rename(String displayName) {
+        if (displayName == null || displayName.isBlank() || displayName.length() > 120)
+            throw new IllegalArgumentException("Invalid role label");
+        if (!enabled || this.displayName.equals(displayName))
+            throw new IllegalStateException("Role operation rejected");
         this.displayName = displayName;
     }
 
     public void retire() {
+        if (!enabled) throw new IllegalStateException("Role operation rejected");
         enabled = false;
     }
 }

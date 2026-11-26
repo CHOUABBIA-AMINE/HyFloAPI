@@ -7,7 +7,7 @@
  *
  * @Name        : UserRoleGrantRepository
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Interface
  * @Layer       : Repository
@@ -61,4 +61,9 @@ public interface UserRoleGrantRepository extends Repository<UserRoleGrant, Long>
     long countNonEndedForeign(@org.springframework.data.repository.query.Param("roleId") long roleId,
             @org.springframework.data.repository.query.Param("now") java.time.Instant now);
 
+
+    @Query("select count(g) from UserRoleGrant g where g.role.id = :roleId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now) "
+            + "and g.grantedBy.username = 'hyflo-bootstrap'")
+    long countNonEndedBootstrapGrants(@Param("roleId") long roleId, @Param("now") java.time.Instant now);
 }

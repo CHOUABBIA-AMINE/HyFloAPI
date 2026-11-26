@@ -7,7 +7,7 @@
  *
  * @Name        : RoleDefinitionEvent
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -76,17 +76,30 @@ public class RoleDefinitionEvent {
                 associated ? "PERMISSION_ASSOCIATED" : "PERMISSION_REMOVED", Objects.requireNonNull(permission));
     }
 
+    public static RoleDefinitionEvent renamedFrom(Role role, User actor, Instant now, String correlationId, String reason) {
+        return new RoleDefinitionEvent(role, actor, now, correlationId, reason, "RENAMED_FROM", null);
+    }
+
+    public static RoleDefinitionEvent renamed(Role role, User actor, Instant now, String correlationId, String reason) {
+        return new RoleDefinitionEvent(role, actor, now, correlationId, reason, "RENAMED", null);
+    }
+
+    public static RoleDefinitionEvent retired(Role role, User actor, Instant now, String correlationId, String reason) {
+        return new RoleDefinitionEvent(role, actor, now, correlationId, reason, "RETIRED", null);
+    }
+
     private RoleDefinitionEvent(Role role, User performedBy, Instant occurredAt, String correlationId,
             String reason, String eventCode, Permission permission) {
         this.role = Objects.requireNonNull(role);
         this.performedBy = Objects.requireNonNull(performedBy);
         if (role.getId() == null || role.getId() <= 0 || performedBy.getId() == null || performedBy.getId() <= 0
-                || !role.isEnabled() || correlationId == null || correlationId.isBlank() || correlationId.length() > 36
+                || role.isEnabled() == "RETIRED".equals(eventCode) || correlationId == null || correlationId.isBlank() || correlationId.length() > 36
                 || reason == null || reason.isBlank() || reason.length() > 255)
             throw new IllegalArgumentException("Invalid role creation evidence");
         if (permission != null && (permission.getId() == null || permission.getId() <= 0))
             throw new IllegalArgumentException("Persisted permission required");
-        if ("CREATED".equals(eventCode) != (permission == null))
+        boolean permissionChange = "PERMISSION_ASSOCIATED".equals(eventCode) || "PERMISSION_REMOVED".equals(eventCode);
+        if (permissionChange != (permission != null))
             throw new IllegalArgumentException("Invalid role evidence");
         this.eventCode = eventCode;
         this.permission = permission;

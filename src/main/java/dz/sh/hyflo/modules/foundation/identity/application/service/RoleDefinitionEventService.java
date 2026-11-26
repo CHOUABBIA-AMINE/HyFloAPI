@@ -7,7 +7,7 @@
  *
  * @Name        : RoleDefinitionEventService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -45,5 +45,11 @@ public class RoleDefinitionEventService {
     public void recordPermissionChange(Role role, Permission permission, User actor, Instant now,
             String correlationId, String reason, boolean associated) {
         events.save(RoleDefinitionEvent.permissionChanged(role, permission, actor, now, correlationId, reason, associated));
+    }
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void recordLifecycle(RoleDefinitionEvent event) {
+        if (event == null || !java.util.Set.of("RENAMED_FROM", "RENAMED", "RETIRED").contains(event.getEventCode()))
+            throw new IllegalArgumentException("Invalid role lifecycle evidence");
+        events.save(event);
     }
 }

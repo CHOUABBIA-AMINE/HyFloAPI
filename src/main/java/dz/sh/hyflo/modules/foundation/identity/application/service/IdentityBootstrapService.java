@@ -7,7 +7,7 @@
  *
  * @Name        : IdentityBootstrapService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -88,7 +88,8 @@ public class IdentityBootstrapService {
     private static final List<String> INITIAL_PLATFORM_PERMISSIONS = List.of(
             PlatformAuthorizationService.ROLE_READ, PlatformAuthorizationService.ROLE_CREATE,
             PlatformAuthorizationService.CAPABILITY_RECONCILE, PlatformAuthorizationService.PERMISSION_READ,
-            PlatformAuthorizationService.PERMISSION_ASSOCIATE, PlatformAuthorizationService.PERMISSION_REMOVE);
+            PlatformAuthorizationService.PERMISSION_ASSOCIATE, PlatformAuthorizationService.PERMISSION_REMOVE,
+            PlatformAuthorizationService.ROLE_RENAME, PlatformAuthorizationService.ROLE_RETIRE);
 
     private final IdentityProviderRepository providers;
     private final UserStatusRepository statuses;

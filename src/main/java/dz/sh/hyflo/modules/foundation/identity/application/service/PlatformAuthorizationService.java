@@ -7,7 +7,7 @@
  *
  * @Name        : PlatformAuthorizationService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -43,9 +43,11 @@ public class PlatformAuthorizationService {
     public static final String PERMISSION_READ = "platform-permission.read";
     public static final String PERMISSION_ASSOCIATE = "platform-role-permission.associate";
     public static final String PERMISSION_REMOVE = "platform-role-permission.remove";
+    public static final String ROLE_RENAME = "platform-role.rename";
+    public static final String ROLE_RETIRE = "platform-role.retire";
     private static final Set<String> IMPLEMENTED = Set.of(ROLE_READ, ROLE_CREATE, CAPABILITY_RECONCILE,
-            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE);
-    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE);
+            PERMISSION_READ, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE);
+    private static final Set<String> CATALOG_WRITES = Set.of(CAPABILITY_RECONCILE, PERMISSION_ASSOCIATE, PERMISSION_REMOVE, ROLE_RENAME, ROLE_RETIRE);
     private static final int MAX_CANDIDATES = 1000;
 
     private final SessionAuthenticationService authentication;

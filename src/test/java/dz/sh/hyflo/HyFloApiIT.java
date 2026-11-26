@@ -170,7 +170,7 @@ class HyFloApiIT {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("record");
                 } else if (entity.getSimpleName().equals("RoleDefinitionEvent")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName)
-                            .containsExactlyInAnyOrder("record", "recordPermissionChange");
+                            .containsExactlyInAnyOrder("record", "recordPermissionChange", "recordLifecycle");
                 } else if (entity.getSimpleName().equals("PlatformRoleGrant")) {
                     assertThat(declaredBusinessMethods).extracting(java.lang.reflect.Method::getName).containsExactly("provision");
                 } else {

@@ -7,7 +7,7 @@
  *
  * @Name        : IdentitySecurityConfiguration
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Configuration
@@ -60,7 +60,8 @@ public class IdentitySecurityConfiguration {
                                 "/v1/platform/roles/{roleId}/permissions").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/platform/roles", "/v1/platform/capabilities/reconcile",
                                 "/v1/platform/roles/{roleId}/permissions/{permissionId}/associate",
-                                "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove").authenticated()
+                                "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove",
+                                "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire").authenticated()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/logout", "/v1/auth/password/change",
                                 "/v1/auth/sessions/{sessionId}/revoke").authenticated()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()

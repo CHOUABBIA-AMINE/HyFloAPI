@@ -374,7 +374,8 @@ class IdentityBootstrapIT {
                 java.util.stream.Stream.concat(EXPECTED_PERMISSIONS.stream(),
                         java.util.stream.Stream.of("platform-role.read", "platform-role.create",
                                 "platform-capability.reconcile", "platform-permission.read",
-                                "platform-role-permission.associate", "platform-role-permission.remove")).toList());
+                                "platform-role-permission.associate", "platform-role-permission.remove",
+                                "platform-role.rename", "platform-role.retire")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -533,7 +534,8 @@ class IdentityBootstrapIT {
                 .containsExactlyInAnyOrder(endpoint, "/v1/platform/capabilities/reconcile", "/v1/platform/permissions",
                         "/v1/platform/roles/{roleId}/permissions",
                         "/v1/platform/roles/{roleId}/permissions/{permissionId}/associate",
-                        "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove");
+                        "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove",
+                        "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire");
         assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
         assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
 
@@ -629,7 +631,8 @@ class IdentityBootstrapIT {
         assertThat(jdbc.queryForList("SELECT p.F_01 FROM T_10_01_14 rp JOIN T_10_01_09 p ON p.F_00=rp.F_02 "
                 + "WHERE rp.F_01=?", String.class, platformRole)).containsExactlyInAnyOrder(
                         "platform-role.read", "platform-role.create", "platform-capability.reconcile",
-                        "platform-permission.read", "platform-role-permission.associate", "platform-role-permission.remove");
+                        "platform-permission.read", "platform-role-permission.associate", "platform-role-permission.remove",
+                        "platform-role.rename", "platform-role.retire");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -645,7 +648,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v2");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v3");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -802,7 +805,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(24L); // twenty-three supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(26L); // twenty-five supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -873,7 +876,7 @@ class IdentityBootstrapIT {
         var initial = send(port, catalog, null, access);
         assertSafe(initial, 200);
         List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
-        assertThat(definitions).hasSize(23).allSatisfy(entry -> {
+        assertThat(definitions).hasSize(25).allSatisfy(entry -> {
             assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
                     "platformPermission", "supported");
             assertThat(entry.get("supported")).isEqualTo(true);
@@ -913,7 +916,7 @@ class IdentityBootstrapIT {
         var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
         assertSafe(tail, 200);
         List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
-        assertThat(tailIds).hasSize(26);
+        assertThat(tailIds).hasSize(28);
         assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
                 .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
         assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
@@ -1088,6 +1091,224 @@ class IdentityBootstrapIT {
         }
         assertSafe(send(port, "/v1/auth/logout", "", access), 204);
         assertSafe(send(port, catalog, null, access), 401);
+    }
+
+    @Test
+    void managesRoleLifecycleWithLiveAuthorityAndAtomicEvidence() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LIFECYCLE", "lifecycle-admin",
+                "CUSTOM_AUTHORITY"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='lifecycle-admin'", Long.class);
+        long bootstrapActor = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='hyflo-bootstrap'", Long.class);
+        long initialCompany = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=FALSE", Long.class);
+        long initialPlatform = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        String access = loginAccess("lifecycle-admin");
+        String root = "/v1/platform/roles/";
+        String rename = "{\"displayName\":\"Operator configured label\",\"reason\":\"synthetic rename\"}";
+        String retire = "{\"reason\":\"synthetic retirement\"}";
+        long role = createRuntimeRole("LIFECYCLE_COMPANY", false, access);
+        long platform = createRuntimeRole("LIFECYCLE_PLATFORM", true, access);
+        long observer = createCompositionUser(admin, company, "lifecycle-observer");
+        long delegator = createCompositionUser(admin, company, "lifecycle-delegator");
+        long recipient = createCompositionUser(admin, company, "lifecycle-recipient");
+        Instant now = Instant.now();
+        long read = permissionId("user.read");
+        long renamePermission = permissionId("platform-role.rename");
+        long retirePermission = permissionId("platform-role.retire");
+        assertSafe(send(port, changePath(role, read, true), retire, access), 204);
+        long observerGrant = addCompanyFixtureGrant(admin, observer, role, company, now.minusSeconds(5), null);
+        addCompanyFixtureGrant(admin, delegator, initialCompany, company, now.minusSeconds(5), null);
+        addCompanyFixtureGrant(admin, delegator, role, company, now.minusSeconds(5), now.plusSeconds(7200));
+        String observerAccess = loginAccess("lifecycle-observer");
+        String delegatorAccess = loginAccess("lifecycle-delegator");
+        String roleRename = root + role + "/rename";
+        String roleRetire = root + role + "/retire";
+        String permissions = "/v1/me/permissions?companyId=" + company;
+        assertThat((List<String>) JsonPath.read(send(port, permissions, null, observerAccess).body(),
+                "$.permissionCodes")).containsExactly("user.read");
+        long baselineEvents = count("T_10_01_21");
+        for (String endpoint : List.of(roleRename, roleRetire)) {
+            String body = endpoint.equals(roleRename) ? rename : retire;
+            assertSafe(send(port, endpoint, body, null), 401);
+            assertSafe(send(port, endpoint, body, "invalid.jwt"), 401);
+            assertSafe(send(port, endpoint, body, delegatorAccess), 403);
+            assertSafe(send(port, endpoint, null, access), 403);
+            assertSafe(send(port, endpoint, "{", access), 400);
+            assertSafe(send(port, endpoint, "{}", access), 400);
+        }
+        assertSafe(send(port, root + "0/rename", rename, access), 400);
+        assertSafe(send(port, root + "bad/retire", retire, access), 400);
+        assertSafe(send(port, root + Long.MAX_VALUE + "/rename", rename, access), 403);
+        assertSafe(send(port, root + Long.MAX_VALUE + "/retire", retire, access), 403);
+        assertSafe(send(port, root + Long.MAX_VALUE + "/retire", retire, delegatorAccess), 403);
+        assertSafe(send(port, roleRename, "{\"displayName\":\" \",\"reason\":\"x\"}", access), 400);
+        assertSafe(send(port, roleRename, "{\"displayName\":\"" + "x".repeat(121) + "\",\"reason\":\"x\"}", access), 400);
+        assertSafe(send(port, roleRetire, "{\"reason\":\"" + "x".repeat(256) + "\"}", access), 400);
+        assertSafe(send(port, roleRename, "{\"displayName\":\"Runtime chosen role\",\"reason\":\"same\"}", access), 409);
+        assertSafe(send(port, root + initialCompany + "/retire", retire, access), 409);
+        assertSafe(send(port, root + initialPlatform + "/retire", retire, access), 409);
+        assertThat(count("T_10_01_21")).isEqualTo(baselineEvents);
+
+        // Separate live permissions, not role names; the same JWT cannot retain a revoked capability.
+        for (long id : List.of(renamePermission, retirePermission)) {
+            jdbc.update("DELETE FROM T_10_01_14 WHERE F_01=? AND F_02=?", initialPlatform, id);
+            try {
+                assertSafe(send(port, id == renamePermission ? roleRename : roleRetire,
+                        id == renamePermission ? rename : retire, access), 403);
+                assertSafe(send(port, id == renamePermission ? root + initialCompany + "/retire" : roleRename,
+                        id == renamePermission ? retire : "{\"displayName\":\"Runtime chosen role\",\"reason\":\"same\"}", access), 409);
+            } finally {
+                jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", initialPlatform, id);
+            }
+        }
+        assertThat(count("T_10_01_21")).isEqualTo(baselineEvents);
+
+        // Fail the second rename snapshot, then a retirement insert; neither partial evidence nor mutation may survive.
+        jdbc.execute("CREATE TRIGGER hyflo_test_role_lifecycle_failure BEFORE INSERT ON T_10_01_21 "
+                + "FOR EACH ROW BEGIN IF NEW.F_01 IN ('RENAMED','RETIRED') THEN "
+                + "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'synthetic rollback probe'; END IF; END");
+        try {
+            assertSafe(send(port, roleRename, rename, access), 503);
+            assertSafe(send(port, roleRetire, retire, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_role_lifecycle_failure");
+        }
+        assertThat(count("T_10_01_21")).isEqualTo(baselineEvents);
+        assertThat(jdbc.queryForObject("SELECT F_02 FROM T_10_01_04 WHERE F_00=?", String.class, role))
+                .isEqualTo("Runtime chosen role");
+        assertThat(jdbc.queryForObject("SELECT F_03 FROM T_10_01_04 WHERE F_00=?", Boolean.class, role)).isTrue();
+
+        long linkCount = count("T_10_01_14");
+        long grantCount = count("T_10_01_15");
+        long platformGrantCount = count("T_10_01_20");
+        for (long id : List.of(role, platform, initialCompany, initialPlatform)) {
+            var result = send(port, root + id + "/rename", rename, access);
+            assertSafe(result, 200);
+            assertThat((Number) JsonPath.read(result.body(), "$.id")).isNotNull();
+            assertThat((String) JsonPath.read(result.body(), "$.displayName")).isEqualTo("Operator configured label");
+            assertThat((Boolean) JsonPath.read(result.body(), "$.enabled")).isTrue();
+            assertThat((Boolean) JsonPath.read(result.body(), "$.platformRole")).isEqualTo(id == platform || id == initialPlatform);
+        }
+        assertThat(count("T_10_01_14")).isEqualTo(linkCount);
+        assertThat(count("T_10_01_15")).isEqualTo(grantCount);
+        assertThat(count("T_10_01_20")).isEqualTo(platformGrantCount);
+        assertThat((List<String>) JsonPath.read(send(port, permissions, null, observerAccess).body(),
+                "$.permissionCodes")).containsExactly("user.read");
+        assertThat((List<String>) JsonPath.read(send(port, permissions, null, access).body(),
+                "$.permissionCodes")).containsExactlyInAnyOrderElementsOf(EXPECTED_PERMISSIONS);
+        assertSafe(send(port, root + initialCompany + "/retire", retire, access), 409);
+        assertSafe(send(port, root + initialPlatform + "/retire", retire, access), 409);
+        assertSafe(send(port, roleRename, rename, access), 409);
+
+        var platformRetired = send(port, root + platform + "/retire", retire, access);
+        assertSafe(platformRetired, 200);
+        assertThat((Boolean) JsonPath.read(platformRetired.body(), "$.enabled")).isFalse();
+        var companyRetired = send(port, roleRetire, retire, access);
+        assertSafe(companyRetired, 200);
+        assertThat((Boolean) JsonPath.read(companyRetired.body(), "$.enabled")).isFalse();
+        assertThat((String) JsonPath.read(companyRetired.body(), "$.code")).isEqualTo("LIFECYCLE_COMPANY");
+        assertSafe(send(port, permissions, null, observerAccess), 403);
+        assertSafe(send(port, roleRename, rename, access), 409);
+        assertSafe(send(port, roleRetire, retire, access), 409);
+        assertSafe(send(port, changePath(role, read, false), retire, access), 409);
+        assertSafe(send(port, changePath(role, permissionId("role.read"), true), retire, access), 409);
+        assertThat(count("T_10_01_14")).isEqualTo(linkCount);
+        assertThat(count("T_10_01_15")).isEqualTo(grantCount);
+        assertThat(count("T_10_01_20")).isEqualTo(platformGrantCount);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_00=?", Long.class, observerGrant)).isEqualTo(1L);
+        var list = send(port, "/v1/platform/roles", null, access);
+        assertSafe(list, 200);
+        List<Map<String,Object>> rows = JsonPath.read(list.body(), "$");
+        assertThat(rows.stream().filter(row -> ((Number) row.get("id")).longValue() == role).toList())
+                .singleElement().satisfies(row -> {
+                    assertThat(row.get("enabled")).isEqualTo(false);
+                    assertThat(row.get("displayName")).isEqualTo("Operator configured label");
+                });
+        assertThat((List<String>) JsonPath.read(send(port, root + role + "/permissions", null, access).body(),
+                "$[*].code")).containsExactly("user.read");
+
+        long futurePlatform = createRuntimeRole("LIFECYCLE_FUTURE_PLATFORM", true, access);
+        long endedPlatform = createRuntimeRole("LIFECYCLE_ENDED_PLATFORM", true, access);
+        long futureBootstrap = createRuntimeRole("LIFECYCLE_FUTURE_COMPANY", false, access);
+        long endedBootstrap = createRuntimeRole("LIFECYCLE_ENDED_COMPANY", false, access);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            User actor = entityManager.find(User.class, admin);
+            User target = entityManager.find(User.class, observer);
+            entityManager.persist(new PlatformRoleGrant(target, entityManager.find(Role.class, futurePlatform),
+                    now.plusSeconds(3600), null, "synthetic future", UUID.randomUUID().toString(), actor));
+            entityManager.persist(new PlatformRoleGrant(target, entityManager.find(Role.class, endedPlatform),
+                    now.minusSeconds(7200), now.minusSeconds(3600), "synthetic ended", UUID.randomUUID().toString(), actor));
+        });
+        addCompanyFixtureGrant(bootstrapActor, observer, futureBootstrap, company, now.plusSeconds(3600), null);
+        addCompanyFixtureGrant(bootstrapActor, observer, endedBootstrap, company, now.minusSeconds(7200), now.minusSeconds(3600));
+        assertSafe(send(port, root + futurePlatform + "/retire", retire, access), 409);
+        assertSafe(send(port, root + endedPlatform + "/retire", retire, access), 200);
+        assertSafe(send(port, root + futureBootstrap + "/retire", retire, access), 409);
+        assertSafe(send(port, root + endedBootstrap + "/retire", retire, access), 200);
+
+        String assignPath = "/v1/identity/users/" + recipient + "/role-grants?companyId=" + company;
+        String end = now.plusSeconds(3600).truncatedTo(java.time.temporal.ChronoUnit.MICROS).toString();
+        assertSafe(send(port, assignPath, "{\"roleId\":" + role + ",\"validTo\":\"" + end
+                + "\",\"reason\":\"synthetic denied delegation\"}", delegatorAccess), 403);
+        long raceRole = createRuntimeRole("LIFECYCLE_RACE", false, access);
+        assertSafe(send(port, changePath(raceRole, read, true), retire, access), 204);
+        addCompanyFixtureGrant(admin, delegator, raceRole, company, now.minusSeconds(5), now.plusSeconds(7200));
+        String racePath = root + raceRole + "/retire";
+        long raceEvents = count("T_10_01_21");
+        var retiring = client.sendAsync(request(port, racePath, retire, access), HttpResponse.BodyHandlers.ofString());
+        var assigning = client.sendAsync(request(port, assignPath, "{\"roleId\":" + raceRole + ",\"validTo\":\""
+                + end + "\",\"reason\":\"synthetic concurrent delegation\"}", delegatorAccess), HttpResponse.BodyHandlers.ofString());
+        assertSafe(retiring.get(60, TimeUnit.SECONDS), 200);
+        var assigned = assigning.get(60, TimeUnit.SECONDS);
+        assertThat(assigned.statusCode()).isIn(201, 403);
+        assertThat(count("T_10_01_21")).isEqualTo(raceEvents + 1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_15 WHERE F_08=? AND F_09=?",
+                Long.class, recipient, raceRole)).isEqualTo(assigned.statusCode() == 201 ? 1L : 0L);
+        assertSafe(send(port, permissions, null, loginAccess("lifecycle-recipient")), 403);
+        assertSafe(send(port, assignPath, "{\"roleId\":" + raceRole + ",\"validTo\":\"" + end
+                + "\",\"reason\":\"synthetic repeat delegation\"}", delegatorAccess), 403);
+
+        long duplicateRole = createRuntimeRole("LIFECYCLE_DUPLICATE", false, access);
+        long beforeRace = count("T_10_01_21");
+        var a = client.sendAsync(request(port, root + duplicateRole + "/retire", retire, access), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, root + duplicateRole + "/retire", retire, access), HttpResponse.BodyHandlers.ofString());
+        assertThat(List.of(a.get(60, TimeUnit.SECONDS).statusCode(), b.get(60, TimeUnit.SECONDS).statusCode()))
+                .containsExactlyInAnyOrder(200, 409);
+        assertThat(count("T_10_01_21")).isEqualTo(beforeRace + 1);
+
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var evidence = entityManager.createQuery("select e from RoleDefinitionEvent e where e.role.id=:id "
+                    + "and e.eventCode in ('RENAMED_FROM','RENAMED','RETIRED') order by e.id", RoleDefinitionEvent.class)
+                    .setParameter("id", role).getResultList();
+            assertThat(evidence).extracting(RoleDefinitionEvent::getEventCode).containsExactly("RENAMED_FROM", "RENAMED", "RETIRED");
+            assertThat(evidence).extracting(RoleDefinitionEvent::getDisplayName)
+                    .containsExactly("Runtime chosen role", "Operator configured label", "Operator configured label");
+            assertThat(evidence).allSatisfy(event -> {
+                assertThat(event.getPerformedBy().getId()).isEqualTo(admin);
+                assertThat(event.getPermission()).isNull();
+                assertThat(event.getRoleCode()).isEqualTo("LIFECYCLE_COMPANY");
+                assertThat(event.isPlatformRole()).isFalse();
+                assertThat(event.getOccurredAt()).isNotNull();
+                assertThat(event.getCorrelationId()).matches("[0-9a-f-]{36}");
+            });
+            assertThat(evidence.get(0).getCorrelationId()).isEqualTo(evidence.get(1).getCorrelationId());
+            assertThat(evidence.get(0).getOccurredAt()).isEqualTo(evidence.get(1).getOccurredAt());
+            assertThat(evidence.get(0).getReason()).isEqualTo("synthetic rename");
+            assertThat(evidence.get(1).getReason()).isEqualTo("synthetic rename");
+            assertThat(evidence.get(2).getReason()).isEqualTo("synthetic retirement");
+            assertThat(evidence.get(2).getCorrelationId()).isNotEqualTo(evidence.get(0).getCorrelationId());
+        });
+        var openapi = send(port, "/api-docs", null, access);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        Map<String,Object> paths = JsonPath.read(openapi.body(), "$.paths");
+        for (String op : List.of("rename", "retire")) {
+            assertThat(paths.get("/v1/platform/roles/{roleId}/" + op).toString()).contains("post=");
+        }
+        assertSafe(send(port, "/v1/auth/logout", "", access), 204);
+        assertSafe(send(port, root + futurePlatform + "/retire", retire, access), 401);
+        assertSafe(send(port, root + futurePlatform + "/rename", rename, access), 401);
     }
 
     private long createRuntimeRole(String code, boolean platform, String access) throws Exception {

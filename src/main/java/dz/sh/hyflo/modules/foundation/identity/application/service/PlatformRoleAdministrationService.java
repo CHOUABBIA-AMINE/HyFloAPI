@@ -7,7 +7,7 @@
  *
  * @Name        : PlatformRoleAdministrationService
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import dz.sh.hyflo.modules.foundation.identity.application.service.SessionAuthenticationService.CurrentIdentity;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Role;
+import dz.sh.hyflo.modules.foundation.identity.domain.model.RoleDefinitionEvent;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.Permission;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.RolePermission;
 import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.*;
@@ -127,6 +128,52 @@ public class PlatformRoleAdministrationService {
         if (associate) links.save(new RolePermission(role, permission));
         else links.delete(existing.orElseThrow());
         events.recordPermissionChange(role, permission, actor, Instant.now(), UUID.randomUUID().toString(), reason, associate);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public RoleEntry rename(CurrentIdentity principal, long roleId, String displayName, String reason) {
+        String operation = PlatformAuthorizationService.ROLE_RENAME;
+        authorization.requireCatalogWrite(principal, operation);
+        validateLifecycleInput(roleId, reason);
+        if (displayName == null || displayName.isBlank() || displayName.length() > 120)
+            throw new IllegalArgumentException("Invalid role label");
+        Role role = roles.findForUpdate(roleId).orElseThrow(PlatformRoleAdministrationService::denied);
+        var actor = authorization.requireCatalogWrite(principal, operation);
+        if (!role.isEnabled() || role.getDisplayName().equals(displayName)) throw new RoleChangeRejected();
+        Instant now = Instant.now();
+        String correlation = UUID.randomUUID().toString();
+        var before = RoleDefinitionEvent.renamedFrom(role, actor, now, correlation, reason);
+        role.rename(displayName);
+        var after = RoleDefinitionEvent.renamed(role, actor, now, correlation, reason);
+        authorization.requireCatalogWrite(principal, operation);
+        events.recordLifecycle(before);
+        events.recordLifecycle(after);
+        return entry(role);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public RoleEntry retire(CurrentIdentity principal, long roleId, String reason) {
+        String operation = PlatformAuthorizationService.ROLE_RETIRE;
+        authorization.requireCatalogWrite(principal, operation);
+        validateLifecycleInput(roleId, reason);
+        Role role = roles.findForUpdate(roleId).orElseThrow(PlatformRoleAdministrationService::denied);
+        authorization.requireCatalogWrite(principal, operation);
+        if (!role.isEnabled()) throw new RoleChangeRejected();
+        Instant now = Instant.now();
+        if (role.isPlatformRole()
+                ? platformGrants.countNonEndedForRole(roleId, now) > 0
+                : userGrants.countNonEndedBootstrapGrants(roleId, now) > 0)
+            throw new RoleChangeRejected();
+        var actor = authorization.requireCatalogWrite(principal, operation);
+        role.retire();
+        authorization.requireCatalogWrite(principal, operation);
+        events.recordLifecycle(RoleDefinitionEvent.retired(role, actor, Instant.now(), UUID.randomUUID().toString(), reason));
+        return entry(role);
+    }
+
+    private static void validateLifecycleInput(long roleId, String reason) {
+        if (roleId <= 0 || reason == null || reason.isBlank() || reason.length() > 255)
+            throw new IllegalArgumentException("Invalid role lifecycle input");
     }
 
     private static boolean foreignDelegable(Permission permission) {

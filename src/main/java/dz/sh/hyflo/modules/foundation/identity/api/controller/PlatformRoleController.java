@@ -7,7 +7,7 @@
  *
  * @Name        : PlatformRoleController
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Controller
@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import dz.sh.hyflo.modules.foundation.identity.api.request.CreatePlatformRoleRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.RenameRoleRequest;
+import dz.sh.hyflo.modules.foundation.identity.api.request.RetireRoleRequest;
 import dz.sh.hyflo.modules.foundation.identity.api.response.PlatformRoleResponse;
 import dz.sh.hyflo.modules.foundation.identity.application.service.PlatformRoleAdministrationService;
 import dz.sh.hyflo.modules.foundation.identity.application.service.PlatformRoleAdministrationService.RoleEntry;
@@ -85,6 +87,41 @@ public class PlatformRoleController {
             return problem(HttpStatus.BAD_REQUEST);
         } catch (RuntimeException failure) {
             return problem(duplicate(failure) ? HttpStatus.CONFLICT : HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @PostMapping(path = "/{roleId}/rename", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> rename(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("roleId") String roleId, @Valid @RequestBody RenameRoleRequest request) {
+        return lifecycle(() -> roles.rename(principal, parseRoleId(roleId), request.displayName(), request.reason()));
+    }
+
+    @PostMapping(path = "/{roleId}/retire", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> retire(@AuthenticationPrincipal CurrentIdentity principal,
+            @PathVariable("roleId") String roleId, @Valid @RequestBody RetireRoleRequest request) {
+        return lifecycle(() -> roles.retire(principal, parseRoleId(roleId), request.reason()));
+    }
+
+    private static long parseRoleId(String value) {
+        if (!value.matches("[0-9]{1,19}")) throw new IllegalArgumentException("Invalid role id");
+        long id = Long.parseLong(value);
+        if (id <= 0) throw new IllegalArgumentException("Invalid role id");
+        return id;
+    }
+
+    private static ResponseEntity<?> lifecycle(java.util.function.Supplier<RoleEntry> command) {
+        try {
+            return ResponseEntity.ok().header("Cache-Control", "no-store").body(response(command.get()));
+        } catch (AuthenticationException unauthenticated) {
+            return problem(HttpStatus.UNAUTHORIZED);
+        } catch (AccessDeniedException denied) {
+            return problem(HttpStatus.FORBIDDEN);
+        } catch (IllegalArgumentException invalid) {
+            return problem(HttpStatus.BAD_REQUEST);
+        } catch (PlatformRoleAdministrationService.RoleChangeRejected conflict) {
+            return problem(HttpStatus.CONFLICT);
+        } catch (RuntimeException failure) {
+            return problem(HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
 

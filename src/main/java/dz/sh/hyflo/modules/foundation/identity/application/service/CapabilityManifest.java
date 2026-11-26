@@ -7,7 +7,7 @@
  *
  * @Name        : CapabilityManifest
  * @CreatedOn   : 11-25-2026
- * @UpdatedOn   : 11-25-2026
+ * @UpdatedOn   : 11-26-2026
  *
  * @Type        : Class
  * @Layer       : Service
@@ -29,7 +29,7 @@ import java.util.Objects;
 
 /** Reviewed executable capabilities, not customer role configuration. */
 public final class CapabilityManifest {
-    public static final String ID = "hyflo-identity-capabilities-v2";
+    public static final String ID = "hyflo-identity-capabilities-v3";
     private static final List<Entry> ENTRIES = List.of(
             entry("user.read"), entry("user-employee.read"), entry("user-employee.associate"),
             entry("user.create"), entry("user.activate"), entry("user.suspend"), entry("user.reactivate"),
@@ -39,7 +39,8 @@ public final class CapabilityManifest {
             entry("identity-catalog.read"), entry(PlatformAuthorizationService.ROLE_READ),
             entry(PlatformAuthorizationService.ROLE_CREATE), entry(PlatformAuthorizationService.CAPABILITY_RECONCILE),
             entry(PlatformAuthorizationService.PERMISSION_READ), entry(PlatformAuthorizationService.PERMISSION_ASSOCIATE),
-            entry(PlatformAuthorizationService.PERMISSION_REMOVE))
+            entry(PlatformAuthorizationService.PERMISSION_REMOVE), entry(PlatformAuthorizationService.ROLE_RENAME),
+            entry(PlatformAuthorizationService.ROLE_RETIRE))
             .stream().sorted(Comparator.comparing(Entry::permissionCode)).toList();
     private static final String DIGEST = calculateDigest();
 
