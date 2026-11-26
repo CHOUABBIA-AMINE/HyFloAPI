@@ -97,7 +97,7 @@ public class AuthenticationService {
         this.dummyHash = encoder.encode(UUID.randomUUID().toString());
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Optional<LoginResult> login(String username, String password, String correlationId) {
         Instant now = clock.instant().truncatedTo(ChronoUnit.SECONDS);
         IdentityProvider provider = providers.findByCode(IdentityProvider.LOCAL_CODE)

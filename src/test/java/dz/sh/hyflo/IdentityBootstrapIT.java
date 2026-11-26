@@ -37,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.jayway.jsonpath.JsonPath;
 import dz.sh.hyflo.modules.foundation.identity.application.service.IdentityBootstrapService;
+import dz.sh.hyflo.modules.foundation.identity.application.service.AuthenticationService;
+import dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.IdentityProviderRepository;
 import dz.sh.hyflo.platform.security.PasswordEncodingConfiguration.IdentityPasswordEncoder;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserRoleGrant;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
@@ -78,6 +80,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -2243,6 +2246,71 @@ class IdentityBootstrapIT {
                 .isZero();
         assertThat(count("T_10_01_18")).isEqualTo(events + 1);
         assertSafe(send(port, "/v1/auth/login", "{\"username\":\"life-session-target\",\"password\":\"" + replacement + "\"}", null), 200);
+    }
+
+    @Test
+    void loginReadsCurrentCredentialAfterEarlierProviderRead() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("LOGIN_ISOLATION_COMPANY", "login-isolation-admin",
+                "LOGIN_ISOLATION_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='login-isolation-admin'", Long.class);
+        String access = loginAccess("login-isolation-admin");
+        String username = "login-isolation-target";
+        long target = createCompositionUser(admin, company, username);
+        long role = createRuntimeRole("LOGIN_ISOLATION_SHARED", true, access);
+        assertSafe(send(port, changePath(role, permissionId("platform-role.read"), true),
+                "{\"reason\":\"synthetic login isolation\"}", access), 204);
+        platformFixtureGrant(admin, admin, role, Instant.now().minusSeconds(60), null);
+        assertSafe(send(port, platformGrantPath(target), platformGrantBody(role), access), 201);
+        var oldLogin = send(port, "/v1/auth/login",
+                "{\"username\":\"" + username + "\",\"password\":\"" + SYNTHETIC_PASSWORD + "\"}", null);
+        assertSafe(oldLogin, 200);
+        String oldAccess = JsonPath.read(oldLogin.body(), "$.accessToken");
+        String oldRefresh = JsonPath.read(oldLogin.body(), "$.refreshToken");
+        long sessionCount = count("T_10_01_11");
+        long refreshCount = count("T_10_01_17");
+        long eventCount = count("T_10_01_18");
+        String replacement = "Synthetic-isolation-replacement!";
+        String reset = "{\"password\":\"" + replacement + "\",\"reason\":\"synthetic login isolation\"}";
+        String correlation = "login-isolation-regression";
+
+        var loginTransaction = AuthenticationService.class.getMethod("login", String.class, String.class, String.class)
+                .getAnnotation(Transactional.class);
+        assertThat(loginTransaction).isNotNull();
+        var template = new TransactionTemplate(transactions);
+        template.setIsolationLevel(loginTransaction.isolation().value());
+        var authentication = applicationContext.getBean(AuthenticationService.class);
+        var providers = applicationContext.getBean(IdentityProviderRepository.class);
+        template.executeWithoutResult(tx -> {
+            // Ordinary provider read establishes the earlier consistent-read snapshot under REPEATABLE READ.
+            assertThat(providers.findByCode(IdentityProvider.LOCAL_CODE)).isPresent();
+            String actualIsolation = jdbc.queryForObject("SELECT @@transaction_isolation", String.class);
+            // A completed HTTP response proves the reset committed on another connection before login acquires its lock.
+            var resetResponse = client.sendAsync(request(port, protectedPath(target) + "/credential/reset", reset, access),
+                    HttpResponse.BodyHandlers.ofString()).orTimeout(60, TimeUnit.SECONDS).join();
+            assertSafe(resetResponse, 204);
+            assertThat(authentication.login(username, SYNTHETIC_PASSWORD, correlation)).isEmpty();
+            assertThat(actualIsolation).isEqualTo("READ-COMMITTED");
+        });
+
+        assertThat(count("T_10_01_11")).isEqualTo(sessionCount);
+        assertThat(count("T_10_01_17")).isEqualTo(refreshCount);
+        assertThat(count("T_10_01_18")).isEqualTo(eventCount + 1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_18 WHERE F_01='CREDENTIAL_RESET' AND F_08=? AND F_09=?",
+                Long.class, target, admin)).isEqualTo(1L);
+        assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_12 WHERE F_03=? AND F_05=?",
+                String.class, correlation, target)).containsExactly("LOGIN_FAILED");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_11 WHERE F_04=? AND F_03 IS NULL",
+                Long.class, target)).isZero();
+        assertThat(passwordEncoder.matches(replacement,
+                jdbc.queryForObject("SELECT F_01 FROM T_10_01_10 WHERE F_03=?", String.class, target))).isTrue();
+        assertSafe(send(port, "/v1/me", null, oldAccess), 401);
+        assertSafe(send(port, "/v1/auth/refresh", "{\"refreshToken\":\"" + oldRefresh + "\"}", null), 401);
+        var fresh = send(port, "/v1/auth/login",
+                "{\"username\":\"" + username + "\",\"password\":\"" + replacement + "\"}", null);
+        assertSafe(fresh, 200);
+        String freshAccess = JsonPath.read(fresh.body(), "$.accessToken");
+        assertSafe(send(port, "/v1/me", null, freshAccess), 200);
     }
 
     @Test
