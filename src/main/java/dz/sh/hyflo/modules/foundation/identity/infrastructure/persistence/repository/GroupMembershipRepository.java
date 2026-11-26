@@ -43,4 +43,11 @@ public interface GroupMembershipRepository extends Repository<GroupMembership, L
     @org.springframework.data.jpa.repository.Query("select m from GroupMembership m where m.group.id = :groupId and m.id = :id")
     java.util.Optional<GroupMembership> findSelectedForUpdate(@org.springframework.data.repository.query.Param("groupId") long groupId,
             @org.springframework.data.repository.query.Param("id") long id);
+    @org.springframework.data.jpa.repository.Query("select m from GroupMembership m join fetch m.user where m.group.id = :groupId "
+            + "and (m.validTo is null or m.validTo > :now) and (m.revokedAt is null or m.revokedAt > :now)")
+    java.util.List<GroupMembership> findNonEndedForGroup(@org.springframework.data.repository.query.Param("groupId") long groupId,
+            @org.springframework.data.repository.query.Param("now") java.time.Instant now);
+
+    @org.springframework.data.jpa.repository.Query("select m from GroupMembership m join fetch m.user join fetch m.group where m.user.id = :userId")
+    java.util.List<GroupMembership> findForUser(@org.springframework.data.repository.query.Param("userId") long userId);
 }

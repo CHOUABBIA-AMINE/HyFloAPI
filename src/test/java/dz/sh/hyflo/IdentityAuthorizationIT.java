@@ -181,7 +181,7 @@ class IdentityAuthorizationIT {
             assertThat(detail(rejected)).isEqualTo(denial);
             assertProblem(get(permissions(target), admin), 403, "ACCESS_DENIED");
         }
-        // Group-only and unsupported target grants cannot confer authority in IDN-03.
+        // Foreign-company group membership, indefinite group grants and unsupported target scopes cannot confer authority.
         assertProblem(get(permissions(companies.third()), other), 403, "ACCESS_DENIED");
         assertProblem(get(catalog(companies.third()), other), 403, "ACCESS_DENIED");
 

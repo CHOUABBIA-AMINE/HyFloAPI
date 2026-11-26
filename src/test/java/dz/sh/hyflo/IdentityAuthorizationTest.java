@@ -75,8 +75,14 @@ class IdentityAuthorizationTest {
     private final RolePermissionRepository catalogLinks = mock(RolePermissionRepository.class);
     private final ActionRepository actions = mock(ActionRepository.class);
     private final ResourceTypeRepository resourceTypes = mock(ResourceTypeRepository.class);
+    private final dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.GroupMembershipRepository memberships =
+            mock(dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.GroupMembershipRepository.class);
+    private final dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.GroupRoleGrantRepository groupGrants =
+            mock(dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.GroupRoleGrantRepository.class);
+    private final dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.PlatformRoleGrantRepository platformGrants =
+            mock(dz.sh.hyflo.modules.foundation.identity.infrastructure.persistence.repository.PlatformRoleGrantRepository.class);
     private final EffectiveAuthorizationService authorization =
-            new EffectiveAuthorizationService(sessions, grants, links, companies);
+            new EffectiveAuthorizationService(sessions, grants, links, companies, memberships, groupGrants, platformGrants);
     private final IdentityCatalogService catalogs =
             new IdentityCatalogService(authorization, statuses, roles, permissions, catalogLinks, actions, resourceTypes);
     private final AtomicReference<Instant> decisionTime = new AtomicReference<>();

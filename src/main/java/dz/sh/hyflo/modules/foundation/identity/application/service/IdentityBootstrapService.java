@@ -97,7 +97,8 @@ public class IdentityBootstrapService {
             PlatformAuthorizationService.GROUP_RETIRE,
             PlatformAuthorizationService.MEMBERSHIP_READ,
             PlatformAuthorizationService.MEMBERSHIP_ASSIGN,
-            PlatformAuthorizationService.MEMBERSHIP_REVOKE);
+            PlatformAuthorizationService.MEMBERSHIP_REVOKE,
+            PlatformAuthorizationService.GROUP_GRANT_READ, PlatformAuthorizationService.GROUP_GRANT_ASSIGN, PlatformAuthorizationService.GROUP_GRANT_REVOKE);
 
     private final IdentityProviderRepository providers;
     private final UserStatusRepository statuses;

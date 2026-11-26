@@ -29,7 +29,7 @@ import java.util.Objects;
 
 /** Reviewed executable capabilities, not customer role configuration. */
 public final class CapabilityManifest {
-    public static final String ID = "hyflo-identity-capabilities-v5";
+    public static final String ID = "hyflo-identity-capabilities-v6";
     private static final List<Entry> ENTRIES = List.of(
             entry("user.read"), entry("user-employee.read"), entry("user-employee.associate"),
             entry("user.create"), entry("user.activate"), entry("user.suspend"), entry("user.reactivate"),
@@ -48,7 +48,8 @@ public final class CapabilityManifest {
             entry(PlatformAuthorizationService.GROUP_RETIRE),
             entry(PlatformAuthorizationService.MEMBERSHIP_READ),
             entry(PlatformAuthorizationService.MEMBERSHIP_ASSIGN),
-            entry(PlatformAuthorizationService.MEMBERSHIP_REVOKE))
+            entry(PlatformAuthorizationService.MEMBERSHIP_REVOKE),
+            entry(PlatformAuthorizationService.GROUP_GRANT_READ), entry(PlatformAuthorizationService.GROUP_GRANT_ASSIGN), entry(PlatformAuthorizationService.GROUP_GRANT_REVOKE))
             .stream().sorted(Comparator.comparing(Entry::permissionCode)).toList();
     private static final String DIGEST = calculateDigest();
 

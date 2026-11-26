@@ -24,6 +24,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import dz.sh.hyflo.modules.foundation.identity.api.request.*;
 import dz.sh.hyflo.modules.foundation.identity.api.response.GroupResponse;
+import dz.sh.hyflo.modules.foundation.identity.api.response.GroupRoleGrantResponse;
+import dz.sh.hyflo.modules.foundation.identity.application.service.GroupRoleGrantService;
 import dz.sh.hyflo.modules.foundation.identity.api.response.GroupMembershipResponse;
 import dz.sh.hyflo.modules.foundation.identity.application.service.GroupService;
 import dz.sh.hyflo.modules.foundation.identity.application.service.GroupMembershipService;
@@ -46,9 +48,12 @@ public class GroupAdministrationController {
     private final GroupService groups;
     private final GroupMembershipService memberships;
 
-    public GroupAdministrationController(GroupService groups, GroupMembershipService memberships) {
+    private final GroupRoleGrantService grants;
+
+    public GroupAdministrationController(GroupService groups, GroupMembershipService memberships, GroupRoleGrantService grants) {
         this.groups = groups;
         this.memberships = memberships;
+        this.grants = grants;
     }
 
     @GetMapping
@@ -100,6 +105,35 @@ public class GroupAdministrationController {
             memberships.revoke(principal, positive(groupId), positive(membershipId));
             return null;
         }, false);
+    }
+
+    @GetMapping("/{groupId}/role-grants")
+    public ResponseEntity<?> listRoleGrants(@AuthenticationPrincipal CurrentIdentity principal, @PathVariable("groupId") String groupId,
+            @RequestParam(name = "companyId", required = false) String companyId,
+            @RequestParam(name = "afterId", defaultValue = "0") String afterId) {
+        return execute(HttpStatus.OK, () -> grants.list(principal, positive(groupId), positive(companyId), identifier(afterId))
+                .stream().map(GroupAdministrationController::grantResponse).toList(), false);
+    }
+
+    @PostMapping(path = "/{groupId}/role-grants", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> assignRoleGrant(@AuthenticationPrincipal CurrentIdentity principal, @PathVariable("groupId") String groupId,
+            @RequestParam(name = "companyId", required = false) String companyId, @Valid @RequestBody AssignGroupRoleGrantRequest request) {
+        return execute(HttpStatus.CREATED, () -> grantResponse(grants.assign(principal, positive(groupId), positive(companyId),
+                request.roleId(), request.validTo(), request.reason())), false);
+    }
+
+    @PostMapping("/{groupId}/role-grants/{grantId}/revoke")
+    public ResponseEntity<?> revokeRoleGrant(@AuthenticationPrincipal CurrentIdentity principal, @PathVariable("groupId") String groupId,
+            @PathVariable("grantId") String grantId, @RequestParam(name = "companyId", required = false) String companyId) {
+        return execute(HttpStatus.NO_CONTENT, () -> {
+            grants.revoke(principal, positive(groupId), positive(companyId), positive(grantId));
+            return null;
+        }, false);
+    }
+
+    private static GroupRoleGrantResponse grantResponse(GroupRoleGrantService.Entry g) {
+        return new GroupRoleGrantResponse(g.id(), g.groupId(), g.roleId(), g.roleCode(), g.companyId(), g.scopeType(),
+                g.validFrom(), g.validTo(), g.revokedAt(), g.reason(), g.grantedBy(), g.revokedBy());
     }
 
     private static GroupResponse response(GroupService.Entry group) {

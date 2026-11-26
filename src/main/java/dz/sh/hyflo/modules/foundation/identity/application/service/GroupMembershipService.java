@@ -37,11 +37,11 @@ public class GroupMembershipService {
     private final GroupRepository groups;
     private final UserRepository users;
     private final PlatformRoleGrantRepository platformGrants;
-    private final GroupRoleGrantRepository groupGrants;
+    private final GroupRoleGrantService groupGrants;
     private final PlatformAuthorizationService authorization;
 
     public GroupMembershipService(GroupMembershipRepository memberships, GroupRepository groups,
-            UserRepository users, PlatformRoleGrantRepository platformGrants, GroupRoleGrantRepository groupGrants,
+            UserRepository users, PlatformRoleGrantRepository platformGrants, GroupRoleGrantService groupGrants,
             PlatformAuthorizationService authorization) {
         this.memberships = memberships;
         this.groups = groups;
@@ -73,10 +73,12 @@ public class GroupMembershipService {
         var group = groups.findForUpdate(groupId).orElseThrow(GroupService::denied);
         actor = authorization.requireCatalogWrite(principal, permission);
         Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
-        if (!group.isEnabled() || memberships.countNonEnded(groupId, userId, now) > 0
-                || groupGrants.countNonEndedForGroup(groupId, now) > 0)
+        if (!group.isEnabled() || memberships.countNonEnded(groupId, userId, now) > 0)
             throw new GroupService.GroupRejected();
+        groupGrants.validateMembership(actor, target, groupId);
         actor = authorization.requireCatalogWrite(principal, permission);
+        groupGrants.validateMembership(actor, target, groupId);
+        now = Instant.now().truncatedTo(ChronoUnit.MICROS);
         return entry(memberships.save(new GroupMembership(target, group, now, null, actor)), now);
     }
 

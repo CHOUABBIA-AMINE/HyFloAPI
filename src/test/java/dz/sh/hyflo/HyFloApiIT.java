@@ -163,6 +163,8 @@ class HyFloApiIT {
                     assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(3).contains(repositoryType);
                 } else if (entity.getSimpleName().equals("GroupMembership")) {
                     assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(6).contains(repositoryType);
+                } else if (entity.getSimpleName().equals("GroupRoleGrant")) {
+                    assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).hasSize(9).contains(repositoryType);
                 } else {
                     assertThat(serviceType.getDeclaredConstructors()[0].getParameterTypes()).containsExactly(repositoryType);
                 }
@@ -187,7 +189,7 @@ class HyFloApiIT {
                 } else if (entity.getSimpleName().equals("Group")) {
                     assertThat(declaredBusinessMethods.stream().filter(method -> java.lang.reflect.Modifier.isPublic(method.getModifiers())).toList())
                             .extracting(java.lang.reflect.Method::getName).containsExactlyInAnyOrder("list", "read", "create", "rename", "retire");
-                } else if (entity.getSimpleName().equals("GroupMembership")) {
+                } else if (entity.getSimpleName().equals("GroupMembership") || entity.getSimpleName().equals("GroupRoleGrant")) {
                     assertThat(declaredBusinessMethods.stream().filter(method -> java.lang.reflect.Modifier.isPublic(method.getModifiers())).toList())
                             .extracting(java.lang.reflect.Method::getName).containsExactlyInAnyOrder("list", "assign", "revoke");
                 } else {

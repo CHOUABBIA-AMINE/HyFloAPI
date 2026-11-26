@@ -427,7 +427,7 @@ public class UserAdministrationService {
         if (platformGrants.existsByUserId(target.getId())) throw denied();
     }
 
-    private static Instant finiteExpiry(String text) {
+    static Instant finiteExpiry(String text) {
         if (text == null || text.length() > 40) throw new IllegalArgumentException("Invalid grant expiry");
         try {
             Instant end = Instant.parse(text);
@@ -486,20 +486,22 @@ public class UserAdministrationService {
                 .filter(g -> g.getUser().getId().equals(actor.getId()))
                 .filter(g -> EffectiveAuthorizationService.matchesCompany(g, companyId, candidateTime))
                 .map(g -> g.getRole().getId()).collect(Collectors.toSet());
-        if (roleIds.isEmpty()) throw denied();
-        var links = permissions.findForRolesForWrite(roleIds);
-        if (!links.stream().anyMatch(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isEnabled() && !link.getRole().isPlatformRole()
-                && EffectiveAuthorizationService.validCompanyPermission(link.getPermission())
+        Set<Long> inherited = authorization.inheritedRoleIds(actor.getId(), companyId, candidateTime);
+        Set<Long> allRoles = new java.util.HashSet<>(roleIds);
+        allRoles.addAll(inherited);
+        if (allRoles.isEmpty()) throw denied();
+        var links = permissions.findForRolesForWrite(allRoles);
+        if (!links.stream().anyMatch(link -> EffectiveAuthorizationService.permitsLink(roleIds, inherited, link)
                 && requiredPermission.equals(link.getPermission().getCode()))) throw denied();
         if (!companies.lockEligibleCompanyForIdentityWrite(companyId, LocalDate.now(ZoneOffset.UTC))) throw denied();
         Instant finalTime = Instant.now();
-        if (!session.isActiveAt(finalTime)) throw unauthenticated();
+        if (!session.isActiveAt(finalTime) || !SessionAuthenticationService.eligible(actor)) throw unauthenticated();
         Set<Long> activeRoles = candidates.stream()
                 .filter(g -> g.getUser().getId().equals(actor.getId()))
                 .filter(g -> EffectiveAuthorizationService.matchesCompany(g, companyId, finalTime))
                 .map(g -> g.getRole().getId()).collect(Collectors.toSet());
-        if (!links.stream().anyMatch(link -> activeRoles.contains(link.getRole().getId()) && link.getRole().isEnabled() && !link.getRole().isPlatformRole()
-                && EffectiveAuthorizationService.validCompanyPermission(link.getPermission())
+        Set<Long> activeInherited = authorization.inheritedRoleIds(actor.getId(), companyId, finalTime);
+        if (!links.stream().anyMatch(link -> EffectiveAuthorizationService.permitsLink(activeRoles, activeInherited, link)
                 && requiredPermission.equals(link.getPermission().getCode()))
                 || !companies.lockEligibleCompanyForIdentityWrite(companyId, LocalDate.ofInstant(finalTime, ZoneOffset.UTC))) throw denied();
         return actor;

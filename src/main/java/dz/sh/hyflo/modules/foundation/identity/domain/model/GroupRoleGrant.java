@@ -113,6 +113,16 @@ public class GroupRoleGrant {
                 && (revokedAt == null || instant.isBefore(revokedAt));
     }
 
+    public boolean overlapsInterval(Instant from, Instant to) {
+        Objects.requireNonNull(from);
+        Objects.requireNonNull(to);
+        if (!to.isAfter(from)) throw new IllegalArgumentException("Invalid interval");
+        Instant end = validTo;
+        if (revokedAt != null && (end == null || revokedAt.isBefore(end))) end = revokedAt;
+        return (end == null || end.isAfter(validFrom))
+                && validFrom.isBefore(to) && (end == null || from.isBefore(end));
+    }
+
     public void revoke(Instant instant, User revokedBy) {
         Objects.requireNonNull(instant, "Revocation time is required");
         if (revokedBy == null || revokedBy.getId() == null || revokedBy.getId() <= 0) {

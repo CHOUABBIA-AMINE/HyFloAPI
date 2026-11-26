@@ -380,7 +380,8 @@ class IdentityBootstrapIT {
                                 "platform-role.rename", "platform-role.retire",
                         "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke",
                         "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
-                        "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke")).toList());
+                        "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke",
+                        "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke")).toList());
         assertThat(count("T_10_01_20")).isEqualTo(1L);
         assertThat(count("T_10_01_21")).isZero();
         assertThat(jdbc.queryForList("SELECT F_01 FROM T_10_01_04 WHERE F_04=TRUE", String.class))
@@ -543,7 +544,8 @@ class IdentityBootstrapIT {
                         "/v1/platform/roles/{roleId}/rename", "/v1/platform/roles/{roleId}/retire",
                         "/v1/platform/groups", "/v1/platform/groups/{groupId}", "/v1/platform/groups/{groupId}/rename",
                         "/v1/platform/groups/{groupId}/retire", "/v1/platform/groups/{groupId}/memberships",
-                        "/v1/platform/groups/{groupId}/memberships/{membershipId}/revoke");
+                        "/v1/platform/groups/{groupId}/memberships/{membershipId}/revoke",
+                        "/v1/platform/groups/{groupId}/role-grants", "/v1/platform/groups/{groupId}/role-grants/{grantId}/revoke");
         assertThat(paths.get(endpoint).toString()).contains("get=", "post=");
         assertSafe(send(port, endpoint + "/unregistered", null, access), 403);
 
@@ -643,7 +645,8 @@ class IdentityBootstrapIT {
                         "platform-role.rename", "platform-role.retire",
                         "platform-user-role-grant.read", "platform-user-role-grant.assign", "platform-user-role-grant.revoke",
                         "platform-group.read", "platform-group.create", "platform-group.rename", "platform-group.retire",
-                        "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke");
+                        "platform-group-membership.read", "platform-group-membership.assign", "platform-group-membership.revoke",
+                        "platform-group-role-grant.read", "platform-group-role-grant.assign", "platform-group-role-grant.revoke");
         String access = loginAccess("reconcile-admin");
         assertSafe(send(port, endpoint, requestBody, null), 401);
         assertSafe(send(port, endpoint, requestBody, "invalid.jwt"), 401);
@@ -659,7 +662,7 @@ class IdentityBootstrapIT {
         assertSafe(initial, 200);
         String manifestId = JsonPath.read(initial.body(), "$.manifestId");
         String digest = JsonPath.read(initial.body(), "$.manifestDigest");
-        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v5");
+        assertThat(manifestId).isEqualTo("hyflo-identity-capabilities-v6");
         assertThat(digest).matches("[0-9a-f]{64}");
         assertInserted(initial, List.of(), List.of(), List.of());
         var repeat = send(port, endpoint, requestBody, access);
@@ -816,7 +819,7 @@ class IdentityBootstrapIT {
             assertThat(events.get(2).getInsertedPermissionCodes()).isEqualTo("credential.initialize\nidentity-catalog.read\nuser.read");
             assertThat(events.stream().map(CapabilityReconciliationEvent::getCorrelationId).distinct().count()).isEqualTo(6L);
         });
-        assertThat(count("T_10_01_09")).isEqualTo(36L); // thirty-five supported, one unrelated synthetic definition
+        assertThat(count("T_10_01_09")).isEqualTo(39L); // thirty-eight supported, one unrelated synthetic definition
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09", Long.class)).isEqualTo(
                 jdbc.queryForObject("SELECT COUNT(DISTINCT F_03,F_04) FROM T_10_01_09", Long.class));
     }
@@ -887,7 +890,7 @@ class IdentityBootstrapIT {
         var initial = send(port, catalog, null, access);
         assertSafe(initial, 200);
         List<Map<String, Object>> definitions = JsonPath.read(initial.body(), "$");
-        assertThat(definitions).hasSize(35).allSatisfy(entry -> {
+        assertThat(definitions).hasSize(38).allSatisfy(entry -> {
             assertThat(entry).containsOnlyKeys("id", "code", "displayName", "actionCode", "resourceTypeCode",
                     "platformPermission", "supported");
             assertThat(entry.get("supported")).isEqualTo(true);
@@ -927,7 +930,7 @@ class IdentityBootstrapIT {
         var tail = send(port, catalog + "?afterId=" + ids.getLast(), null, access);
         assertSafe(tail, 200);
         List<Number> tailIds = JsonPath.read(tail.body(), "$[*].id");
-        assertThat(tailIds).hasSize(38);
+        assertThat(tailIds).hasSize(41);
         assertThat(tailIds.stream().map(Number::longValue).toList()).isSorted()
                 .allSatisfy(id -> assertThat(id).isGreaterThan(ids.getLast().longValue()));
         assertThat(send(port, catalog + "?afterId=" + tailIds.getLast(), null, access).body()).isEqualTo("[]");
@@ -1735,6 +1738,224 @@ class IdentityBootstrapIT {
             entityManager.persist(membership);
             return membership.getId();
         });
+    }
+
+
+    @Test
+    void assignsGroupRolesAndResolvesLiveInheritedAuthority() throws Exception {
+        assertEmptyIdentity();
+        assertEmptyOrganization();
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("INHERIT_COMPANY", "inherit-admin",
+                "INHERIT_AUTHORITY"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='inherit-admin'", Long.class);
+        long platformRole = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        String access = loginAccess("inherit-admin");
+        long member = createCompositionUser(admin, company, "inherit-member");
+        long second = createCompositionUser(admin, company, "inherit-second");
+        long target = createCompositionUser(admin, company, "inherit-target");
+        long delegate = createCompositionUser(admin, company, "inherit-delegate");
+        String memberAccess = loginAccess("inherit-member");
+        String secondAccess = loginAccess("inherit-second");
+        String delegateAccess = loginAccess("inherit-delegate");
+        String reason = "{\"reason\":\"synthetic inheritance\"}";
+        long role = createRuntimeRole("GROUP_OPERATIONS", false, access);
+        long empty = createRuntimeRole("GROUP_EMPTY", false, access);
+        long limited = createRuntimeRole("GROUP_ASSIGN_ONLY", true, access);
+        for (String code : List.of("user.read", "user.suspend", "user-role-grant.assign"))
+            assertSafe(send(port, changePath(role, permissionId(code), true), reason, access), 204);
+        for (String code : List.of("platform-group-role-grant.assign", "platform-group-membership.assign"))
+            assertSafe(send(port, changePath(limited, permissionId(code), true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(delegate), platformGrantBody(limited), access), 201);
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        Instant end = now.plusSeconds(3600);
+        long group = createGroup("INHERITED_OPERATIONS", access);
+        long otherGroup = createGroup("INHERITED_OTHER", access);
+        long foreignCompany = new TransactionTemplate(transactions).execute(tx -> {
+            var type = entityManager.createQuery("select t from OrganizationUnitType t where t.code='COMPANY'",
+                    OrganizationUnitType.class).getSingleResult();
+            var active = entityManager.createQuery("select s from OrganizationUnitStatus s where s.code='ACTIVE'",
+                    OrganizationUnitStatus.class).getSingleResult();
+            var unit = new OrganizationUnit("INHERIT_FOREIGN", null, null, "Synthetic foreign company",
+                    type, null, LocalDate.now(ZoneOffset.UTC).minusDays(1), null, active);
+            entityManager.persist(unit);
+            return unit.getId();
+        });
+        long foreign = createCompositionUser(admin, foreignCompany, "inherit-foreign");
+        String foreignAccess = loginAccess("inherit-foreign");
+        String base = "/v1/platform/groups/" + group;
+        String selector = "?companyId=" + company;
+        String grants = base + "/role-grants";
+        String requestBody = groupGrantBody(role, end);
+        String permissions = "/v1/me/permissions" + selector;
+        String protectedRead = "/v1/identity/users/" + target + selector;
+        String suspend = "/v1/identity/users/" + target + "/suspend" + selector;
+        assertSafe(send(port, grants + selector, null, null), 401);
+        assertSafe(send(port, grants + selector, requestBody, "invalid.jwt"), 401);
+        assertSafe(send(port, grants + selector, null, memberAccess), 403);
+        assertSafe(send(port, grants + selector, requestBody, memberAccess), 403);
+        assertSafe(send(port, grants + selector, null, delegateAccess), 403);
+        assertSafe(send(port, grants + selector, requestBody, delegateAccess), 403);
+        assertSafe(send(port, grants, null, access), 400);
+        assertSafe(send(port, grants + selector + "&afterId=-1", null, access), 400);
+        assertSafe(send(port, grants + selector, "{}", access), 400);
+        assertSafe(send(port, grants + selector, groupGrantBody(role, now.minusSeconds(5)), access), 400);
+        assertSafe(send(port, grants + selector, groupGrantBody(platformRole, end), access), 409);
+        assertSafe(send(port, grants + selector, groupGrantBody(empty, end), access), 409);
+        assertSafe(send(port, grants + selector, requestBody, access), 403);
+        var memberResponse = send(port, base + "/memberships", memberBody(member), access);
+        assertSafe(memberResponse, 201);
+        long membership = ((Number) JsonPath.read(memberResponse.body(), "$.id")).longValue();
+        assertSafe(send(port, permissions, null, memberAccess), 403);
+        addCompanyFixtureGrant(admin, admin, role, company, now.minusSeconds(5), now.plusSeconds(7200));
+        assertSafe(send(port, grants + selector, groupGrantBody(role, now.plusSeconds(10800)), access), 403);
+        String otherBase = "/v1/platform/groups/" + otherGroup;
+        var foreignMembershipResponse = send(port, otherBase + "/memberships", memberBody(foreign), access);
+        assertSafe(foreignMembershipResponse, 201);
+        long foreignMembership = ((Number) JsonPath.read(foreignMembershipResponse.body(), "$.id")).longValue();
+        assertSafe(send(port, otherBase + "/role-grants" + selector, requestBody, access), 409);
+        assertSafe(send(port, otherBase + "/memberships/" + foreignMembership + "/revoke", "", access), 204);
+        long selfMembership = groupMembershipFixture(admin, admin, otherGroup, now.plusSeconds(60), null);
+        assertSafe(send(port, otherBase + "/role-grants" + selector, requestBody, access), 409);
+        assertSafe(send(port, otherBase + "/memberships/" + selfMembership + "/revoke", "", access), 204);
+        long before = count("T_10_01_16");
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_grant_insert BEFORE INSERT ON T_10_01_16 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, grants + selector, requestBody, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_grant_insert");
+        }
+        assertThat(count("T_10_01_16")).isEqualTo(before);
+        var a = client.sendAsync(request(port, grants + selector, requestBody, access), HttpResponse.BodyHandlers.ofString());
+        var b = client.sendAsync(request(port, grants + selector, requestBody, access), HttpResponse.BodyHandlers.ofString());
+        var ar = a.get(60, TimeUnit.SECONDS);
+        var br = b.get(60, TimeUnit.SECONDS);
+        assertThat(List.of(ar.statusCode(), br.statusCode())).containsExactlyInAnyOrder(201, 409);
+        long grant = ((Number) JsonPath.read((ar.statusCode() == 201 ? ar : br).body(), "$.id")).longValue();
+        assertThat(count("T_10_01_16")).isEqualTo(before + 1);
+        assertSafe(send(port, grants + selector, requestBody, access), 409);
+        var history = send(port, grants + selector, null, access);
+        assertSafe(history, 200);
+        assertThat((List<Number>) JsonPath.read(history.body(), "$[*].id")).extracting(Number::longValue).containsExactly(grant);
+        assertSafe(send(port, grants + selector + "&afterId=" + grant, null, access), 200);
+        assertSafe(send(port, grants + "?companyId=" + Long.MAX_VALUE, null, access), 403);
+        assertSafe(send(port, "/v1/platform/groups/" + otherGroup + "/role-grants/" + grant + "/revoke" + selector, "", access), 403);
+        String revoke = grants + "/" + grant + "/revoke" + selector;
+        assertSafe(send(port, revoke, "", delegateAccess), 403);
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        assertThat((List<String>) JsonPath.read(send(port, permissions, null, memberAccess).body(), "$.permissionCodes"))
+                .containsExactly("user-role-grant.assign", "user.read", "user.suspend");
+        assertSafe(send(port, "/v1/platform/groups", null, memberAccess), 403);
+        assertSafe(send(port, "/v1/identity/users/" + target + "/role-grants" + selector, requestBody, memberAccess), 403);
+        assertSafe(send(port, suspend, reason, memberAccess), 200);
+        assertSafe(send(port, base + "/memberships", memberBody(foreign), access), 409);
+        assertSafe(send(port, permissions, null, foreignAccess), 403);
+        assertSafe(send(port, base + "/memberships", memberBody(second), delegateAccess), 403);
+        var secondMembershipResponse = send(port, base + "/memberships", memberBody(second), access);
+        assertSafe(secondMembershipResponse, 201);
+        long secondMembership = ((Number) JsonPath.read(secondMembershipResponse.body(), "$.id")).longValue();
+        assertSafe(send(port, protectedRead, null, secondAccess), 200);
+        long directGrant = addCompanyFixtureGrant(admin, second, role, company, now.minusSeconds(5), null);
+        assertThat((List<String>) JsonPath.read(send(port, permissions, null, secondAccess).body(), "$.permissionCodes"))
+                .containsExactly("user-role-grant.assign", "user.read", "user.suspend");
+        assertSafe(send(port, base + "/memberships/" + secondMembership + "/revoke", "", access), 204);
+        assertSafe(send(port, protectedRead, null, secondAccess), 200);
+        assertSafe(send(port, "/v1/identity/users/" + second + "/role-grants/" + directGrant + "/revoke" + selector, "", access), 204);
+        assertSafe(send(port, protectedRead, null, secondAccess), 403);
+
+        jdbc.execute("CREATE TRIGGER hyflo_test_group_grant_update BEFORE UPDATE ON T_10_01_16 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, revoke, "", access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_group_grant_update");
+        }
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        assertSafe(send(port, revoke, "", access), 204);
+        assertSafe(send(port, revoke, "", access), 409);
+        assertSafe(send(port, protectedRead, null, memberAccess), 403);
+        assertThat(count("T_10_01_16")).isEqualTo(before + 1);
+        // Stored inactive and resource-scoped grants must not confer company authority.
+        groupMembershipFixture(admin, member, otherGroup, now.minusSeconds(10), null);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var g = entityManager.find(Group.class, otherGroup);
+            var r = entityManager.find(Role.class, role);
+            var actor = entityManager.find(User.class, admin);
+            entityManager.persist(new GroupRoleGrant(g, r, AuthorizationScope.global(company), "expired",
+                    now.minusSeconds(7200), now.minusSeconds(3600), actor));
+            entityManager.persist(new GroupRoleGrant(g, r, AuthorizationScope.global(company), "future",
+                    now.plusSeconds(3600), now.plusSeconds(7200), actor));
+            entityManager.persist(new GroupRoleGrant(g, r, AuthorizationScope.pipeline(company, 1), "resource scope",
+                    now.minusSeconds(10), end, actor));
+        });
+        assertSafe(send(port, protectedRead, null, memberAccess), 403);
+        assertSafe(send(port, otherBase + "/role-grants" + selector, requestBody, access), 409);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            var persisted = entityManager.find(GroupRoleGrant.class, grant);
+            assertThat(persisted.getGrantedBy().getId()).isEqualTo(admin);
+            assertThat(persisted.getRevokedBy().getId()).isEqualTo(admin);
+            assertThat(persisted.getReason()).isEqualTo("synthetic group grant");
+            assertThat(persisted.isActiveAt(persisted.getRevokedAt())).isFalse();
+            assertThat(persisted.overlapsInterval(persisted.getRevokedAt(), end)).isFalse();
+        });
+        assertSafe(send(port, grants + selector, requestBody, access), 201);
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        assertSafe(send(port, base + "/memberships/" + membership + "/revoke", "", access), 204);
+        assertSafe(send(port, protectedRead, null, memberAccess), 403);
+        assertSafe(send(port, base + "/memberships", memberBody(member), access), 201);
+        assertSafe(send(port, protectedRead, null, memberAccess), 200);
+        assertSafe(send(port, changePath(role, permissionId("role.read"), true), reason, access), 409);
+        // The existing resolver excludes injected platform permission links from company inheritance.
+        jdbc.update("INSERT INTO T_10_01_14 (F_01,F_02) VALUES (?,?)", role, permissionId("platform-role.read"));
+        assertThat((List<String>) JsonPath.read(send(port, permissions, null, memberAccess).body(), "$.permissionCodes"))
+                .containsExactly("user-role-grant.assign", "user.read", "user.suspend");
+        assertSafe(send(port, "/v1/platform/roles", null, memberAccess), 403);
+        assertSafe(send(port, changePath(role, permissionId("platform-role.read"), false), reason, access), 204);
+
+        long raceGroup = createGroup("INHERITED_RACE", access);
+        String raceBase = "/v1/platform/groups/" + raceGroup;
+        var grantRace = client.sendAsync(request(port, raceBase + "/role-grants" + selector, requestBody, access),
+                HttpResponse.BodyHandlers.ofString());
+        var memberRace = client.sendAsync(request(port, raceBase + "/memberships", memberBody(second), access),
+                HttpResponse.BodyHandlers.ofString());
+        assertThat(grantRace.get(60, TimeUnit.SECONDS).statusCode()).isEqualTo(201);
+        assertThat(memberRace.get(60, TimeUnit.SECONDS).statusCode()).isEqualTo(201);
+        assertSafe(send(port, protectedRead, null, secondAccess), 200);
+        assertSafe(send(port, raceBase + "/retire", reason, access), 200);
+        assertSafe(send(port, protectedRead, null, secondAccess), 403);
+
+        // Revoke inherited authority concurrently with a company write; either ordered outcome is safe.
+        long writeGroup = createGroup("INHERITED_WRITE_RACE", access);
+        String writeBase = "/v1/platform/groups/" + writeGroup;
+        assertSafe(send(port, writeBase + "/memberships", memberBody(second), access), 201);
+        var writeGrant = send(port, writeBase + "/role-grants" + selector, requestBody, access);
+        assertSafe(writeGrant, 201);
+        long writeGrantId = ((Number) JsonPath.read(writeGrant.body(), "$.id")).longValue();
+        assertSafe(send(port, "/v1/identity/users/" + target + "/reactivate" + selector, reason, access), 200);
+        var mutation = client.sendAsync(request(port, suspend, reason, secondAccess), HttpResponse.BodyHandlers.ofString());
+        var removal = client.sendAsync(request(port, writeBase + "/role-grants/" + writeGrantId + "/revoke" + selector,
+                "", access), HttpResponse.BodyHandlers.ofString());
+        assertThat(removal.get(60, TimeUnit.SECONDS).statusCode()).isEqualTo(204);
+        assertThat(mutation.get(60, TimeUnit.SECONDS).statusCode()).isIn(200, 403, 503);
+        assertSafe(send(port, suspend, reason, secondAccess), 403);
+        assertSafe(send(port, writeBase + "/role-grants" + selector, requestBody, access), 201);
+        assertSafe(send(port, protectedRead, null, secondAccess), 200);
+        // Promotion invalidates inherited company authority without deleting membership.
+        assertSafe(send(port, platformGrantPath(second), platformGrantBody(limited), access), 201);
+        assertSafe(send(port, protectedRead, null, secondAccess), 403);
+
+        assertSafe(send(port, changePath(role, permissionId("user.read"), false), reason, access), 204);
+        assertSafe(send(port, protectedRead, null, memberAccess), 403);
+        assertSafe(send(port, "/v1/platform/roles/" + role + "/retire", reason, access), 200);
+        assertSafe(send(port, permissions, null, memberAccess), 403);
+        var paths = (Map<String,Object>) JsonPath.read(send(port, "/api-docs", null, access).body(), "$.paths");
+        assertThat(paths.get("/v1/platform/groups/{groupId}/role-grants").toString()).contains("get=", "post=");
+        assertThat(paths.get("/v1/platform/groups/{groupId}/role-grants/{grantId}/revoke").toString()).contains("post=");
+    }
+
+    private String groupGrantBody(long role, Instant end) {
+        return "{\"roleId\":" + role + ",\"validTo\":\"" + end + "\",\"reason\":\"synthetic group grant\"}";
     }
 
     private long createRuntimeRole(String code, boolean platform, String access) throws Exception {
