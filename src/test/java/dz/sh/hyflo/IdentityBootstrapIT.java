@@ -1449,7 +1449,10 @@ class IdentityBootstrapIT {
         assertThat((List<Number>) JsonPath.read(history.body(), "$[*].id")).hasSize(3);
         assertSafe(send(port, root, limitedBody, viewerAccess), 403);
         assertSafe(send(port, platformGrantPath(viewer) + "/" + grant + "/revoke", reason, viewerAccess), 403);
-        assertSafe(send(port, changePath(limited, permissionId("platform-role.read"), false), reason, access), 409);
+        assertSafe(send(port, changePath(limited, permissionId("platform-role.read"), false), reason, access), 204);
+        assertSafe(send(port, "/v1/platform/roles", null, viewerAccess), 403);
+        assertSafe(send(port, changePath(limited, permissionId("platform-role.read"), true), reason, access), 204);
+        assertSafe(send(port, "/v1/platform/roles", null, viewerAccess), 200);
         jdbc.execute("CREATE TRIGGER hyflo_test_grant_update_failure BEFORE UPDATE ON T_10_01_20 "
                 + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
         try {
@@ -1502,6 +1505,250 @@ class IdentityBootstrapIT {
         assertThat(paths.get("/v1/identity/users/{userId}/platform-role-grants/{grantId}/revoke").toString()).contains("post=");
         assertSafe(send(port, "/v1/auth/logout", "", secondAccess), 204);
         assertSafe(send(port, root, null, secondAccess), 401);
+    }
+
+
+    @Test
+    void safelyChangesAssignedPlatformRolesWithProspectiveContinuity() throws Exception {
+        assertSafe(send(port, "/v1/setup/initialize", configuredBody("SAFE_ROLE_COMPANY", "safe-admin",
+                "SAFE_INITIAL"), null, SETUP_SECRET), 204);
+        long company = jdbc.queryForObject("SELECT F_00 FROM T_10_02_11", Long.class);
+        long admin = jdbc.queryForObject("SELECT F_00 FROM T_10_01_08 WHERE F_01='safe-admin'", Long.class);
+        long initial = jdbc.queryForObject("SELECT F_00 FROM T_10_01_04 WHERE F_04=TRUE", Long.class);
+        long roleRead = permissionId("platform-role.read");
+        long groupRead = permissionId("platform-group.read");
+        long associate = permissionId("platform-role-permission.associate");
+        long remove = permissionId("platform-role-permission.remove");
+        long retire = permissionId("platform-role.retire");
+        long create = permissionId("platform-role.create");
+        String roles = "/v1/platform/roles";
+        String groups = "/v1/platform/groups";
+        String history = "/v1/platform/security-history/role-definitions";
+        String reason = "{\"reason\":\"synthetic safe assigned role change\"}";
+        String access = loginAccess("safe-admin");
+        long limited = createRuntimeRole("SAFE_LIMITED", true, access);
+        long editor = createRuntimeRole("SAFE_EDITOR", true, access);
+        long finiteRole = createRuntimeRole("SAFE_FINITE", true, access);
+        long futureRole = createRuntimeRole("SAFE_FUTURE", true, access);
+        long endedRole = createRuntimeRole("SAFE_ENDED", true, access);
+        long alternate = createRuntimeRole("SAFE_ALTERNATE", true, access);
+        long viewer = createCompositionUser(admin, company, "safe-viewer");
+        long delegated = createCompositionUser(admin, company, "safe-editor");
+        long temporal = createCompositionUser(admin, company, "safe-temporal");
+        long second = createCompositionUser(admin, company, "safe-second");
+        long invalid = createCompositionUser(admin, company, "safe-invalid");
+        long capped = createCompositionUser(admin, company, "safe-capped");
+        long disabled = createCompositionUser(admin, company, "safe-disabled");
+        long partial = createCompositionUser(admin, company, "safe-partial");
+        String viewerAccess = loginAccess("safe-viewer");
+        String editorAccess = loginAccess("safe-editor");
+        String temporalAccess = loginAccess("safe-temporal");
+        String secondAccess = loginAccess("safe-second");
+        String reasonPath = changePath(limited, groupRead, true);
+        Instant now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        for (long id : List.of(roleRead, remove))
+            assertSafe(send(port, changePath(limited, id, true), reason, access), 204);
+        for (long id : List.of(associate, remove, retire))
+            assertSafe(send(port, changePath(editor, id, true), reason, access), 204);
+        for (long id : List.of(associate, groupRead))
+            assertSafe(send(port, changePath(finiteRole, id, true), reason, access), 204);
+        assertSafe(send(port, changePath(futureRole, roleRead, true), reason, access), 204);
+        assertSafe(send(port, changePath(endedRole, roleRead, true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(viewer), platformGrantBody(limited), access), 201);
+        assertSafe(send(port, platformGrantPath(delegated), platformGrantBody(editor), access), 201);
+        platformFixtureGrant(admin, temporal, finiteRole, now.minusSeconds(10), now.plusSeconds(3600));
+        platformFixtureGrant(admin, temporal, futureRole, now.plusSeconds(3600), null);
+        platformFixtureGrant(admin, temporal, endedRole, now.minusSeconds(7200), now.minusSeconds(3600));
+        long revoked = platformFixtureGrant(admin, temporal, endedRole, now.minusSeconds(3600), null);
+        assertSafe(send(port, platformGrantPath(temporal) + "/" + revoked + "/revoke", reason, access), 204);
+        assertSafe(send(port, reasonPath, reason, null), 401);
+        assertSafe(send(port, reasonPath, reason, "invalid.jwt"), 401);
+        assertSafe(send(port, reasonPath, reason, viewerAccess), 403);
+        assertSafe(send(port, reasonPath, reason, editorAccess), 403); // added permission not held
+        assertSafe(send(port, changePath(editor, groupRead, true), reason, editorAccess), 403); // self amplification
+        assertSafe(send(port, reasonPath, reason, temporalAccess), 403); // only finite operation
+        assertSafe(send(port, changePath(futureRole, groupRead, true), reason, access), 409);
+        assertSafe(send(port, changePath(finiteRole, roleRead, true), reason, access), 409);
+        assertSafe(send(port, changePath(endedRole, groupRead, true), reason, access), 204);
+        assertSafe(send(port, changePath(limited, permissionId("user.read"), true), reason, access), 409);
+        assertSafe(send(port, changePath(limited, Long.MAX_VALUE, true), reason, access), 403);
+        assertSafe(send(port, changePath(0, roleRead, true), reason, access), 400);
+        assertSafe(send(port, changePath(limited, roleRead, true), reason, access), 409);
+        assertSafe(send(port, changePath(limited, groupRead, false), reason, access), 409);
+        assertSafe(send(port, roles + "/" + limited + "/retire", reason, viewerAccess), 403);
+        assertSafe(send(port, changePath(editor, remove, false), reason, editorAccess), 409);
+        assertSafe(send(port, roles + "/" + editor + "/retire", reason, editorAccess), 409);
+        assertSafe(send(port, changePath(initial, groupRead, false), reason, access), 409);
+        assertSafe(send(port, roles + "/" + initial + "/retire", reason, access), 409);
+
+        // Preserve actual effective permissions and atomic event evidence across failed mutations.
+        long before = count("T_10_01_21");
+        jdbc.execute("CREATE TRIGGER hyflo_test_safe_link_insert BEFORE INSERT ON T_10_01_14 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, reasonPath, reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_safe_link_insert");
+        }
+        assertThat(count("T_10_01_21")).isEqualTo(before);
+        assertSafe(send(port, groups, null, viewerAccess), 403);
+        assertSafe(send(port, reasonPath, reason, access), 204);
+        assertSafe(send(port, groups, null, viewerAccess), 200);
+        jdbc.execute("CREATE TRIGGER hyflo_test_safe_link_delete BEFORE DELETE ON T_10_01_14 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, changePath(limited, groupRead, false), reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_safe_link_delete");
+        }
+        assertSafe(send(port, groups, null, viewerAccess), 200);
+        assertThat(count("T_10_01_21")).isEqualTo(before + 1);
+        jdbc.execute("CREATE TRIGGER hyflo_test_safe_event BEFORE INSERT ON T_10_01_21 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, changePath(limited, groupRead, false), reason, access), 503);
+            assertSafe(send(port, roles + "/" + limited + "/retire", reason, access), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_safe_event");
+        }
+        assertSafe(send(port, groups, null, viewerAccess), 200);
+        assertThat(count("T_10_01_21")).isEqualTo(before + 1);
+        assertCompositionRace(changePath(limited, groupRead, false), reason, access);
+        assertSafe(send(port, groups, null, viewerAccess), 403);
+        assertCompositionRace(reasonPath, reason, access);
+        assertSafe(send(port, groups, null, viewerAccess), 200);
+        assertSafe(send(port, changePath(limited, create, true), reason, access), 204);
+        assertSafe(send(port, roles, roleBody("SAFE_VIEWER_WRITE", true), viewerAccess), 201);
+        assertSafe(send(port, changePath(limited, create, false), reason, access), 204);
+        assertSafe(send(port, roles, roleBody("SAFE_VIEWER_DENIED", true), viewerAccess), 403);
+
+        // An unsupported historical link can be removed but cannot be expanded.
+        long unsupported = new TransactionTemplate(transactions).execute(tx -> {
+            var action = new Action("synthetic-safe", "Synthetic unsupported action");
+            var resource = new ResourceType("platform-synthetic-safe", "Synthetic unsupported resource");
+            entityManager.persist(action);
+            entityManager.persist(resource);
+            var permission = new Permission("platform-synthetic-safe.synthetic-safe", "Synthetic unsupported", action, resource);
+            entityManager.persist(permission);
+            entityManager.persist(new RolePermission(entityManager.find(Role.class, limited), permission));
+            return permission.getId();
+        });
+        assertSafe(send(port, changePath(limited, create, true), reason, access), 409);
+        assertSafe(send(port, changePath(limited, unsupported, false), reason, access), 204);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_09 WHERE F_00=?", Long.class, unsupported)).isEqualTo(1L);
+        assertSafe(send(port, changePath(limited, unsupported, true), reason, access), 409);
+        // Actual company permission accidentally persisted on a platform role also blocks expansion.
+        long companyRead = permissionId("user.read");
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) VALUES (?,?)", limited, companyRead);
+        assertSafe(send(port, changePath(limited, create, true), reason, access), 409);
+        assertSafe(send(port, changePath(limited, companyRead, false), reason, access), 204);
+
+        // A partial administrator, finite/future/revoked candidates and ineligible full candidates
+        // cannot substitute for a single durable, credential-qualified complete administrator.
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) SELECT ?, F_02 FROM T_10_01_14 WHERE F_01=?", alternate, initial);
+        long complete = createRuntimeRole("SAFE_COMPLETE", true, access);
+        jdbc.update("INSERT INTO T_10_01_14(F_01,F_02) SELECT ?, F_02 FROM T_10_01_14 WHERE F_01=?", complete, initial);
+        assertSafe(send(port, changePath(alternate, groupRead, false), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(second), platformGrantBody(alternate), access), 201);
+        long readOnly = createRuntimeRole("SAFE_GROUP_ONLY", true, access);
+        assertSafe(send(port, changePath(readOnly, groupRead, true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(partial), platformGrantBody(readOnly), access), 201);
+        platformFixtureGrant(admin, temporal, complete, now.minusSeconds(5), now.plusSeconds(3600));
+        platformFixtureGrant(admin, temporal, complete, now.plusSeconds(3600), null);
+        long endedComplete = platformFixtureGrant(admin, temporal, complete, now.minusSeconds(3600), null);
+        assertSafe(send(port, platformGrantPath(temporal) + "/" + endedComplete + "/revoke", reason, access), 204);
+        platformFixtureGrant(admin, invalid, complete, now.minusSeconds(5), null);
+        jdbc.update("UPDATE T_10_01_10 SET F_01='unsupported-synthetic-hash' WHERE F_03=?", invalid);
+        platformFixtureGrant(admin, disabled, complete, now.minusSeconds(5), null);
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            User user = entityManager.find(User.class, disabled);
+            user.disable(entityManager.createQuery("select s from UserStatus s where s.code='DISABLED'", UserStatus.class).getSingleResult());
+            User cap = entityManager.find(User.class, capped);
+            User actor = entityManager.find(User.class, admin);
+            Role role = entityManager.find(Role.class, endedRole);
+            for (int i = 0; i < 1000; i++) entityManager.persist(new PlatformRoleGrant(cap, role,
+                    now.minusSeconds(7200), now.minusSeconds(3600), "synthetic ended", UUID.randomUUID().toString(), actor));
+        });
+        platformFixtureGrant(admin, capped, complete, now.minusSeconds(5), null);
+        assertSafe(send(port, changePath(initial, groupRead, false), reason, access), 409);
+        assertSafe(send(port, roles + "/" + initial + "/retire", reason, access), 409);
+
+        // The same capability from another durable role counts for the prospective union.
+        long duplicateRead = platformFixtureGrant(admin, admin, readOnly, now.minusSeconds(5), null);
+        assertSafe(send(port, changePath(initial, groupRead, false), reason, access), 204);
+        assertSafe(send(port, groups, null, access), 200);
+        assertSafe(send(port, changePath(initial, groupRead, true), reason, access), 204);
+        assertSafe(send(port, platformGrantPath(admin) + "/" + duplicateRead + "/revoke", reason, access), 204);
+        assertSafe(send(port, changePath(alternate, groupRead, true), reason, access), 204);
+        assertSafe(send(port, groups, null, secondAccess), 200);
+
+        // Two separately complete administrators must not both remove their only copy.
+        long priorEvents = count("T_10_01_21");
+        long priorLinks = count("T_10_01_14");
+        long priorGrants = count("T_10_01_20");
+        var left = client.sendAsync(request(port, changePath(initial, groupRead, false), reason, access), HttpResponse.BodyHandlers.ofString());
+        var right = client.sendAsync(request(port, changePath(alternate, groupRead, false), reason, secondAccess), HttpResponse.BodyHandlers.ofString());
+        int leftStatus = left.get(60, TimeUnit.SECONDS).statusCode();
+        int rightStatus = right.get(60, TimeUnit.SECONDS).statusCode();
+        assertThat(List.of(leftStatus, rightStatus)).contains(204);
+        assertThat(List.of(leftStatus, rightStatus).stream().filter(status -> status == 204).count()).isEqualTo(1);
+        assertThat(List.of(leftStatus, rightStatus)).allMatch(status -> status == 204 || status == 409 || status == 503);
+        assertThat(count("T_10_01_21")).isEqualTo(priorEvents + 1);
+        assertThat(count("T_10_01_14")).isEqualTo(priorLinks - 1);
+        assertThat(count("T_10_01_20")).isEqualTo(priorGrants);
+        long removedRole = leftStatus == 204 ? initial : alternate;
+        long eventActor = leftStatus == 204 ? admin : second;
+        String survivorAccess = leftStatus == 204 ? secondAccess : access;
+        String loserAccess = leftStatus == 204 ? access : secondAccess;
+        assertSafe(send(port, groups, null, survivorAccess), 200);
+        assertSafe(send(port, groups, null, loserAccess), 403);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM T_10_01_14 WHERE F_01 IN (?,?) AND F_02=?", Long.class,
+                initial, alternate, groupRead)).isEqualTo(1L);
+        var audit = send(port, history, null, survivorAccess);
+        assertSafe(audit, 200);
+        List<Map<String,Object>> events = JsonPath.read(audit.body(), "$");
+        var event = events.getLast();
+        assertThat(event.get("eventCode")).isEqualTo("PERMISSION_REMOVED");
+        assertThat(((Number)event.get("roleId")).longValue()).isEqualTo(removedRole);
+        assertThat(((Number)event.get("permissionId")).longValue()).isEqualTo(groupRead);
+        assertThat(((Number)event.get("performedByUserId")).longValue()).isEqualTo(eventActor);
+        assertThat(event.get("correlationId").toString()).isNotBlank();
+
+        // Grant assignment and retirement serialize: the new grant either precedes retirement or is rejected.
+        long fresh = createCompositionUser(admin, company, "safe-fresh");
+        long beforeRetire = count("T_10_01_21");
+        jdbc.execute("CREATE TRIGGER hyflo_test_safe_role_update BEFORE UPDATE ON T_10_01_04 "
+                + "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic rollback probe'");
+        try {
+            assertSafe(send(port, roles + "/" + limited + "/retire", reason, survivorAccess), 503);
+        } finally {
+            jdbc.execute("DROP TRIGGER hyflo_test_safe_role_update");
+        }
+        assertThat(count("T_10_01_21")).isEqualTo(beforeRetire);
+        assertSafe(send(port, roles, null, viewerAccess), 200);
+        long retainedLinks = count("T_10_01_14");
+        var assignment = client.sendAsync(request(port, platformGrantPath(fresh), platformGrantBody(limited), survivorAccess), HttpResponse.BodyHandlers.ofString());
+        var retirement = client.sendAsync(request(port, roles + "/" + limited + "/retire", reason, survivorAccess), HttpResponse.BodyHandlers.ofString());
+        int assigned = assignment.get(60, TimeUnit.SECONDS).statusCode();
+        assertThat(retirement.get(60, TimeUnit.SECONDS).statusCode()).isEqualTo(200);
+        assertThat(assigned).isIn(201, 409);
+        assertThat(count("T_10_01_14")).isEqualTo(retainedLinks);
+        assertThat(count("T_10_01_21")).isEqualTo(beforeRetire + 1);
+        assertThat(jdbc.queryForObject("SELECT F_03 FROM T_10_01_04 WHERE F_00=?", Boolean.class, limited)).isFalse();
+        assertSafe(send(port, roles, null, viewerAccess), 403);
+        assertSafe(send(port, roles + "/" + removedRole + "/retire", reason, survivorAccess), 200);
+        assertSafe(send(port, roles, null, loserAccess), 403);
+        assertSafe(send(port, roles, null, survivorAccess), 200);
+        assertSafe(send(port, roles + "/" + limited + "/retire", reason, survivorAccess), 409);
+
+        var openapi = send(port, "/api-docs", null, survivorAccess);
+        assertThat(openapi.statusCode()).isEqualTo(200);
+        Map<String,Object> apiPaths = JsonPath.read(openapi.body(), "$.paths");
+        for (String path : List.of("/v1/platform/roles/{roleId}/permissions/{permissionId}/associate",
+                "/v1/platform/roles/{roleId}/permissions/{permissionId}/remove", "/v1/platform/roles/{roleId}/retire"))
+            assertThat(((Map<?,?>)apiPaths.get(path)).keySet().stream().map(Object::toString).toList()).containsExactly("post");
+        assertSafe(send(port, "/v1/auth/logout", "", survivorAccess), 204);
+        assertSafe(send(port, roles + "/" + endedRole + "/retire", reason, survivorAccess), 401);
     }
 
     private static String platformGrantPath(long user) {

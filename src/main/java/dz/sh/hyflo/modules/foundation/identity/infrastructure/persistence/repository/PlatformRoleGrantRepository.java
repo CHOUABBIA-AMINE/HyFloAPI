@@ -42,6 +42,11 @@ public interface PlatformRoleGrantRepository extends Repository<PlatformRoleGran
     long countNonEndedForRole(@org.springframework.data.repository.query.Param("roleId") long roleId,
             @org.springframework.data.repository.query.Param("now") java.time.Instant now);
 
+    @Query("select count(g) from PlatformRoleGrant g where g.role.id = :roleId "
+            + "and (g.validTo is null or g.validTo > :now) and (g.revokedAt is null or g.revokedAt > :now) "
+            + "and (g.validFrom > :now or g.validTo is not null or g.revokedAt is not null)")
+    long countNonEndedTemporalForRole(@Param("roleId") long roleId, @Param("now") java.time.Instant now);
+
     @Query("select case when count(u) > 0 then true else false end from User u where u.id = :userId and u.username <> 'hyflo-bootstrap'")
     boolean existsEligibleUser(@Param("userId") long userId);
 

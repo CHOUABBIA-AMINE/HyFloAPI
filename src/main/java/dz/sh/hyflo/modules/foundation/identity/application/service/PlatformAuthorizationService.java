@@ -136,10 +136,18 @@ public class PlatformAuthorizationService {
 
     // Callers retain the exclusive LOCAL provider lock for this prospective authority calculation.
     Set<String> durablePermissions(long userId, Instant now, Long excludedGrantId) {
+        return durablePermissions(userId, now, excludedGrantId, null, null);
+    }
+
+    // A role exclusion retires the whole role when permissionId is null;
+    // otherwise only the exact role/permission link is excluded.
+    Set<String> durablePermissions(long userId, Instant now, Long excludedGrantId,
+            Long roleId, Long permissionId) {
         var candidates = grants.findCandidates(userId, PageRequest.of(0, MAX_CANDIDATES + 1));
         if (candidates.size() > MAX_CANDIDATES) return Set.of();
         Set<Long> roleIds = candidates.stream()
                 .filter(g -> !java.util.Objects.equals(g.getId(), excludedGrantId))
+                .filter(g -> permissionId != null || !java.util.Objects.equals(g.getRole().getId(), roleId))
                 .filter(g -> g.getUser().getId() == userId && g.getUser().getUserType().hasCode(UserType.HUMAN_CODE)
                         && SessionAuthenticationService.eligible(g.getUser()))
                 .filter(g -> g.getValidTo() == null && g.getRevokedAt() == null && g.isActiveAt(now)
@@ -147,6 +155,8 @@ public class PlatformAuthorizationService {
                 .map(g -> g.getRole().getId()).collect(Collectors.toSet());
         if (roleIds.isEmpty()) return Set.of();
         return links.findForRoles(roleIds).stream()
+                .filter(link -> !(java.util.Objects.equals(link.getRole().getId(), roleId)
+                        && java.util.Objects.equals(link.getPermission().getId(), permissionId)))
                 .filter(link -> roleIds.contains(link.getRole().getId()) && link.getRole().isPlatformRole()
                         && link.getRole().isEnabled() && EffectiveAuthorizationService.validPermission(link.getPermission())
                         && link.getPermission().isPlatformPermission() && IMPLEMENTED.contains(link.getPermission().getCode()))

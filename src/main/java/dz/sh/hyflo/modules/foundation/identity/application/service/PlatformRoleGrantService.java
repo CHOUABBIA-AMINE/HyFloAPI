@@ -114,11 +114,20 @@ public class PlatformRoleGrantService {
     }
 
     private void requireContinuity(Instant now, Long excludedGrantId) {
-        boolean survives = grants.findDurableCandidateUsers(now).stream().anyMatch(id ->
-                credentials.findByUser_Id(id).filter(c -> LocalCredential.supportsPasswordHash(c.getPasswordHash())).isPresent()
-                && authorization.durablePermissions(id, now, excludedGrantId)
+        if (!hasDurableAdministrator(now, excludedGrantId, null, null)) throw new GrantRejected();
+    }
+
+    // Called only under the existing exclusive LOCAL provider gate.
+    boolean hasDurableAdministrator(Instant now, Long excludedGrantId, Long roleId, Long permissionId) {
+        return grants.findDurableCandidateUsers(now).stream().anyMatch(id ->
+                hasSupportedCredential(id)
+                && authorization.durablePermissions(id, now, excludedGrantId, roleId, permissionId)
                         .containsAll(PlatformAuthorizationService.implementedPermissions()));
-        if (!survives) throw new GrantRejected();
+    }
+
+    boolean hasSupportedCredential(long userId) {
+        return credentials.findByUser_Id(userId)
+                .filter(c -> LocalCredential.supportsPasswordHash(c.getPasswordHash())).isPresent();
     }
 
     private User lockTarget(long id) {

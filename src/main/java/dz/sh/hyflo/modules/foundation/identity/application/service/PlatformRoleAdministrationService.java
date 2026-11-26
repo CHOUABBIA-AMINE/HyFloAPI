@@ -20,6 +20,7 @@
 package dz.sh.hyflo.modules.foundation.identity.application.service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -47,11 +48,13 @@ public class PlatformRoleAdministrationService {
     private final UserRoleGrantRepository userGrants;
     private final GroupRoleGrantRepository groupGrants;
     private final PlatformRoleGrantRepository platformGrants;
+    private final PlatformRoleGrantService platformGrantService;
     private static final Set<String> FOREIGN_DELEGABLE = Set.of("identity-catalog.read", "role.read", "permission.read");
 
     public PlatformRoleAdministrationService(PlatformAuthorizationService authorization, RoleRepository roles,
             RoleDefinitionEventService events, PermissionRepository permissions, RolePermissionRepository links,
-            UserRoleGrantRepository userGrants, GroupRoleGrantRepository groupGrants, PlatformRoleGrantRepository platformGrants) {
+            UserRoleGrantRepository userGrants, GroupRoleGrantRepository groupGrants, PlatformRoleGrantRepository platformGrants,
+            PlatformRoleGrantService platformGrantService) {
         this.authorization = authorization;
         this.roles = roles;
         this.events = events;
@@ -60,6 +63,7 @@ public class PlatformRoleAdministrationService {
         this.userGrants = userGrants;
         this.groupGrants = groupGrants;
         this.platformGrants = platformGrants;
+        this.platformGrantService = platformGrantService;
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -114,9 +118,7 @@ public class PlatformRoleAdministrationService {
         if (associate && (role.isPlatformRole() != permission.isPlatformPermission() || !CapabilityManifest.supports(permission)))
             throw new RoleChangeRejected();
         Instant now = Instant.now();
-        if (role.isPlatformRole()) {
-            if (platformGrants.countNonEndedForRole(roleId, now) > 0) throw new RoleChangeRejected();
-        } else if (associate) {
+        if (!role.isPlatformRole() && associate) {
             if (userGrants.countNonEndedForUser(roleId, now, actor.getId()) > 0
                     || groupGrants.countNonEndedForRole(roleId, now) > 0) throw new RoleChangeRejected();
             if (userGrants.countNonEndedForeign(roleId, now) > 0
@@ -125,8 +127,15 @@ public class PlatformRoleAdministrationService {
         }
         // No other admitted grant/catalog writer can enter while the exclusive provider lock is held.
         actor = authorization.requireCatalogWrite(principal, operation);
+        boolean assigned = role.isPlatformRole() && validateAssignedChange(actor.getId(), roleId, permission, operation, associate);
+        // Recheck the live session after any blocking authority reads; the provider gate retains the decision.
+        actor = authorization.requireCatalogWrite(principal, operation);
+        if (role.isPlatformRole())
+            assigned = validateAssignedChange(actor.getId(), roleId, permission, operation, associate);
+        actor = authorization.requireCatalogWrite(principal, operation);
         if (associate) links.save(new RolePermission(role, permission));
         else links.delete(existing.orElseThrow());
+        if (assigned) authorization.requireCatalogWrite(principal, operation);
         events.recordPermissionChange(role, permission, actor, Instant.now(), UUID.randomUUID().toString(), reason, associate);
     }
 
@@ -160,15 +169,57 @@ public class PlatformRoleAdministrationService {
         authorization.requireCatalogWrite(principal, operation);
         if (!role.isEnabled()) throw new RoleChangeRejected();
         Instant now = Instant.now();
-        if (role.isPlatformRole()
-                ? platformGrants.countNonEndedForRole(roleId, now) > 0
-                : userGrants.countNonEndedBootstrapGrants(roleId, now) > 0)
+        if (!role.isPlatformRole() && userGrants.countNonEndedBootstrapGrants(roleId, now) > 0)
             throw new RoleChangeRejected();
         var actor = authorization.requireCatalogWrite(principal, operation);
+        if (role.isPlatformRole()) {
+            validateAssignedRetirement(actor.getId(), roleId, operation);
+            actor = authorization.requireCatalogWrite(principal, operation);
+            validateAssignedRetirement(actor.getId(), roleId, operation);
+            actor = authorization.requireCatalogWrite(principal, operation);
+        }
         role.retire();
         authorization.requireCatalogWrite(principal, operation);
         events.recordLifecycle(RoleDefinitionEvent.retired(role, actor, Instant.now(), UUID.randomUUID().toString(), reason));
         return entry(role);
+    }
+
+    private boolean validateAssignedChange(long actorId, long roleId, Permission permission, String operation,
+            boolean associate) {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (platformGrants.countNonEndedForRole(roleId, now) == 0) return false;
+        requireDurableOperation(actorId, now, operation);
+        if (associate) {
+            if (!authorization.durablePermissions(actorId, now, null).contains(permission.getCode())) throw denied();
+            if (platformGrants.countNonEndedTemporalForRole(roleId, now) > 0
+                    || links.findForRoles(Set.of(roleId)).stream().anyMatch(link ->
+                        !link.getPermission().isPlatformPermission()
+                        || !EffectiveAuthorizationService.validPermission(link.getPermission())
+                        || !CapabilityManifest.supports(link.getPermission())))
+                throw new RoleChangeRejected();
+            if (!platformGrantService.hasDurableAdministrator(now, null, null, null)) throw new RoleChangeRejected();
+        } else {
+            requireProspectiveAuthority(actorId, now, operation, roleId, permission.getId());
+        }
+        return true;
+    }
+
+    private void validateAssignedRetirement(long actorId, long roleId, String operation) {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        if (platformGrants.countNonEndedForRole(roleId, now) == 0) return;
+        requireDurableOperation(actorId, now, operation);
+        requireProspectiveAuthority(actorId, now, operation, roleId, null);
+    }
+
+    private void requireDurableOperation(long actorId, Instant now, String operation) {
+        if (!platformGrantService.hasSupportedCredential(actorId)
+                || !authorization.durablePermissions(actorId, now, null).contains(operation)) throw denied();
+    }
+
+    private void requireProspectiveAuthority(long actorId, Instant now, String operation, long roleId, Long permissionId) {
+        if (!authorization.durablePermissions(actorId, now, null, roleId, permissionId).contains(operation)
+                || !platformGrantService.hasDurableAdministrator(now, null, roleId, permissionId))
+            throw new RoleChangeRejected();
     }
 
     private static void validateLifecycleInput(long roleId, String reason) {
