@@ -2019,3 +2019,37 @@ Delete: none. Total: 48 creates, 2 updates, 0 deletes.
 - Disposable MySQL 8.4 integration test verifies the JPA metamodel and Spring Data discovery for all 23 new entities, exact named physical columns/keys and FK targets, and one synthetic round-trip in each of the five modules. Exercise database rejection of a representative duplicate and dangling same-module FK, with isolated transactions for the rejected writes. Demonstrate frozen workflow links and separate read/delivery fields through round-trip. Keep current Foundation and Identity tests intact.
 - Mandatory exact-SHA HyFloAPI Build with Java 25, full Surefire and real MySQL Failsafe, zero failures/errors/skips, retained verification evidence and JAR. This is the persistence layer only. The owner workflow packages must establish authorization, transactional concurrency, owner reference resolution and REST behavior when they are selected.
 - Stop after the registration build is created or starts. Next executes the single DM-C2 implementation after registration acceptance. DM-C3 stays unselected.
+
+## DM-C1-MEASUREMENT-DOMAIN — Classify measurement units by domain
+
+Status: PLANNED — owner requested start on 2026-11-27. This stage registers the C1 Reference implementation envelope from Dataroad. Dependencies: accepted DM-C1 assessment and existing FDN-DATA-001, FDN-REPO-001 and FDN-SVC-001 Foundation contracts. Registration baseline `ce7b5559cda5eb068c6cb0201cedd0e5287387b0`, parent `17f6a36512d86cd506083a7f43f6924c7626d1f4`, tree `204026d1f7c092950a0db61588a0a55d4553737f`; [HyFloAPI Build #101 attempt 1](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/45843306622) completed/success on that exact baseline. Current HyFloAPI Reference is the mapping authority. Its unit model has no measurement domain, and the current and historical Java/SQL trees inspected do not allocate `T_10_03_08`.
+
+- Add Reference-owned `MeasurementDomain` at `T_10_03_08`: generated Long ID `F_00`, canonical uppercase unique stable code `F_01` (64 characters maximum), Arabic `F_02`, French `F_03` and English `F_04` names (120 characters each, with at least one nonblank name). Use `T_10_03_08_UK_01` on code. The domain may have zero or many units; a reverse collection is unnecessary.
+- Keep `MeasurementUnit` at `T_10_03_03` and preserve `F_00–F_06`, global unit-code uniqueness, case-sensitive symbols and retirement behavior. Add a required lazy to-one `measurementDomain` field on non-updatable `F_07`, with `T_10_03_03_FK_01` to `T_10_03_08.F_00`. Require the domain in the ordinary constructor and preserve the reference on retirement. Use restrictive deletion. For example, cubic metres and litres share VOLUME; cubic metres per hour belongs to VOLUMETRIC_FLOW_RATE.
+- Use only disposable test schemas and synthetic fixtures. No seed catalog, conversions, reference conditions, HTTP, production migrations or existing-data backfill. A constructor-only service binding meets the existing Foundation discovery contract and exposes no application operation. This task is independent of the registered C2 scope, which remains pending diagram review and owner selection.
+
+Registration commit: `docs(reference): register measurement domain schema`. Registration scope: update `docs/ROADMAP.md` only, with zero creates or deletes.
+
+Implementation commit: `feat(reference): classify measurement units by domain`.
+
+### Exact implementation allowlist
+
+Create:
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/MeasurementDomain.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/infrastructure/persistence/repository/MeasurementDomainRepository.java`
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/application/service/MeasurementDomainService.java`
+
+Update:
+- `src/main/java/dz/sh/hyflo/modules/foundation/reference/domain/model/MeasurementUnit.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiTest.java`
+- `src/test/java/dz/sh/hyflo/HyFloApiIT.java`
+- `docs/ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+
+Delete: none. Total: 3 creates, 5 updates, 0 deletes.
+
+### Implementation acceptance
+
+- Verify stable code canonicalization and rejection of invalid codes, invalid localized names and a missing unit domain in the model.
+- Verify the entity, its typed owner repository and constructor-only service in the existing Foundation discovery tests, with counts updated to 44. On disposable MySQL 8.4, verify the exact columns, named unique and FK constraints and required unit association. Round-trip two distinct units in one domain and confirm a retired unit retains that domain. Demonstrate rejection of duplicate domain codes, a null unit domain and a dangling FK, using isolated transactions for rejected writes.
+- Require mandatory exact-SHA HyFloAPI Build with Java 25 and real MySQL Failsafe, zero failures/errors/skips, and existing Reference and Identity behavior preserved. Retain CI evidence and the verified JAR. Stop after registration CI starts. The next registered stage for this task is implementation after registration CI passes and the owner selects it.
