@@ -336,3 +336,36 @@ Existing platform role association, removal and retirement routes now allow chan
 ### IDN-25 — Protected platform-account lifecycle
 
 Existing User Management now admits five independent bearer-only POST operations under `/v1/identity/users/{userId}/platform-account`: `/suspend`, `/reactivate`, `/disable`, `/credential/reset` and `/sessions/revoke`, gated respectively by platform-user.suspend, platform-user.reactivate, platform-user.disable, platform-credential.reset and platform-login-session.revoke. Manifest v8 defines 45 capabilities (18 company, 27 platform); only fresh explicit setup supplies the expanded initial role, with initialized-schema upgrade deferred by IDN-24. Protected targets are distinct LOCAL HUMAN accounts with any platform grant history, including ended/revoked history. Existing company mutation exclusions remain. Reuse existing User lifecycle transitions, supported LocalCredential hashes, LoginSession and immutable UserLifecycleEvent. Under existing exclusive LOCAL provider/actor/target locks require live exact durable operation authority, a complete credential-qualified administrator (exclude target for suspend/disable/reset), and for credential reset exact durable shared-role coverage of enabled non-ended platform grants and all non-ended same-company GLOBAL direct company grants, including future grants; reject unproved, unsupported, foreign/resource-scoped and over-cap target authority. Suspend/disable/reset revoke target sessions, standalone revocation affects live sessions; reactivation requires supported credential and does not revive old sessions. No new entity/DTO/table, global account discovery, privilege expansion, role/grant mutation or automatic upgrade. Existing actor/target/owner/previous/result status/reason/correlation/time evidence persists atomically. Trusted administrator-supplied password handover remains a bounded development mechanism, not independent target-controlled recovery. Exact-SHA runtime acceptance pending.
+
+
+## Coordination persistence (DM-C2)
+
+Configuration, Audit, Workflow, Notification and Integration own their own entities and typed repositories. Every table has an identity-generated Long primary key at F_00. In the table below, business columns start at F_01 in the displayed order. A question mark marks an optional column. The five optimistic-lock columns A_01 belong to FeatureFlag, WorkflowInstance, WorkflowTask, NotificationMessage and IntegrationRejectedRecord. Same-module associations use explicitly named restrictive foreign keys to F_00. Actor, role, recipient, organization and owner business target references use scalar identifiers.
+
+| Table | Entity | F_01 onward in order | Unique business key |
+|---|---|---|---|
+| T_20_01_01 | Parameter | code, owningModule, valueType, description?, active | owningModule + code |
+| T_20_01_02 | ParameterValue | revisionNumber, value, effectiveFrom, effectiveTo?, changeReason, changedByActorId, parameter | parameter + revisionNumber; parameter + effectiveFrom |
+| T_20_01_03 | FeatureFlag | code, owningModule, description?, enabled, changedAt, changedByActorId | owningModule + code |
+| T_20_02_01 | AuditEvent | sourceModule, actionCode, actorNameSnapshot?, targetModule, targetType, targetId, outcome, occurredAt, correlationId, actorId? | — |
+| T_20_02_02 | AuditFieldChange | fieldPath, beforeValue?, afterValue?, masked, auditEvent | auditEvent + fieldPath |
+| T_20_02_03 | AuditAccessRecord | accessType, purpose, resourceReference, accessedAt, correlationId, actorId, auditEvent? | — |
+| T_20_03_01 | WorkflowTargetType | code, owningModule, nameAr?, nameFr?, nameEn?, active | owningModule + code |
+| T_20_03_02 | WorkflowDecisionType | code, nameAr?, nameFr?, nameEn?, active | code |
+| T_20_03_03 | WorkflowDefinition | code, revisionNumber, publishedAt?, retiredAt?, workflowTargetType | code + revisionNumber |
+| T_20_03_04 | WorkflowState | code, nameAr?, nameFr?, nameEn?, initial, terminal, workflowDefinition | workflowDefinition + code |
+| T_20_03_05 | WorkflowTransition | code, reasonRequired, workflowDefinition, workflowDecisionType, fromWorkflowState, toWorkflowState | workflowDefinition + code; fromWorkflowState + workflowDecisionType |
+| T_20_03_06 | WorkflowInstance | targetRevisionReference, startedAt, completedAt?, targetId, initiatedByActorId, workflowDefinition, workflowState | — |
+| T_20_03_07 | WorkflowTask | dueAt?, completedAt?, assignedActorId?, assignedRoleId?, workflowInstance, workflowState | — |
+| T_20_03_08 | WorkflowStateHistory | sequence, actorNameSnapshot, reason?, decidedAt, correlationId, decidedByActorId, workflowInstance, workflowTransition, workflowTask? | workflowInstance + sequence |
+| T_20_04_01 | NotificationType | code, nameAr?, nameFr?, nameEn?, priority, active | code |
+| T_20_04_02 | NotificationTemplate | code, revisionNumber, locale, subject, body | code + revisionNumber + locale |
+| T_20_04_03 | NotificationRequest | sourceModule, sourceEventId, targetReference?, requestedAt, notificationType | — |
+| T_20_04_04 | NotificationMessage | channelCode, renderedSubject, renderedBody, readAt?, recipientUserId, notificationRequest, notificationTemplate? | notificationRequest + recipientUserId + channelCode |
+| T_20_04_05 | NotificationDeliveryAttempt | attemptNumber, attemptedAt, outcome, failureCode?, notificationMessage | notificationMessage + attemptNumber |
+| T_20_05_01 | ExternalSystem | code, nameAr?, nameFr?, nameEn?, enabled, ownerOrganizationUnitId | code |
+| T_20_05_02 | IntegrationJobRun | operationCode, direction, startedAt, completedAt?, outcome?, triggeredByActorId?, externalSystem | — |
+| T_20_05_03 | IntegrationExchangeMessage | direction, externalMessageId?, payloadReference?, payloadHash?, exchangedAt, correlationId, externalSystem, integrationJobRun? | externalSystem + direction + externalMessageId when present |
+| T_20_05_04 | IntegrationRejectedRecord | recordReference, targetModule, failureStage, reasonCode, rejectedAt, resolvedAt?, integrationExchangeMessage | — |
+
+Workflow instances pin a definition revision and a target revision. Decision history stores the actual deciding actor, decision time and transition. Audit remains insert-oriented. Notification stores reading and delivery evidence independently. Integration links a message to an optional run from the same system and direction. Entity constructors validate local invariants. Cross-owner authority checks, transactional workflow execution, notification dispatch and external connectivity belong to later use-case stages.

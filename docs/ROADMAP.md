@@ -2057,3 +2057,10 @@ Delete: none. Total: 3 creates, 5 updates, 0 deletes.
 ### DM-C1-MEASUREMENT-DOMAIN implementation submission — 2026-11-27
 
 Status: IN PROGRESS — implemented within the registered allowlist and submitted for hosted acceptance. Registration SHA `fd0854cc65f45a7a03c36fb0095b801920766f7d` passed [HyFloAPI Build #102](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/46031241105). The Reference catalog and required unit FK follow the registered mapping. Foundation discovery checks now expect 44 entities. The synthetic model and MySQL tests cover a shared domain, a retired unit retaining its domain, and duplicate, null and dangling-reference rejection. Local diff and allowlist checks passed. Local Maven stopped before compilation because Maven Central could not be resolved; the workspace has Java 21 and no Docker. Exact implementation CI and MySQL execution remain the acceptance gate. No subsequent task is selected.
+
+
+### DM-C2 implementation submission — 2026-11-27
+
+The owner approved the C2 class diagram. Implementation baseline `6402e29aa46665e19e73865a8af955d5f743d95a` (parent `fd0854cc65f45a7a03c36fb0095b801920766f7d`, tree `254e09bb296874960717ba1c7d2539cba5c1f111`). Exact-SHA [HyFloAPI Build #103](https://github.com/CHOUABBIA-AMINE/HyFloAPI/actions/runs/46033730570) completed successfully on the MeasurementDomain implementation, with the verification evidence and JAR retained. The registered C2 baseline build #101 also passed.
+
+Status: IN PROGRESS — 23 Coordination entities, 23 typed owner repositories and two test classes submitted with the registered architecture inventory. Scope: 48 creates, 2 updates, 0 deletes. Static checks covered the complete file allowlist and Java syntax. Local Maven stopped before compilation because Maven Central could not be resolved. Mandatory hosted Java 25 and MySQL 8.4 verification on the implementation SHA is the acceptance gate. DM-C3 remains unselected.
