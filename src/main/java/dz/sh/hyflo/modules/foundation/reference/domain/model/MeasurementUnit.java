@@ -7,7 +7,7 @@
  *
  * @Name        : MeasurementUnit
  * @CreatedOn   : 11-24-2026
- * @UpdatedOn   : 11-24-2026
+ * @UpdatedOn   : 11-27-2026
  *
  * @Type        : Class
  * @Layer       : Model
@@ -24,9 +24,13 @@ import java.util.stream.Stream;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -72,7 +76,15 @@ public class MeasurementUnit {
     @Column(name = "F_06", nullable = false)
     private boolean active;
 
-    public MeasurementUnit(String code, String nameAr, String nameFr, String nameEn, String symbol) {
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "F_07", referencedColumnName = "F_00", nullable = false, updatable = false, foreignKey = @ForeignKey(name = "T_10_03_03_FK_01"))
+    private MeasurementDomain measurementDomain;
+
+    public MeasurementUnit(String code, String nameAr, String nameFr, String nameEn, String symbol,
+            MeasurementDomain measurementDomain) {
+        if (measurementDomain == null) {
+            throw new IllegalArgumentException("A measurement domain is required");
+        }
         if (code == null || !code.strip().toUpperCase(Locale.ROOT).matches("[A-Z][A-Z0-9_]{0,63}")) {
             throw new IllegalArgumentException("A valid stable measurement unit code is required");
         }
@@ -91,6 +103,7 @@ public class MeasurementUnit {
         this.nameEn = nameEn;
         this.symbol = symbol;
         this.active = true;
+        this.measurementDomain = measurementDomain;
     }
 
     public void retire() {

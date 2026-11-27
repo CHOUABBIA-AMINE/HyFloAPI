@@ -16,6 +16,7 @@ import dz.sh.hyflo.modules.foundation.identity.domain.model.UserStatus;
 import dz.sh.hyflo.modules.foundation.identity.domain.model.UserType;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Language;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Location;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.MeasurementDomain;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.MeasurementUnit;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
@@ -227,16 +228,31 @@ class HyFloApiTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Language("ar", null, null, null, "Arabic", true))
                 .isInstanceOf(IllegalArgumentException.class);
-        var unit = new MeasurementUnit(" pascal ", null, null, "Pascal", "Pa");
+        var pressure = new MeasurementDomain(" pressure ", "الضغط", "Pression", "Pressure");
+        assertThat(pressure.getCode()).isEqualTo("PRESSURE");
+        assertThat(pressure.getNameAr()).isEqualTo("الضغط");
+        assertThat(pressure.getNameFr()).isEqualTo("Pression");
+        assertThat(pressure.getNameEn()).isEqualTo("Pressure");
+        assertThatThrownBy(() -> new MeasurementDomain("bad code", null, null, "Pressure"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new MeasurementDomain("PRESSURE", null, " ", null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new MeasurementDomain("PRESSURE", null, null, "a".repeat(121)))
+                .isInstanceOf(IllegalArgumentException.class);
+        var unit = new MeasurementUnit(" pascal ", null, null, "Pascal", "Pa", pressure);
         assertThat(unit.getCode()).isEqualTo("PASCAL");
         assertThat(unit.getSymbol()).isEqualTo("Pa");
         unit.retire();
         assertThat(unit.isActive()).isFalse();
-        assertThatThrownBy(() -> new MeasurementUnit("bad code", null, null, "Unit", "m"))
+        assertThat(unit.getMeasurementDomain()).isSameAs(pressure);
+        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, "Pascal", "Pa", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("A measurement domain is required");
+        assertThatThrownBy(() -> new MeasurementUnit("bad code", null, null, "Unit", "Pa", pressure))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, "Pascal", " "))
+        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, "Pascal", " ", pressure))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, null, "Pa"))
+        assertThatThrownBy(() -> new MeasurementUnit("PASCAL", null, null, null, "Pa", pressure))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

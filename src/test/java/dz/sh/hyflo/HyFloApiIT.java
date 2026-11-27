@@ -48,6 +48,7 @@ import dz.sh.hyflo.modules.foundation.reference.domain.model.District;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Locality;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Language;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.Location;
+import dz.sh.hyflo.modules.foundation.reference.domain.model.MeasurementDomain;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.MeasurementUnit;
 import dz.sh.hyflo.modules.foundation.reference.domain.model.State;
 import jakarta.persistence.EntityManager;
@@ -58,6 +59,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
@@ -125,7 +127,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(43);
+        assertThat(entities).hasSize(44);
         for (var entity : entities) {
             var expectedInterface = entity.getPackageName().replace(".domain.model", ".infrastructure.persistence.repository")
                     + "." + entity.getSimpleName() + "Repository";
@@ -147,7 +149,7 @@ class HyFloApiIT {
                 .map(entity -> entity.getJavaType())
                 .filter(type -> type.getPackageName().startsWith("dz.sh.hyflo.modules.foundation."))
                 .toList();
-        assertThat(entities).hasSize(43);
+        assertThat(entities).hasSize(44);
         for (var entity : entities) {
             var expectedService = entity.getPackageName().replace(".domain.model", ".application.service")
                     + "." + entity.getSimpleName() + "Service";
@@ -672,18 +674,25 @@ class HyFloApiIT {
         locality.updatePostalCode("12345");
         var arabic = new Language(" AR ", "العربية", "Arabe", "Arabic", "العربية", true);
         var english = new Language("en", null, null, "English", "English", false);
-        var pressure = new MeasurementUnit(" pascal ", null, "Pascal", "Pascal", "Pa");
-        var flow = new MeasurementUnit("CUBIC_METRE_PER_HOUR", null, null, "Cubic metre per hour", "m³/h");
+        var pressureDomain = new MeasurementDomain(" pressure ", "الضغط", "Pression", "Pressure");
+        var flowDomain = new MeasurementDomain("VOLUMETRIC_FLOW_RATE", null, null, "Volumetric flow rate");
+        entityManager.persist(pressureDomain);
+        entityManager.persist(flowDomain);
+        var pressure = new MeasurementUnit(" pascal ", null, "Pascal", "Pascal", "Pa", pressureDomain);
+        var bar = new MeasurementUnit("BAR", null, null, "Bar", "bar", pressureDomain);
+        var flow = new MeasurementUnit("CUBIC_METRE_PER_HOUR", null, null, "Cubic metre per hour", "m³/h", flowDomain);
         var located = new Location(null, "Point synthétique", "Synthetic point", 31.5, 6.25, 138.5, locality);
         var remote = new Location(null, null, "Remote synthetic point", -90.0, 180.0, null, null);
         entityManager.persist(arabic);
         entityManager.persist(english);
         entityManager.persist(pressure);
+        entityManager.persist(bar);
         entityManager.persist(flow);
         entityManager.persist(located);
         entityManager.persist(remote);
         english.retire();
         flow.retire();
+        bar.retire();
         var file = new File("synthetic/sample.png", "sample.png", "image/png", 128L, created);
         entityManager.persist(file);
         entityManager.flush();
@@ -707,9 +716,18 @@ class HyFloApiIT {
         assertThat(savedPressure.getCode()).isEqualTo("PASCAL");
         assertThat(savedPressure.getSymbol()).isEqualTo("Pa");
         assertThat(savedPressure.isActive()).isTrue();
+        assertThat(savedPressure.getMeasurementDomain().getId()).isEqualTo(pressureDomain.getId());
+        var savedBar = entityManager.find(MeasurementUnit.class, bar.getId());
+        assertThat(savedBar.isActive()).isFalse();
+        assertThat(savedBar.getMeasurementDomain().getId()).isEqualTo(pressureDomain.getId());
+        assertThat(savedBar.getMeasurementDomain().getCode()).isEqualTo("PRESSURE");
+        assertThat(savedBar.getMeasurementDomain().getNameAr()).isEqualTo("الضغط");
+        assertThat(savedBar.getMeasurementDomain().getNameFr()).isEqualTo("Pression");
+        assertThat(savedBar.getMeasurementDomain().getNameEn()).isEqualTo("Pressure");
         var savedFlow = entityManager.find(MeasurementUnit.class, flow.getId());
         assertThat(savedFlow.getSymbol()).isEqualTo("m³/h");
         assertThat(savedFlow.isActive()).isFalse();
+        assertThat(savedFlow.getMeasurementDomain().getId()).isEqualTo(flowDomain.getId());
         var savedLocation = entityManager.find(Location.class, located.getId());
         assertThat(savedLocation.getNameFr()).isEqualTo("Point synthétique");
         assertThat(savedLocation.getLatitude()).isEqualTo(31.5);
@@ -732,10 +750,13 @@ class HyFloApiIT {
         assertTableColumns("T_10_03_05", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
         assertTableColumns("T_10_03_06", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
         assertTableColumns("T_10_03_02", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
-        assertTableColumns("T_10_03_03", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06");
+        assertTableColumns("T_10_03_03", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
+        assertTableColumns("T_10_03_08", "F_00", "F_01", "F_02", "F_03", "F_04");
         assertTableColumns("T_10_03_07", "F_00", "F_01", "F_02", "F_03", "F_04", "F_05", "F_06", "F_07");
         assertTableConstraints("T_10_03_02", "T_10_03_02_UK_01");
-        assertTableConstraints("T_10_03_03", "T_10_03_03_UK_01");
+        assertTableConstraints("T_10_03_03", "T_10_03_03_UK_01", "T_10_03_03_FK_01");
+        assertTableConstraints("T_10_03_08", "T_10_03_08_UK_01");
+        assertForeignKey("T_10_03_03", "F_07", "T_10_03_08", "T_10_03_03_FK_01", false);
         assertTableConstraints("T_10_03_07", "T_10_03_07_FK_01");
         assertForeignKey("T_10_03_07", "F_07", "T_10_03_06", "T_10_03_07_FK_01", true);
         assertTableConstraints("T_10_03_01", "T_10_03_01_UK_01");
@@ -743,6 +764,28 @@ class HyFloApiIT {
         assertTableConstraints("T_10_03_05", "T_10_03_05_UK_01", "T_10_03_05_FK_01");
         assertTableConstraints("T_10_03_06", "T_10_03_06_UK_01", "T_10_03_06_FK_01");
         assertTableConstraints("T_10_00_01", "T_10_00_01_UK_01");
+    }
+
+    @Test
+    void rejectsInvalidMeasurementDomainReferencesInMySql() {
+        var transaction = new TransactionTemplate(transactions);
+        assertThatThrownBy(() -> transaction.executeWithoutResult(status -> {
+            jdbc.update("INSERT INTO T_10_03_08 (F_01, F_04) VALUES (?, ?)", "SYNTHETIC_MASS", "Mass");
+            jdbc.update("INSERT INTO T_10_03_08 (F_01, F_04) VALUES (?, ?)", "SYNTHETIC_MASS", "Duplicate");
+        })).isInstanceOf(DataIntegrityViolationException.class)
+                .rootCause().hasMessageContaining("T_10_03_08_UK_01");
+
+        assertThatThrownBy(() -> transaction.executeWithoutResult(status -> jdbc.update("""
+                INSERT INTO T_10_03_03 (F_01, F_04, F_05, F_06, F_07)
+                VALUES ('SYNTHETIC_NULL', 'Synthetic unit', 'u', TRUE, NULL)
+                """))).isInstanceOf(DataIntegrityViolationException.class)
+                .rootCause().hasMessageContaining("Column 'F_07' cannot be null");
+
+        assertThatThrownBy(() -> transaction.executeWithoutResult(status -> jdbc.update("""
+                INSERT INTO T_10_03_03 (F_01, F_04, F_05, F_06, F_07)
+                VALUES ('SYNTHETIC_DANGLING', 'Synthetic unit', 'u', TRUE, -1)
+                """))).isInstanceOf(DataIntegrityViolationException.class)
+                .rootCause().hasMessageContaining("T_10_03_03_FK_01");
     }
 
     private void assertForeignKey(String table, String column, String referencedTable, String constraint, boolean nullable) {
